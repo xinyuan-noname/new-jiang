@@ -113,6 +113,10 @@
   animation: xjb_tran var(--xjbTimeLong) infinite linear;
 }
 
+/*左浮动*/
+.xjb_floatRight{
+  float:"right";
+}
 
 /*居中定位*/
 .xjbToCenter {
