@@ -51,13 +51,12 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         div.buttons = buttons;
         //
         div.addElement = function (tag, innerHTML, style) {
-            let ele = document.createElement(tag);
-            if (innerHTML) {
-                if (tag == "textarea") ele.value = innerHTML
-                else ele.innerHTML = innerHTML;
-            }
-            if (style) ui.xjb_giveStyle(ele, style)
-            if (tag == "div") ui.xjb_giveStyle(ele, { display: "block" })
+            let ele = ui.xjb_addElement({
+                target:div,
+                tag:tag,
+                innerHTML:innerHTML,
+                style:style
+            })
             if (tag == "textarea") {
                 ele.addButton = function (character, text) {
                     text = text ? text : character
@@ -86,8 +85,6 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                     }
                 }
             }
-            ui.xjb_giveStyle(ele, { position: "relative" })
-            this.appendChild(ele)
             ele.addElement = this.addElement;
             return ele
         }

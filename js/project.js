@@ -410,13 +410,37 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 }
                 ui.xjb_giveStyle(ele, { visibility: "visible" })
             }
-
-            //精准给出样式
-            ui.xjb_giveStyle = function (object1, object2) {
-                var list = Object.keys(object2)
-                for (var i = 0; i < list.length; i++) {
-                    object1.style[list[i]] = object2[list[i]]
+            ui.xjb_addElement = function ({ target, tag, innerHTML, style, inherit }) {
+                let ele = document.createElement(tag);
+                if (innerHTML) {
+                    if (tag == "textarea") ele.value = innerHTML;
+                    else ele.innerHTML = innerHTML;
                 }
+                if (style) ui.xjb_giveStyle(ele, style);
+                if (tag == "div") ui.xjb_giveStyle(ele, { display: "block" });
+                if (inherit === true) ele.addElement = function({...arg}){
+                    return ui.xjb_addElement({
+                        ...arg,
+                        target:this,
+                    })
+                };
+                ui.xjb_giveStyle(ele, { position: "relative" });
+                target.appendChild(ele);
+                return ele;
+            }
+            //精准给出样式
+            ui.xjb_giveStyle = function (target, styleList) {
+                if (typeof styleList === "object" && styleList != null) {
+                    for (let k in styleList) {
+                        target.style[k] = styleList[k]
+                    }
+                } else if (typeof styleList === "string") {
+                    try {
+                        let parseList = JSON.parse(styleList)
+                        return ui.xjb_giveStyle(target, parseList)
+                    } catch (e) { }
+                }
+                return target
             }
             //添加头部样式
             ui.xjb_giveStyle2 = function (str) {
@@ -439,7 +463,6 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 }
                 return list
             }
-
             //造书
             ui.create.xjb_book = (father, text) => {
                 if (lib.xjb_library) {
@@ -1781,7 +1804,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                     }
                 }).inputSmall()
             }
-            game.xjb_newCharacterChangeSex = function (num = 1, free) {               
+            game.xjb_newCharacterChangeSex = function (num = 1, free) {
                 const informationList = {
                     object: "changeSexCard",
                     num: num,
