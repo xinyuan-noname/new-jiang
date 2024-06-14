@@ -1,4 +1,5 @@
 window.XJB_LOAD_RPG = function (_status, lib, game, ui, get, ai) {
+    //control players
     game.xjb_PlayAddPlayer = function () {
         const allPlayers = [...game.players, ...game.dead];
         const player = ui.create.player(ui.arena).addTempClass('start');
@@ -239,7 +240,7 @@ window.XJB_LOAD_RPG = function (_status, lib, game, ui, get, ai) {
                             "现在，就获得灵力看看吧！"
                         ],
                         leadFn: function (player) {
-                            let content = new Content("xjb_ready", player, function () {
+                            let content = new Content("xjb_ready_Lingli0001", player, function () {
                                 "step 0"
                                 player.chooseControl("获得灵力").set("prompt", "请点击获得灵力")
                                 "step 1"
@@ -315,72 +316,7 @@ window.XJB_LOAD_RPG = function (_status, lib, game, ui, get, ai) {
                             })
                             new DialogLead(this.leadList, this.leadFn, player).lead()
                         },
-                    }),
-                    //自我试练                            
-                    SELF0001: new Play({
-                        start: [
-                            [
-                                [LH, LHName, "red", "这是一个动荡的时代。或许你不理解像我这些四处游走的旅人。", azureSky],
-                                [, , , "你以为我是被迫流亡？错咯！我坚信智者芙艾派依说的话：冒险和勇气往往会收获意想不到的结局！"],
-                                [, , , "今年是——1296，而我自1264离开家乡，已是三个年头了。"],
-                                [, , , '我辗转的这些年份，常作学徒——"偷艺"的学徒。我只是看了那些作艺的过程，又不去四处宣扬，造成不了什么损失。偏偏近来常遇见狭隘的主，硬是污了我名去。'],
-                                [, , , "如今倒好，落下个坏名声，四个村镇的人都听闻有这么一个贼人。无可奈何，我又得另寻他处以容身了。——看看地图吧——"],
-                                [, , , "——lino，这个地方我还未去过，闻所未闻。这个地方还有小字的标注。"],
-                                ["none", "标注", "white", "欲至lino，必须明白自己正是在它的lero，经由lane才能前往。最后你会发现要从ladina而到达lion，但这是不可能的。"],
-                                [LH, LHName, "red", "这句话可真令人摸不着头脑。让人云里雾里的。它就不像是在指路。——我正处在它的lero，经由lane才能前往lino，不要经过ladina。可是lane又是什么？我到哪里寻呢？ladina又是什么？我又何从避开呢？"],
-                                [, , , "就跟谜似的。算了，不管这些了。看看别处去——这处地不错，就向它进发吧。"]
-                            ],
-                            [
-                                [LH, LHName, "red", "这河水真是清澈，暂且歇歇脚。", lake],
-                                [lake, "", "blue",],
-                                [LH, LHName, "red", "奇怪？怎么有回声呀！这里是平原，又不是山峰。"],
-                                [lake, "", "blue",],
-                                [LH, , "red", "(常听老人说，回声永不散，水仙永不爱。发生这样的事，怕是因为回声女神伊可所受到诅咒又传染给了别人。不过，既然是伊可仙女一样的可怜人，就无所担心了。让我唤她出来)"],
-                                [LH, LHName, "red", "遭受情伤的仙女，出来见我一面吧！我想我帮帮你"],
-                                [lake, "", "blue",],
-                                [LH, LHName, "red", "天哪！你到底是谁！简直和我一模一样！"],
-                                [, , "blue"],
-                                [, , "red", "等等，你要做些什么？"],
-                                [, , "blue"],
-                            ]
-                        ],
-                        end: [
-                            [
-                                [LH, LHName, "red", "我以为会有什么奇幻遭遇，但却给了我一场袭击。还好侥幸战胜了这样一个冒牌货。", lake],
-                                [, , "blue",],
-                                [, , "red", "真是令人恼怒！你不是伊可，你不是米若，你不是回声和镜子，不却断重复我的言语行为。你分明是会自己行动的。怎么？你是非要灭了我取而代之？"],
-                                [, , "blue", ""],
-                                [, , "red", "(举起身旁一块大石，砸向河水，河水翻滚，溅起的水珠都映着" + LHName + "的模样)"],
-                                [, , "blue", "(瞬间化成成千上万个，不约而同地向" + LHName + "袭来)"],
-                                [, , "red", "！！！"]
-                            ]
-                        ],
-                        gameInit: function (player) {
-
-                        },
-                        information: {
-                            name: "自我试练<br>1-1两个我？",
-                            number: "SELF0001",
-                            Type: "Play",
-                            next: "SELF0002",
-                        },
-                    }),
-                    SELF0002: new Play({
-                        start: [
-                            [
-                                [LH, LHName, "red", "不妙啊……", lake],
-                                [, , "blue", ""],
-                            ]
-                        ],
-                        information: {
-                            name: "自我试练<br>1-2四重存在",
-                            number: "SELF0002",
-                            Type: "Play",
-                        },
-                        gameInit: function (player) {
-
-                        },
-                    }),
+                    }),                   
                 },
             }
         },

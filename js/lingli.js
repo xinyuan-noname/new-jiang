@@ -511,17 +511,18 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                             if (eventLine.includes('xjb_recover')) eventLine.remove("xjb_recover")
                             if (eventLine.length > 3) return this.match(num)
                             let add = list.randomGet()
-                            let get= this[add].randomGet()
-                            let index=this[add].indexOf(get)
-                            eventLine.push(get)
-                            translateLine.push(xjb_lingli.translate[add][index])
-                            now += Number(add)
+                            let get= this[add].randomGet();
+                            let index=this[add].indexOf(get);
+                            eventLine.push(get);
+                            game.print(add,index);
+                            translateLine.push(xjb_lingli.translate[add][index]);
+                            now += Number(add);
                         }
                         eventLine.translateLine=translateLine                        
                         return eventLine
                     },
                     find: function (event) {
-                        let list = ["-2", "+2", "-1", "+1"]
+                        let list = ["-2", "+2", "-1", "+1"];
                         let result
                         list.forEach(i => {
                             if (this[i].includes(event)) result = i

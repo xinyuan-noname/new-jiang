@@ -1,4 +1,18 @@
 window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
+    game.xjb_transferFile = function (BLOB,fileWay,silent) {
+        var reader = new FileReader()
+        reader.readAsDataURL(BLOB, "UTF-8")
+        reader.onload = function () {
+            var fileTransfer = new FileTransfer();
+            const obj={}
+            if(!silent)obj.Myalert = game.xjb_create.alert("正在导出中...")
+            fileTransfer.download(this.result, fileWay, function () {
+                if(obj.Myalert)obj.Myalert.innerHTML = "导出成功！"
+            }, function (e) {
+                if(obj.Myalert)obj.Myalert.innerHTML = "导出失败！<br>" + e.code
+            });
+        }
+    };
     lib.skill.xjb_6 = {
         "xjb_storage": function () {
             get.xjb_storage = function () {
@@ -412,20 +426,20 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
             }
             ui.xjb_addElement = function ({ target, tag, innerHTML, style, inherit }) {
                 let ele = document.createElement(tag);
+                if (tag == "div") ui.xjb_giveStyle(ele, { display: "block" });
+                ui.xjb_giveStyle(ele, { position: "relative" });
+                target.appendChild(ele);
                 if (innerHTML) {
                     if (tag == "textarea") ele.value = innerHTML;
                     else ele.innerHTML = innerHTML;
                 }
                 if (style) ui.xjb_giveStyle(ele, style);
-                if (tag == "div") ui.xjb_giveStyle(ele, { display: "block" });
-                if (inherit === true) ele.addElement = function({...arg}){
+                if (inherit === true) ele.addElement = function ({ ...arg }) {
                     return ui.xjb_addElement({
                         ...arg,
-                        target:this,
+                        target: this,
                     })
                 };
-                ui.xjb_giveStyle(ele, { position: "relative" });
-                target.appendChild(ele);
                 return ele;
             }
             //精准给出样式
@@ -1455,34 +1469,36 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 var back = list[0] //这是背景
                 var theX = list[1] //这是关闭键
                 //创建存档区
-                var div_1 = document.createElement('div');
-                ui.xjb_giveStyle(div_1, {
-                    height: "75%", width: "90%", margin: "4% auto",
-                    "border-radius": "1em", overflow: "auto",
-                }
-                )
-                //这个是下方操作区
-                var ul = document.createElement('ul');
-                ui.xjb_giveStyle(ul, {
-                    height: "8%", width: "90%", "background-color": "#996600",
-                    "margin": "42% 0 0 1.5%", "border-radius": "5em",
-                    border: "8px solid #f4a460", "list-style": "none"
+                var div_1 = ui.xjb_addElement({
+                    target: back,
+                    tag: 'div',
+                    style: {
+                        height: "75%", width: "90%", margin: "4% auto", display: 'inline-block',
+                        "border-radius": "1em", overflow: "auto", position: 'absolute'
+                    }
                 })
-                back.appendChild(div_1)
-                back.appendChild(ul)
+                //这个是下方操作区
+                var ul = ui.xjb_addElement({
+                    target: back,
+                    tag: 'ul',
+                    style: {
+                        height: "8%", width: "90%", "background-color": "#996600",
+                        "margin": "42% 0 0 1.5%", "border-radius": "5em",
+                        border: "8px solid #f4a460", "list-style": "none", position: 'absolute'
+                    }
+                })
                 //这是三个操作区按键
-                var li_1 = document.createElement('li');
-                ui.xjb_giveStyle(li_1, lib.xjb_style.storage_li)
-                ul.appendChild(li_1)
-                li_1.innerHTML = "创建存档"
-                var li_2 = document.createElement('li');
-                ui.xjb_giveStyle(li_2, lib.xjb_style.storage_li)
-                ul.appendChild(li_2)
-                li_2.innerHTML = "读取存档"
-                var li_3 = document.createElement('li');
-                ui.xjb_giveStyle(li_3, lib.xjb_style.storage_li)
-                ul.appendChild(li_3)
-                li_3.innerHTML = "删除存档"
+                function createKey(innerHTML) {
+                    return ui.xjb_addElement({
+                        target: ul,
+                        tag: 'li',
+                        innerHTML: innerHTML,
+                        style: lib.xjb_style.storage_li
+                    })
+                }
+                var li_1 = createKey("创建存档");
+                var li_2 = createKey("读取存档");
+                var li_3 = createKey("删除存档");
                 return {
                     back: back,
                     div_1: div_1,
@@ -1516,12 +1532,14 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 div.num = num
                 sto_list[0].num = num
                 game.saveConfig("xjb_myStorage", lib.config.xjb_myStorage)
-                //显示存档号
-                var p1 = document.createElement("p")
+                //设置存档号
                 var str = "" + sto_list[0].num
                 while (str.length < 7) str = "0" + str//不足七位用零补齐
-                p1.innerHTML = str
-                sto_list[0].appendChild(p1)
+                var p1 = ui.xjb_addElement({
+                    target: sto_list[0],
+                    tag: "p",
+                    innerHTML: str,
+                })
                 storage.appendChild(div)//将以上内容放入父节点
                 //设置存档被点击后的事件
                 div.update = function () {
@@ -1537,15 +1555,15 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
 武将状态:体力:${this.map.character.hp}/${this.map.character.maxHp}  护甲:${this.map.character.hujia} 横置:${this.map.character.linked} 翻面:${this.map.character.turnedOver},
 手牌区牌数/装备区牌数/判定区牌数/特殊区牌数/武将牌上牌数:${this.map.character.h.length}/${this.map.character.e.length}/${this.map.character.j.length}/${this.map.character && this.map.character.s && this.map.character.s.length}/${this.map.character && this.map.character.x && this.map.character.x.length},
 `)
-                }
-                div.onclick = () => div.update()
+                };
+                div.onclick = () => div.update();
                 return {
                     ul: div,
                     theNum: sto_list[0],
                     theCharacter: sto_list[1],
                     theLevel: sto_list[2],
                     theTime: sto_list[3]
-                }
+                };
             }
             //读档函数
             game.xjb_storage_1 = function (player, bool) {
@@ -1556,18 +1574,14 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                     if (typeof lib.config.xjb_myStorage[i] === "object") {
                         var thelist = ui.create.xjb_theStorage(storage.div_1, get.xjb_number(i))//storage.div_1，即放存档的地方
                         var target = lib.config.xjb_myStorage[i]
-                        //填充日期内容部分
-                        var myDate = document.createElement("p")
-                        myDate.innerHTML = target.date
-                        thelist.theTime.appendChild(myDate)
-                        //角色部分
-                        var myCharacter = document.createElement("p")
-                        myCharacter.innerHTML = target.character.name
-                        thelist.theCharacter.appendChild(myCharacter)
-                        //关卡部分
-                        var myLevel = document.createElement("p")
-                        myLevel.innerHTML = target.level.name
-                        thelist.theLevel.appendChild(myLevel)
+                        const eachPartSet = [
+                            { target: thelist.theTime, innerHTML: target.date },
+                            { target: thelist.theCharacter, innerHTML: target.character.name },
+                            { target: thelist.theLevel, innerHTML: target.level.name }
+                        ];
+                        eachPartSet.forEach(k => {
+                            ui.xjb_addElement({ ...k, tag: 'p' })
+                        })
                         if (bool === true) {
                             if (target.level.Type != _status.xjb_level.Type) thelist.ul.style.display = "none"
                         }
@@ -1601,20 +1615,17 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                         number: _status.xjb_level.number,
                         Type: _status.xjb_level.Type
                     }
-                    //日期部分
-                    var p4 = document.createElement("p"), time = game.xjb_getCurrentDate()
-                    var str = `${time[0]}-${time[1]}-${time[2]}-${time[3]}-${time[4]}`
-                    obj.date = str
-                    p4.innerHTML = obj.date
-                    list.theTime.appendChild(p4)
-                    //角色部分
-                    var p2 = document.createElement("p")
-                    p2.innerHTML = obj.character.name
-                    list.theCharacter.appendChild(p2)
-                    //关卡部分
-                    var p3 = document.createElement("p")
-                    p3.innerHTML = obj.level.name
-                    list.theLevel.appendChild(p3)
+                    var time = game.xjb_getCurrentDate();
+                    var str = `${time[0]}-${time[1]}-${time[2]}-${time[3]}-${time[4]}`;
+                    obj.date = str;
+                    const restPartSet = [
+                        { target: list.theTime, innerHTML: obj.date },
+                        { target: list.theCharacter, innerHTML: obj.character.name },
+                        { target: list.theLevel, innerHTML: obj.level.name }
+                    ];
+                    restPartSet.forEach(k => {
+                        ui.xjb_addElement({ ...k, tag: 'p' })
+                    })
                     player.xjb_updateStorage()
                 }
                 //设置操作2键事件
@@ -1624,43 +1635,37 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                     if (theLoad) {
                         //读档                    
                         game.pause()
-                        var theObj = theLoad.map
-                        game.xjb_bossLoad(theObj.level.number, player)
+                        var theObj = theLoad.map;
+                        game.xjb_bossLoad(theObj.level.number, player);
                         //引入角色
-                        var obj = theObj.character
-                        if (obj.id !== "") player.reinit(player.name1, obj.id)
-                        //设置体力上限
-                        player.maxHp = obj.maxHp
-                        player.hp = obj.hp
-                        //设置护甲
-                        player.changeHujia(-player.hujia)
-                        player.changeHujia(obj.hujia)
-                        //设置横置及翻面
-                        player.link(obj.linked)
-                        player.turnOver(obj.turnedOver)
-                        //失去所有区的手牌
-                        player.lose(player.getCards("hejsx"))
-                        //手牌区卡牌
-                        player.gain(game.xjb_cardFactory(...obj.h))
-                        //装备区
-                        var e = game.xjb_cardFactory(...obj.e)
-                        e.forEach(i => {
-                            player.equip(i)
-                        })
-                        //判定区
-                        var j = game.xjb_cardFactory(...obj.j)
-                        j.forEach(i => {
-                            player.addJudge(i)
-                        })
-                        //特殊区                       
-                        var s = game.xjb_cardFactory(...obj.s)
-                        s.forEach(i => {
-                            player.loseToSpecial([i], i.gaintag[0])
-                        })
-                        //扩展
-                        var x = game.xjb_cardFactory(...obj.x)
-                        x.forEach(i => {
-                            player.addToExpansion(i).gaintag.add(i.gaintag[0])
+                        var obj = theObj.character;
+                        if (obj.id !== "") player.reinit(player.name1, obj.id);
+                        //设置属性
+                        ["maxHp", "hp", "hujia"].forEach(att => {
+                            player[att] = obj[att]
+                        });
+                        //执行函数
+                        const attActionList = [
+                            ['link', obj.linked],
+                            ['turnOver', obj.turnedOver],
+                            ['lose', player.getCards("hejsx")],
+                            ['gain', game.xjb_cardFactory(...obj.h)]
+                        ];
+                        attActionList.forEach(k => {
+                            let func = k[0], arg = k[1];
+                            player[func](arg)
+                        });
+                        //处理其他区域
+                        const areaActionList = [
+                            ['e', card => player.equip(card)],
+                            ['j', card => player.addJudge(card)],
+                            ['s', card => player.loseToSpecial(card, card.gaintag[0])],
+                            ['x', card => player.addToExpansion(card).gaintag.add(card.gaintag[0])],
+                        ];
+                        areaActionList.forEach(k => {
+                            let area = k[0], callback = k[1]
+                            let cards = game.xjb_cardFactory(...obj[area]);
+                            cards.forEach(callback)
                         })
                         //关闭
                         storage.back.remove()
@@ -1719,7 +1724,6 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 }
                 return { li_1: step1.li_1, li_2: step1.li_2, li_3: step1.li_3, close: step1.close, storageArea: step1.storageArea }
             }
-
         },
         math: function () {
             game.xjb_LZ_project = function () {
@@ -1831,7 +1835,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                     changeFunc: function (newAttribute) {
                         lib.config.xjb_newcharacter.group = newAttribute
                         game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                        game.xjb_create.alert("已更改为:" + get.xjb_translation(lib.config.xjb_newcharacter.sex) + "，<br>重启即更新数据");
+                        game.xjb_create.alert("已更改为:" + get.xjb_translation(lib.config.xjb_newcharacter.group) + "，<br>重启即更新数据");
                     }
                 }
                 game.xjb_create.UABobjectsToChange(informationList)

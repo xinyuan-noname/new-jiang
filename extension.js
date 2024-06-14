@@ -185,39 +185,6 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 }
                 return [a, b, c, d, e]
             };
-            game.xjb_jiangchiUpDate = function () {
-                game.xjb_jiangchi_zeroise()
-                let hunbilist = lib.config.xjb_list_hunbilist.choujiang
-                let jiangchi = lib.xjb_list_xinyuan.jiangchi
-                const x = lib.config.cjb_cj_type;
-                var list1 = Object.keys(hunbilist[x])
-                var list2 = Object.values(hunbilist[x])
-                list1.forEach((k,i)=>{
-                   let a = get.xjb_number(list2[i]);
-                    let addList=new Array();
-                    addList.length=a;
-                    addList.fill(list1[i]);
-                    jiangchi=[...jiangchi,...addList];
-                })
-                jiangchi.sort(i=>Math.random()-0.5)
-                lib.xjb_list_xinyuan.jiangchi=jiangchi
-            }
-
-            game.xjb_update_choujiang = function (num) {
-                //将奖池转为数组
-                let hunbilist = lib.config.xjb_list_hunbilist.choujiang
-                let list = Object.keys(hunbilist[num])
-                for (let i = 0; i < list.length; i++) {
-                    const before = hunbilist[num][list[i]]
-                    let number = get.xjb_number(before) + game.xjb_getCurrentDate(true)
-                    if (i === list.length - 1) number = get.xjb_number(before) - i * game.xjb_getCurrentDate(true)
-                    hunbilist[num][list[i]] = number + '*100'
-                }
-            }
-            game.xjb_jiangchi_zeroise = function () {
-                lib.xjb_list_xinyuan.jiangchi.length = 0;
-
-            }
             game.xjb_newcharacter_zeroise = function () {
                 lib.config.xjb_newcharacter.name2 = '李华'
                 lib.config.xjb_newcharacter.sex = 'male';
@@ -493,14 +460,14 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                             }
                             return hunbi
                         }
-                        let dataBase=game.xjb_currencyRate
+                        let dataBase = game.xjb_currencyRate
                         let condition = {
                             "hunbi": "魂币:" + (hun(lib.config.xjb_hunbi)),
                             "dakadian": "打卡点:" + (hun(lib.config.xjb_hundaka2)),
                             "energy": "能量:" + (hun(lib.config.xjb_systemEnergy)),
                             "HunbiExpectation": "魂币期望:" + (hun(game.xjb_hunbiExpectation())),
-                            "threeRate":"三等率:"+dataBase.firstRate+"/"+dataBase.secondRate+"/"+dataBase.thirdRate,
-                            "floatRate":"浮流率:"+(game.xjb_inflationRate()*100).toFixed(2)+"%"
+                            "threeRate": "三等率:" + dataBase.firstRate + "/" + dataBase.secondRate + "/" + dataBase.thirdRate,
+                            "floatRate": "浮流率:" + (game.xjb_inflationRate() * 100).toFixed(2) + "%"
                         }
                         let target = game.xjb_create.condition(condition).font(30)
                     }
@@ -513,13 +480,13 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         game.xjb_create.confirm('确定要清零吗？', function () {
                             var num = lib.config.xjb_hunbi
                             if (lib.config.xjb_hunbi > 0 && lib.config.xjb_hunbi <= 50) {
-                                num = game.xjb_currencyRate.CoinToEnergy*num-1
+                                num = game.xjb_currencyRate.CoinToEnergy * num - 1
                             }
                             else if (lib.config.xjb_hunbi > 50 && lib.config.xjb_hunbi <= 500) {
-                                num = game.xjb_currencyRate.firstRate*num
+                                num = game.xjb_currencyRate.firstRate * num
                             }
                             else if (lib.config.xjb_hunbi > 500) {
-                                num = game.xjb_currencyRate.firstRate*num+500
+                                num = game.xjb_currencyRate.firstRate * num + 500
                             }
                             else if (lib.config.xjb_hunbi < 0) {
                                 num = num * 50
@@ -556,7 +523,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     },
                     onclick: function (layout) {
                         if (lib.config.xjb_systemEnergy < 0) {
-                            if(layout>6) game.xjb_NoEnergy()
+                            if (layout > 6) game.xjb_NoEnergy()
                             if (lib.config.xjb_hundaka2 >= layout && lib.config.xjb_hunbi < 10) return game.xjb_create.alert("由于能量不足，现在抽奖方决定：临时开发打卡点抽奖途径，以渡过无能量期，现在自动为您抽奖...", function () {
                                 lib.config.cjb_cj_type = "2"
                                 game.xjb_jiangchiUpDate()
@@ -631,17 +598,15 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         btn.onclick = function () {
                             var xx = get.xjb_number(lib.config.cjb_cj_type), num = 8 * layout
                             if (xx == 2) num = 1 * layout
-                            if (xx == 1 && !game.xjb_condition(1, num)) {
-                                return game.xjb_create.alert("你未达成抽奖的条件！")
+                            let conditionList = {
+                                '1': () => !game.xjb_condition(1, num),
+                                '2': () => !game.xjb_condition(2, num),
+                                '3': () => fasle,
+                                '4': () => (!game.xjb_condition(1, num) || !game.xjb_condition(3, 1 * layout))
                             }
-                            else if (xx == 2 && !game.xjb_condition(2, num)) {
-                                return game.xjb_create.alert("你未达成抽奖的条件！")
-                            }
-                            else if (xx == 4 && (!game.xjb_condition(1, num) || !game.xjb_condition(3, 1 * layout))) {
-                                return game.xjb_create.alert("你未达成抽奖的条件！")
-                            }
+                            if (conditionList[xx]()) return game.xjb_create.alert("你未达成抽奖的条件！")
                             if (xx == 4) xx = 1
-                            if (xx !== 3) game.cost_xjb_cost(xx, num)
+                            if (xx !== 3) game.cost_xjb_cost(xx, num, '抽奖')
                             game.xjb_jiangchiUpDate()
                             btn.disabled = true;
                             var xjb_content = document.getElementById('myChouJiang_XJB_CONTENT')
@@ -664,7 +629,6 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                                     btn.disabled = false
                                 }
                             })
-
                         }
                         //设置奖池表
                         for (var i = 0; i < 4; i++) {
@@ -673,8 +637,6 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                                 ui.xjb_giveStyle(clk, { display: 'none' })
                             }
                         }
-
-
                     }
                 }
                 lib.extensionMenu.extension_新将包.level = {
@@ -938,16 +900,16 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                                 },
                                 sex: function () {
                                     let sex = lib.config.xjb_newcharacter.sex
-                                    let price=game.xjb_howMuchIsIt(5,3)
+                                    let price = game.xjb_goods.changeSexCard.getPrice()
                                     game.xjb_create.confirm('你当前性别为：' + get.translation(sex) + `，更改性别需要1张性转卡(${price}魂币一张，当前你有` + lib.config.xjb_objects["changeSexCard"] + '张，无则自动购买)确定要更改吗？', function () {
-                                        game.xjb_newCharacterChangeSex(1 * turn, boolean)
+                                        game.xjb_newCharacterChangeSex(1, false)
                                     })
                                 },
                                 group: function () {
                                     let group = lib.config.xjb_newcharacter.group
-                                    let price=game.xjb_howMuchIsIt(4,3)
+                                    let price = game.xjb_goods.changeGroupCard.getPrice()
                                     game.xjb_create.confirm('你当前势力为：' + get.translation(group) + `，更改势力需要1个择木卡(${price}魂币一张，当前你有` + lib.config.xjb_objects["changeGroupCard"] + '张，无则自动购买)，确定要更改吗？', function () {
-                                        game.xjb_gainJP("免费更改势力", false)
+                                        game.xjb_newCharacterChangeGroup(1, false)
                                     })
                                 },
                                 hp: function () {
@@ -1000,19 +962,13 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                                     game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
                                     game.xjb_create.alert('已恢复至原皮，重启即生效');
                                     if (lib.character.xjb_newCharacter) {
-                                        if (lib.character.xjb_newCharacter[4].includes("red")) { }
-                                        else if (lib.character.xjb_newCharacter[4].includes("xuemo")) { }
-                                        else {
-                                            lib.characterPack["xjb_soul"].xjb_newCharacter = lib.character.xjb_newCharacter[4] = [lib.config.xjb_newcharacter.selectedSink]
-                                        }
+                                        lib.characterPack["xjb_soul"].xjb_newCharacter = lib.character.xjb_newCharacter[4] = [lib.config.xjb_newcharacter.selectedSink]
                                     }
                                 },
-
                             }
                             object[layout]()
                             return object
                         }
-
                     }
                 }
                 if (!lib.config.xjb_bianshen) {
@@ -1180,8 +1136,6 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     });
                 }
             }
-
-
             lib.extensionMenu.extension_新将包.storage = {
                 name: '<div>导出魂币系统数据！(仅供手机端)</div>',
                 clear: true,
@@ -1196,24 +1150,12 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         let BLOB = new Blob([JSON.stringify(dataxjb)], {
                             type: "application/javascript;charset=utf-8"
                         })
-                        var reader = new FileReader()
-                        reader.readAsDataURL(BLOB, "UTF-8")
-                        reader.onload = function () {
-                            var fileTransfer = new FileTransfer();
-                            var Myalert = game.xjb_create.alert("正在导出中...")
-                            fileTransfer.download(this.result, data + ".json", function () {
-                                Myalert.innerHTML = "导出成功！"
-                            }, function (e) {
-                                Myalert.innerHTML = "导出失败！<br>" + e.code
-                            });
-
-                        }
+                        let fileWay=data+'.json';
+                        game.xjb_transferFile(BLOB, fileWay);
                     })
 
                 }
             }
-
-
             lib.extensionMenu.extension_新将包.readStorage = {
                 name: '<div>读取魂币系统数据！</div>',
                 clear: true,
@@ -1333,6 +1275,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     if (lib.config.xjb_hunbi > 5e7) lib.config.xjb_hunbi = 5e7;
                     if (isNaN(lib.config.xjb_hunbi)) lib.config.xjb_hunbi = 1;
                 }
+                if (!lib.config.xjb_hunbiLog) lib.config.xjb_hunbiLog = "";
                 //设置称号
                 if (!lib.config.xjb_title) {
                     lib.config.xjb_title = [];

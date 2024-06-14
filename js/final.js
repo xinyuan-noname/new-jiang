@@ -585,32 +585,18 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                     else game.xjb_systemEnergyChange(-lib.config.xjb_systemEnergy * 0.01)
                 }
             }
-            game.xjb_currencyRate.PointToEnergy=520;
-            Object.defineProperty(game.xjb_currencyRate,'PointToEnergy',{
-                writable:false,
-                configurable:false
-            })
-            game.xjb_currencyRate.CoinToEnergy=Math.floor(game.xjb_currencyRate.PointToEnergy/game.xjb_hunbiExpectation())
-            Object.defineProperty(game.xjb_currencyRate,'CoinToEnergy',{
-                writable:false,
-                configurable:false
-            })
-            game.xjb_currencyRate.firstRate=Math.round(game.xjb_currencyRate.CoinToEnergy/1.3)
-            Object.defineProperty(game.xjb_currencyRate,'firstRate',{
-                writable:false,
-                configurable:false
-            })
-            game.xjb_currencyRate.secondRate=Math.round(game.xjb_currencyRate.CoinToEnergy/3)
-            Object.defineProperty(game.xjb_currencyRate,'secondRate',{
-                writable:false,
-                configurable:false
-            })
-            game.xjb_currencyRate.thirdRate=Math.round(game.xjb_currencyRate.CoinToEnergy/5)
-            Object.defineProperty(game.xjb_currencyRate,'thirdRate',{
-                writable:false,
-                configurable:false
-            })
-            
+            game.xjb_currencyRate.PointToEnergy = 520;
+            game.xjb_currencyRate.CoinToEnergy = Math.floor(game.xjb_currencyRate.PointToEnergy / game.xjb_hunbiExpectation());
+            game.xjb_currencyRate.firstRate = Math.round(game.xjb_currencyRate.CoinToEnergy / 1.3);
+            game.xjb_currencyRate.secondRate = Math.round(game.xjb_currencyRate.CoinToEnergy / 3);
+            game.xjb_currencyRate.thirdRate = Math.round(game.xjb_currencyRate.CoinToEnergy / 5);
+            function xjb_currencyRateProperty() {
+                ['PointToEnergy', 'CoinToEnergy',
+                    'firstRate', 'secondRate', 'thirdRate'].forEach(i => {
+                        game.xjb_currencyRate.defineProperty(i)
+                    })
+            };
+            xjb_currencyRateProperty()
         },
     }
 }

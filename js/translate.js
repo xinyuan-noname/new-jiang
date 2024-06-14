@@ -20,8 +20,6 @@ window.XJB_LOAD_TRANSLATE = function (_status, lib, game, ui, get, ai) {
         "xin_xiongli_info": "出牌阶段限一次，你可以对任意名其他角色造成一点破甲伤害，若此做，对自己使用等量张残【杀】。</b>",
         "xin_mousheng": "谋圣",
         "xin_mousheng_info": "锁定技，你亮出拼点牌时，你拼点牌点数+X(X为游戏轮数)",
-        "xin_chuhui": "除秽",
-        "xin_chuhui_info": "出牌阶段，若你\"棒\"数量≥5，你可令一名角色获得全部的\"棒\"并对其造成2点伤害。",
         "xin_bingjie": "秉节",
         "xin_bingjie_info": "1.一名角色准备阶段前，你可以弃置所有手牌，你令该角色将手牌调至体力上限<br>2.你受到一点伤害后，你可令一名角色将手牌调至体力上限。<br>因该技能获得的牌均记为\"留香\"。",
         "xin_shiyin": "识音",

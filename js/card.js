@@ -352,7 +352,7 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
             lib.translate.xjb_unique_reusable = "♻️循环卡♻️"
             lib.translate.xjb_skillCard = "技能卡"
         },
-        Function: function () {
+        CardFunction: function () {
             //创建卡牌并返回数组
             game.xjb_cardFactory = function () {
                 var cards = []

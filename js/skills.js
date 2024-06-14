@@ -941,39 +941,7 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     "_priority": 0,
                 },
 
-                "xin_chuhui": {
-                    audio: "ext:新将包:false",
-                    enable: "phaseUse",
-                    filter: function (event, player) {
-                        return player.getStorage('xin_zhibang').length >= 5;
-                    },
-                    filterTarget: function (card, player, target) {
-                        if (!player.storage.xin_chuhui) return true
-                        if (!player.storage.xin_chuhui.includes(target)) return true
-                        return false
-                    },
-                    content: function () {
-                        if (!player.storage.xin_chuhui) player.storage.xin_chuhui = [];
-                        player.storage.xin_chuhui.add(target);
-                        player.storage.xin_chuhui.sortBySeat();
-                        player.markSkill('xin_chuhui');
-                        target.gain(player.storage.xin_zhibang, 'gain2', 'fromStorage');
-                        player.storage.xin_zhibang.length = 0;
-                        target.damage(2, player)
-                    },
-                    ai: {
-                        damage: true,
-                        order: 2,
-                        result: {
-                            target: function (player, target) {
-                                return get.damageEffect(target, player);
-                            },
-                        },
-                        threaten: 1.5,
-                        expose: 0.3,
-                    },
-                    "_priority": 0,
-                },
+
                 "xin_bingjie": {
                     trigger: {
                         global: ["phaseZhunbeiBegin"],
@@ -2418,59 +2386,86 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     }
                 }
             })
-        }
-    };
-    (function () {
-        SkillCreater(
-            "xin_zhibang", {
-            init: function (player, skill) {
-                if (!player.storage[skill]) player.storage.xin_zhibang = [];
-            },
-            marktext: "棒",
-            intro: {
-                content: "cards",
-                onunmark: function (storage, player) {
-                    if (storage && storage.length) {
-                        player.$throw(storage, 1000);
-                        game.cardsDiscard(storage);
-                        game.log(storage, '被置入了弃牌堆');
-                        storage.length = 0;
-                    }
+        },
+        characterSkill_xjbhan_caocao: function () {
+            SkillCreater(
+                "xin_zhibang", {
+                init: function (player, skill) {
+                    if (!player.storage[skill]) player.storage.xin_zhibang = [];
                 },
-            },
-            mark: true,
-            trigger: {
-                global: ["phaseBegin"],
-            },
-            filter :function(event,player){
-                return player.storage.xin_zhibang.length<5;
-            },
-            content: function () {
-                'step 0'
-                var num = 1
-                player.choosePlayerCard(player, [1, num], 'hej', true).set('prompt', '选择作为"棒"的牌');
-                'step 1'
-                if (result && result.links && result.links.length) {
-                    player.lose(result.links, ui.special, 'toStorage');
-                    player.markAuto('xin_zhibang', result.links);
-                    game.log(player, '将', result.links, '置于其武将牌上');
-                    player.draw()
-                }
-            },
-            ai: {
-                damage: true,
-                effect: {
-                    target: function (card, player, target, current) {
-                        if (get.type(card) == 'delay') {
-                            return 'zeroplayertarget';
+                marktext: "棒",
+                intro: {
+                    content: "cards",
+                    onunmark: function (storage, player) {
+                        if (storage && storage.length) {
+                            player.$throw(storage, 1000);
+                            game.cardsDiscard(storage);
+                            game.log(storage, '被置入了弃牌堆');
+                            storage.length = 0;
                         }
                     },
                 },
-                expose: 0.3,
-            },
-            translate: "置棒",
-            description: "一名角色回合开始前，若'棒'的数量小于5,你可以将你区域内一张牌置于你的武将牌上，称为“棒\"，然后你摸一张牌。",
-        });
+                mark: true,
+                trigger: {
+                    global: ["phaseBegin"],
+                },
+                direct: true,
+                content: function () {
+                    'step 0'
+                    player.choosePlayerCard(player, [1, Infinity], 'hej').set('prompt', '选择作为"棒"的牌');
+                    'step 1'
+                    if (result && result.links && result.links.length) {
+                        player.lose(result.links, ui.special, 'toStorage');
+                        player.markAuto('xin_zhibang', result.links);
+                        game.log(player, '将', result.links, '置于其武将牌上');
+                        if (player.storage.xin_zhibang.length <= 5) player.draw(result.links.length)
+                    }
+                },
+                ai: {
+                    damage: true,
+                    effect: {
+                        target: function (card, player, target, current) {
+                            if (get.type(card) == 'delay') {
+                                return 'zeroplayertarget';
+                            }
+                        },
+                    },
+                    expose: 0.3,
+                },
+                translate: "置棒",
+                description: "一名角色回合开始前，你可以将你区域内的任意牌置于你的武将牌上，称为“棒\"。若你以此法使得“棒”的数量不大于5，你摸等量张牌。",
+            });
+            SkillCreater(
+                "xin_chuhui", {
+                audio: "ext:新将包:false",
+                enable: "phaseUse",
+                filter: function (event, player) {
+                    return player.getStorage('xin_zhibang').length >= 5;
+                },
+                filterTarget: true,
+                content: function () {
+                    const number = Math.floor(player.storage.xin_zhibang.length / 2)
+                    target.gain(player.storage.xin_zhibang, 'gain2', 'fromStorage');
+                    player.storage.xin_zhibang.length = 0;
+                    target.damage(number, player)
+                },
+                ai: {
+                    damage: true,
+                    order: 2,
+                    result: {
+                        target: function (player, target) {
+                            return get.damageEffect(target, player);
+                        },
+                    },
+                    threaten: 1.5,
+                    expose: 0.3,
+                },
+                translate: "除秽",
+                description: "出牌阶段，若你\"棒\"数量≥5，你可令一名角色获得全部的\"棒\",然后对其造成x点伤害(x为棒的数量,向下取整)。",
+            })
+        },
+    };
+    (function () {
         SkillCreater(
             "xin_yexi", {
             enable: "phaseUse",
