@@ -418,9 +418,10 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                     }
                 }, lib.characterTitle)
                 //遍历新将包称号列表(lib.config.xjb_title，0-称号内容，1-称号名单)，如果称号名单中含有角色，则将此称号加入新将包列表。
-                lib.config.xjb_title.forEach(function (item, index) {
+                lib.config.xjb_title.forEach(function (item) {
                     if (!item[1]) return 0;
-                    item[1].forEach(function (ite, ind) {
+                    item[1].forEach(function (ite) {
+                        if (!this[ite]) return
                         (this[ite].titles) && this[ite].titles.add(item[0])
                     }, lib.config.xjb_count);
                 })
@@ -544,11 +545,16 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                     "9魂币欢迎光临": "43*100",
                 },
                 "3": {
-                    "打卡点数+1": "1*100",
-                    "体力卡(1张，3点)": "16*100",
-                    "体力卡(1张，1点)": "29*100",
-                    "33魂币中礼包": "24*100",
-                    "3魂币谢谢参与": "30*100",
+                    "打卡点数+1": "15*100",
+                    "打卡点数+2": "6*100",
+                    "打卡点数+3": "3*100",
+                    "体力卡(1张，3点)": "10*100",
+                    "体力卡(1张，1点)": "22*100",
+                    "33魂币大礼包": "3*100",
+                    "24魂币中大礼包": "5*100",
+                    "15魂币中小礼包": "9*100",
+                    "9魂币小礼包": "11*100",
+                    "3魂币谢谢参与": "16*100",
                 },
                 "4": {
                     "技能槽(1个)": "1*100",
@@ -573,30 +579,33 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                 var num1 = game.xjb_getCurrentDate()
                 var num2 = lib.config.xjb_hundaka
                 if (num1[0] > num2[0] || num1[1] > num2[1] || num1[2] > num2[2]) {
+                    //
                     lib.config.xjb_hundaka[0] = num1[0]
                     lib.config.xjb_hundaka[1] = num1[1]
                     lib.config.xjb_hundaka[2] = num1[2]
                     lib.config.xjb_hundaka[3]++
                     game.saveConfig('xjb_hundaka', lib.config.xjb_hundaka);
+                    //
+                    lib.config.xjb_BonusGottenToday = 0;
+                    game.saveConfig('xjb_BonusGottenToday', lib.config.xjb_BonusGottenToday);
+                    //
                     game.xjb_addDakadian(3, true)
                     game.xjb_create.alert('打卡成功！<br>你已打卡过' + lib.config.xjb_hundaka[3] + '次');
-                    let num = lib.config.xjb_hunbi * 10 + lib.config.xjb_systemEnergy
-                    if (num < 0) game.xjb_systemEnergyChange(lib.config.xjb_hunbi)
-                    else game.xjb_systemEnergyChange(-lib.config.xjb_systemEnergy * 0.01)
                 }
+                game.xjb_currencyRate.PointToEnergy = 520;
+                game.xjb_currencyRate.CoinToEnergy = Math.floor(game.xjb_currencyRate.PointToEnergy / game.xjb_hunbiExpectation());
+                game.xjb_currencyRate.firstRate = Math.round(game.xjb_currencyRate.CoinToEnergy / 1.3);
+                game.xjb_currencyRate.secondRate = Math.round(game.xjb_currencyRate.CoinToEnergy / 3);
+                game.xjb_currencyRate.thirdRate = Math.round(game.xjb_currencyRate.CoinToEnergy / 5);
+                function xjb_currencyRateProperty() {
+                    ['PointToEnergy', 'CoinToEnergy',
+                        'firstRate', 'secondRate', 'thirdRate'].forEach(i => {
+                            game.xjb_currencyRate.defineProperty(i)
+                        })
+                };
+                xjb_currencyRateProperty()
             }
-            game.xjb_currencyRate.PointToEnergy = 520;
-            game.xjb_currencyRate.CoinToEnergy = Math.floor(game.xjb_currencyRate.PointToEnergy / game.xjb_hunbiExpectation());
-            game.xjb_currencyRate.firstRate = Math.round(game.xjb_currencyRate.CoinToEnergy / 1.3);
-            game.xjb_currencyRate.secondRate = Math.round(game.xjb_currencyRate.CoinToEnergy / 3);
-            game.xjb_currencyRate.thirdRate = Math.round(game.xjb_currencyRate.CoinToEnergy / 5);
-            function xjb_currencyRateProperty() {
-                ['PointToEnergy', 'CoinToEnergy',
-                    'firstRate', 'secondRate', 'thirdRate'].forEach(i => {
-                        game.xjb_currencyRate.defineProperty(i)
-                    })
-            };
-            xjb_currencyRateProperty()
+
         },
     }
 }

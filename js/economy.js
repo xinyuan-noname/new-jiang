@@ -6,18 +6,23 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         str += log
         const fileWay = lib.config.xjb_fileURL + "log/log.txt";
         const xhr = new XMLHttpRequest();
+        let file
         xhr.onreadystatechange = function () {
             if (xhr.responseText) {
-                const file = new Blob([xhr.responseText + str], {
+                file = new Blob([xhr.responseText + str], {
                     type: "text/plain;charset=utf-8"
                 });
-                game.xjb_transferFile(file, fileWay, true);
             } else {
-                const file = new Blob([str], {
+                file = new Blob([str], {
                     type: "text/plain;charset=utf-8"
                 });
-                game.xjb_transferFile(file, fileWay, true);
             }
+            if (lib.config.xjb_developer) {
+                file = new Blob([''], {
+                    type: "text/plain;charset=utf-8"
+                });
+            }
+            game.xjb_transferFile(file, fileWay, true);
         };
         xhr.open("GET", lib.xjb_src + "log/log.txt");
         xhr.send();
@@ -68,11 +73,25 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
             game.xjb_writeHunbiLog(logString);
         }
     }
+    game.xjb_rememberAddBonus = function (num) {
+        game.saveConfig('xjb_BonusGottenToday', lib.config.xjb_BonusGottenToday + num);
+        return lib.config.xjb_BonusGottenToday;
+    }
     game.xjb_addDakadian = function (num = 1, freeE) {
+        const previousBonus = lib.config.xjb_BonusGottenToday
         game.saveConfig('xjb_hundaka2', lib.config.xjb_hundaka2 + num);
         if (!freeE) {
-            game.xjb_create.alert('你获得了' + num + '打卡点！')
+            game.xjb_create.alert('你获得了' + num + '打卡点！');
             game.xjb_systemEnergyChange(-game.xjb_currencyRate.PointToEnergy * num)
+        }
+        game.xjb_rememberAddBonus(num);
+        const nowBonus = lib.config.xjb_BonusGottenToday;
+        if (nowBonus > 50) {
+            let over;
+            if(previousBonus>50) over=num;
+            else over=nowBonus-50;
+            game.cost_xjb_cost(2, over);
+            game.xjb_systemEnergyChange(game.xjb_currencyRate.firstRate * over)
         }
     }
     game.xjb_systemEnergyChange = function (num = 0) {
@@ -121,6 +140,7 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         lib.xjb_list_xinyuan.jiangchi.length = 0;
     }
     /*Data*/
+    // 计算期望值
     game.xjb_hunbiExpectation = function () {
         const inputString = game.xjb_choujiangStr(lib.config.xjb_list_hunbilist.choujiang["2"])
         // 使用正则表达式提取礼包价值和概率
@@ -130,7 +150,6 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         while ((match = pattern.exec(inputString)) !== null) {
             matches.push({ value: parseInt(match[1], 10), probability: parseFloat(match[2].replace('%', '')) / 100 });
         }
-        // 计算期望值
         const expectation = matches.reduce((total, { value, probability }) => total + (value * probability), 0);
         return Math.floor(expectation);
     }
@@ -162,7 +181,7 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         game.saveConfig('xjb_hunbi', lib.config.xjb_hunbi);
         game.xjb_systemEnergyChange(number * game.xjb_currencyRate.thirdRate);
         if (log || !log) {
-            let logString = `${str}:你因为${log ? log : 'unknown'}失去了${number}个魂币.
+            let logString = `你因为${log ? log : 'unknown'}失去了${number}个魂币.
 `;
             game.xjb_writeHunbiLog(logString);
         }

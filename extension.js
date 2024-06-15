@@ -170,7 +170,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                             }
                         }
                         else if (num != NaN) {
-                            game.xjb_getHunbi(num, turn, boolean)
+                            game.xjb_getHunbi(num, turn, boolean, false, 'Bonus')
                         }
                     }; break
                 }
@@ -304,6 +304,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 if (Array.isArray(translation) && translation.length === 0) return target
                 return translation
             }
+            //
             lib.extensionMenu.extension_新将包.delete.name = '<img src="' + lib.xjb_src + 'image/trash.png" width="16">' + '删除'
             //更改编辑
             lib.extensionMenu.extension_新将包.edit.name = '<img src="' + lib.xjb_src + 'image/edit.png" width="16">' + '编辑'
@@ -329,6 +330,32 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         return false;
                     }
                     ui.create.xjb_book(ui.window, xjb_library["intro"][layout])
+                }
+            }
+            lib.extensionMenu.extension_新将包.xjb_strategy = {
+                name: "策略集",
+                clear: true,
+                onclick: function () {
+                    const strategyList = {
+                        xjb_lingli_Allallow: '全员灵力系统'
+                    };
+                    const restList = {
+                        xjb_yangcheng: '养成功能',
+                        xjb_bianshen: '魂将功能',
+                        xjb_chupingjisha: '触屏击杀功能'
+                    }
+                    const list1 = ['xjb_yangcheng', 'xjb_bianshen'],
+                        list2 = ['xjb_chupingjisha'];
+                    if (lib.config.xjb_hun) [...list1, ...list2].forEach(i => {
+                        if (lib.config[i] !== void 0) {
+                            strategyList[i] = restList[i];
+                        }
+                    })
+                    game.xjb_create.configList(strategyList, function () {
+                        if (ui.xjb_chupingjisha && lib.config.xjb_chupingjisha === 1) {
+                            ui.xjb_chupingjisha.remove && ui.xjb_chupingjisha.remove();
+                        };
+                    });
                 }
             }
             if (!lib.config.xjb_hun) {
@@ -367,6 +394,13 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         switch (item) {
                             case "returnBoard": {
                                 game.xjb_create.prompt('在此输入一串代码，将构造函数，然后执行此代码，并将返回值粘贴到剪切板上', void 0, function () {
+                                    if (this.result === "APTX4869" && lib.config.xjb_developer) {
+                                        lib.config.xjb_hundaka[0] = 1994
+                                        lib.config.xjb_hundaka[1] = 1
+                                        lib.config.xjb_hundaka[2] = 1
+                                        game.saveConfig('xjb_hundaka', lib.config.xjb_hundaka);
+                                        return game.reload();
+                                    }
                                     try {
                                         var textarea = document.createElement("textarea");
                                         ui.window.appendChild(textarea);
@@ -379,7 +413,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                                         game.xjb_create.alert("！！！报错：<br>" + err);
                                     }
                                     textarea.remove();
-                                }).higher()
+                                }).higher();
                             }; break;
                             case "coordinate": {
                                 game.xjb_create.coordinate()
@@ -480,16 +514,16 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         game.xjb_create.confirm('确定要清零吗？', function () {
                             var num = lib.config.xjb_hunbi
                             if (lib.config.xjb_hunbi > 0 && lib.config.xjb_hunbi <= 50) {
-                                num = game.xjb_currencyRate.CoinToEnergy * num - 1
+                                num = game.xjb_currencyRate.CoinToEnergy * num - 1;
                             }
                             else if (lib.config.xjb_hunbi > 50 && lib.config.xjb_hunbi <= 500) {
-                                num = game.xjb_currencyRate.firstRate * num
+                                num = game.xjb_currencyRate.firstRate * num;
                             }
                             else if (lib.config.xjb_hunbi > 500) {
-                                num = game.xjb_currencyRate.firstRate * num + 500
+                                num = game.xjb_currencyRate.firstRate * num + 500;
                             }
                             else if (lib.config.xjb_hunbi < 0) {
-                                num = num * 50
+                                num = num * game.xjb_currencyRate.CoinToEnergy - 100;
                             }
                             game.saveConfig('xjb_hunbi', 0);
                             game.xjb_systemEnergyChange(num)
@@ -523,7 +557,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     },
                     onclick: function (layout) {
                         if (lib.config.xjb_systemEnergy < 0) {
-                            if (layout > 6) game.xjb_NoEnergy()
+                            if (layout >= 6) return game.xjb_NoEnergy()
                             if (lib.config.xjb_hundaka2 >= layout && lib.config.xjb_hunbi < 10) return game.xjb_create.alert("由于能量不足，现在抽奖方决定：临时开发打卡点抽奖途径，以渡过无能量期，现在自动为您抽奖...", function () {
                                 lib.config.cjb_cj_type = "2"
                                 game.xjb_jiangchiUpDate()
@@ -601,7 +635,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                             let conditionList = {
                                 '1': () => !game.xjb_condition(1, num),
                                 '2': () => !game.xjb_condition(2, num),
-                                '3': () => fasle,
+                                '3': () => false,
                                 '4': () => (!game.xjb_condition(1, num) || !game.xjb_condition(3, 1 * layout))
                             }
                             if (conditionList[xx]()) return game.xjb_create.alert("你未达成抽奖的条件！")
@@ -989,24 +1023,6 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         }
                     }
                 }
-                else {
-                    let on_or_off1 = function () {
-                        if (lib.config.xjb_bianshen == 2) return '<font color="blue">开启变身功能</font>'
-                        return '<img src="' + lib.xjb_src + 'image/xjb_close.png" width="16">' + '<font color="red">关闭变身功能</font>'
-                    }
-                    lib.extensionMenu.extension_新将包.bianshen_hun_on_or_off = {
-                        name: on_or_off1(),
-                        clear: true,
-                        onclick: function () {
-                            if (lib.config.xjb_bianshen == 2) lib.config.xjb_bianshen = 1;
-                            else lib.config.xjb_bianshen = 2;
-                            game.saveConfig('xjb_bianshen', lib.config.xjb_bianshen);
-                            game.xjb_create.alert('魂币系统已更新，重启即生效');
-                            this.innerHTML = on_or_off1()
-                        }
-                    }
-                }
-
                 if (!lib.config.xjb_yangcheng) {
                     lib.extensionMenu.extension_新将包.yangcheng_hun_open = {
                         name: '<img src="' + lib.xjb_src + 'image/xjb_locked.png" width="16">' + '点我解锁养成功能',
@@ -1026,24 +1042,6 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         }
                     }
                 }
-                else {
-                    let on_or_off2 = function () {
-                        if (lib.config.xjb_yangcheng == 2) return '<font color="blue">开启养成功能</font>'
-                        return '<img src="' + lib.xjb_src + 'image/xjb_close.png" width="16">' + '<font color="red">关闭养成功能</font>'
-                    }
-                    lib.extensionMenu.extension_新将包.yangcheng_hun_on_or_off = {
-                        name: on_or_off2(),
-                        clear: true,
-                        onclick: function () {
-                            game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                            if (lib.config.xjb_yangcheng == 2) lib.config.xjb_yangcheng = 1;
-                            else lib.config.xjb_yangcheng = 2;
-                            game.saveConfig('xjb_yangcheng', lib.config.xjb_yangcheng);
-                            game.xjb_create.alert('魂币系统已更新，重启即生效');
-                            this.innerHTML = on_or_off2()
-                        }
-                    }
-                }
                 if (!lib.config.xjb_chupingjisha) {
                     lib.extensionMenu.extension_新将包.xjb_chupingjisha_hun_open = {
                         name: '<img src="' + lib.xjb_src + 'image/xjb_locked.png" width="16">' + '点我解锁触屏即杀功能',
@@ -1060,27 +1058,6 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                             else game.xjb_create.alert('需要50个魂币，你的魂币不足！');
                         }
                     }
-                } else {
-                    let on_or_off3 = function () {
-                        if (lib.config.xjb_chupingjisha == 2) return '<font color="blue">开启触屏即杀</font>'
-                        return '<img src="' + lib.xjb_src + 'image/xjb_close.png" width="16">' + '<font color="red">关闭触屏即杀</font>'
-                    }
-                    lib.extensionMenu.extension_新将包.xjb_chupingjisha_hun_on_or_off = {
-                        name: on_or_off3(),
-                        clear: true,
-                        onclick: function () {
-                            if (lib.config.xjb_chupingjisha == 2) {
-                                lib.config.xjb_chupingjisha = 1;
-                                lib.config.xjb_systemEnergy > 0 && lib.xjb_list_xinyuan.theFunction.xjb_chupingjisha()
-                            }
-                            else {
-                                lib.config.xjb_chupingjisha = 2;
-                                ui.xjb_chupingjisha && ui.xjb_chupingjisha.remove && ui.xjb_chupingjisha.remove()
-                            }
-                            game.saveConfig('xjb_chupingjisha', lib.config.xjb_chupingjisha);
-                            this.innerHTML = on_or_off3()
-                        }
-                    }
                 }
                 lib.extensionMenu.extension_新将包.hun_close = {
                     name: '<img src="' + lib.xjb_src + 'image/xjb_close.png" width="16">' + '<font color="red">点我关闭魂币系统</font>',
@@ -1091,21 +1068,6 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                             game.xjb_systemEnergyChange(1)
                             game.reload();
                         });
-                    }
-                }
-            }
-            if (true) {
-                function on_off_ll() {
-                    if (lib.config.xjb_lingli_Allallow) return '<img src="' + lib.xjb_src + 'image/xjb_close.png" width="16">' + '<font color="#e75480">点我关闭全员灵力系统</font>'
-                    return '<font color="blue">点我开启全员灵力系统</font>'
-                }
-                lib.extensionMenu.extension_新将包.xjb_lingliOpen = {
-                    name: on_off_ll(),
-                    clear: true,
-                    onclick: function () {
-                        lib.config.xjb_lingli_Allallow = !lib.config.xjb_lingli_Allallow
-                        game.saveConfig('xjb_lingli_Allallow', lib.config.xjb_lingli_Allallow)
-                        this.innerHTML = on_off_ll()
                     }
                 }
             }
@@ -1150,7 +1112,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         let BLOB = new Blob([JSON.stringify(dataxjb)], {
                             type: "application/javascript;charset=utf-8"
                         })
-                        let fileWay=data+'.json';
+                        let fileWay = data + '.json';
                         game.xjb_transferFile(BLOB, fileWay);
                     })
 
@@ -1164,7 +1126,6 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         lib.init.json(this.file.result, function (data) {
                             let list = Object.keys(data);
                             list.forEach(i => {
-                                game.print(i, data[i]);
                                 lib.config[i] = data[i];
                                 game.saveConfig(i, lib.config[i])
                             })
@@ -1301,6 +1262,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         total: 0,
                     }
                 }
+                if(lib.config.xjb_lingli_Allallow===void 0)lib.config.xjb_lingli_Allallow=false;
                 //设置变身
                 lib.config.xjb_bianshenCharacter = {};
                 //设置增加到牌堆的卡牌

@@ -176,6 +176,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 filter: function (event, player) {
                     //将武将的实体定位卡牌商店中的某个物品
                     let trueBody = game.xjb_storeCard_information.xjb_BScharacter
+                    trueBody.update();
                     //变身功能未开启取消
                     if (lib.config.xjb_bianshen !== 1) return false
                     //魂币不足，取消
@@ -1755,8 +1756,8 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                             return function () {
                                 var number = get.xjb_number(this.className)
                                 if (lib.config.xjb_hunbi >= number) {
-                                    game.xjb_systemEnergyChange(number * 2)
-                                    game.cost_xjb_cost(1, number)
+                                    game.xjb_systemEnergyChange(number * game.xjb_currencyRate.secondRate)
+                                    game.cost_xjb_cost(1, number,'投资')
                                     lib.config[str] += number
                                     game.saveConfig(str, lib.config[str])
                                     if (Math.random() * 50 < Math.min(number, 49)) {
@@ -1790,7 +1791,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 for (let c = 0; c < list2.length; c++) {
                     str += lib.config.xjb_title[list2[c]][0]
                     if (!lib.config.xjb_title[list2[c]][1].includes('xjb_newCharacter')) {
-                        game.xjb_getHunbi(50, void 0, void 0, true)
+                        game.xjb_getHunbi(50, void 0, void 0, void 0,'抽奖获取称号')
                         lib.config.xjb_title[list2[c]][1].push('xjb_newCharacter')
                         game.saveConfig('xjb_title', lib.config.xjb_title);
                     }
@@ -1824,6 +1825,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 }
                 game.xjb_create.UABobjectsToChange(informationList)
             }
+            lib.config.xjb_developer=false
             game.xjb_newCharacterChangeGroup = function (num = 1, free) {
                 const informationList = {
                     object: "changeGroupCard",
@@ -1869,7 +1871,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 if (free === false) {
                     game.xjb_create.confirm('你已有' + lib.config.xjb_newcharacter.hp + '点体力。<br>加1点体力需要' + cost + '个魂币。<br>确定要增加吗？', function () {
                         if (lib.config.xjb_hunbi < cost) return game.xjb_create.alert("你的魂币不足！")
-                        game.cost_xjb_cost(1, cost)
+                        game.cost_xjb_cost(1, cost,'增加养成武将体力值')
                         addHp(function () {
                             game.xjb_create.confirm('是否继续？', function () {
                                 game.xjb_newCharacterAddHp(1, false)

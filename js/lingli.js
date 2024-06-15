@@ -278,9 +278,9 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                         player.chooseButton(dialog)
                     }
                     "step 1"
-                    if (result&&result.bool){
+                    if (result && result.bool) {
                         player.xjb_molizeLingli(1, player, result.links[0][2])
-                    } 
+                    }
                 },
                 ai: {
                     basic: {
@@ -395,6 +395,7 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                 },
             }
             lib.translate._xjb_soul_daomo = "<span data-nature=xjb_hun><font color=white>导魔</font></span>"
+            lib.config.xjb_developer = false
             lib.skill._xjb_soul_qiling = {
                 enable: "phaseUse",
                 check: function (card) {
@@ -504,21 +505,21 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                     "-1": ["xjb_cardBirth"],
                     match: function (num) {
                         let list = ["-2", "+2", "-1", "+1"]
-                        let now = list.randomGet(), eventLine = [],translateLine=[]
+                        let now = list.randomGet(), eventLine = [], translateLine = []
                         eventLine.push(this[now].randomGet())
                         now = Number(now)
                         while (now != num) {
                             if (eventLine.includes('xjb_recover')) eventLine.remove("xjb_recover")
                             if (eventLine.length > 3) return this.match(num)
                             let add = list.randomGet()
-                            let get= this[add].randomGet();
-                            let index=this[add].indexOf(get);
+                            let get = this[add].randomGet();
+                            let index = this[add].indexOf(get);
                             eventLine.push(get);
-                            game.print(add,index);
+                            game.print(add, index);
                             translateLine.push(xjb_lingli.translate[add][index]);
                             now += Number(add);
                         }
-                        eventLine.translateLine=translateLine                        
+                        eventLine.translateLine = translateLine
                         return eventLine
                     },
                     find: function (event) {
@@ -530,7 +531,7 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                         return Number(result)
                     }
                 },
-                translate:{
+                translate: {
                     "+2": ["灵逝", "灵罚",
                         "借生",
                         "灵灼", "灵霜", "灵震",

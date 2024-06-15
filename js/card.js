@@ -305,7 +305,7 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                         let card = game.createCard(result.links[0][2], "", 1)
                         player.gain(card, "draw")
                         card.storage.xjb_allowed = true
-                        game.cost_xjb_cost(1, game.xjb_storeCard_information[result.links[0][2]].content.cost)
+                        game.cost_xjb_cost(1, game.xjb_storeCard_information[result.links[0][2]].content.cost,'在商店中购买')
                         game.xjb_systemEnergyChange(-game.xjb_storeCard_information[result.links[0][2]].content.energyNeed)
 
                     }

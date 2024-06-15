@@ -28,9 +28,16 @@ window.XJB_LOAD_title = function (_status, lib, game, ui, get, ai) {
         },
         Func: function () {
             game.xjb_titleGain = function (player, i) {
+                if (!lib.config.xjb_title[i]) return
+                if (typeof player === 'string') {
+                    game.xjb_titleGain({ name1: player }, i);
+                    return;
+                }
                 if (lib.config.xjb_title[i][1].includes(player.name1)) return
-                game.xjb_getHunbi(50,void 0,true,true)
-                game.xjb_create.alert('恭喜' + get.translation(player.name1) + '解锁了' +
+                if (!player.name1) return;
+                let playerName = get.translation(player.name1)
+                game.xjb_getHunbi(50, void 0, true, true, `${playerName}(${player.name1})解锁称号`)
+                game.xjb_create.alert('恭喜' + playerName + '解锁了' +
                     lib.config.xjb_title[i][0])
                 lib.config.xjb_title[i][1].add(player.name1)
                 game.saveConfig('xjb_title', lib.config.xjb_title);
@@ -60,8 +67,7 @@ window.XJB_LOAD_title = function (_status, lib, game, ui, get, ai) {
                         game.saveConfig('xjb_count', lib.config.xjb_count);
                         game.log(player, 'strongDamage值为' + lib.config.xjb_count[player.name].strongDamage)
                         //一个魂币，不消耗能量，沉默
-                        game.xjb_getHunbi(1,void 0,true,true)
-                        game.log('你的魂币+1')
+                        game.xjb_getHunbi(1, void 0, true, true, `${get.translation(player)}(${player.name1})造成重伤`)
                     }
                     if (!event.nature) return false
                     return true
@@ -127,8 +133,7 @@ window.XJB_LOAD_title = function (_status, lib, game, ui, get, ai) {
                 },
                 content: function () {
                     //一个魂币，不消耗能量，沉默
-                    game.xjb_getHunbi(1,void 0,true,true)
-                    game.log('你的魂币+1')
+                    game.xjb_getHunbi(1, void 0, true, true, `${get.translation(player)}(${player.name1})击杀角色`)
                     //
                     var name = player.name1;
                     if (!lib.config.xjb_count[name]) game.zeroise_xjbCount(player)
@@ -189,105 +194,99 @@ window.XJB_LOAD_title = function (_status, lib, game, ui, get, ai) {
                     ["_farmer", "农民"],
                     ["1", "身份场"],
                     ["2", "斗地主场"],
-                    ["3", "国战场"]]
+                    ["3", "国战场"]
+                ]
                 list.forEach(i => {
                     lib.xjb_list_xinyuan.translate["winRate" + i[0]] = i[1] + "胜率"
                     lib.xjb_list_xinyuan.translate["playedTimes" + i[0]] = i[1] + "场次"
                     lib.xjb_list_xinyuan.translate["win" + i[0]] = i[1] + "胜场"
                 })
             }
-            game.xjb_win = function (player, num, bool) {
-                let name = bool ? player.name1 : player.name2
-                let count = lib.config.xjb_count[name]
-                if (!count) return true
-                if (!count["win" + num]) count["win" + num] = 0
-                count["win" + num]++
-                //
-                Object.keys(_status.xjb_CharacterCount).forEach(function (item) {
-                    if (this[item] >= 5) {
-                        game.xjb_titleGain(player, 14)
+            game.xjb_countCharSave = function () {
+                game.saveConfig("xjb_count", lib.config.xjb_count);
+            };
+            game.xjb_countCharOne = function (playerName) {
+                let count = lib.config.xjb_count[playerName];
+                for (let k in count) {
+                    if (typeof count[k]==='number'&&isNaN(count[k])) count[k] = 0;
+                    if(k.includes('Rate')){
+                        let rateStr=k.replace(/[a-z]*Rate/,'');
+                        game.xjb_countCharWin(playerName,rateStr);
                     }
-                }, _status.xjb_CharacterCount)
-                //江东铁壁称号判定
-                if (["shen_ganning", "re_xusheng"].includes(name)) {
-                    if (num == 1) {
-                        if (count["win" + num] >= 25 && !lib.config.xjb_title[8][1].includes(name)) {
-                            game.xjb_titleGain(player, 8)
-                        }
-                        if (count["win" + num] >= 100 && !lib.config.xjb_title[9][1].includes(name)) {
-                            game.xjb_titleGain(player, 9)
-                        }
-                        if (count["win" + num] >= 250 && !lib.config.xjb_title[9][1].includes(name)) {
-                            game.xjb_titleGain(player, 10)
-                        }
-                    }
-                    if (num === 2) {
-                        if (count["win" + num] >= 25 && !lib.config.xjb_title[8][1].includes(name)) {
-                            game.xjb_titleGain(player, 11)
-                        }
-                        if (count["win" + num] >= 100 && !lib.config.xjb_title[9][1].includes(name)) {
-                            game.xjb_titleGain(player, 12)
-                        }
-                        if (count["win" + num] >= 250 && !lib.config.xjb_title[9][1].includes(name)) {
-                            game.xjb_titleGain(player, 13)
-                        }
-                    }
-                }
-                //
-                if (num == 1) {
-                    if (["zhu", "zhong", "nei", "fan"].includes(player.identity)) {
-                        if (!count["win_" + player.identity]) count["win_" + player.identity] = 0
-                        count["win_" + player.identity]++
-                    }
-                }
-                if (num === 2) {
-                    let iden = player.identity == "zhu" ? "landlord" : "farmer"
-                    if (!count["win_" + iden]) count["win_" + iden] = 0
-                    count["win_" + iden]++
-                }
-                game.xjb_played_timesUp(player, num, bool)
-                return true
+                };
+                return count;
             }
-            game.xjb_played_timesUp = function (player, num, bool) {
-                let name = player.name1
-                if (bool) name = player.name2
-                let count = lib.config.xjb_count[name]
-                if (!count) return
-                if (!count["playedTimes" + num]) count["playedTimes" + num] = 0
-                count["playedTimes" + num]++
-                if (count["win" + num] > count["playedTimes" + num]) count["playedTimes" + num] = count["win" + num]
-                if (true) {
-                    count["winRate" + num] =
-                        ((count["win" + num] * 100) / count["playedTimes" + num]).toFixed(2) + "%"
-                }
-                if (num == 1) {
-                    if (["zhu", "zhong", "nei", "fan"].includes(player.identity)) {
-                        if (!count["playedTimes_" + player.identity]) count["playedTimes_" + player.identity] = 0
-                        count["playedTimes_" + player.identity]++
-                        if (count["playedTimes_" + player.identity] > count["win_" + player.identity]) count["playedTimes_" + player.identity] = count["win_" + player.identity]
-                        count["winRate_" + player.identity] =
-                            ((count["win_" + player.identity] * 100) / count["playedTimes_" + player.identity]).toFixed(2) + "%"
+            game.xjb_countCharAttAdd = function (playerName, att) {
+                let count = game.xjb_countCharOne(playerName)
+                if (!count[att]) count[att] = 0;
+                count[att]++;
+                return count;
+            }
+            game.xjb_countCharRate = function (playerName, rate) {
+                let count = game.xjb_countCharOne(playerName)
+                let rateNum=(count["win" + rate] * 100) / count["playedTimes" + rate]
+                count["winRate" + rate] = rateNum.toFixed(2) + "%";
+                return count;
+            }
+            game.xjb_countCharWin = function (player, num, win) {
+                let list = [
+                    ["zhu", "fan", "zhong", "nei", ...lib.group],
+                    ["zhu", "fan", "zhong", "nei"],
+                    ["landlord", "farmer"],
+                    ["", "", "", "", ...lib.group]
+                ];
+                let index = list[0].indexOf(player.identity);
+                let count = game.xjb_countCharOne(player.name1);
+                if (!count) return;
+                if (index >= 0) {
+                    const identityName = list[num][index];
+                    const wintimes = count['win' + num];
+                    const wintimesI = count['win_' + identityName];
+                    const playedTimes = count['playedTimes' + num];
+                    const playedTimesI = count['playedTimes_' + identityName];
+                    if (wintimes > playedTimes) count['playedTimes' + num] = wintimes;
+                    if (wintimesI > playedTimesI) count['playedTimes_' + identityName] = wintimesI;
+                    if (win) {
+                        game.xjb_countCharAttAdd(player.name, 'win' + num);
+                        game.xjb_countCharAttAdd(player.name, 'win_' + identityName);
                     }
+                    game.xjb_countCharAttAdd(player.name, 'playedTimes' + num);
+                    game.xjb_countCharAttAdd(player.name, 'playedTimes_' + identityName);
                 }
-                if (num === 2) {
-                    let iden = player.identity == "zhu" ? "landlord" : "farmer"
-                    if (!count["playedTimes_" + iden]) count["playedTimes_" + iden] = 0
-                    count["playedTimes_" + iden]++
-                    if (count["playedTimes_" + iden] > count["win_" + iden]) count["playedTimes_" + iden] = count["win_" + iden]
-                    count["winRate_" + iden] =
-                        ((count["win_" + iden] * 100) / count["playedTimes_" + iden]).toFixed(2) + "%"
-                }
-                game.saveConfig("xjb_count", lib.config.xjb_count)
+                game.xjb_countCharOne(player.name);
+                game.xjb_winTitle(player.name, num);
+                game.xjb_countCharSave();
             }
             game.xjb_createWinObserver = function (player, num) {
                 return function wonderfulFrame() {
-                    if (!ui.dialog || !ui.dialog.content || !ui.dialog.content.firstChild) return
-                    let judge = ui.dialog.content.firstChild.innerHTML
-                    judge === "战斗胜利" && game.xjb_win(player, num) && game.xjb_win(player, num, true);
-                    (judge === "战斗失败" || judge === "战斗结束") && game.xjb_played_timesUp(player, num) && game.xjb_played_timesUp(player, num, true)
+                    if (!ui.dialog || !ui.dialog.content || !ui.dialog.content.firstChild) return;
+                    let judge = ui.dialog.content.firstChild.innerHTML;
+                    if (judge === "战斗胜利") {
+                        game.xjb_countCharWin(player, num, true)
+                    }
+                    if (judge === "战斗失败" || judge === "战斗结束") {
+                        game.xjb_countCharWin(player, num)
+                    }
                     cancelAnimationFrame(wonderfulFrame)
                 }
-            }
+            };
+            game.xjb_winTitle = function (playerName, num) {
+                const conditionTitleList = [
+                    [8, 25, 1, () => ["shen_ganning", "re_xusheng"].includes(playerName)],
+                    [9, 100, 1, () => ["shen_ganning", "re_xusheng"].includes(playerName)],
+                    [10, 250, 1, () => ["shen_ganning", "re_xusheng"].includes(playerName)],
+                    [11, 25, 2, () => ["shen_ganning", "re_xusheng"].includes(playerName)],
+                    [12, 100, 2, () => ["shen_ganning", "re_xusheng"].includes(playerName)],
+                    [13, 250, 2, () => ["shen_ganning", "re_xusheng"].includes(playerName)],
+                ]
+                let count = game.xjb_countCharOne(playerName)
+                conditionTitleList.forEach(k => {
+                    let titleNum = k[0], requirement = k[1], filedNum = k[2], callback = k[3];
+                    if (num === filedNum && count["win" + filedNum] >= requirement && !lib.config.xjb_title[titleNum][1].includes(playerName) && callback()) {
+                        game.xjb_titleGain(playerName, titleNum)
+                    }
+                })
+            };
         },
         guozhan: function () {
             if (get.mode() != "guozhan") return

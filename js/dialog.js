@@ -52,10 +52,10 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         //
         div.addElement = function (tag, innerHTML, style) {
             let ele = ui.xjb_addElement({
-                target:div,
-                tag:tag,
-                innerHTML:innerHTML,
-                style:style
+                target: div,
+                tag: tag,
+                innerHTML: innerHTML,
+                style: style
             })
             if (tag == "textarea") {
                 ele.addButton = function (character, text) {
@@ -617,66 +617,76 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         let dialog = game.xjb_create.search("<div style=position:relative;overflow:auto;font-size:24px>点击以下项目可进行设置，解锁需要5魂币。输入关键词后，敲击回车或搜索框失去焦点以进行搜索</div><hr>", func)
         let textarea = dialog.textarea;
         let ul = dialog.ul;
-        dialog.buttons[0].isOpened = []
-        dialog.buttons[0].isClosed = []
-        if (list) {
-            for (let i in list) {
-                var li = document.createElement("li")
-                li.innerHTML = li.innerHTML + list[i]
-                ul.appendChild(li)
-                let span = document.createElement("span")
-                span.update = function () {
-                    switch (lib.config[i]) {
-                        case void 0: span.innerHTML = '【🔐已锁定】'; break;
-                        case 2: {
-                            span.innerHTML = '【🔒已关闭】';
-                            dialog.buttons[0].isOpened.includes(i) && dialog.buttons[0].isOpened.remove(i)
-                            dialog.buttons[0].isClosed.add(i)
-                        }; break;
-                        case 1: {
-                            span.innerHTML = '【🔓已开启】'
-                            dialog.buttons[0].isClosed.includes(i) && dialog.buttons[0].isClosed.remove(i)
-                            dialog.buttons[0].isOpened.add(i)
-                        }; break;
-                    }
+        dialog.buttons[0].isOpened = [];
+        dialog.buttons[0].isClosed = [];
+        if (!list) return dialog;
+        for (let i in list) {
+            var li = ui.xjb_addElement({
+                target: ul,
+                tag: 'li',
+                innerHTML: list[i],
+                style: {
+                    height: "34px",
+                    fontSize: "21px",
+                    width: "97%",
                 }
-                span.update()
-                li.appendChild(span)
-                span.style.float = "right"
-                li.myName = i
-                li.style.height = "34px"
-                li.style.fontSize = "21px"
-                li.style.width = "97%"
-                //设置span的事件
-                li.mySpan = span
-                li.mySpan.myName = li.myName;
-                li.mySpan.myLi = li
-                li.mySpan.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function (e) {
-                    if (lib.config[this.myName] === void 0) {
-                        if (game.xjb_condition(1, 5)) {
-                            game.cost_xjb_cost(1, 5)
-                            lib.config[this.myName] = 1
-
-                        } else {
-                            this.myLi.className = "xjb_animation_shake"
-                            setTimeout(() => {
-                                this.myLi.className = ""
-                            }, 820)
-                        }
-                    } else if (lib.config[this.myName] === 2) {
-                        lib.config[this.myName] = 1
-                    } else if (lib.config[this.myName] == 1) {
-                        lib.config[this.myName] = 2
+            })
+            let span = ui.xjb_addElement({
+                target: li,
+                tag: 'span',
+                style: {
+                    float: 'right'
+                }
+            })
+            span.update = function () {
+                switch (lib.config[i]) {
+                    case void 0: span.innerHTML = '【🔐已锁定】'; break;
+                    case 2: case false: {
+                        span.innerHTML = '【🔒已关闭】';
+                        dialog.buttons[0].isOpened.includes(i) && dialog.buttons[0].isOpened.remove(i)
+                        dialog.buttons[0].isClosed.add(i)
+                    }; break;
+                    case 1: case true: {
+                        span.innerHTML = '【🔓已开启】'
+                        dialog.buttons[0].isClosed.includes(i) && dialog.buttons[0].isClosed.remove(i)
+                        dialog.buttons[0].isOpened.add(i)
+                    }; break;
+                }
+            };
+            span.update();
+            span.myName = i;
+            span.myLi = li
+        };
+        ul.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function (e) {
+            e.preventDefault()
+            if (e.target.tagName !== 'SPAN') return;
+            const _this = e.target;
+            const valueActionList = [
+                () => {
+                    if (game.xjb_condition(1, 5)) {
+                        game.cost_xjb_cost(1, 5)
+                        lib.config[_this.myName] = 1
+                    } else {
+                        _this.myLi.className = "xjb_animation_shake"
+                        setTimeout(() => {
+                            _this.myLi.className = ""
+                        }, 820)
                     }
-                    this.update()
-                    game.saveConfig(this.myName, lib.config[this.myName])
-                })
-            }
-            textarea.index = Array.from(ul.children)
-        }
-        return dialog
+                },
+                () => { lib.config[_this.myName] = 2 },
+                () => { lib.config[_this.myName] = 1 },
+                () => { lib.config[_this.myName] = false },
+                () => { lib.config[_this.myName] = true }
+            ];
+            const index = [void 0, 1, 2, true, false].indexOf(lib.config[_this.myName]);
+            valueActionList[index]();
+            game.saveConfig(_this.myName,lib.config[_this.myName])
+            _this.update();
+            game.saveConfig(_this.myName, lib.config[_this.myName]);
+        })
+        textarea.index = Array.from(ul.children)
+        return dialog;
     }
-
     game.xjb_create.UABobjectsToChange = function ({ object, num, free, list, previousPrice, objectName, changeFunc }) {
         const energyConsume = previousPrice * game.xjb_currencyRate.CoinToEnergy
         if (free === false) {
