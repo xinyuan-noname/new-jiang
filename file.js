@@ -117,13 +117,25 @@ const xjb_FileList = {
     "xjb_yin2.png",
     "xjb_yin3.png"
   ],
-  "sink/Red":[
-
+  "sink/Red": [
+    "小红.png",
+    "小红1.png",
+    "小红2.png",
+    "小红3.png",
+    "红-白.png",
+    "红-祸.png",
+    "红-鬼.png",
+    "红1.png",
+    "红2.png",
+    "红3.png"
   ],
-  "sink/xjb_xuemo":[
-    
+  "sink/xjb_xuemo": [
+    "xuemo1.jpg",
+    "xuemo2.jpg",
+    "xuemo3.jpg",
+    "xuemo4.jpg"
   ]
-}
+};
 
 
 
