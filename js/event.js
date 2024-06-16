@@ -761,7 +761,7 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 let next = game.createEvent('xjb_chooseHEJXS')
                 next.player = this
                 Array.from(arguments).forEach(function (i) {
-                    if (lib._xjb.type(i) === "number") {
+                    if (typeof i === "number") {
                         next.num = i
                     } else if (typeof i === "boolean") {
                         next.forced = i
@@ -936,7 +936,7 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 let next = game.createEvent('xjb_bianshen');
                 next.player = this
                 Array.from(arguments).forEach(function (i) {
-                    if (lib._xjb.type(i) === "object") {
+                    if (typeof i === "object") {
                         i.skill = "skill_X"
                         i.onremove = function (player) {
                             delete player.storage[i.name];
@@ -980,7 +980,7 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                     else if (typeof arguments[i] === 'string') {
                         next.logSkill = arguments[i]
                     }
-                    else if (lib._xjb.type(arguments[i]) === "array") {
+                    else if (arguments[i] instanceof Array) {
                         next.skills = arguments[i]
                     }
                 }
@@ -1023,7 +1023,7 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                     else if (typeof arguments[i] == 'function') {
                         next.ai = arguments[i];
                     }
-                    else if (lib._xjb.type(arguments[i]) === "array") {
+                    else if (arguments[i] instanceof Array) {
                         next.num1 = arguments[i][0]
                         next.num2 = arguments[i][1]
                     }

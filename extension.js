@@ -2,18 +2,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
     return {
         name: "新将包",
         content: function (config, pack) {
-            //新的数据处理函数部分
-            lib._xjb = {
-                type: function (target) {
-                    //该函数用于获取数据类型
-                    var type = Object.prototype.toString.apply(target).slice(8, -1)
-                    var a = type.indexOf("HTML"), b = type.indexOf("Element")
-                    if (a >= 0 && b >= 0) {
-                        type = type.slice(a + 4, b)
-                    }
-                    return type.toLowerCase()
-                }
-            }
+            //新的数据处理函数部分            
             String.prototype.getNumberBefore = function (character) {
                 if (this.indexOf(character) == -1) return []
                 var pList = []
@@ -384,6 +373,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         BinaryLinearEquations: "二元一次",
                         point: "点与向量",
                         vibrante3seconds: "震动三秒",
+                        readFileURL: '读取文件',
                     },
                     visualMenu: function (node) {
                         node.className = 'button controlbutton';
@@ -402,10 +392,12 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                                         return game.reload();
                                     }
                                     try {
-                                        var textarea = document.createElement("textarea");
-                                        ui.window.appendChild(textarea);
                                         let func = new Function("_status", "lib", "game", "ui", "get", "ai", this.result);
-                                        textarea.value = func(_status, lib, game, ui, get, ai)
+                                        var textarea = ui.xjb_addElement({
+                                            target: ui.window,
+                                            tag: 'textarea',
+                                            innerHTML: func(_status, lib, game, ui, get, ai),
+                                        })
                                         textarea.select();
                                         document.execCommand("copy");
                                     }
@@ -475,7 +467,20 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                             case "vibrante3seconds": {
                                 navigator.vibrate ? navigator.vibrate(3000) : game.xjb_systemEnergyChange(5);
                             }; break;
-                        }
+                            case "readFileURL": {
+                                game.xjb_create.file('选择一个文件,我们将获取一个url', 'all', function () {
+                                    let _this = this, dialog = game.xjb_create.alert('')
+                                    var textarea = ui.xjb_addElement({
+                                        target: dialog,
+                                        tag: 'textarea',
+                                        innerHTML: _this.file.result,
+                                    })
+                                    textarea.select();
+                                    document.execCommand("copy");
+
+                                })
+                            }; break;
+                        };
                     }
                 }
                 lib.extensionMenu.extension_新将包.hunbi = {
@@ -1157,7 +1162,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
             //这用于引入文件
             function importFile() {
                 let count = 0;
-                const files = ["event", "lingli", "skills", "card", "project", "rpg", "translate", "dialog", "economy"];
+                const files = ["event", "lingli", "skills", "card", "project", "rpg", "translate", "dialog", "economy", "math"];
                 function loadFiles(fileName) {
                     lib.init.js(lib.xjb_src + "js", fileName, () => {
                         window[`XJB_LOAD_${fileName.toUpperCase()}`](_status, lib, game, ui, get, ai);
@@ -1262,7 +1267,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         total: 0,
                     }
                 }
-                if(lib.config.xjb_lingli_Allallow===void 0)lib.config.xjb_lingli_Allallow=false;
+                if (lib.config.xjb_lingli_Allallow === void 0) lib.config.xjb_lingli_Allallow = false;
                 //设置变身
                 lib.config.xjb_bianshenCharacter = {};
                 //设置增加到牌堆的卡牌
