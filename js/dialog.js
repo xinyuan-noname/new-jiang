@@ -1,6 +1,8 @@
+import {horizontalLine,plumbLine} from './canvas.js'
 window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
     //这是创建对话框
     ui.create.xjb_dialogBase = function () {
+        if (game.xjb_create.baned) return null;
         //这个是对话框
         var div = document.createElement("div")
         div.classList.add("xjb_dialogBase")
@@ -188,7 +190,13 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         return button
     };
     if (!game.xjb_create) game.xjb_create = {}
-
+    //game.xjb_create开关
+    game.xjb_create.ban = function () {
+        return game.xjb_create.baned = true;
+    }
+    game.xjb_create.allow = function () {
+        return game.xjb_create.baned = false;
+    }
     //提醒警告型对话框
     game.xjb_create.alert = function (str = "", func) {
         if (game.xjb_create.baned) return;
@@ -461,12 +469,12 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                 dialog.buttons[0].file = {
                     result: this.result,
                     type: lastnamefortype,
-                    base64:extractBase64FromDataURL(this.result)
+                    base64: extractBase64FromDataURL(this.result)
                 }
                 dialog.buttons[1].file = {
                     result: this.result,
                     type: lastnamefortype,
-                    base64:extractBase64FromDataURL(this.result)
+                    base64: extractBase64FromDataURL(this.result)
                 }
                 if (target.xjb_check) target.xjb_check()
 
@@ -783,10 +791,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
     game.xjb_create.coordinate = async function () {
         let dialog = ui.create.xjb_dialogBase()
         dialog.highest().standardWidth()
-        const canvas = document.createElement("canvas");
-        canvas.height = 500;
-        canvas.width = 500;
-        dialog.appendChild(canvas);
+        const canvas = dialog.addElement("canvas").setHW(500,500);
         const context = canvas.getContext("2d");
         context.font = "16px 楷体"
         context.translate(250, 250)
@@ -807,20 +812,14 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             dialog.style.display = "none"
         })
         canvas.addEventListener('click', function (e) {
-            const coordinateX = (e.offsetX - 250) / (range.value);
+            const coordinateX = (e.offsetX - 250) / (canvas.dataset.scale);
             let coordinateY = -f(coordinateX);
             context.clearRect(-250, 215, 240, 35)
             context.fillText(`y值:${coordinateY.toFixed(4)}`, -250, 230)
             context.fillText(`x值:${coordinateX.toFixed(8)}`, -250, 245)
         })
         function coordinate() {
-            //
-            context.beginPath();
-            context.moveTo(-250, 0);
-            context.lineTo(240, 0);
-            context.closePath();
-            context.stroke();
-            //
+            horizontalLine(context,-250,240,0);
             context.beginPath();
             context.moveTo(250, 0);
             context.lineTo(235, 4);
@@ -829,11 +828,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             context.closePath();
             context.fill();
             //
-            context.beginPath();
-            context.moveTo(0, 250);
-            context.lineTo(0, -240);
-            context.closePath();
-            context.stroke();
+            plumbLine(context,250,-240,0);
             //
             context.beginPath();
             context.moveTo(0, -250);
@@ -868,27 +863,38 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                 else context.lineTo(pX / 20, pY);
             }
             context.stroke();
-        }
-        //     
-        let range = document.createElement("input");
-        range.type = 'range';
-        range.value = 25;
-        range.max = 250;
-        range.min = 1;
-        dialog.appendChild(range);
-        ui.xjb_giveStyle(range, {
-            "width": "100%",
-            "height": "15px",
-            "backgroundColor": "#ddd",
-            "outline": "none"
-        })
+        }   
+        let range = ui.xjb_addElement({
+            target: dialog,
+            tag: 'input',
+            type: 'range',
+            value: 25,
+            max: 250,
+            min: 1,
+            style: {
+                "width": "100%",
+                "height": "15px",
+                "backgroundColor": "#ddd",
+                "outline": "none"
+            }
+        });
         range.addEventListener("change", function () {
-            context.clearRect(-250, -250, 500, 500)
-            coordinate()
-            paint(range.value)
-        })
+            canvas.dataset.scale = range.value;
+            context.clearRect(-250, -250, 500, 500);
+            coordinate();
+            paint(range.value);
+        });
+        canvas.dataset.scale = range.value;
         coordinate()
         paint(25)
         return dialog
+    }
+    //能量不足提醒
+    game.xjb_NoEnergy = function () {
+        game.xjb_create.alert("系统能量不足！<br>请支持刘徽-祖冲之项目为系统供能！")
+    }
+    //系统更新提醒
+    game.xjb_systemUpdate = function () {
+        game.xjb_create.alert('魂币系统已更新，重启即生效');
     }
 }

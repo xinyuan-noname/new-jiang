@@ -36,15 +36,19 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
             });
             //这个用于把xjb_1中的函数赋给角色
             lib.arenaReady.push(function () {
-                for (let k in lib.skill.xjb_1.player) {
-                    lib.element.player[k] = lib.skill.xjb_1.player[k];
+                if (lib.skill.xjb_1) {
+                    for (let k in lib.skill.xjb_1.player) {
+                        lib.element.player[k] = lib.skill.xjb_1.player[k];
+                    }
                 }
             });
             //这个用于设置xjb_2的中的事件
             lib.arenaReady.push(function () {
-                for (let k in lib.skill.xjb_2) {
-                    lib.element.player[k] = lib.skill.xjb_2[k].player;
-                    lib.element.content[k] = lib.skill.xjb_2[k].content;
+                if (lib.skill.xjb_2) {
+                    for (let k in lib.skill.xjb_2) {
+                        lib.element.player[k] = lib.skill.xjb_2[k].player;
+                        lib.element.content[k] = lib.skill.xjb_2[k].content;
+                    }
                 }
             })
             //这个把其他新将包的数据释放出来
@@ -1114,9 +1118,9 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     }).then(data => {
                         let dataxjb = {};
                         lib.xjb_dataGet().forEach(i => { dataxjb[i] = lib.config[i] })
-                        let BLOB = new Blob([JSON.stringify(dataxjb)], {
+                        let BLOB = new Blob([JSON.stringify(dataxjb,null,4)], {
                             type: "application/javascript;charset=utf-8"
-                        })
+                        });
                         let fileWay = data + '.json';
                         game.xjb_transferFile(BLOB, fileWay);
                     })
@@ -1141,7 +1145,8 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     })
                 }
             }
-        }, precontent: function () {
+        },
+        precontent: function () {
             function way() {
                 //新将包路径来源     
                 if (document.body.outerHTML) {
@@ -1159,15 +1164,15 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 }
                 lib.xjb_src = lib.xjb_src || lib.assetURL + "extension/新将包/"
             }
-            //这用于引入文件
             function importFile() {
                 let count = 0;
                 const files = ["event", "lingli", "skills", "card", "project", "rpg", "translate", "dialog", "economy", "math"];
                 function loadFiles(fileName) {
-                    lib.init.js(lib.xjb_src + "js", fileName, () => {
+                    let script = lib.init.js(lib.xjb_src + "js", fileName, () => {
                         window[`XJB_LOAD_${fileName.toUpperCase()}`](_status, lib, game, ui, get, ai);
                         count++;
                     }, (err) => { game.print(err) });
+                    script.type = 'module';
                 }
                 new Promise(res => {
                     //引入css文件    
@@ -1470,12 +1475,21 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     }
                 }
             }
-        }, help: {}, config: {}, package: {
+        },
+        help: {},
+        config: {},
+        package: {
             intro: "<a href=https://gitee.com/xinyuanwm/new-jiang class=xjb_hunTitle>扩展已上传至git！</a>",
             author: "<a href=https://b23.tv/RHn9COW class=xjb_hunTitle>新元noname</a>",
             diskURL: "",
             forumURL: "",
             version: "1.2.0.020224",
-        }, files: { "character": ["xjb_jiaxu.jpg"], "card": ["xin_qixing.png"], "skill": [], "audio": [] }
+        },
+        files: {
+            "character": [],
+            "card": [],
+            "skill": [],
+            "audio": []
+        }
     }
 })

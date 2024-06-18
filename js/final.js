@@ -605,7 +605,6 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                 };
                 xjb_currencyRateProperty()
             }
-
         },
     }
 }

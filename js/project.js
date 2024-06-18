@@ -1,15 +1,16 @@
 window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
-    game.xjb_transferFile = function (BLOB,fileWay,silent) {
+    /*file*/
+    game.xjb_transferFile = function (BLOB, fileWay, silent) {
         var reader = new FileReader()
         reader.readAsDataURL(BLOB, "UTF-8")
         reader.onload = function () {
             var fileTransfer = new FileTransfer();
-            const obj={}
-            if(!silent)obj.Myalert = game.xjb_create.alert("正在导出中...")
+            const obj = {}
+            if (!silent) obj.Myalert = game.xjb_create.alert("正在导出中...")
             fileTransfer.download(this.result, fileWay, function () {
-                if(obj.Myalert)obj.Myalert.innerHTML = "导出成功！"
+                if (obj.Myalert) obj.Myalert.innerHTML = "导出成功！"
             }, function (e) {
-                if(obj.Myalert)obj.Myalert.innerHTML = "导出失败！<br>" + e.code
+                if (obj.Myalert) obj.Myalert.innerHTML = "导出失败！<br>" + e.code
             });
         }
     };
@@ -425,9 +426,11 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 }
                 ui.xjb_giveStyle(ele, { visibility: "visible" })
             }
-            ui.xjb_addElement = function ({ target, tag, innerHTML, style, inherit }) {
+            ui.xjb_addElement = function ({ target, tag, innerHTML, style, className, addclass, ctEvent, src, type,max,min,hideFun, display, inherit }) {
                 let ele = document.createElement(tag);
+                if(tag="canvas") ele.setHW=function(height,width){this.height=height;this.width=width;return this};
                 if (tag == "div") ui.xjb_giveStyle(ele, { display: "block" });
+                if (display) ui.xjb_giveStyle(ele, { display: display });
                 ui.xjb_giveStyle(ele, { position: "relative" });
                 target.appendChild(ele);
                 if (innerHTML) {
@@ -435,6 +438,17 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                     else ele.innerHTML = innerHTML;
                 }
                 if (style) ui.xjb_giveStyle(ele, style);
+                if (className) ele.className = className;
+                if (addclass) ele.classList.add(...addclass);
+                if (ctEvent) ele.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', ctEvent);
+                if (src) ele.setAttribute('src', src);
+                if (type) ele.setAttribute('type', type);
+                if (max) ele.setAttribute('max', max);
+                if (min) ele.setAttribute('min', min);
+                if (hideFun) {
+                    ele.hide = function () { ele.style.display = 'none' };
+                    ele.show = function () { ele.style.display = display == 'none' ? 'block' : display };
+                }
                 if (inherit === true) ele.addElement = function ({ ...arg }) {
                     return ui.xjb_addElement({
                         ...arg,
@@ -721,31 +735,46 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                     game.xjb_back.remove()//若已有game.xjb_back则移除   
                 }
                 //创建back
-                var back = ui.create.div('.interact_back', ui.window)
-                ui.xjb_giveStyle(back, lib.xjb_style.back)
-                game.xjb_back = back//将back设置为game.xjb_back
-                ui.window.appendChild(back);
-                //创建close
-                var close = document.createElement('img');
-                close.style['width'] = '40px'
-                close.setAttribute('src', lib.xjb_src + 'image/xjb_close.png');
-                ui.xjb_giveStyle(close, {
-                    float: "left"
+                var back = ui.xjb_addElement({
+                    target: ui.window,
+                    tag: 'div',
+                    className: 'interact_back',
+                    hideFun: true,
+                    display: 'inline-block',
+                    style: lib.xjb_style.back
                 })
-                close.className = 'close';
+                game.xjb_back = back//将back设置为game.xjb_back
                 //点击close关闭back
                 function closeIt() {
-                    ui.window.removeChild(back);
+                    let modeActionList = {
+                        close: () => { ui.window.removeChild(back); },
+                        hide: () => { back.hide() }
+                    };
+                    const mode = this.dataset.closeMode, func = modeActionList[mode];
+                    if (func) func();
                 }
-                close.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', closeIt)
-                close.closeBack = closeIt
-                back.appendChild(close);
-                //
+                //创建close
+                var close = ui.xjb_addElement({
+                    target: back,
+                    tag: 'img',
+                    className: 'close',
+                    ctEvent: closeIt,
+                    src: lib.xjb_src + 'image/xjb_close.png',
+                    style: {
+                        float: "left",
+                        'width': '40px'
+                    }
+                });
+                close.closeBack = closeIt;
+                close.dataset.closeMode = 'close';
                 if (str) {
-                    var foot = document.createElement("div")
-                    ui.xjb_giveStyle(foot, lib.xjb_style.foot)
-                    foot.innerHTML = "-|" + str + "|-"
-                    back.appendChild(foot);
+                    var foot = ui.xjb_addElement({
+                        target: back,
+                        tag: 'div',
+                        innerHTML: "-|" + str + "|-",
+                        display:'inline-block',
+                        style: lib.xjb_style.foot
+                    });
                     return [back, close, foot]
                 }
                 //
@@ -775,6 +804,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                     'border': '3px solid black',
                 },
                 foot: {
+                    'position':'absolute',
                     "font-size": "20px",
                     "font-family": "楷体",
                     width: "100%",
@@ -814,27 +844,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
         },
     }
     lib.skill.xjb_9 = {
-        dialog: function () {
-            //game.xjb_create开关
-            game.xjb_create.ban = function () {
-                return game.xjb_create.baned = true;
-            }
-            game.xjb_create.allow = function () {
-                return game.xjb_create.baned = false;
-            }
-            //            
-        },
-        usual: function () {
-            //能量不足提醒
-            game.xjb_NoEnergy = function () {
-                game.xjb_create.alert("系统能量不足！<br>请支持刘徽-祖冲之项目为系统供能！")
-            }
-            //系统更新提醒
-            game.xjb_systemUpdate = function () {
-                game.xjb_create.alert('魂币系统已更新，重启即生效');
-            }
-        },
-        title: function () {
+       title: function () {
             //这个函数可以唤出武将介绍，如果填写了id，这为初始武将为角色id
             game.xjb_Intro = function (playerName) {
                 //生成界面
@@ -1435,7 +1445,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                                 var number = get.xjb_number(this.className)
                                 if (lib.config.xjb_hunbi >= number) {
                                     game.xjb_systemEnergyChange(number * game.xjb_currencyRate.secondRate)
-                                    game.cost_xjb_cost(1, number,'投资')
+                                    game.cost_xjb_cost(1, number, '投资')
                                     lib.config[str] += number
                                     game.saveConfig(str, lib.config[str])
                                     if (Math.random() * 50 < Math.min(number, 49)) {
@@ -1469,7 +1479,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 for (let c = 0; c < list2.length; c++) {
                     str += lib.config.xjb_title[list2[c]][0]
                     if (!lib.config.xjb_title[list2[c]][1].includes('xjb_newCharacter')) {
-                        game.xjb_getHunbi(50, void 0, void 0, void 0,'抽奖获取称号')
+                        game.xjb_getHunbi(50, void 0, void 0, void 0, '抽奖获取称号')
                         lib.config.xjb_title[list2[c]][1].push('xjb_newCharacter')
                         game.saveConfig('xjb_title', lib.config.xjb_title);
                     }
@@ -1503,7 +1513,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 }
                 game.xjb_create.UABobjectsToChange(informationList)
             }
-            lib.config.xjb_developer=false
+            lib.config.xjb_developer = false
             game.xjb_newCharacterChangeGroup = function (num = 1, free) {
                 const informationList = {
                     object: "changeGroupCard",
@@ -1549,7 +1559,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 if (free === false) {
                     game.xjb_create.confirm('你已有' + lib.config.xjb_newcharacter.hp + '点体力。<br>加1点体力需要' + cost + '个魂币。<br>确定要增加吗？', function () {
                         if (lib.config.xjb_hunbi < cost) return game.xjb_create.alert("你的魂币不足！")
-                        game.cost_xjb_cost(1, cost,'增加养成武将体力值')
+                        game.cost_xjb_cost(1, cost, '增加养成武将体力值')
                         addHp(function () {
                             game.xjb_create.confirm('是否继续？', function () {
                                 game.xjb_newCharacterAddHp(1, false)

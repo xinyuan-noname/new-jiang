@@ -1,60 +1,4 @@
 window.XJB_LOAD_MATH = function (_status, lib, game, ui, get, ai) {
-    
-    const digits ='0123456789' +
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz' +
-        '+/=' +
-        '<>".?-_|`@#$%^&*();:[]{}~ \\'
-    game.xjb_base92 = {
-        decimalToBase(n, number) {
-            if (typeof number != 'bigint') {
-                n = BigInt(n);
-            }
-            if (!number) number = BigInt(digits.length);
-            if (typeof number != 'bigint') {
-                number = BigInt(number);
-            }
-            if (n < number) {
-                return digits[Number(n)];
-            }
-            let result = '';
-            while (n > 0n) {
-                result = digits[Number(n % number)] + result;
-                n = n / number;
-            }
-            return result;
-        },
-        baseToDecimal(s, number) {
-            if (!number) number = BigInt(digits.length);
-            if (typeof number != 'bigint') {
-                number = BigInt(number);
-            }
-            let sum = 0n;
-            for (let i = 0; i < s.length; i++) {
-                let a = BigInt(s.length - 1 - i)
-                let k = BigInt(digits.indexOf(s[i]))
-                sum += k * (number ** a);
-            }
-            return sum;
-        },
-        decimalToBase65(n) {
-            return this.decimalToBase(n, 65);
-        },
-        base65ToDecimal(s) {
-            return this.baseToDecimal(s, 65)
-        },
-        baseFromTo(base, from, to) {
-            let number = this.baseToDecimal(base, from);
-            return this.decimalToBase(number, to)
-        },
-        chunkBase64(base64, size = 1000) {
-            let chunks = [];
-            for (let i = 0; i < base64.length; i += size) {
-                let str = base64.slice(i, i + size);
-                chunks.push(str);
-            }
-            return chunks;
-        },
-    }
     lib._xjb = {
         usuallyUsedString: {
             Point: `
@@ -374,6 +318,5 @@ window.XJB_LOAD_MATH = function (_status, lib, game, ui, get, ai) {
             alert(err.message)
             return err
         }
-    }
-
+    };
 }
