@@ -10,10 +10,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             '所有角色随机弃置两张牌',
             '你摸一张牌，若游戏轮数小于3那么你再摸一张牌',
             '你选择一名其他角色，所选角色摸两张牌', '你选择一名其他角色，所选角色回复一点体力',
-            '继承releiji\n',"继承xingshang",
+            '继承releiji\n', "继承xingshang",
             '继承jieming\n', '继承niepan\n', '继承xunxun\n',
-            '继承kurou\n',, '继承chengxiang\n', '继承huituo\n', '继承fangzhu\n',
-            '继承yiji\n',"继承luoshen\n"
+            '继承kurou\n', , '继承chengxiang\n', '继承huituo\n', '继承fangzhu\n',
+            '继承yiji\n', "继承luoshen\n"
         ],
         trigger: [
             '你受到伤害后', '你回复体力后',
@@ -439,7 +439,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     "受到伤害": "damage",
                     '失去体力': 'loseHp',
                     '流失体力': 'loseHp',
-                    '失去体力值':"loseHp",
+                    '失去体力值': "loseHp",
                     '失去体力上限': 'loseMaxHp',
                     '增加体力上限': 'gainMaxHp',
                     //
@@ -1294,7 +1294,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         'Math', 'Object', 'Array', 'Date', 'String', 'Number', 'Symbol', 'RegExp',
                         'player', 'target', 'event', 'result', 'trigger', 'card', 'cards', 'targets',
                         'var', 'let', 'const', 'try', 'catch', 'throw', 'if', 'else', 'switch', 'case', 'for', 'while', 'break', 'continue', 'function', 'return', 'new', 'class', 'async'].includes(idFree.value) ||
-                        [...bannedKeyWords, 'やめて', '雅蠛蝶', 'R18', '屌', '婊', '妈逼', '导管', '手冲', '烧鸡', '草泥马', '玛拉戈壁', '爆菊', '齐B短裙', '法克鱿', '丢你老母', '弱智', '装13', '你妹', '浮尸国', '滚粗', '牛魔酬宾'].some(i => idFree.value.indexOf(i) >= 0)
+                        bannedKeyWords.some(i => idFree.value.indexOf(i) >= 0)
                     ) {
                         try {
                             throw ('"' + idFree.value + '"不是合法id');
