@@ -1,4 +1,4 @@
-window["xjb_xyAPI_Directory_扩展名"]={
+window["xjb_xyAPI_Directory_新将包"]={
     "main": [
         "LICENSE",
         "Thumbs.db",
@@ -43,8 +43,7 @@ window["xjb_xyAPI_Directory_扩展名"]={
         "xjb_zhouyu.jpg",
         "xjb_zhugeliang.jpg",
         "xjbhan_caocao.jpg",
-        "xjbhan_xunyu.jpg",
-        "Directory.js"
+        "xjbhan_xunyu.jpg"
     ],
     "audio": [
         "fire1.mp3"
