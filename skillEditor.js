@@ -1,5 +1,6 @@
 window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
     window.XJB_BLANK = "        "
+    //南蛮入侵
     window.XJB_EDITOR_LIST = {
         filter: ['你已受伤', '你未受伤', '你体力不小于3',
             '你本回合使用牌次数大于1'],
