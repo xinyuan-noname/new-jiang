@@ -160,7 +160,7 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
     game.xjb_condition = function (num1, num2) {
         var Uhave
         switch (num1) {
-            case 1: Uhave = lib.config.xjb_hunbi; break;
+            case 1:case 'hunbi': Uhave = lib.config.xjb_hunbi; break;
             case 2: Uhave = lib.config.xjb_hundaka2; break;
             case 3: Uhave = lib.config.xjb_jnc - lib.config.xjb_newcharacter.skill.length;; break;
         }

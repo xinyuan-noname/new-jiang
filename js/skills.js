@@ -1,10 +1,16 @@
 window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
+    /**
+     * 
+     * @param {String} name 技能名
+     * @param {Object} skill 技能对象
+     */
     function SkillCreater(name, skill) {
         lib.skill[name] = { ...skill }
         lib.skill[name].translate = undefined;
         lib.skill[name].description = undefined;
         lib.translate[name] = skill.translate;
         lib.translate[name + "_info"] = skill.description
+        return lib.skill[name];
     };
     lib.skill.xjb_3 = {
         Translate: function () {
@@ -17,7 +23,6 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
             lib.translate.xin_xuming = '续命'
             lib.translate.xjb_bingjue = '冰诀'
             lib.translate._xjb_huobi = "货币"
-            lib.translate.xjb_chupingjisha = "触屏即杀"
             lib.translate.xin_qinnang2_info = '出牌阶段限一次，你可对一名角色使用任意张【桃】，你以此法你每使用一张【桃】，你和其各摸一张牌。'
             lib.translate.lunaticMasochist = "疼痛敏感"
             lib.translate.lunaticMasochist_info = "你弃牌、失去体力、恢复体力、失去体力上限、恢复体力上限、装备装备牌均视为受到伤害。"
@@ -199,9 +204,7 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     }
 
                 },
-            }
-            lib.translate.xjb_redSkill = "幻想乡OL"
-            lib.translate.xjb_redSkill_info = "你拥有习得他人技能的能力"
+            };
             //以下是恩赐    
             lib.skill.xjb_juanqu = {
                 enable: "phaseUse",
@@ -389,7 +392,6 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                 },
             }
             lib.translate.xin_zhuihun = '追魂'
-
             //3.装备延伸技能:武圣
             lib.skill.xin_hlyyd = {
                 mod: {
@@ -489,14 +491,125 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
             }
             lib.translate.xin_shinu = '狮怒'
         },
-        project: function () {
+        Strategy: function () {
             //触屏即杀相应效果
-            lib.skill.xjb_chupingjisha = {
+            SkillCreater(
+                "xjb_updateStrategy", {
                 enable: "phaseUse",
                 content: function () {
                     player.update()
+                },
+                translate: '策略更新'
+            });
+            SkillCreater(
+                "_xjb_skillsNumberLimitation", {
+                trigger: {
+                    player: "phaseBefore"
+                },
+                forced: true,
+                filter(event, player) {
+                    const skills = player.skills.filter(i => {
+                        if (!lib.skill[i]) return false;
+                        if (lib.skill[i].equipSkill) return false;
+                        if (Object.keys(player.tempSkills).includes(i)) return false;
+                        return true;
+                    });
+                    event.skillsLength = skills.length
+                    if (skills.length > 6 && lib.config.xjb_skillsNumberLimitation === 1) return true;
+                },
+                content() {
+                    player.xjb_chooseSkillToCard((trigger.skillsLength - 6));
+                },
+                translate: '技能数限制',
+                description: '回合开始前,若当前回合角色技能数超过6,其选择一项技能并将其转化为技能牌。其重复此流程，直到技能数为6。'
+            })
+            SkillCreater(
+                "_xjb_maxHpLimitation", {
+                trigger: {
+                    player: "phaseBefore"
+                },
+                forced: true,
+                filter(event, player) {
+                    if (player.maxHp > 15 && lib.config.xjb_maxHpLimitation === 1) return true
+                },
+                content() {
+                    player.useSkill('benghuai')
+                },
+                translate: '体力上限限制',
+                description: '回合开始前,若当前回合角色体力上限大于15,其"崩坏(benghuai)"一次。'
+            });
+        },
+        rpg: function () {
+            SkillCreater(
+                'xjb_phaseReplaceGuessNumber', {
+                trigger: {
+                    player: 'phaseBefore'
+                },
+                forced: true,
+                direct: true,
+                content() {
+                    'step 0'
+                    event.level = _status.xjb_level;
+                    if (game.players.length < 4 && game.me.isAlive()) {
+                        game.pause();
+                        const number = _status.xjb_level.xjb_chip * 5
+                        game.xjb_create.alert('恭喜你坚持到了最后!你可以获得奖励' + number + '个魂币', function () {
+                            game.xjb_getHunbi(number, void 0, true, false, '游戏');
+                            game.over(true);
+                        })
+                        event.finish();
+                        game.resume()
+                    };
+                    trigger.cancel();
+                    'step 1'
+                    if (player === game.me) {
+                        game.pause();
+                        game.xjb_create.prompt('输入一个介于' + event.level.min + '到' + event.level.max + '间的一个数', '', function () {
+                            const input = Number(this.result)
+                            if (input > event.level.max || input < event.level.min || Math.floor(input) !== input) {
+                                game.xjb_create.alert('不是有效的数字,请重新输入', function () {
+                                    event.redo();
+                                    game.resume();
+                                });
+                            } else {
+                                event.input = input;
+                                game.resume();
+                            }
+                        }, function () {
+                            event.redo();
+                            game.resume();
+                        })
+                    } else {
+                        game.pause();
+                        setTimeout(function () {
+                            event.input = lib._xjb['randomInt'](_status.xjb_level.min, _status.xjb_level.max)
+                            game.resume();
+                        }, 1000)
+                    };
+                    'step 2'
+                    player.popup(event.input)
+                    game.pause();
+                    setTimeout(function () {
+                        game.resume();
+                    }, 1000)
+                    'step 3'
+                    if (event.input === event.level.guessNumber) {
+                        player.damage(player.hp);
+                        _status.xjb_level.guessNumber = Math.floor(Math.random() * 1000)
+                        _status.xjb_level.min = 0;
+                        _status.xjb_level.max = 999;
+                    } else if (event.input < event.level.guessNumber) {
+                        _status.xjb_level.min = event.input+1;
+                        player.popup('小了')
+                    } else if (event.input > event.level.guessNumber) {
+                        _status.xjb_level.max = event.input-1;
+                        player.popup('大了')
+                    }
                 }
             }
+            )
+        },
+        project: function () {
             //变身标记
             lib.skill._xin_bianshen = {
                 marktext: "变",
@@ -561,7 +674,7 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     //背景原画设置
                     game.xjb_PreBackImage = window.getComputedStyle(ui.background).backgroundImage;
                     //
-                    game.countPlayer(function (current) {
+                    game.players.forEach(function (current) {
                         //灵力设置
                         player.storage.xjb_daomoMax = 1
                         //角色原画设置
@@ -582,8 +695,8 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                         })
                     }
                     //触屏即杀设置
-                    lib.config.xjb_chupingjisha === 1 && lib.config.xjb_systemEnergy > 0 &&
-                        lib.xjb_list_xinyuan.theFunction.xjb_chupingjisha()
+                    game.xjb_cpjsLoad();
+                    game.xjb_cpjsRemove();
                 },
             }
             //判定反转
@@ -940,8 +1053,6 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     },
                     "_priority": 0,
                 },
-
-
                 "xin_bingjie": {
                     trigger: {
                         global: ["phaseZhunbeiBegin"],
@@ -2658,4 +2769,5 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
             }
         })
     })();
+
 }

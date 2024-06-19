@@ -1,9 +1,9 @@
 {
     "xjb_BonusGottenToday": 3,
-    "xjb_bianshen": 1,
+    "xjb_bianshen": 2,
     "xjb_bianshenCharacter": {},
     "xjb_cardAddToPile": {},
-    "xjb_chupingjisha": 1,
+    "xjb_chupingjisha": 2,
     "xjb_count": {
         "ol_sb_jiangwei": {
             "kill": 0,
@@ -95192,10 +95192,10 @@
     "xjb_hundaka": [
         2024,
         6,
-        18,
-        17
+        19,
+        18
     ],
-    "xjb_hundaka2": 10,
+    "xjb_hundaka2": 13,
     "xjb_jnc": 1,
     "xjb_lingli_Allallow": false,
     "xjb_list_hunbilist": {
@@ -95215,20 +95215,20 @@
         },
         "choujiang": {
             "1": {
-                "称号(1个)": "6*100",
-                "体力卡(1张，3点)": "17*100",
-                "体力卡(1张，1点)": "17*100",
-                "体力值(1点)": "14*100",
-                "免费更改势力": "15*100",
-                "免费更改性别": "31*100"
+                "称号(1个)": "7*100",
+                "体力卡(1张，3点)": "18*100",
+                "体力卡(1张，1点)": "18*100",
+                "体力值(1点)": "15*100",
+                "免费更改势力": "16*100",
+                "免费更改性别": "26*100"
             },
             "2": {
-                "135魂币超大礼包": "3*100",
-                "102魂币大礼包": "4*100",
-                "72魂币中礼包": "16*100",
-                "33魂币小礼包": "19*100",
-                "12魂币谢谢惠顾": "25*100",
-                "9魂币欢迎光临": "33*100"
+                "135魂币超大礼包": "4*100",
+                "102魂币大礼包": "5*100",
+                "72魂币中礼包": "17*100",
+                "33魂币小礼包": "20*100",
+                "12魂币谢谢惠顾": "26*100",
+                "9魂币欢迎光临": "28*100"
             },
             "3": {
                 "打卡点数+1": "15*100",
@@ -95245,11 +95245,11 @@
             "4": {
                 "技能槽(1个)": "1*100",
                 "技能(1个)": "4*100",
-                "olxuanfeng": "19*100",
-                "sanshou": "19*100",
-                "jsrgzhaotu": "19*100",
-                "jueman": "19*100",
-                "buqu": "19*100"
+                "skBoss_moying": "19*100",
+                "sbshipo": "19*100",
+                "relianying": "19*100",
+                "jsrglipan": "19*100",
+                "rongbei": "19*100"
             }
         }
     },
@@ -95370,7 +95370,7 @@
     "xjb_skillTag_qzj": 2,
     "xjb_skillTag_shouSkill": 2,
     "xjb_skillTag_suidongSkill": 2,
-    "xjb_systemEnergy": 384,
+    "xjb_systemEnergy": 379,
     "xjb_title": [
         [
             "<img src=https://localhost/extension/新将包/title/xjb_kill1.png height=50px></img>",
@@ -95441,7 +95441,8 @@
             []
         ]
     ],
-    "xjb_yangcheng": 1,
+    "xjb_yangcheng": 2,
     "xjb_Φ": 134,
-    "xjb_π": 1420
+    "xjb_π": 1420,
+    "xjb_cardStore": true
 }

@@ -376,7 +376,6 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                 bookWrite("诸葛亮", ["隆中对", "出师表", "诫子书", "诫外生书"], wonderfulA)
                 bookWrite("嬴政", ["过秦论", "阿房宫赋"], wonderfulA)
                 bookWrite("李白", ['行路难', "蜀道难", "清平调", "梦游天姥吟留别", "将进酒"], wonderfulP)
-                bookWrite("周瑜", ["赤壁怀古"], wonderfulP)
                 bookWrite("芙艾派依", ["魂的货币体系"], ["lingli"])
                 if (1) {
                     let target = lib.config.xjb_count[i].daomo

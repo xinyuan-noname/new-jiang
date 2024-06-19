@@ -35,9 +35,7 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
             "xjb_zeroise": function (name) {
                 name = name || this.name;
                 let player = this;
-                player.additionalSkills.length = 0;
-                player.skills.length = 0;
-                player.hiddenSkills.length = 0;
+                player.xjb_clearSkills()
                 player.init(name);
                 if (lib.character[name]) {
                     player.skills = lib.character[name][3] || [];
@@ -45,6 +43,11 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                     player.group = lib.character[name][1];
                 }
                 player.classList.remove('unseen');
+            },
+            "xjb_clearSkills": function () {
+                const player = this;
+                player.skills.length = 0;
+                player.hiddenSkills.length = 0;
             },
             "xjb_addSkillCard": function (name) {
                 lib.card.xjb_skillCard.cardConstructor(name);
@@ -94,7 +97,7 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 eventLine.forEach(event => {
                     this[event]()
                 })
-                game.log(this,`因灵力转化发生事件：${eventLine.translateLine}`)
+                game.log(this, `因灵力转化发生事件：${eventLine.translateLine}`)
                 return eventLine
             },
             "xjb_fire": function (num) {
@@ -518,7 +521,7 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
             content: function () {
                 "step 0"
                 player.addToExpansion(event.cards, 'gain2').gaintag.add("_xjb_zhenfa");
-                game.log(player,event.cards,'进入阵法区')
+                game.log(player, event.cards, '进入阵法区')
                 "step 1"
                 const zhenfa = player.getExpansions("_xjb_zhenfa");
                 const skillCardLength = zhenfa.filter(i => lib.card[i.name].hasSkill).length;

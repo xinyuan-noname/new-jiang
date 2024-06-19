@@ -207,13 +207,13 @@ window.XJB_LOAD_MATH = function (_status, lib, game, ui, get, ai) {
                 });
             }
         }
-    }
+    };
     //阶乘
     lib._xjb["Math_!"] = function (x) {
         if (x < 0) return
         else if (x == 0) return 1
         return x * this["Math_!"](x - 1)
-    }
+    };
     //兔子数列
     lib._xjb["Math_f"] = function (n) {
         if (n < 1) return
@@ -227,20 +227,20 @@ window.XJB_LOAD_MATH = function (_status, lib, game, ui, get, ai) {
             }
             return x
         }
-    }
+    };
     //算π
     lib._xjb["Math_doPI"] = function (n) {
         var π = Math.PI, cos = Math.cos
         if (n >= 6111123) return π.toFixed(10)
         return (cos((π / 2) - (π / n)) * n).toFixed(10)
-    }
+    };
     //算e
     lib._xjb["Math_doe"] = function (y) {
         var x = 1 + (1 / y)
         if (y > 60028450) return Math.E.toFixed(10)
         /*x^(1+1/x)*/
         return (Math.pow(x, y)).toFixed(10)
-    }
+    };
     //算Φ
     lib._xjb["Math_doΦ"] = function (n) {
         /*斐波拉契数列前后两项之比随项数增大，越来越趋近黄金分割*/
@@ -248,12 +248,12 @@ window.XJB_LOAD_MATH = function (_status, lib, game, ui, get, ai) {
         var b = lib._xjb["Math_f"](n + 1)
         if (n > 25) return 0.6180339887.toFixed(10)
         return (a / b).toFixed(10)
-    }
+    };
     //二次方程
     lib._xjb["Math_2yuan"] = function (a, b, e, c, d, f) {
         if (a * d == b * c) return ["无解", "无解"]
         return [(d * e - b * f) / (a * d - b * c), (a * f - c * e) / (a * d - b * c)]
-    }
+    };
     lib._xjb["Math_2Equal"] = function (str1, str2) {
         var a = str1.getNumberBefore('x'), b = str1.getNumberBefore('y'),
             e = str1.getNumberAfter('=')
@@ -265,7 +265,7 @@ window.XJB_LOAD_MATH = function (_status, lib, game, ui, get, ai) {
         game.print(list)
         var num = this["Math_2yuan"](...list)
         return num
-    }
+    };
     lib._xjb["Math_2Equal1"] = function (str, str2) {
         var result = str.withTogether(str2, function (str1) {
             str1 = str1.toLowerCase()
@@ -304,7 +304,7 @@ window.XJB_LOAD_MATH = function (_status, lib, game, ui, get, ai) {
             return str1
         })
         return this["Math_2Equal"](...result)
-    }
+    };
     //坐标点
     lib._xjb["Math_point"] = function (toDispose) {
         let string = lib._xjb.usuallyUsedString.Math +
@@ -319,4 +319,7 @@ window.XJB_LOAD_MATH = function (_status, lib, game, ui, get, ai) {
             return err
         }
     };
+    lib._xjb['randomInt']=function(min,max){
+        return Math.floor(Math.random()*(max-min)+min)
+    }
 }

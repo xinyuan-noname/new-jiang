@@ -26,7 +26,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
         ],
     }
     window.XJB_PUNC = [" || ", " && ", " + ", " - ", " += ", " -= ", "++", "--", "!", " >= ", " <= ", " == ", " === "]
-    
     lib.xjb_class = {
         player: ['_status.currentPhase', 'target', 'game.me',
             'player', 'trigger.player', 'trigger.source', 'global'],
@@ -52,7 +51,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
         '一名角色': 'global',
         '一个角色': 'global',
         '一位角色': 'global',
-        '一只角色': 'global',
         //
         '触发': 'trigger',
         '触发事件': 'trigger',
@@ -2033,7 +2031,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 return back
             }
             ui.create.system("技能编辑", game.xjb_skillEditor);
-
         },
     }
     for (let k in obj) {

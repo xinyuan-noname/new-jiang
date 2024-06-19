@@ -273,7 +273,7 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
             lib.skill._xjb_cardStore = {
                 enable: ["chooseToUse"],
                 filter: function (event, player) {
-                    if (!lib.config.xjb_hun) return false
+                    if (!lib.config.xjb_hun||!lib.config.xjb_cardStore) return false
                     if (!(player == game.me || player.isUnderControl())) return false
                     if (event.type != 'dying' && event.parent.name != 'phaseUse') return false
                     if (lib.config.xjb_systemEnergy < 0) return false

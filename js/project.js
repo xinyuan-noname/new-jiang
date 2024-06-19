@@ -426,9 +426,9 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 }
                 ui.xjb_giveStyle(ele, { visibility: "visible" })
             }
-            ui.xjb_addElement = function ({ target, tag, innerHTML, style, className, addclass, ctEvent, src, type,max,min,hideFun, display, inherit }) {
+            ui.xjb_addElement = function ({ target, tag, innerHTML, style, className, addclass, ctEvent, src, type, max, min, hideFun, display, inherit }) {
                 let ele = document.createElement(tag);
-                if(tag="canvas") ele.setHW=function(height,width){this.height=height;this.width=width;return this};
+                if (tag = "canvas") ele.setHW = function (height, width) { this.height = height; this.width = width; return this };
                 if (tag == "div") ui.xjb_giveStyle(ele, { display: "block" });
                 if (display) ui.xjb_giveStyle(ele, { display: display });
                 ui.xjb_giveStyle(ele, { position: "relative" });
@@ -772,7 +772,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                         target: back,
                         tag: 'div',
                         innerHTML: "-|" + str + "|-",
-                        display:'inline-block',
+                        display: 'inline-block',
                         style: lib.xjb_style.foot
                     });
                     return [back, close, foot]
@@ -804,7 +804,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                     'border': '3px solid black',
                 },
                 foot: {
-                    'position':'absolute',
+                    'position': 'absolute',
                     "font-size": "20px",
                     "font-family": "楷体",
                     width: "100%",
@@ -844,7 +844,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
         },
     }
     lib.skill.xjb_9 = {
-       title: function () {
+        title: function () {
             //这个函数可以唤出武将介绍，如果填写了id，这为初始武将为角色id
             game.xjb_Intro = function (playerName) {
                 //生成界面
@@ -1464,6 +1464,17 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                     ui.xjb_giveStyle(list[i].theNum, { width: "15%" })
                     list[i].theTime.remove()
                 }
+            }
+        },
+        chupingjisha: function () {
+            game.xjb_cpjsLoad = function () {
+                if (lib.config.xjb_chupingjisha === 1 && lib.config.xjb_systemEnergy > 0) return lib.xjb_list_xinyuan.theFunction.xjb_chupingjisha()
+                return false
+            };
+            game.xjb_cpjsRemove = function () {
+                if (lib.config.xjb_chupingjisha === 2 || lib.config.xjb_systemEnergy < 0) {
+                    ui.xjb_chupingjisha && ui.xjb_chupingjisha.remove && ui.xjb_chupingjisha.remove();
+                };
             }
         }
     }

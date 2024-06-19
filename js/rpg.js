@@ -1,4 +1,7 @@
 window.XJB_LOAD_RPG = function (_status, lib, game, ui, get, ai) {
+    game.xjb_getPlayersWithoutMe = function () {
+        return [...game.players, ...game.dead].filter(i => i !== game.me);
+    }
     //control players
     game.xjb_PlayAddPlayer = function () {
         const allPlayers = [...game.players, ...game.dead];
@@ -7,24 +10,32 @@ window.XJB_LOAD_RPG = function (_status, lib, game, ui, get, ai) {
         player.getId();
         game.players.push(player);
         game.arrangePlayers();
-        ui.arena.setNumber(Math.min(allPlayers.length+1,10))
+        ui.arena.setNumber(Math.min(allPlayers.length + 1, 10))
         return player;
     }
-    game.xjb_PlayAddPlayersTo=function(number){
+    game.xjb_PlayAddPlayersTo = function (number) {
         const allPlayers = [...game.players, ...game.dead];
-        while(allPlayers.length<number){
-            let player=game.xjb_PlayAddPlayer();
-            allPlayers.push(player)
+        while (allPlayers.length < number) {
+            let player = game.xjb_PlayAddPlayer();
+            allPlayers.push(player);
         }
     }
-    game.xjb_PlayAdjustPlayersTo=function(number){
-        if(number<1) return void 0;
-        const allPlayers = [...game.players, ...game.dead].filter(i=>i!==game.me);
-        if(allPlayers.length+1<number)game.xjb_PlayAddPlayersTo(number);
-        while(allPlayers.length+1>number){
+    game.xjb_PlayAdjustPlayersTo = function (number, nameList, identityList) {
+        if (number < 1) return void 0;
+        let allPlayers = game.xjb_getPlayersWithoutMe();
+        if (allPlayers.length + 1 < number) game.xjb_PlayAddPlayersTo(number);
+        while (allPlayers.length + 1 > number) {
             allPlayers.pop().remove();
-        }        
-        ui.arena.setNumber(Math.min(number,10))
+        }
+        ui.arena.setNumber(Math.min(number, 10));
+        allPlayers = game.xjb_getPlayersWithoutMe();
+        if (nameList) allPlayers.forEach((player, i) => {
+            player.init(nameList[i])
+        })
+        if (identityList) allPlayers.forEach((player, i) => {
+            player.identity = identityList[i];
+            player.showIdentity();
+        })
     }
     lib.skill.xjb_8 = {
         leadVitalSkill: function () {
@@ -45,13 +56,15 @@ window.XJB_LOAD_RPG = function (_status, lib, game, ui, get, ai) {
                 content: function () {
                     "step 0"
                     //部分全局技能禁用
-                    ["_xjb_cardStore", "_xjb_soul_qiling", "_xjb_bianshen", "_xjb_soul_daomo"].forEach(skill => {
+                    ["_xjb_cardStore", "_xjb_soul_qiling",
+                    "_xjb_bianshen", "_xjb_soul_daomo",
+                    "_xjb_skillsNumberLimitation", "_xjb_maxHpLimitation"].forEach(skill => {
                         game.removeGlobalSkill(skill)
-                    })
+                    });
                     "step 1"
                     player.chooseButton([
                         "选择你的关卡吧！",
-                        [["教程篇", "读档"], "tdnodes"],
+                        [["教程篇", "游戏", "读档"], "tdnodes"],
                         "教程篇:在这里你将了解一些教程",
                     ], [0, 1], true);
                     "step 2"
@@ -69,15 +82,22 @@ window.XJB_LOAD_RPG = function (_status, lib, game, ui, get, ai) {
                             case "读档": {
                                 player.xjb_readStorage(true);
                             }; break;
+                            case "游戏": {
+                                button = [
+                                    "你要玩什么游戏呢？",
+                                    [["猜数字"], "tdnodes"]
+                                ];
+                                player.chooseButton(true, button, 1);
+                            }; break;
                         }
                     };
                     "step 3"
                     if (result.links) {
                         result.links[0] === "灵力" && game.xjb_bossLoad("Lingli0001", player);
+                        result.links[0] === "猜数字" && game.xjb_bossLoad("guessNumber", player);
                     }
                 }
             }
-
         },
         Start: function () {
             if (lib.config.xjb_yangcheng !== 1 || !lib.config.xjb_hun) return
@@ -131,37 +151,53 @@ window.XJB_LOAD_RPG = function (_status, lib, game, ui, get, ai) {
                         else if (get.itemtype(i) === "player") this.player = i
                     })
                     if (!this.result) this.result = function () { }
+                    if (!this.dialogList) this.dialogList = [];
                 }
                 lead() {
                     game.pause()
-                    let dialogList = this.dialogList
+                    let dialogList = this.dialogList;
                     let dialogU = () => {
                         if (!dialogList.length) {
-                            document.removeEventListener(lib.config.touchscreen ? 'touchend' : 'click', dialogU)
-                            game.resume()
-                            this.result(this.player)
+                            document.removeEventListener(lib.config.touchscreen ? 'touchend' : 'click', dialogU);
+                            game.resume();
+                            this.result(this.player);
                             return;
                         }
-                        let lead = dialogList.shift()
-                        let dialog = ui.create.dialog()
-                        dialog.add(lead)
+                        let lead = dialogList.shift();
+                        let dialog = ui.create.dialog();
+                        dialog.add(lead);
                     }
-                    document.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', dialogU)
+                    document.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', dialogU);
                 }
             }
             class Play {
                 dialog = {}
-                constructor(obj) {
-                    this.dialog.start = obj.start || []
-                    this.dialog.end = obj.end || []
-                    this.information = obj.information || {}
-                    this.gameInit = obj.gameInit || function () { }
-                    this.leadFn = obj.leadFn || function () { }
-                    this.leadList = obj.leadList || []
+                constructor({ start, end, information, gameInit, leadFn, leadList, skillFree, playersLength,globalSkills, playersHook, playerNameList, playerIdentityList }) {
+                    this.dialog.start = start || [];
+                    this.dialog.end = end || [];
+                    this.information = information || {};
+                    this.gameInit = gameInit || function () { };
+                    this.leadFn = leadFn || function () { };
+                    this.leadList = leadList || [];
+                    this.playersLength = playersLength || 8;
+                    this.playerIdentityList = playerIdentityList;
+                    this.playerNameList = playerNameList;
+                    this.skillFree = skillFree || false;
+                    this.playersHook = playersHook || (() => { });
+                    this.globalSkills=globalSkills||[];
                 }
                 init(player) {
                     //设置关卡信息
-                    _status.xjb_level = { ...this.information }
+                    const _this = this;
+                    _status.xjb_level = { ...this.information };
+                    game.xjb_PlayAdjustPlayersTo(this.playersLength, this.playerNameList, this.playerIdentityList);
+                    [...game.xjb_getPlayersWithoutMe(), game.me].forEach(current => {
+                        if (_this.skillFree) current.xjb_clearSkills();
+                        _this.playersHook(current);
+                    })
+                    _this.globalSkills.forEach(skill=>{
+                        game.addGlobalSkill(skill);
+                    });
                     //如果有前置剧情，则处理前置剧情，把登场函数设置为最后的函数
                     if (this.dialog.start.length) {
                         this.dialog.start.map(play => {
@@ -222,6 +258,11 @@ window.XJB_LOAD_RPG = function (_status, lib, game, ui, get, ai) {
                             number: "Lingli0001",
                             Type: "Play",
                         },
+                        playersLength: 5,
+                        playerIdentityList: ['fan', 'fan', 'fan', 'fan'],
+                        playerNameList: ['xin_fellow', "xin_fellow", 'xin_fellow', 'xin_fellow'],
+                        skillFree: true,
+                        playersHook: player => { player.directgain(get.cards(7)) },
                         leadList: [
                             "欢迎来到灵力教程关卡！",
                             "在本关卡中，你将学会如何使用灵力。",
@@ -264,7 +305,7 @@ window.XJB_LOAD_RPG = function (_status, lib, game, ui, get, ai) {
                                 "step 9"
                                 player.chooseControl("导魔").set("prompt", "你现在拥有10点灵力，是灵力最多的角色！魔力无论如何都会打在对方身上，来试试吧！")
                                 "step 10"
-                                player.chooseTarget(true, "选择你要导魔的角色").set("filterTarget", lib.filter.notMe)
+                                player.chooseTarget(true, [1, 1], "选择你要导魔的角色").set("filterTarget", lib.filter.notMe)
                                 "step 11"
                                 game.xjb_getDaomo(player, "blood", 5)
                                 player.xjb_buildBridge(result.targets[0])
@@ -298,11 +339,8 @@ window.XJB_LOAD_RPG = function (_status, lib, game, ui, get, ai) {
                                 "step 19"
                                 player.xjb_addZhenFa(result.cards)
                                 "step 20"
-                                player.chooseControl("啊？", "来吧！").set("prompt", "好了，灵力基本教程就结束了，现在开始战斗吧！")
+                                player.chooseControl("继续").set("prompt", "好了，灵力基本教程就结束了，现在开始战斗吧！")
                                 "step 21"
-                                if (result.control === "来吧！") {
-                                    game.xjb_getDaomo(player, "blood", 10)
-                                }
                                 player.clearSkills()
                                 player.addSkill("_xjb_soul_daomo")
                                 player.addSkill("_xjb_soul_qiling")
@@ -310,16 +348,63 @@ window.XJB_LOAD_RPG = function (_status, lib, game, ui, get, ai) {
                             content.use()
                         },
                         gameInit: function (player) {
-                            game.showIdentity();
-                            game.players.forEach(i => {
-                                i.directgain(get.cards(7))
-                            })
+                            game.me.showIdentity()
                             new DialogLead(this.leadList, this.leadFn, player).lead()
                         },
-                    }),                   
+                    }),
+                    //guessNumber
+                    guessNumber: new Play({
+                        information: {
+                            name: "猜数字",
+                            number: "guessNumber",
+                            Type: "Play",
+                        },
+                        playersLength: 10,
+                        playerIdentityList: ['fan', 'fan', 'fan', 'fan', 'fan', 'fan', 'fan', 'fan', 'fan'],
+                        playerNameList: ['xin_fellow', "xin_fellow", 'xin_fellow', 'xin_fellow', 'xin_fellow', "xin_fellow", 'xin_fellow', 'xin_fellow', 'xin_fellow'],
+                        skillFree: true,
+                        globalSkills:['xjb_phaseReplaceGuessNumber'],
+                        playersHook: current => {
+                            current.maxHp = current.hp = Infinity;
+                            current.update()
+                        },
+                        leadFn: function (player) {
+                            let content = new Content("guessNumber", player, function () {
+                                "step 0"
+                                player.chooseControl('下注','不下注').set('prompt','是否下注');
+                                "step 1"
+                                if(result.control=='下注'){
+                                    const List=['取消']
+                                    if(game.xjb_condition('hunbi',20)) List.push('20');
+                                    if(game.xjb_condition('hunbi',40)) List.push('40');
+                                    if(game.xjb_condition('hunbi',60)) List.push('60');
+                                    if(game.xjb_condition('hunbi',80)) List.push('80');
+                                    if(game.xjb_condition('hunbi',100)) List.push('100');
+                                    player.chooseControl(...List).set('prompt','选择下注的魂币数');
+                                }else{
+                                    event.goto(3)
+                                }
+                                "step 2"
+                                if(result.control=="取消")event.goto(3);
+                                else{
+                                    _status.xjb_level.xjb_chip=Number(result.control);
+                                    game.xjb_costHunbi(_status.xjb_level.xjb_chip,'下注')
+                                }
+                                "step 3"
+                                player.chooseControl('确定').set('prompt','<h5>游戏规则</h5>10人猜测数字,猜中者出局,其余玩家进入下一局,直到场上仅剩3人!');
+                                "step 4"
+                                _status.xjb_level.guessNumber=Math.floor(Math.random()*1000)
+                                _status.xjb_level.min=0;
+                                _status.xjb_level.max=999;
+                            })
+                            content.use()
+                        },
+                        gameInit: function (player) {
+                            new DialogLead(this.leadFn, player).lead()
+                        },
+                    })
                 },
             }
         },
-        "_priority": 0,
     }
 }

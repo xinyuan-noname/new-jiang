@@ -326,28 +326,36 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 }
             }
             lib.extensionMenu.extension_新将包.xjb_strategy = {
-                name: "策略集",
+                name: "💡策略集",
                 clear: true,
                 onclick: function () {
                     const strategyList = {
-                        xjb_lingli_Allallow: '全员灵力系统'
+                        xjb_lingli_Allallow: '全员灵力策略',
+                        xjb_skillsNumberLimitation:'技能数限制策略',
+                        xjb_maxHpLimitation:'体力上限限制策略'
                     };
                     const restList = {
-                        xjb_yangcheng: '养成功能',
-                        xjb_bianshen: '魂将功能',
-                        xjb_chupingjisha: '触屏击杀功能'
+                        xjb_yangcheng: '养成武将策略',
+                        xjb_chupingjisha: '触屏击杀策略',
+                        xjb_cardStore: '魂市策略',
+                        xjb_bianshen: '魂将策略'
                     }
-                    const list1 = ['xjb_yangcheng', 'xjb_bianshen'],
-                        list2 = ['xjb_chupingjisha'];
-                    if (lib.config.xjb_hun) [...list1, ...list2].forEach(i => {
+                    if (lib.config.xjb_hun) Object.keys(restList).forEach(i => {
                         if (lib.config[i] !== void 0) {
                             strategyList[i] = restList[i];
                         }
                     })
                     game.xjb_create.configList(strategyList, function () {
-                        if (ui.xjb_chupingjisha && lib.config.xjb_chupingjisha === 1) {
-                            ui.xjb_chupingjisha.remove && ui.xjb_chupingjisha.remove();
-                        };
+                        game.xjb_cpjsLoad();
+                        game.xjb_cpjsRemove();
+                        if (_status.event.name == 'chooseToUse' && _status.event.player) {
+                            _status.event.result = {
+                                bool: true,
+                                skill: 'xjb_updateStrategy'
+                            };
+                            game.resume();
+                        }
+
                     });
                 }
             }
@@ -1118,7 +1126,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     }).then(data => {
                         let dataxjb = {};
                         lib.xjb_dataGet().forEach(i => { dataxjb[i] = lib.config[i] })
-                        let BLOB = new Blob([JSON.stringify(dataxjb,null,4)], {
+                        let BLOB = new Blob([JSON.stringify(dataxjb, null, 4)], {
                             type: "application/javascript;charset=utf-8"
                         });
                         let fileWay = data + '.json';
@@ -1272,6 +1280,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         total: 0,
                     }
                 }
+                if (lib.config.xjb_cardStore === void 0) lib.config.xjb_cardStore = true;
                 if (lib.config.xjb_lingli_Allallow === void 0) lib.config.xjb_lingli_Allallow = false;
                 //设置变身
                 lib.config.xjb_bianshenCharacter = {};
@@ -1362,18 +1371,24 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     },
                     jiangchi: [],
                     skills: {
-                        red: ["xjb_redSkill", "xjb_redSkill_1", "xjb_redSkill_2"].concat(lib.config.xjb_redSkill.list),
+                        first: ["xjb_juanqu", "xjb_lunhui"],
+                        second: ["xjb_leijue", "xjb_bingjue"],
+                        third: ["xjb_pomie", "xjb_huojue"],
+                        red: []
+                    },
+                    choujiang: {
                     },
                     theStorage: "",
                     theFunction: {
                         xjb_chupingjisha: function () {
                             ui.xjb_chupingjisha && ui.xjb_chupingjisha.remove && ui.xjb_chupingjisha.remove()
                             //"stayleft"可以让该元素保持在左边
-                            ui.xjb_chupingjisha = ui.create.control("触屏即杀", 'stayleft', lib.xjb_list_xinyuan.dom_event.chupingjisha)
+                            const cpjs = ui.xjb_chupingjisha = ui.create.control("触屏即杀", 'stayleft', lib.xjb_list_xinyuan.dom_event.chupingjisha)
+                            return cpjs;
                         }
                     },
                     dom_event: {
-                        chupingjisha: function (e) {
+                        chupingjisha: function () {
                             this.hide()
                             var next = game.createEvent("xjb-chupingjisha")
                             next.player = game.me
@@ -1423,10 +1438,10 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                                 //这个设置是关键的一步，说明本次chooseToUse是发动了技能，以让phaseUse转起来
                                 _status.event.result = {
                                     bool: true,
-                                    skill: 'xjb_chupingjisha'
-                                }
+                                    skill: 'xjb_updateStrategy'
+                                };
                                 //这一步是让触屏击杀事件得以发动
-                                game.resume()
+                                game.resume();
                             }
                         },
                     }
