@@ -350,7 +350,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                                         game.xjb_create.alert('xjb_xyAPI加载成功');
                                         xjb_xyAPI.extensionListAddBasedOnShijianVersionAndroid(
                                             '新将包',
-                                            'https://gitee.com/xinyuanwm/new-jiang/'
+                                            'https://gitee.com/xinyuanwm/new-jiang/raw/master/'
                                         )
                                         xjb_xyAPI.setGameData(lib, game, ui, get, ai, _status) 
                                     }, () => {
@@ -1281,7 +1281,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                                 game.print('xjb_xyAPI加载成功');
                                 xjb_xyAPI.extensionListAddBasedOnShijianVersionAndroid(
                                     '新将包',
-                                    'https://gitee.com/xinyuanwm/new-jiang/'
+                                    'https://gitee.com/xinyuanwm/new-jiang/raw/master/'
                                 );
                                 xjb_xyAPI.setGameData(lib, game, ui, get, ai, _status) 
                             }, () => {
