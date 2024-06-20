@@ -325,14 +325,70 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     ui.create.xjb_book(ui.window, xjb_library["intro"][layout])
                 }
             }
+            lib.extensionMenu.extension_新将包.xjb_download = {
+                name: '\u{1f4e5}更新工具',
+                init: '',
+                item: {
+                    getAPI: '获取工具',
+                    update: '刷新工具',
+                    putout: '输出目录',
+                    download: '下载更新'
+                },
+                visualMenu: function (node) {
+                    node.className = 'button controlbutton';
+                },
+                onclick: function (layout) {
+                    switch (layout) {
+                        case 'getAPI': {
+                            if (window.xjb_xyAPI) {
+                                game.xjb_create.alert('工具已引入,无需重新引入!')
+                                return;
+                            }
+                            game.download('https://gitee.com/xinyuanwm/xy-api/raw/master/xjb_xyAPI.js',
+                                'extension/新将包/xjb_xyAPI.js', () => {
+                                    lib.init.js("https://localhost/extension/新将包", "xjb_xyAPI", load => {
+                                        game.xjb_create.alert('xjb_xyAPI加载成功');
+                                        xjb_xyAPI.extensionListAddBasedOnShijianVersionAndroid(
+                                            '新将包',
+                                            'https://gitee.com/xinyuanwm/new-jiang/'
+                                        )
+                                        xjb_xyAPI.setGameData(lib, game, ui, get, ai, _status) 
+                                    }, () => {
+                                        game.xjb_create.alert('xjb_xyAPI加载失败');
+                                    });
+                                });
+                        }; break;
+                        case 'update': {
+                            xjb_xyAPI.updateServiceTarget('新将包');
+                            game.xjb_create.alert('工具已刷新')
+                        }; break;
+                        case 'putout': {
+                            xjb_xyAPI.directoryDownload();
+                            xjb_xyAPI.directoryDownloadFHook = function () {
+                                game.xjb_create.alert('目录导出失败')
+                            }
+                            xjb_xyAPI.directoryDownloadSHook = function () {
+                                game.xjb_create.alert('目录导出成功')
+                            }
+                        }; break;
+                        case 'download': {
+                            xjb_xyAPI.updateOnline()
+                            game.xjb_create.alert('请耐心等待,直到出现alert提示框!此前请不要关闭无名杀!')
+                            xjb_xyAPI.updateDownloadHook = function (list) {
+                                alert('下载完成,失败的文件' + list)
+                            }
+                        }; break;
+                    }
+                }
+            }
             lib.extensionMenu.extension_新将包.xjb_strategy = {
                 name: "💡策略集",
                 clear: true,
                 onclick: function () {
                     const strategyList = {
                         xjb_lingli_Allallow: '全员灵力策略',
-                        xjb_skillsNumberLimitation:'技能数限制策略',
-                        xjb_maxHpLimitation:'体力上限限制策略'
+                        xjb_skillsNumberLimitation: '技能数限制策略',
+                        xjb_maxHpLimitation: '体力上限限制策略'
                     };
                     const restList = {
                         xjb_yangcheng: '养成武将策略',
@@ -1214,7 +1270,26 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         window.XJB_LOAD_FINAL(_status, lib, game, ui, get, ai)
                     })
                 })
-
+                function loadJS() {
+                    if (window.xjb_xyAPI) {
+                        game.print('xjb_xyAPI已引入,无需重新引入!')
+                        return;
+                    }
+                    game.download('https://gitee.com/xinyuanwm/xy-api/raw/master/xjb_xyAPI.js',
+                        'extension/新将包/xjb_xyAPI.js', () => {
+                            lib.init.js("https://localhost/extension/新将包", "xjb_xyAPI", load => {
+                                game.print('xjb_xyAPI加载成功');
+                                xjb_xyAPI.extensionListAddBasedOnShijianVersionAndroid(
+                                    '新将包',
+                                    'https://gitee.com/xinyuanwm/new-jiang/'
+                                );
+                                xjb_xyAPI.setGameData(lib, game, ui, get, ai, _status) 
+                            }, () => {
+                                game.print('xjb_xyAPI加载失败');
+                            });
+                        });
+                };
+                loadJS()
             }
             function initialize() {
                 if (!lib.config.xjb_fileURL) {

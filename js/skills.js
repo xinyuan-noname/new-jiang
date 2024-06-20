@@ -551,14 +551,13 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     'step 0'
                     event.level = _status.xjb_level;
                     if (game.players.length < 4 && game.me.isAlive()) {
-                        game.pause();
                         const number = _status.xjb_level.xjb_chip * 5
                         game.xjb_create.alert('恭喜你坚持到了最后!你可以获得奖励' + number + '个魂币', function () {
-                            game.xjb_getHunbi(number, void 0, true, false, '游戏');
-                            game.over(true);
+                            if(number)game.xjb_getHunbi(number, void 0, true, false, '游戏');                           
                         })
+                        game.over(true);
                         event.finish();
-                        game.resume()
+                        game.resume();
                     };
                     trigger.cancel();
                     'step 1'
@@ -605,6 +604,16 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                         _status.xjb_level.max = event.input-1;
                         player.popup('大了')
                     }
+                    'step 4'
+                    if (game.players.length < 4 && game.me.isAlive()) {
+                        const number = _status.xjb_level.xjb_chip * 5
+                        game.xjb_create.alert('恭喜你坚持到了最后!你可以获得奖励' + number + '个魂币', function () {
+                            if(number)game.xjb_getHunbi(number, void 0, true, false, '游戏');
+                            game.over(true);
+                        })
+                        event.finish();
+                    };
+                    trigger.cancel();
                 }
             }
             )
