@@ -253,6 +253,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
         '弃置角色牌': 'discardPlayerCard:"he":intoFunction',
         '获得角色手牌': 'gainPlayerCard:"he":intoFunction',
         '弃置角色手牌': 'discardPlayerCard:"he":intoFunction',
+        '将手牌补至': 'drawTo',
+        '手牌补至': 'drawTo',
         //废除事件
         '废除一个武器栏': 'disableEquip:"equip1":intoFunction',
         '废除一个防具栏': 'disableEquip:"equip2":intoFunction',
@@ -300,6 +302,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
         '造成伤害': 'damageSource',
         '造成伤害时': 'damageSource',
         '造成伤害后': 'damageSource',
+        '进入濒死阶段时': 'dying',
+        '进入濒死状态时': 'dying',
+        '脱离濒死状态时': 'dyingAfter',
+        '牌被弃置后': 'loseAfter:discard',
         //
         '摸牌式': '"draw"',
         '从牌堆底': '"bottom"',
@@ -341,6 +347,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
         '小于': ' < ',
         '小于等于': ' <= ',
         '不大于': ' <= ',
+        //数学
+        '随机数': 'Math.random()',
         //计算语句  
         '加': ' + ',
         '减': ' - ',
@@ -396,11 +404,25 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
         //
         "牌堆": "ui.cardPile",
         "弃牌堆": "ui.discardPile",
-        "处理区": "ui.ordering"
+        "处理区": "ui.ordering",
+        '此杀伤害+1': `var id=trigger.target.playerid;
+        var map=trigger.getParent().customArgs;
+        if(typeof map[id].extraDamage!='number'){
+            map[id].extraDamage=0;
+        };
+        map[id].extraDamage++;`
     }
     let obj = {
         //该函数用于生成lib.xjb_translate，用于将中文转为代码
         xjb_translate: function () {
+            function randomNum() {
+                const list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+                for (let i = 0; i < 11; i++) {
+                    for (let a = 10; a > i; a--) {
+                        lib.xjb_translate[`${i}到${a}`] = `new Array(${list.slice(i, a + 1)}).randomGet()`
+                    }
+                }
+            }
             function translateEvent() {
                 let trigger = {
                     //
@@ -632,6 +654,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         "getStat:intoFunction://!?skill://!?" + i
                 })
             };
+            randomNum();
             translateEvent();
             translateVariable();
             translateNumber();
@@ -674,7 +697,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             }
             game.xjb_skillEditor = function () {
                 //
-                const playerCN = new Array("你", "玩家", "目标角色", "当前回合角色", "所选角色", "选择的角色", "所选的角色", "所有角色",)
+                const playerCN = new Array("你", "玩家", "目标角色", "当前回合角色", "所选角色", "选择的角色", "所选的角色", "所有角色", "触发角色")
                 let player = ui.create.player(); player.init('xjb_caocao')
                 let eventModel = {
                     ..._status.event,
@@ -792,6 +815,38 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                             else str += `        if(event.name==='${x}'&&! [${tempStr}].includes(get.${standard}(event.card))) return false;\n`
                         })
                     }
+                    this.skill.filter.forEach((i, k) => {
+                        //如果是空字符，则不处理
+                        if (i === "") return;
+                        //如果含赋值语句或本身就有return，则不添加return
+                        if (i.indexOf("return") >= 0 || i.indexOf("var ") >= 0 || i.indexOf("let ") >= 0 || i.indexOf("const ") >= 0 || i.indexOf(" = ") >= 0 || i.indexOf(" += ") >= 0 || i.indexOf(" -= ") >= 0) {
+                            str += '        ' + i + '\n'
+                        }
+                        else if (i.includes('if(')) {
+                            str += '        ' + i
+                        }
+                        else if (i === ')') {
+                            str += i
+                        }
+                        else if (i === '{') {
+                            str += i + '\n'
+                        }
+                        else if (i === '}') {
+                            str += '        ' + i + '\n'
+                        }
+                        else if (i.slice(-3, -1) === "||" || i.slice(-3, -1) === "&&") {
+                            if (logic == false) str += '        if(! (' + i
+                            else str += '\n        ' + i
+                            logic = true
+                        }
+                        else if (logic === true) {
+                            str += '\n        ' + i + ')) return false;\n'
+                            logic = false
+                        }
+                        else {
+                            str += '        if(! (' + i + ')) return false;\n'
+                        }
+                    });
                     if (this.skill.filter_card.length > 0) filterCardDispose('card', 'name');
                     if (this.skill.filter_suit.length > 0) filterCardDispose('suit', 'suit');
                     if (this.skill.filter_color.length > 0) filterCardDispose('color', 'color')
@@ -816,28 +871,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         } else if (this.skill.uniqueTrigger.includes('player:loseAfter:h')) {
                             str += window.XJB_BLANK + `if(event.name==="gain"&&event.player==player) return false;\n`
                             str += window.XJB_BLANK + `if(!(event.getl(player)&&event.getl(player).hs&&event.getl(player).hs.length>0)) return false;\n`
+                        } else if (this.skill.uniqueTrigger.includes('player:loseAfter:discard')) {
+                            str += window.XJB_BLANK + `if(!(event.type==='discard'&&event.getl(player).cards2.length>0)) return false;\n`
                         }
                     }
-                    this.skill.filter.forEach((i, k) => {
-                        //如果是空字符，则不处理
-                        if (i === "") return;
-                        //如果含赋值语句或本身就有return，则不添加return
-                        if (i.indexOf("return") >= 0 || i.indexOf("var ") >= 0 || i.indexOf("let ") >= 0 || i.indexOf("const ") >= 0 || i.indexOf(" = ") >= 0 || i.indexOf(" += ") >= 0 || i.indexOf(" -= ") >= 0) {
-                            str += '        ' + i + '\n'
-                        }
-                        else if (i.slice(-3, -1) === "||" || i.slice(-3, -1) === "&&") {
-                            if (logic == false) str += '        if(! (' + i
-                            else str += '\n        ' + i
-                            logic = true
-                        }
-                        else if (logic === true) {
-                            str += '\n        ' + i + ')) return false;\n'
-                            logic = false
-                        }
-                        else {
-                            str += '        if(! (' + i + ')) return false;\n'
-                        }
-                    })
                     if (!back.returnIgnore) str += '        return true;\n';
                     str += '    },\n';
                     if (back.skill.kind == 'enable:"phaseUse"' && back.skill.filterTarget && back.skill.filterTarget.length > 0 && back.skill.type.includes('filterTarget')) {
@@ -1351,7 +1388,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 if (true) {
                     let list = ['主公技', '锁定技', '使命技', '限定技', '觉醒技', '转换技'];
                     let list1 = ['zhuSkill', 'forced', 'dutySkill', 'limited',
-                        'juexingji', 'zhuanhuanji']
+                        'juexingji', 'zhuanhuanji', 'charlotte']
                     list.forEach((i, k) => {
                         let it = ui.create.xjb_button(typeFree, i)
                         ui.xjb_giveStyle(it, {
@@ -1413,6 +1450,12 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     this.value = this.value.replace(replaced, replacer)
                     return true
                 }
+                filterFree.ensure = function () {
+                    this.changeWord(/\s\n/g, '\n')
+                    this.changeWord(/\s\s/g, ' ')
+                    this.changeWord(/如果\s?/g, '如果\n')
+                    this.changeWord(/\s?那么\s?/g, '\n那么\n')
+                };
                 filterFree.arrange = function () {
                     let that = this;
                     function update(str) {
@@ -1464,6 +1507,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     that.changeWord(/\s+$/, '')
                 }
                 back.ele.filter.submit = function (e) {
+                    const _this = this
+                    _this.value.indexOf("新如果") >= 0 && _this.changeWord('新如果', '如果那么分支开始\n分支结束') && _this.ensure()
                     //同上同下指令
                     let wonderfulCSTS = (filterFree.value.indexOf("同上") > 0 && filterFree.value.match(/.+\n同上/) && filterFree.value.match(/.+\n同上/)[0]) || ''
                     wonderfulCSTS = wonderfulCSTS.replace(/\n同上/, '')
@@ -1572,7 +1617,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     }
                     newLine()
                     //处理变量词
-                    that.changeWord(/变量/g, " 变量 ")
+                    that.changeWord(/变量/g, "变量 ")
                     that.changeWord(/令为/g, " 令为 ")
                     //处理特殊逻辑符号
                     that.changeWord(/≯/g, '不大于')
@@ -1589,8 +1634,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     });
                     //处理player相关字符
                     playerCN.forEach(i => {
-                        that.changeWord(i + '的', i);
-                        that.changeWord(i, `${i} `);
+                        that.changeWord(new RegExp(i + '的', 'g'), i);
+                        that.changeWord(new RegExp(i, 'g'), `${i} `);
                     });
                     that.changeWord(/体力(?!上限|值)/g, '体力值');
                     ["体力值", "体力上限", "手牌数"].forEach(i => {
@@ -1656,15 +1701,20 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         return disposed;
                     });
                     that.ensure()
+                    game.print(contentFree.value)
                     let ty = contentFree.value.split('\n').map(i => {
                         let nice1 = [], nice2 = [], ie
                         let arrNice = new Array(...playerCN)
+                        //如果为变量则忽略
+                        if (i.includes('变量')) return i;
+                        //遍历每一行,如果角色对象在第一个位置出现,则去掉,并将其加入到第一个个数组
                         arrNice.forEach(ae => {
                             if (i.indexOf(ae) === 0) {
                                 nice1.push(ae)
                                 i = i.replace(ae, '')
                             }
                         })
+                        //没有则不动
                         if (!nice1.length) return i
                         arrNice.forEach(ae => {
                             ie = i.split(ae)
@@ -1680,6 +1730,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         })
                         return nice1.join('') + ' ' + i + ' ' + nice2.join(' ')
                     })
+                    game.print(ty)
                     that.value = ty.join('\n');
                     that.ensure()
                     that.changeWord(/\s+$/, '')
@@ -1869,10 +1920,9 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                             else tri_target.push(a)
                         }
                         else if (i.indexOf("loseAfter") === 0) {
-                            i === "loseAfter" && back.skill.uniqueTrigger.push('player:loseAfter');
-                            i === "loseAfter:h" && back.skill.uniqueTrigger.push('player:loseAfter:h');
-                            tri_global.push("equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter");
-                            tri_player.push("loseAfter");
+                            back.skill.uniqueTrigger.push('player:' + i);
+                            tri_player.push("loseAfter", "loseAsyncAfter");
+                            if (i !== 'loseAfter:discard') tri_global.push("equipAfter", "addJudgeAfter", "gainAfter", "addToExpansionAfter");
                         }
                         else if (i.indexOf("player:") === 0) {
                             a = a.slice(7)

@@ -4,37 +4,10 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
         lib.card[name].translate = undefined;
         lib.card[name].description = undefined;
         lib.translate[name] = card.translate;
-        lib.translate[name + "_info"] = card.description
+        lib.translate[name + "_info"] = card.description;
+        return lib.translate[name]
     };
     lib.skill.xjb_4 = {
-        cardPile: function () {
-            //检测卡牌是否可被添加
-            game.xjb_checkCardCanAdd = function (cardName) {
-                return lib.inpile.includes(cardName)
-            };
-            //
-            game.xjb_cardAddToCardPile = function (card) {
-                let Acard = card
-                if (get.itemtype(card) !== "card") {
-                    Acard = game.createCard2(...card);
-                }
-                let cardPileItems = ui.cardPile.children;
-                let randomIndex = Math.floor(Math.random() * (cardPileItems.length + 1));
-                ui.cardPile.insertBefore(Acard, cardPileItems[randomIndex]);
-            };
-            game.xjb_getCardToAdd = function (step) {
-                const firstList = Object.entries(lib.config.xjb_cardAddToPile).filter(i => i[1] !== "0");
-                if (step == 1) return firstList;
-                const secondList = firstList.map(i => i.join("-"));
-                if (step == 2) return secondList;
-                const thirdList = secondList.map(i => i.split("-"))
-                if (step == 3) return thirdList;
-                const fourthList = thirdList.map(i => [lib.xjb_translate[i[0]].replace(/\"/g, ""), lib.xjb_translate[i[1]].replace(/\"/g, ""), i[2] * 1, i[3] * 1])
-                if (step == 4) return fourthList;
-                const fifthList = fourthList.filter(i => game.xjb_checkCardCanAdd(i[0]));
-                return fifthList;
-            }
-        },
         XJBCard: function () {
             lib.cardPack["xjb_jizhuoyangqing"] = [
                 "xjb_lijingtuzhi",
@@ -211,147 +184,6 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                 })
             }
         },
-        CardStore: function () {
-            game.xjb_storeCard = [
-                "xjb_shenshapo",
-                "xjb_skill_off_card",
-                "xin_zhihuan",
-                "xjb_penglai",
-                "xjb_skillCard",
-                "xjb_tianming_huobi2",
-                "xjb_tianming_huobi1",
-                "xjb_seizeHpCard",
-                "xjb_lingliCheck"
-            ]
-            lib.cardPack["xjb_hunbiStore"] = [...game.xjb_storeCard]
-            lib.translate.xjb_hunbiStore_card_config = "魂市"
-            lib.config.all.cards.push("xjb_hunbiStore");
-            if (!lib.config.cards.includes("xjb_hunbiStore")) lib.config.cards.push("xjb_hunbiStore");
-            function CardCreator(num1=1, num2=1, num3=1, arr1, arr2) {
-                this.content = {
-                    fivePoint: num1,
-                    minCost: num2,
-                    energyNeed: num3,
-                }
-                this.arr1 = arr1
-                this.arr2 = arr2
-                Object.defineProperties(this.content,{
-                    fivePoint: {writable:false},
-                    minCost: {writable:false},
-                    energyNeed: {writable:false},
-                })
-                this.update()
-            }
-            CardCreator.prototype.update = function () {
-                if (lib.config.xjb_systemEnergy < this.content.energyNeed) {
-                    this.content.ok = false
-                } else this.content.ok = true
-                if (lib.config.xjb_systemEnergy < this.content.fivePoint) {
-                    let Num1 = this.content.fivePoint - lib.config.xjb_systemEnergy
-                    this.content.cost = (Math.floor(Num1 / this.arr1[0]) * (this.arr1[1])) + 5
-                } else if (lib.config.xjb_systemEnergy > this.content.fivePoint) {
-                    let Num2 = lib.config.xjb_systemEnergy - this.content.fivePoint
-                    this.content.cost = (-(Math.floor(Num2 / this.arr2[0]) * (this.arr2[1]))) + 5
-                } else {
-                    this.content.cost = 5
-                }
-                this.content.cost=Math.round(this.content.cost*game.xjb_inflationRate())
-                if (this.content.cost < this.content.minCost) this.content.cost = this.content.minCost
-            }
-            game.xjb_storeCard_information = {
-                xjb_skill_off_card: new CardCreator(580, 0, 25, [500, 1], [600, 1]),
-                xin_zhihuan: new CardCreator(150, 1, 43, [5, 1], [8, 1]),
-                xjb_penglai: new CardCreator(1230, 2, 70, [56, 1], [70, 1]),
-                xjb_skillCard: new CardCreator(1460, 2, 75, [56, 1], [100, 1]),
-                xjb_tianming_huobi2: new CardCreator(9842, 0, 500, [24, 1], [26, 1]),
-                xjb_tianming_huobi1: new CardCreator(1142, 0, 70, [84, 1], [96, 1]),
-                xjb_shenshapo: new CardCreator(980, 1, 50, [254, 2], [220, 1]),
-                xjb_seizeHpCard: new CardCreator(3000, 4, 150, [61, 1], [10, 1]),
-                xjb_BScharacter: new CardCreator(10000, 3, 50, [1905, 1], [2300, 1]),
-                xjb_lingliCheck: new CardCreator(23000, 4, 1300, [2500, 1], [1500, 1])
-            }
-            lib.skill._xjb_cardStore = {
-                enable: ["chooseToUse"],
-                filter: function (event, player) {
-                    if (!lib.config.xjb_hun||!lib.config.xjb_cardStore) return false
-                    if (!(player == game.me || player.isUnderControl())) return false
-                    if (event.type != 'dying' && event.parent.name != 'phaseUse') return false
-                    if (lib.config.xjb_systemEnergy < 0) return false
-                    let list = []
-                    game.xjb_storeCard.forEach(function (item, index) {
-                        this[item].update()
-                        if (!this[item].content.ok) return
-                        if (!game.xjb_condition(1, this[item].content.cost)) return;
-                        list.push(["", this[item].content.cost, item])
-                    }, game.xjb_storeCard_information)
-                    if (!list.length) return false
-                    return true
-                },
-                content: function () {
-                    "step 0"
-                    let list = []
-                    game.xjb_storeCard.forEach(function (item, index) {
-                        this[item].update()
-                        if (!this[item].content.ok) return
-                        if (!game.xjb_condition(1, this[item].content.cost)) return;
-                        list.push(["", "<font color=white>" + this[item].content.cost + "魂币", item])
-                    }, game.xjb_storeCard_information)
-                    if (list.length) {
-                        let dialog = ui.create.dialog("新将包魂市", [list, "vcard"])
-                        player.chooseButton(dialog)
-                    }
-                    "step 1"
-                    if (result.bool) {
-                        let card = game.createCard(result.links[0][2], "", 1)
-                        player.gain(card, "draw")
-                        card.storage.xjb_allowed = true
-                        game.cost_xjb_cost(1, game.xjb_storeCard_information[result.links[0][2]].content.cost,'在商店中购买')
-                        game.xjb_systemEnergyChange(-game.xjb_storeCard_information[result.links[0][2]].content.energyNeed)
-
-                    }
-                },
-                ai: {
-                    save: true
-                }
-            }
-            //天赋卡判定原理
-            lib.skill._unique_talent_xjb = {
-                trigger: {
-                    global: "roundStart",
-                },
-                load: [],
-                direct: true,
-                content: function () {
-                    "step 0"
-                    for (var i = 0; i < lib.skill._unique_talent_xjb.load.length; i++) {
-                        lib.skill._unique_talent_xjb.load[i]()
-                    }
-                    player.storage.xjb_unique_talent == undefined && event.finish()
-                    "step 1"
-                    if (player.storage.xjb_unique_talent.length > 0) {
-                        for (var i = 0; i < player.storage.xjb_unique_talent.length; i++) {
-                            if (player.storage.xjb_unique_talent[i][0] == game.roundNumber) {
-                                var skill = player.storage.xjb_unique_talent[i][1]
-                                player.removeSkill(skill)
-                                player.update()
-                            }
-                        }
-                    }
-                }
-            }
-            lib.translate._xjb_cardStore = "魂市"
-            lib.cardType['xjb_unique'] = 0.5
-            lib.cardType['xjb_unique_skill'] = 0.35
-            lib.cardType['xjb_unique_talent'] = 0.4
-            lib.cardType['xjb_unique_reusable'] = 0.45
-            lib.cardType['xjb_unique_money'] = 0.46
-            lib.translate.xjb_unique = '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="32">'
-            lib.translate.xjb_unique_SanSkill = "🐉神圣技能🐉"
-            lib.translate.xjb_unique_talent = "💡天赋卡💡"
-            lib.translate.xjb_unique_money = "💎货币卡💎"
-            lib.translate.xjb_unique_reusable = "♻️循环卡♻️"
-            lib.translate.xjb_skillCard = "技能卡"
-        },
         CardFunction: function () {
             //创建卡牌并返回数组
             game.xjb_cardFactory = function () {
@@ -363,9 +195,229 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                     cards.push(card)
                 }
                 return cards
+            };
+            //检测卡牌是否可被添加
+            game.xjb_checkCardCanAdd = function (cardName) {
+                return lib.inpile.includes(cardName)
+            };
+            //
+            game.xjb_cardAddToCardPile = function (card) {
+                let Acard = card
+                if (get.itemtype(card) !== "card") {
+                    Acard = game.createCard2(...card);
+                }
+                let cardPileItems = ui.cardPile.children;
+                let randomIndex = Math.floor(Math.random() * (cardPileItems.length + 1));
+                ui.cardPile.insertBefore(Acard, cardPileItems[randomIndex]);
+            };
+            //类似迭代器
+            game.xjb_getCardToAdd = function (step) {
+                const firstList = Object.entries(lib.config.xjb_cardAddToPile).filter(i => i[1] !== "0");
+                if (step == 1) return firstList;
+                const secondList = firstList.map(i => i.join("-"));
+                if (step == 2) return secondList;
+                const thirdList = secondList.map(i => i.split("-"))
+                if (step == 3) return thirdList;
+                const fourthList = thirdList.map(i => [lib.xjb_translate[i[0]].replace(/\"/g, ""), lib.xjb_translate[i[1]].replace(/\"/g, ""), i[2] * 1, i[3] * 1])
+                if (step == 4) return fourthList;
+                const fifthList = fourthList.filter(i => game.xjb_checkCardCanAdd(i[0]));
+                return fifthList;
             }
         },
-        CardSkills: function () {
+        storeCard: function () {
+            const xjb_penglai = CardObjectCreater(
+                "xjb_penglai", {
+                type: "xjb_unique",
+                subtype: "xjb_unique_talent",
+                enable: true,
+                filterTarget: function (card, player, target) {
+                    return card.storage.xjb_allowed == true;;
+                },
+                content() {
+                    'step 0'
+                    target.useCard({ name: "jiu" }, target)
+                    target.storage.xjb_card_allow = target.storage.xjb_card_allow || {}
+                    target.storage.xjb_card_allow['xjb_penglai'] = true
+                    target.storage.xjb_unique_talent = target.storage.xjb_unique_talent || []
+                    event.num = [1, 2, 3].randomGet()
+                    player.$skill(event.num + '', 'legend', 'wood');
+                    'step 1'
+                    var list = [[]], num = game.roundNumber + event.num
+                    list[0] = [num, 'xjb_penglai']
+                    target.storage.xjb_unique_talent = [...target.storage.xjb_unique_talent, ...list]
+                    'step 2'
+                    target.addSkillLog('xjb_penglai')
+                    target.update()
+                    'step 3'
+                    target.getStat().card.jiu = 0
+                    target.restoreSkill = function () {
+                        return this;
+                    }
+                    target.awakenSkill = function (skill) {
+                        this.storage[skill] = false
+                        return this;
+                    }
+                    target.enableSkill = function () {
+                        return this;
+                    }
+                    target.disableSkill = function () {
+                        return this;
+                    }
+                },
+                savable: true,
+                selectTarget: 1,
+                modTarget: true,
+                ai: {
+                    order: 8,
+                    basic: {
+                        value: 10,
+                        useful: 10,
+                    },
+                    result: {
+                        target: function (player, target, card, isLink) {
+                            if (target.hasSkill("xjb_penglai")) return 0.5
+                            return 1
+                        },
+                    },
+                },
+                fullskin: true,
+                image: "ext:新将包/xjb_Infinity.png",
+                translate: '蓬莱',
+                description: '出牌阶段及濒死时，对一名角色使用，其:<br>1.使用一张【酒】并将本回合使用过【酒】的次数清零;<br>2.体力值变为无限，持续回合由抽到的数字决定<br>3.失去技能废除及恢复的能力'
+            });
+            const xjb_skill_off_card = CardObjectCreater(
+                "xjb_skill_off_card", {
+                type: "xjb_unique",
+                subtype: "xjb_unique_talent",
+                enable: true,
+                filterTarget: function (card, player, target) {
+                    return card.storage.xjb_allowed == true;;
+                },
+                selectTarget: 1,
+                modTarget: true,
+                content: function () {
+                    "step 0"
+                    if (target.name1.indexOf("subplayer") > -1) {
+                        game.xjb_create.alert("禁止对随从使用此牌！")
+                        event.finish()
+                    }
+                    "step 1"
+                    target.storage.xjb_unique_talent = target.storage.xjb_unique_talent || []
+                    event.num = [1, 2, 3].randomGet()
+                    player.$skill(event.num + '', 'legend', 'wood');
+                    "step 2"
+                    var list = [[]], num = game.roundNumber + event.num
+                    list[0] = [num, 'skill_noskill']
+                    target.storage.xjb_unique_talent = target.storage.xjb_unique_talent.concat(list)
+                    "step 3"
+                    target.addSkill("skill_noskill")
+                    target.turnOver()
+                },
+                fullskin: true,
+                image: "ext:新将包/xjb_jingu.png",
+                translate: '禁锢卡',
+                description: '出牌阶段，你对一名角色使用此牌，其翻面，然后其封印所有技能，持续回合由抽取数字决定。'
+            });
+            const xjb_zhihuan = CardObjectCreater(
+                'xjb_zhihuan', {
+                type: "xjb_unique",
+                subtype: "xjb_unique_reusable",
+                enable: true,
+                selectTarget: 1,
+                modTarget: true,
+                filterTarget: true,
+                modTarget: true,
+                filterTarget(card, player, target) {
+                    return card.storage.xjb_allowed == true;;
+                },
+                content() {
+                    "step 0"
+                    target.chooseToDiscard('he', [1, Infinity], true)
+                    "step 1"
+                    player.draw(result.cards.length)
+                    var num = cards[0].number + 1
+                    if (cards[0].number < 5) {
+                        let gainCard = game.createCard(cards[0].name, cards[0].suit, num)
+                        gainCard.storage.xjb_allowed = true
+                        player.gain(gainCard)
+                    }
+                },
+                fullskin: true,
+                image: "ext:新将包/xjb_zhihuan.png",
+                translate: '置换卡',
+                description: '出牌阶段，你对一名角色使用此牌，其弃置至少一张牌，然后你摸等量张牌。<br><b description=[当卡牌点数大于4时，使用牌结算后就不能再次获得此牌]>最大回收点数:4</b>'
+            });
+            lib.card.xjb_lingliCheck = {
+                type: "xjb_unique",
+                subtype: "xjb_unique_money",
+                enable: true,
+                selectTarget: 1,
+                modTarget: true,
+                filterTarget: function (card, player, target) {
+                    return card.storage.xjb_allowed == true;;
+                },
+                content: function () {
+                    "step 0"
+                    var num = xjb_lingli.area["fanchan"]()
+                    target.xjb_addlingli(14 - cards[0].number).set("lingliSource", "card")
+
+                },
+                fullskin: true,
+                image: "ext:新将包/lingli/check.png",
+                ai: {
+                    order: 2,
+                    basic: {
+                        value: 10,
+                        useful: 10,
+                    },
+                    result: {
+                        target: 1
+                    },
+                },
+            }
+            lib.translate.xjb_lingliCheck = "灵力支票";
+            lib.translate.xjb_lingliCheck_info = "出牌阶段对一名角色使用，其获得灵力。"
+            lib.card.xjb_shenshapo = {
+                ai: {
+                    order: 3,
+                    basic: {
+                        value: 10,
+                        useful: 10,
+                    },
+                    result: {
+                        target: -3,
+                        player: 1,
+                    },
+                },
+                image: "ext:新将包/xjb_shenshapo.png",
+                type: "xjb_unique",
+                subtype: "xjb_unique_reusable",
+                enable: true,
+                selectTarget: 3,
+                multitarget: true,
+                multiline: true,
+                modTarget: true,
+                filterTarget: true,
+                content: function () {
+                    'step 0'
+                    player.useCard({
+                        name: "sha",
+                        nature: "kami"
+                    }, targets)
+                    'step 1'
+                    player.getStat().card.sha = 0
+                    var num = cards[0].number + 1
+                    if (cards[0].number < 2) {
+                        let gainCard = game.createCard(cards[0].name, cards[0].suit, num)
+                        gainCard.storage.xjb_allowed = true
+                        player.gain(gainCard)
+                    }
+
+                },
+                fullskin: true,
+            }
+            lib.translate.xjb_shenshapo_info = "出牌阶段指定三名角色:1.视为对目标使用一张神杀;<br>2.出牌阶段使用过【杀】的次数清零<br><b description=[当卡牌点数大于1时，使用牌结算后就不能再次获得此牌]>最大回收点数:1点</b>"
+            lib.translate.xjb_shenshapo = "神杀破";
             lib.translate.xjb_seizeHpCard = "体力抓取"
             lib.translate.xjb_seizeHpCard_info = "出牌阶段对一名手牌数大于你的其他角色使用:你与其的拼点，若你赢，你获得其一张体力牌<br><b description=[当卡牌点数大于1时，使用牌结算后就不能再次获得此牌]>最大回收点数:1</b>"
             lib.card.xjb_seizeHpCard = {
@@ -378,7 +430,6 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                     if (card.storage.xjb_allowed !== true) return false
                     return target !== player && player.canCompare(target) && target.maxHp != Infinity && player.countCards("h") > target.countCards("h")
                 },
-
                 enable: true,
                 content: function () {
                     "step 0"
@@ -463,227 +514,6 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
             }
             lib.translate.xjb_tianming_huobi1 = "铜币"
             lib.translate.xjb_tianming_huobi1_info = "普通的铜币"
-            //蓬莱卡
-            lib.skill.xjb_penglai = {
-                init: function (player, skill) {
-                    if (!player.storage.xjb_card_allow['xjb_penglai']) return
-                    player.storage[skill] = player.maxHp
-                    game.log(player, '忽闻海外有仙山，上联青云九霄天，下通沟壑九幽界。隐隐云窈窕，我得神皇药。');
-                    player.maxHp = player.hasSkill("xjb_minglou") || Infinity;
-                    player.hp = player.hasSkill("xjb_minglou") || Infinity;
-                },
-                onremove: function (player, skill) {
-                    var maxHp = player.storage[skill] || 3
-                    player.maxHp = maxHp
-                    if (player.storage.xjb_card_allow['xjb_penglai']) {
-                        player.storage.xjb_card_allow['xjb_penglai'] = false
-                    }
-                    const benben = {
-                        disableSkill: lib.element.player.disableSkill,
-                        enableSkill: lib.element.player.enableSkill,
-                        awakenSkill: lib.element.player.awakenSkill,
-                        restoreSkill: lib.element.player.restoreSkill,
-                    }
-                    for (let k in benben) {
-                        player[k] = benben[k]
-                    }
-                },
-            }
-            lib.translate.xjb_penglai = "蓬莱"
-        },
-        soulCard: function () {
-            lib.card.xjb_penglai = {
-                ai: {
-                    order: 8,
-                    basic: {
-                        value: 10,
-                        useful: 10,
-                    },
-                    result: {
-                        target: function (player, target, card, isLink) {
-                            if (target.hasSkill("xjb_penglai")) return 0.5
-                            return 1
-                        },
-                    },
-                },
-                audio: "ext:新将包",
-                type: "xjb_unique",
-                subtype: "xjb_unique_talent",
-                derivation: "",
-                enable: true,
-                filterTarget: function (card, player, target) {
-                    return card.storage.xjb_allowed == true;;
-                },
-                savable: true,
-                selectTarget: 1,
-                modTarget: true,
-                content: function () {
-                    'step 0'
-                    target.useCard({ name: "jiu" }, target)
-                    target.storage.xjb_card_allow = target.storage.xjb_card_allow || {}
-                    target.storage.xjb_card_allow['xjb_penglai'] = true
-                    target.storage.xjb_unique_talent = target.storage.xjb_unique_talent || []
-                    event.num = [1, 2, 3].randomGet()
-                    player.$skill(event.num + '', 'legend', 'wood');
-                    'step 1'
-                    var list = [[]], num = game.roundNumber + event.num
-                    list[0] = [num, 'xjb_penglai']
-                    target.storage.xjb_unique_talent = [...target.storage.xjb_unique_talent, ...list]
-                    'step 2'
-                    target.addSkillLog('xjb_penglai')
-                    target.update()
-                    'step 3'
-                    target.getStat().card.jiu = 0
-                    target.restoreSkill = function () {
-                        return this;
-                    }
-                    target.awakenSkill = function (skill) {
-                        this.storage[skill] = false
-                        return this;
-                    }
-                    target.enableSkill = function () {
-                        return this;
-                    }
-                    target.disableSkill = function () {
-                        return this;
-                    }
-                },
-                fullskin: true,
-                image: "ext:新将包/xjb_Infinity.png",
-            }
-            lib.translate.xjb_penglai_info = "出牌阶段及濒死时，对一名角色使用，其:<br>1.使用一张【酒】并将本回合使用过【酒】的次数清零;<br>2.体力值" +
-                "变为无限，持续回合由抽到的数字决定<br>3.失去技能废除及恢复的能力"
-            lib.card.xjb_skill_off_card = {
-                type: "xjb_unique",
-                subtype: "xjb_unique_talent",
-                enable: true,
-                filterTarget: function (card, player, target) {
-                    return card.storage.xjb_allowed == true;;
-                },
-                selectTarget: 1,
-                modTarget: true,
-                content: function () {
-                    "step 0"
-                    if (target.name1.indexOf("subplayer") > -1) {
-                        game.xjb_create.alert("禁止对随从使用此牌！")
-                        event.finish()
-                    }
-                    "step 1"
-                    target.storage.xjb_unique_talent = target.storage.xjb_unique_talent || []
-                    event.num = [1, 2, 3].randomGet()
-                    player.$skill(event.num + '', 'legend', 'wood');
-                    "step 2"
-                    var list = [[]], num = game.roundNumber + event.num
-                    list[0] = [num, 'skill_noskill']
-                    target.storage.xjb_unique_talent = target.storage.xjb_unique_talent.concat(list)
-                    "step 3"
-                    target.addSkill("skill_noskill")
-                    target.turnOver()
-                },
-                fullskin: true,
-                image: "ext:新将包/xjb_jingu.png"
-            }
-            lib.translate.xjb_skill_off_card_info = "出牌阶段，你对一名角色使用此牌，其翻面，然后其封印所有技能，持续回合由抽取数字决定。"
-            lib.translate.xjb_skill_off_card = "禁锢卡"
-            lib.card.xin_zhihuan = {
-                type: "xjb_unique",
-                subtype: "xjb_unique_reusable",
-                enable: true,
-                selectTarget: 1,
-                modTarget: true,
-                filterTarget: true,
-                modTarget: true,
-                filterTarget: function (card, player, target) {
-                    return card.storage.xjb_allowed == true;;
-                },
-                content: function () {
-                    "step 0"
-                    target.chooseToDiscard('he', [1, Infinity], true)
-                    "step 1"
-                    player.draw(result.cards.length)
-                    var num = cards[0].number + 1
-                    if (cards[0].number < 5) {
-                        let gainCard = game.createCard(cards[0].name, cards[0].suit, num)
-                        gainCard.storage.xjb_allowed = true
-                        player.gain(gainCard)
-                    }
-                },
-                fullskin: true,
-                image: "ext:新将包/xjb_zhihuan.png"
-            }
-            lib.translate.xin_zhihuan_info = "出牌阶段，你对一名角色使用此牌，其弃置至少一张牌，然后你摸等量张牌。<br><b description=[当卡牌点数大于4时，使用牌结算后就不能再次获得此牌]>最大回收点数:4</b>"
-            lib.translate.xin_zhihuan = "置换卡"
-            lib.card.xjb_lingliCheck = {
-                type: "xjb_unique",
-                subtype: "xjb_unique_money",
-                enable: true,
-                selectTarget: 1,
-                modTarget: true,
-                filterTarget: function (card, player, target) {
-                    return card.storage.xjb_allowed == true;;
-                },
-                content: function () {
-                    "step 0"
-                    var num = xjb_lingli.area["fanchan"]()
-                    target.xjb_addlingli(14 - cards[0].number).set("lingliSource", "card")
-
-                },
-                fullskin: true,
-                image: "ext:新将包/lingli/check.png",
-                ai: {
-                    order: 2,
-                    basic: {
-                        value: 10,
-                        useful: 10,
-                    },
-                    result: {
-                        target: 1
-                    },
-                },
-            }
-            lib.translate.xjb_lingliCheck = "灵力支票";
-            lib.translate.xjb_lingliCheck_info = "出牌阶段对一名角色使用，其获得灵力。"
-            lib.card.xjb_shenshapo = {
-                ai: {
-                    order: 3,
-                    basic: {
-                        value: 10,
-                        useful: 10,
-                    },
-                    result: {
-                        target: -3,
-                        player: 1,
-                    },
-                },
-                image: "ext:新将包/xjb_shenshapo.png",
-                type: "xjb_unique",
-                subtype: "xjb_unique_reusable",
-                enable: true,
-                selectTarget: 3,
-                multitarget: true,
-                multiline: true,
-                modTarget: true,
-                filterTarget: true,
-                content: function () {
-                    'step 0'
-                    player.useCard({
-                        name: "sha",
-                        nature: "kami"
-                    }, targets)
-                    'step 1'
-                    player.getStat().card.sha = 0
-                    var num = cards[0].number + 1
-                    if (cards[0].number < 2) {
-                        let gainCard = game.createCard(cards[0].name, cards[0].suit, num)
-                        gainCard.storage.xjb_allowed = true
-                        player.gain(gainCard)
-                    }
-
-                },
-                fullskin: true,
-            }
-            lib.translate.xjb_shenshapo_info = "出牌阶段指定三名角色:1.视为对目标使用一张神杀;<br>2.出牌阶段使用过【杀】的次数清零<br><b description=[当卡牌点数大于1时，使用牌结算后就不能再次获得此牌]>最大回收点数:1点</b>"
-            lib.translate.xjb_shenshapo = "神杀破"
             lib.card.xjb_skillCard = {
                 audio: "ext:新将包",
                 type: "xjb_unique",
@@ -693,17 +523,17 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                 logv: false,
                 selectTarget: 1,
                 modTarget: true,
-                filterTarget: function (card, player, target) {
+                filterTarget(card, player, target) {
                     return card.storage.xjb_allowed == true;;
                 },
-                cardConstructor: function (id, boolean) {
+                cardConstructor(id, boolean) {
                     var it = lib.card[id + "_card"] = {
                         enable: function (event, player) {
                             return false
                         },
                         type: "xjb_unique",
                         subtype: "xjb_unique_talent",
-                        recastable:true,
+                        recastable: true,
                         hasSkill: id,
                         ai: {
                             basic: {
@@ -726,7 +556,7 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                     lib.translate[id + "_card_info"] = "当你持有或武将牌上存在" + get.translation(id) + "时，你视为拥有技能:【" + get.translation(id) + "】<br><ins><i>" + lib.translate[id + "_info"] + "</i></ins>"
 
                 },
-                skillLeadIn: function (id, fatherName) {
+                skillLeadIn(id, fatherName) {
                     if (!fatherName) fatherName = id
                     var skill = game.xjb_EqualizeSkillObject(id + "_card", lib.skill[id])
                     if (skill.init) skill.init = function (player, skill) { player.storage[skill] = false }
@@ -755,11 +585,13 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                     }
                     game.addGlobalSkill(id + "_card")
                 },
-                SanSkill: ['xin_zulong',
+                SanSkill: [
+                    'xin_zulong',
                     'xjb_xinsheng',
                     'lunaticMasochist',
-                    'xjb_sicuan'],
-                content: function () {
+                    'xjb_sicuan'
+                ],
+                content() {
                     'step 0'
                     var list = ['输入id', '神圣技能']
                     player.chooseControl(list)
@@ -803,6 +635,185 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                 image: "ext:新将包/skillCard.png",
             }
             lib.translate.xjb_skillCard_info = "出牌阶段，你可使用此牌，然后选择一项:1.输入id，获得一张对应的技能牌;2.获得一张神圣技能牌。"
+        },
+        CardStore: function () {
+            game.xjb_storeCard = [
+                "xjb_shenshapo",
+                "xjb_skill_off_card",
+                "xjb_zhihuan",
+                "xjb_penglai",
+                "xjb_skillCard",
+                "xjb_tianming_huobi2",
+                "xjb_tianming_huobi1",
+                "xjb_seizeHpCard",
+                "xjb_lingliCheck"
+            ]
+            lib.cardPack["xjb_hunbiStore"] = [...game.xjb_storeCard]
+            lib.translate.xjb_hunbiStore_card_config = "魂市"
+            lib.config.all.cards.push("xjb_hunbiStore");
+            if (!lib.config.cards.includes("xjb_hunbiStore")) lib.config.cards.push("xjb_hunbiStore");
+            class CardCreator {
+                constructor(num1 = 1, num2 = 1, num3 = 1, arr1, arr2) {
+                    this.content = {
+                        fivePoint: num1,
+                        minCost: num2,
+                        energyNeed: num3,
+                    }
+                    this.arr1 = arr1
+                    this.arr2 = arr2
+                }
+                get ok() {
+                    return lib.config.xjb_systemEnergy >= this.content.energyNeed;
+                }
+                get cost() {
+                    this.update();
+                    if (lib.translate[this.cardName]) lib.translate[this.cardName + "_info"] = this.description + "</br>价格:" + this.content.cost;
+                    return this.content.cost;
+                }
+                update() {
+                    if (lib.config.xjb_systemEnergy < this.content.fivePoint) {
+                        let Num1 = this.content.fivePoint - lib.config.xjb_systemEnergy
+                        this.content.cost = (Math.floor(Num1 / this.arr1[0]) * (this.arr1[1])) + 5
+                    } else if (lib.config.xjb_systemEnergy > this.content.fivePoint) {
+                        let Num2 = lib.config.xjb_systemEnergy - this.content.fivePoint
+                        this.content.cost = (-(Math.floor(Num2 / this.arr2[0]) * (this.arr2[1]))) + 5
+                    } else {
+                        this.content.cost = 5
+                    }
+                    this.content.cost = Math.round(this.content.cost * game.xjb_inflationRate())
+                    if (this.content.cost < this.content.minCost) this.content.cost = this.content.minCost
+                }
+                setName(cardName) {
+                    this.cardName = cardName
+                    this.description = lib.translate[cardName + "_info"]
+                    return this
+                }
+            }
+            game.xjb_storeCard_information = {
+                xjb_skill_off_card: new CardCreator(580, 0, 25, [500, 1], [600, 1]).setName("xjb_skill_off_card"),
+                xjb_zhihuan: new CardCreator(150, 1, 43, [5, 1], [8, 1]).setName("xjb_zhihuan"),
+                xjb_penglai: new CardCreator(1230, 2, 70, [56, 1], [70, 1]).setName("xjb_penglai"),
+                xjb_skillCard: new CardCreator(1460, 2, 75, [56, 1], [100, 1]).setName("xjb_skillCard"),
+                xjb_tianming_huobi2: new CardCreator(9842, 0, 500, [24, 1], [26, 1]).setName("xjb_tianming_huobi2"),
+                xjb_tianming_huobi1: new CardCreator(1142, 0, 70, [84, 1], [96, 1]).setName("xjb_tianming_huobi1"),
+                xjb_shenshapo: new CardCreator(980, 1, 50, [254, 2], [220, 1]).setName("xjb_shenshapo"),
+                xjb_seizeHpCard: new CardCreator(3000, 4, 150, [61, 1], [10, 1]).setName("xjb_seizeHpCard"),
+                xjb_BScharacter: new CardCreator(10000, 3, 50, [1905, 1], [2300, 1]),
+                xjb_lingliCheck: new CardCreator(23000, 4, 1300, [2500, 1], [1500, 1]).setName("xjb_lingliCheck")
+            }
+            lib.skill._xjb_cardStore = {
+                enable: ["chooseToUse"],
+                filter: function (event, player) {
+                    if (!lib.config.xjb_hun || !lib.config.xjb_cardStore) return false
+                    if (!(player == game.me || player.isUnderControl())) return false
+                    if (event.type != 'dying' && event.parent.name != 'phaseUse') return false
+                    if (lib.config.xjb_systemEnergy < 0) return false
+                    let list = []
+                    game.xjb_storeCard.forEach(function (item, index) {
+                        const _this = game.xjb_storeCard_information[item];
+                        if (!_this) return;
+                        if (!_this.cost||!_this.ok) return;
+                        if (!game.xjb_condition(1, _this.cost)) return;
+                        list.push(item);
+                    })
+                    if (!list.length) return false
+                    return true
+                },
+                content: function () {
+                    "step 0"
+                    let list = []
+                    game.xjb_storeCard.forEach(function (item, index) {
+                        const _this = game.xjb_storeCard_information[item];
+                        if (!_this) return;
+                        if (!_this.cost||!_this.ok) return;
+                        if (!game.xjb_condition(1, _this.cost)) return;
+                        list.push(["", "<font color=white>" + _this.cost + "魂币", item])
+                    })
+                    if (list.length) {
+                        let dialog = ui.create.dialog("新将包魂市", [list, "vcard"])
+                        player.chooseButton(dialog)
+                    }
+                    "step 1"
+                    if (result.bool) {
+                        const cardName = result.links[0][2];
+                        const information = game.xjb_storeCard_information[cardName];
+                        let card = game.createCard(cardName, "", 1)
+                        player.gain(card, "draw")
+                        card.storage.xjb_allowed = true;
+                        card.dataset.cost = information.cost;
+                        game.cost_xjb_cost(1, information.cost, '在商店中购买');
+                        game.xjb_systemEnergyChange(-information.content.energyNeed);
+                    }
+                },
+                ai: {
+                    save: true
+                }
+            }
+            //天赋卡判定原理
+            lib.skill._unique_talent_xjb = {
+                trigger: {
+                    global: "roundStart",
+                },
+                load: [],
+                direct: true,
+                content: function () {
+                    "step 0"
+                    for (var i = 0; i < lib.skill._unique_talent_xjb.load.length; i++) {
+                        lib.skill._unique_talent_xjb.load[i]()
+                    }
+                    player.storage.xjb_unique_talent == undefined && event.finish()
+                    "step 1"
+                    if (player.storage.xjb_unique_talent.length > 0) {
+                        for (var i = 0; i < player.storage.xjb_unique_talent.length; i++) {
+                            if (player.storage.xjb_unique_talent[i][0] == game.roundNumber) {
+                                var skill = player.storage.xjb_unique_talent[i][1]
+                                player.removeSkill(skill)
+                                player.update()
+                            }
+                        }
+                    }
+                }
+            }
+            lib.translate._xjb_cardStore = "魂市"
+            lib.cardType['xjb_unique'] = 0.5
+            lib.cardType['xjb_unique_skill'] = 0.35
+            lib.cardType['xjb_unique_talent'] = 0.4
+            lib.cardType['xjb_unique_reusable'] = 0.45
+            lib.cardType['xjb_unique_money'] = 0.46
+            lib.translate.xjb_unique = '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="32">'
+            lib.translate.xjb_unique_SanSkill = "🐉神圣技能🐉"
+            lib.translate.xjb_unique_talent = "💡天赋卡💡"
+            lib.translate.xjb_unique_money = "💎货币卡💎"
+            lib.translate.xjb_unique_reusable = "♻️循环卡♻️"
+            lib.translate.xjb_skillCard = "技能卡"
+        },
+        CardSkills: function () {
+            //蓬莱卡
+            lib.skill.xjb_penglai = {
+                init: function (player, skill) {
+                    if (!player.storage.xjb_card_allow['xjb_penglai']) return
+                    player.storage[skill] = player.maxHp
+                    game.log(player, '忽闻海外有仙山，上联青云九霄天，下通沟壑九幽界。隐隐云窈窕，我得神皇药。');
+                    player.maxHp = player.hasSkill("xjb_minglou") || Infinity;
+                    player.hp = player.hasSkill("xjb_minglou") || Infinity;
+                },
+                onremove: function (player, skill) {
+                    var maxHp = player.storage[skill] || 3
+                    player.maxHp = maxHp
+                    if (player.storage.xjb_card_allow['xjb_penglai']) {
+                        player.storage.xjb_card_allow['xjb_penglai'] = false
+                    }
+                    const benben = {
+                        disableSkill: lib.element.player.disableSkill,
+                        enableSkill: lib.element.player.enableSkill,
+                        awakenSkill: lib.element.player.awakenSkill,
+                        restoreSkill: lib.element.player.restoreSkill,
+                    }
+                    for (let k in benben) {
+                        player[k] = benben[k]
+                    }
+                },
+            }
         },
         equip: function () {
             let cards = {
