@@ -1,4 +1,4 @@
-import {horizontalLine,plumbLine} from './canvas.js'
+import { horizontalLine, plumbLine } from './canvas.js'
 window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
     //这是创建对话框
     ui.create.xjb_dialogBase = function () {
@@ -791,7 +791,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
     game.xjb_create.coordinate = async function () {
         let dialog = ui.create.xjb_dialogBase()
         dialog.highest().standardWidth()
-        const canvas = dialog.addElement("canvas").setHW(500,500);
+        const canvas = dialog.addElement("canvas").setHW(500, 500);
         const context = canvas.getContext("2d");
         context.font = "16px 楷体"
         context.translate(250, 250)
@@ -819,7 +819,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             context.fillText(`x值:${coordinateX.toFixed(8)}`, -250, 245)
         })
         function coordinate() {
-            horizontalLine(context,-250,240,0);
+            horizontalLine(context, -250, 240, 0);
             context.beginPath();
             context.moveTo(250, 0);
             context.lineTo(235, 4);
@@ -828,7 +828,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             context.closePath();
             context.fill();
             //
-            plumbLine(context,250,-240,0);
+            plumbLine(context, 250, -240, 0);
             //
             context.beginPath();
             context.moveTo(0, -250);
@@ -863,7 +863,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                 else context.lineTo(pX / 20, pY);
             }
             context.stroke();
-        }   
+        }
         let range = ui.xjb_addElement({
             target: dialog,
             tag: 'input',

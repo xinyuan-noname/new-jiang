@@ -260,10 +260,13 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
             })
         },
         "import": function () {
-            lib.init.js(lib.xjb_src + "js", "editor", () => {
-                lib.xjb_translate = { ...window.xjb_editor }
-                window.XJB_LOAD_EDITOR(_status, lib, game, ui, get, ai)
-            }, () => game.print("技能编辑器数据引入失败——新将包"))
+            let script=lib.init.js(lib.xjb_src + "js", "editor", () => {
+                window.XJB_LOAD_EDITOR(_status, lib, game, ui, get, ai);
+            }, err =>{
+                console.log("技能编辑器数据引入失败——新将包");
+                throw err;
+            } );
+            script.type="module";
             if (lib.xjb_yangcheng1) {
                 lib.xjb_yangcheng = lib.xjb_yangcheng1.onclick("other");
                 delete lib.xjb_yangcheng1
@@ -590,19 +593,7 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                     //
                     game.xjb_addDakadian(3, true)
                     game.xjb_create.alert('打卡成功！<br>你已打卡过' + lib.config.xjb_hundaka[3] + '次');
-                }
-                game.xjb_currencyRate.PointToEnergy = 520;
-                game.xjb_currencyRate.CoinToEnergy = Math.floor(game.xjb_currencyRate.PointToEnergy / game.xjb_hunbiExpectation());
-                game.xjb_currencyRate.firstRate = Math.round(game.xjb_currencyRate.CoinToEnergy / 1.3);
-                game.xjb_currencyRate.secondRate = Math.round(game.xjb_currencyRate.CoinToEnergy / 3);
-                game.xjb_currencyRate.thirdRate = Math.round(game.xjb_currencyRate.CoinToEnergy / 5);
-                function xjb_currencyRateProperty() {
-                    ['PointToEnergy', 'CoinToEnergy',
-                        'firstRate', 'secondRate', 'thirdRate'].forEach(i => {
-                            game.xjb_currencyRate.defineProperty(i)
-                        })
-                };
-                xjb_currencyRateProperty()
+                }               
             }
         },
     }

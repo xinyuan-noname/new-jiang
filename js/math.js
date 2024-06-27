@@ -1,3 +1,12 @@
+export function randomInt(min,max){
+    return Math.floor(Math.random()*(max-min)+min)
+};
+export function isEven(number){
+    return !(number&1);
+}
+export function isOdd(number){
+    return !(!(number&1));
+}
 window.XJB_LOAD_MATH = function (_status, lib, game, ui, get, ai) {
     lib._xjb = {
         usuallyUsedString: {

@@ -1,3 +1,4 @@
+import {touchE} from './ui.js'
 window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
     /**
      * 
@@ -12,7 +13,13 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
         lib.translate[name + "_info"] = skill.description
         return lib.skill[name];
     };
+
     lib.skill.xjb_3 = {
+        editorSkillCreate() {           
+            game.xjb_createSkillByEditor=function(){
+                return 
+            }
+        },
         Translate: function () {
             lib.translate.fuSkill = "<b description=［附魔：首次使用此技能恢复体力并加一点护甲］>福技</b>"
             lib.translate.luSkill = "<b description=［附魔：首次使用此技能摸四张牌］>禄技</b>"
@@ -553,7 +560,7 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     if (game.players.length < 4 && game.me.isAlive()) {
                         const number = _status.xjb_level.xjb_chip * 5
                         game.xjb_create.alert('恭喜你坚持到了最后!你可以获得奖励' + number + '个魂币', function () {
-                            if(number)game.xjb_getHunbi(number, void 0, true, false, '游戏');                           
+                            if (number) game.xjb_getHunbi(number, void 0, true, false, '游戏');
                         })
                         game.over(true);
                         event.finish();
@@ -598,17 +605,17 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                         _status.xjb_level.min = 0;
                         _status.xjb_level.max = 999;
                     } else if (event.input < event.level.guessNumber) {
-                        _status.xjb_level.min = event.input+1;
+                        _status.xjb_level.min = event.input + 1;
                         player.popup('小了')
                     } else if (event.input > event.level.guessNumber) {
-                        _status.xjb_level.max = event.input-1;
+                        _status.xjb_level.max = event.input - 1;
                         player.popup('大了')
                     }
                     'step 4'
                     if (game.players.length < 4 && game.me.isAlive()) {
                         const number = _status.xjb_level.xjb_chip * 5
                         game.xjb_create.alert('恭喜你坚持到了最后!你可以获得奖励' + number + '个魂币', function () {
-                            if(number)game.xjb_getHunbi(number, void 0, true, false, '游戏');
+                            if (number) game.xjb_getHunbi(number, void 0, true, false, '游戏');
                             game.over(true);
                         })
                         event.finish();
@@ -2266,7 +2273,7 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                         })
                         game.resume()
                     },
-                    content: function () {
+                    content() {
                         "step 0"
                         //进入聚灵区
                         player.addTempSkill('xjb_P_gathering', { player: "phaseBegin" })
@@ -2593,6 +2600,7 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                 return player.countCards('h') > 0
             },
             filterTarget: function (card, player, target) {
+                game.print(get.itemtype(card))
                 return target.countCards("he");
             },
             filterCard: function (card) {
@@ -2604,8 +2612,8 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
             complexCard: true,
             selectCard: function (card) {
                 if (ui.selected.cards.length) return -1
-                return 1
-            },
+                return 1               
+            },           
             check: function (card) {
                 return 6 - get.value(card)
             },
@@ -2729,8 +2737,7 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                                             game.log(event.cards, "进入处理区");
                                             ui.updatehl()
                                             "step 1"
-                                            event.trigger("xjb_orderingAdded");
-                                            game.print(event.cards)
+                                            event.trigger("xjb_orderingAdded");                                           
                                         })
                                     }
                                 }

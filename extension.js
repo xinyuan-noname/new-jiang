@@ -352,7 +352,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                                             '新将包',
                                             'https://gitee.com/xinyuanwm/new-jiang/raw/master/'
                                         )
-                                        xjb_xyAPI.setGameData(lib, game, ui, get, ai, _status) 
+                                        xjb_xyAPI.setGameData(lib, game, ui, get, ai, _status)
                                     }, () => {
                                         game.xjb_create.alert('xjb_xyAPI加载失败');
                                     });
@@ -1007,15 +1007,15 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                                 },
                                 sex: function () {
                                     let sex = lib.config.xjb_newcharacter.sex
-                                    let price = game.xjb_goods.changeSexCard.getPrice()
-                                    game.xjb_create.confirm('你当前性别为：' + get.translation(sex) + `，更改性别需要1张性转卡(${price}魂币一张，当前你有` + lib.config.xjb_objects["changeSexCard"] + '张，无则自动购买)确定要更改吗？', function () {
+                                    let price = game.xjb_goods.changeSexCard.price;
+                                    game.xjb_create.confirm('你当前性别为：' + get.translation(sex) + `，更改性别需要1张性转卡(${price}魂币一张，当前你有` + game.xjb_countIt("changeSexCard") + '张，无则自动购买)确定要更改吗？', function () {
                                         game.xjb_newCharacterChangeSex(1, false)
                                     })
                                 },
                                 group: function () {
                                     let group = lib.config.xjb_newcharacter.group
-                                    let price = game.xjb_goods.changeGroupCard.getPrice()
-                                    game.xjb_create.confirm('你当前势力为：' + get.translation(group) + `，更改势力需要1个择木卡(${price}魂币一张，当前你有` + lib.config.xjb_objects["changeGroupCard"] + '张，无则自动购买)，确定要更改吗？', function () {
+                                    let price = game.xjb_goods.changeGroupCard.price;
+                                    game.xjb_create.confirm('你当前势力为：' + get.translation(group) + `，更改势力需要1个择木卡(${price}魂币一张，当前你有` + game.xjb_countIt("changeGroupCard") + '张，无则自动购买)，确定要更改吗？', function () {
                                         game.xjb_newCharacterChangeGroup(1, false)
                                     })
                                 },
@@ -1283,7 +1283,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                                     '新将包',
                                     'https://gitee.com/xinyuanwm/new-jiang/raw/master/'
                                 );
-                                xjb_xyAPI.setGameData(lib, game, ui, get, ai, _status) 
+                                xjb_xyAPI.setGameData(lib, game, ui, get, ai, _status)
                             }, () => {
                                 game.print('xjb_xyAPI加载失败');
                             });

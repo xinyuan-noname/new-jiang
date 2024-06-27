@@ -47,15 +47,25 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         xhr.send();
     }
     /*Getcurrency*/
-    game.xjb_currencyRate = {
-        PointToEnergy: 520,
-        defineProperty: function (key) {
-            Object.defineProperty(this, key, {
-                writable: false,
-                configurable: false
-            })
-        },
-    };
+    class CurrencyRate {
+        constructor() { }
+        get PointToEnergy() {
+            return 520;
+        }
+        get CoinToEnergy() {
+            return Math.floor(this.PointToEnergy / game.xjb_hunbiExpectation());
+        }
+        get firstRate() {
+            return Math.floor(this.CoinToEnergy / 1.3);
+        }
+        get secondRate() {
+            return Math.floor(this.CoinToEnergy / 3);
+        }
+        get thirdRate() {
+            return Math.floor(this.CoinToEnergy / 5);
+        }
+    }
+    if (lib.config.xjb_hun) game.xjb_currencyRate = new CurrencyRate();
     game.xjb_getHunbi = function (value = 1, num = 1, freeE, silent = false, log) {
         if (!lib.config.xjb_hunbi) lib.config.xjb_hunbi = 0
         lib.config.xjb_hunbi += Math.round(num * value);
@@ -88,8 +98,8 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         const nowBonus = lib.config.xjb_BonusGottenToday;
         if (nowBonus > 50) {
             let over;
-            if(previousBonus>50) over=num;
-            else over=nowBonus-50;
+            if (previousBonus > 50) over = num;
+            else over = nowBonus - 50;
             game.cost_xjb_cost(2, over);
             game.xjb_systemEnergyChange(game.xjb_currencyRate.firstRate * over)
         }
@@ -124,7 +134,6 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         jiangchi.sort(i => Math.random() - 0.5)
         lib.xjb_list_xinyuan.jiangchi = jiangchi
     }
-
     game.xjb_update_choujiang = function (num) {
         //将奖池转为数组
         let hunbilist = lib.config.xjb_list_hunbilist.choujiang
@@ -160,7 +169,7 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
     game.xjb_condition = function (num1, num2) {
         var Uhave
         switch (num1) {
-            case 1:case 'hunbi': Uhave = lib.config.xjb_hunbi; break;
+            case 1: case 'hunbi': Uhave = lib.config.xjb_hunbi; break;
             case 2: Uhave = lib.config.xjb_hundaka2; break;
             case 3: Uhave = lib.config.xjb_jnc - lib.config.xjb_newcharacter.skill.length;; break;
         }
@@ -186,6 +195,7 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
             game.xjb_writeHunbiLog(logString);
         }
     }
+    //
     game.xjb_howMuchIsIt = function (value, min) {
         let price = Math.round(value * game.xjb_inflationRate());
         if (price < min) price = min;
@@ -211,6 +221,10 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         if (!lib.config.xjb_objects[name]) lib.config.xjb_objects[name] = 0
         return lib.config.xjb_objects[name] >= num
     }
+    game.xjb_countIt = function (name) {
+        if (!lib.config.xjb_objects[name]) lib.config.xjb_objects[name] = 0
+        return lib.config.xjb_objects[name];
+    }
     /*goods*/
     class Goods {
         constructor(previousPrice, minCost, translate) {
@@ -223,6 +237,13 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         }
         getEnergyConsume() {
             return this.previousPrice * game.xjb_currencyRate.CoinToEnergy;
+        }
+        get price(){
+            return getPrice();
+        }
+        
+        get energyConsume(){
+            return getEnergyConsume();
         }
     }
     game.xjb_goods = {
