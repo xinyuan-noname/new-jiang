@@ -1,5 +1,5 @@
-import { adjustTab, indexRange, selectionIsInRange, validParenthness } from './string.js'
-import { listenAttributeChange } from './ui.js'
+import { adjustTab, indexRange, selectionIsInRange, validParenthness, findPrefix, whichPrefix } from './string.js'
+import { listenAttributeChange, element, touchE } from './ui.js'
 window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
     window.XJB_EDITOR_LIST = {
         filter: ['你已受伤', '你未受伤', '你体力不小于3',
@@ -717,7 +717,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     kind: '',
                     type: [],
                     filter: [],
-                    group: "",
+                    uniqueList: [],
                     filter_card: [],
                     filter_suit: [],
                     filter_color: [],
@@ -753,9 +753,23 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         this.skill.mode = 'self'
                     }
                     //更新显示状态
-                    back.trigger.forEach(i => { i.style.display = 'none' })
-                    back.phaseUse.forEach(i => { i.style.display = 'none' })
-                    back.choose.forEach(i => { i.style.display = 'none' })
+                    [...back.trigger, ...back.phaseUse, ...back.choose].forEach(i => {
+                        i.style.display = 'none'
+                    });
+                    //init部分
+                    if (this.skill.type.includes("mainSkill") || this.skill.type.includes("viceSkill")) {
+                        str += "init:function(player,skill){\n"
+                        if (this.skill.type.includes("mainSkill")) {
+                            str += `const bool = player.checkMainSkill("${this.skill.id}");\n`
+                        }
+                        if (this.skill.type.includes("viceSkill")) {
+                            str += `const bool = player.checkViceSkill("${this.skill.id}")&& !player.viceChanged;\n`
+                        }
+                        if (back.skill.uniqueList.includes("mainVice-remove1")) {
+                            str += `bool && player.removeMaxHp();\n`
+                        }
+                        str += '},\n'
+                    }
                     //处理触发事件
                     if (this.skill.kind === 'trigger') {
                         back.trigger.forEach(i => { i.style.display = 'block' })
@@ -793,9 +807,17 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     })
                     //filter部分
                     str += 'filter:function(event,player){\n'
+                    //主公技
                     if (this.skill.type.includes("zhuSkill")) {
                         str += 'if(! player.hasZhuSkill("' + this.skill.id +
                             '")) return false;\n'
+                    }
+                    //势力技
+                    if (back.skill.type.includes("groupSkill")) {
+                        const group = findPrefix(back.skill.uniqueList, "group").map(k => k.slice(6))
+                        if (group.length > 0) {
+                            str += `if(player.group != "${group[0]}") return false;\n`
+                        }
                     }
                     const filterCardDispose = (filterCardType, standard) => {
                         const filterTypeList = this.skill["filter_" + filterCardType].map(x => {
@@ -1248,7 +1270,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     opacity: "0.75",
                     fontSize: "0.75em"
                 })//*/
-                //换页功能                
+                //换页功能
+                //切换至下一页
                 let next = newElement('span', '下一页', h1).setStyle({
                     float: 'right'
                 });
@@ -1261,6 +1284,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     })
                 }
                 listener(next, turnNextPage)
+                //切换至上一页
                 let last = newElement('span', '上一页', h1).setStyle({
                     float: 'right',
                     marginRight: '10px'
@@ -1331,7 +1355,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 })();
                 //第一页
                 let subBack = newPage()
-                //
                 let idSeter = newElement('div', '技能id:', subBack).style1();
                 let idFree = newElement('textarea', '', subBack).setStyle({
                     fontSize: '1em',
@@ -1341,10 +1364,11 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 })
                 back.ele.id = idFree;
                 idFree.submit = function (e) {
+                    //敲击回车,清空字符
                     if (e && e.keyCode == 13) {
                         idFree.value = ''
                     }
-                    //设置非法id，①id为一些字符②id包含一些字符
+                    //设置非法id，id为一些字符;id包含一些字符
                     if ([...(',.?!:/@...";~()<>([{<*&[]\`#$%^+-={}|>}])'.split('')), "'",
                         'NaN', 'Infinity', 'undefined', 'null',
                         'Math', 'Object', 'Array', 'Date', 'String', 'Number', 'Symbol', 'RegExp',
@@ -1360,10 +1384,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                             game.xjb_create.alert('警告:' + err);
                         };
                     }
-                    back.skill.id = idFree.value
-                    back.organize()
+                    back.skill.id = idFree.value;
+                    back.organize();
                 }
-                idFree.addEventListener('keyup', idFree.submit)
+                idFree.addEventListener('keyup', idFree.submit);
                 //
                 let kindSeter = newElement('div', '技能种类:', subBack).style1();
                 let kindFree = newElement('div', '', subBack).setStyle({
@@ -1395,6 +1419,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         })
                     })
                 }
+                /**
+                 * @param {Array<string>} list1 
+                 * @returns {Array<string>}
+                 */
                 function xjb_formatting(list1) {
                     if (list1.length > 5) {
                         let t = Math.floor((list1.length - 5) / 4)
@@ -1413,12 +1441,29 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 });
                 back.ele.types = typeFree.children
                 if (true) {
-                    let list = xjb_formatting(['主公技', '锁定技', '使命技', '限定技', '觉醒技',
-                        '转换技', '隐匿技', "宗族技", '昂扬技', "势力技",
-                        'charlotte技', "自动发动"]);
-                    let list1 = xjb_formatting(['zhuSkill', 'forced', 'dutySkill', 'limited', 'juexingji',
-                        'zhuanhuanji', 'hiddenSkill', 'clanSkill', 'sunbenSkill',
-                        'groupSkill', 'charlotte', "frequent"]);
+                    const mapList = {
+                        'zhuSkill': '主公技',
+                        'forced': "锁定技",
+                        "limited": "限定技",
+                        "juexingji": "觉醒技",
+                        "zhuanhuanji": "转换技",
+                        "hiddenSkill": "隐匿技",
+                        "clanSkill": "宗族技",
+                        "groupSkill": "势力技",
+                        "dutySkill": "使命技",
+                        "zhenfa": "阵法技",
+                        "mainSkill": "主将技",
+                        "viceSkill": "副将技",
+                        "preHidden": "预亮",
+                        "chargeSkill": "蓄力技",
+                        "chargingSkill": "蓄能技",
+                        "charlotte": "charlotte技",
+                        "sunbenSkill": "昂扬技",
+                        "persevereSkill": "持恒技",
+                        "frequent": "自动发动",
+                    }
+                    let list = xjb_formatting(Object.values(mapList));
+                    let list1 = xjb_formatting(Object.keys(mapList));
                     list.forEach((i, k) => {
                         const en = list1[k];
                         let it;
@@ -1457,32 +1502,17 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         back.skill.type.push(e.target.type);
                     };
                     back.organize();
+                    back.ele.groupsContainer.update();
                 });
-                let groupSeter = newElement('div', '势力技:', subBack).style1()
-                let groupFree = newElement('div', '', subBack).setStyle({
+                let groupSeter = newElement('div', '特殊设置:', subBack).style1()
+                let groupFree = newElement('div', '', subBack)
+                groupFree.setStyle({
                     height: '1em',
                     position: "relative"
                 });
+                back.ele.groupsContainer = groupFree;
                 back.ele.groups = groupFree.children;
-                if (true) {
-                    let list1 = xjb_formatting([...lib.group, "key", "western"]);
-                    let list = list1.map(group => {
-                        if (group === "<<<" || group === ">>>") return group;
-                        return lib.translate[group] + "势力";
-                    })
-                    list.forEach((i, k) => {
-                        const en = list1[k];
-                        let it;
-                        it = ui.create.xjb_button(groupFree, i);
-                        ui.xjb_giveStyle(it, {
-                            fontSize: '1em'
-                        });
-                        if (k >= 6) ui.xjb_giveStyle(it, {
-                            display: 'none'
-                        });
-                        it.group = en;
-                    });
-                }
+                groupFree.groupsPageNum = 0;
                 listener(groupFree, e => {
                     let list = Array.from(groupFree.children)
                     if (!list.includes(e.target)) return;
@@ -1490,23 +1520,89 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         const a = list.indexOf(e.target) + 1;
                         let b = Math.min((a + 5), (list.length - 1));
                         list.splice(a, (b - a + 1)).forEach(ele => ele.style.display = "inline-block")
-                        list.forEach(ele => ele.style.display = "none")
+                        list.forEach(ele => ele.style.display = "none");
+                        groupFree.groupsPageNum++;
                         return;
                     }
                     if (e.target.innerText.includes('<<<')) {
                         const a = list.indexOf(e.target) - 1;
                         let b = Math.max(0, (a - 5));
                         list.splice(b, (a - b + 1)).forEach(ele => ele.style.display = "inline-block")
-                        list.forEach(ele => ele.style.display = "none")
+                        list.forEach(ele => ele.style.display = "none");
+                        groupFree.groupsPageNum--;
                         return;
                     }
-                    back.skill.group = e.target.group;
-                    Array.from(e.target.parentElement.children).forEach(t => {
-                        t.style.backgroundColor = "#e4d5b7"
-                        if (t.group == back.skill.group) t.style.backgroundColor = 'red'
-                    })
+                    let attr = e.target.getAttribute('data-attr');
+                    let prefix = whichPrefix(attr, ["group", "mainVice"])
+                    findPrefix(back.skill.uniqueList, prefix).forEach(k => {
+                        back.skill.uniqueList.remove(k);
+                        let ele = groupFree.querySelector(`[data-attr="${k}"]`)
+                        if (ele !== null) ele.style.backgroundColor = "#e4d5b7";
+                    });
+                    back.skill.uniqueList.push(attr);
+                    e.target.style.backgroundColor = "red";
                     back.organize();
                 });
+                groupFree.update = function () {
+                    const pageNum = groupFree.groupsPageNum;
+                    groupFree.groupsPageNum = 0;
+                    function groupFreeChange() {
+                        element().setTarget(groupFree)
+                            .removeAllChildren();
+                        let mapList = {};
+                        if (back.skill.type.includes("groupSkill")) {
+                            [...lib.group, "key", "western"].forEach(group => {
+                                mapList["group-" + group] = lib.translate[group] + "势力"
+                            })
+                        }
+                        if (back.skill.type.includes("mainSkill") || back.skill.type.includes("viceSkill")) {
+                            mapList = Object.assign(mapList, {
+                                "mainVice-remove1": "鱼减半个"
+                            })
+                        }
+                        let list = xjb_formatting(Object.values(mapList));
+                        let list1 = xjb_formatting(Object.keys(mapList));
+                        list.forEach((i, k) => {
+                            const en = list1[k];
+                            /**
+                             * @type {HTMLElement}
+                             */
+                            let it = ui.create.xjb_button(groupFree, i);
+                            element().setTarget(it)
+                                .setStyle('fontSize', '1em')
+                                .hook(ele => {
+                                    if (k >= 6) element().setTarget(ele).setStyle("display", "none");
+                                }).
+                                setAttribute('data-attr', en);
+                            if (back.skill.uniqueList.includes(en)) it.style.backgroundColor = "red";
+
+                        });
+                        return list.length;
+                    }
+                    if (groupFreeChange()) {
+                        element().setTarget(groupSeter)
+                            .setStyle("display", "inline-block")
+                            .setTarget(groupFree)
+                            .setStyle("display", "inline-block")
+                    } else {
+                        element().setTarget(groupSeter)
+                            .setStyle("display", "none")
+                            .setTarget(groupFree)
+                            .setStyle("display", "none")
+                    };
+                    while (groupFree.groupsPageNum !== pageNum) {
+                        /**
+                         * @type {HTMLElement}
+                         */
+                        let target = Array.from(groupFree.children).filter(k => k.style.display != "none").at(-1);
+                        if (target && target.innerText.includes('>>>')) {
+                            target.click();
+                            target.dispatchEvent(touchE);
+                        } else break;
+                    }
+                }
+                groupFree.update();
+                //编辑模式选择
                 let modeSeter = newElement('div', '编写位置:', subBack).style1()
                 let modeFree = newElement('div', '', subBack).setStyle({
                     height: '1em',
@@ -1972,9 +2068,9 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 })
                 contentFree.addEventListener('keyup', back.ele.content.submit)
                 let contentIntro = newElement('div', '举例说明', subBack3).style1();
-                let contentExample = newElement('div', `例如:技能的一个效果是:你摸三张牌<\br>
-                    就在框框中写:你摸三张牌。<\br>
-                    每写完一个效果，就提行写下一个效果。<\br>
+                let contentExample = newElement('div', `例如:技能的一个效果是:你摸三张牌</br>
+                    就在框框中写:你摸三张牌。</br>
+                    每写完一个效果，就提行写下一个效果。</br>
                     最后输入整理即可。`
                     , subBack3).style1()
                 //第五页
@@ -2217,7 +2313,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                                 back.target.select();
                             })
                         }
-
                     }
                     catch (err) {
                         game.xjb_create.alert("！！！报错：<br>" + err)

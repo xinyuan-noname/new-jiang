@@ -3,7 +3,7 @@ export const degChar = String.fromCharCode(176);
 /**
  * 
  * @param {String} str 
- * @param {Number} basic 
+ * @param {number} basic 
  * @returns {String}
  */
 export function adjustTab(str, basic = 0) {
@@ -51,9 +51,9 @@ export function selectionIsInRange(number, range, close) {
 }
 /**
  * 
- * @param {String} str 
- * @param {String} start 
- * @param {String} end 
+ * @param {string} str 
+ * @param {string} start 
+ * @param {string} end 
  * @returns {Array<Array<Array<number>>>}
  */
 export function validParenthness(str, start, end) {
@@ -71,3 +71,23 @@ export function validParenthness(str, start, end) {
     });
     return result;
 };
+/**
+ * @param {Array<string>} arr 
+ * @param {string} prefix
+ * @returns {Array<string>}
+ */
+export function findPrefix(arr,prefix){
+    return arr.filter(str=>str.startsWith(prefix));
+}
+/**
+ * @param {string} str 
+ * @param {Array<string>} list 
+ * @returns {string}
+ */
+export function whichPrefix(str,list){
+    let result=''
+    list.forEach(prefix=>{
+        if(str.startsWith(prefix))result=prefix;
+    })
+    return result;
+}

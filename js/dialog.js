@@ -1,49 +1,52 @@
-import { horizontalLine, plumbLine } from './canvas.js'
+import { horizontalLine, plumbLine } from './canvas.js';
+import { element } from './ui.js';
 window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
     //这是创建对话框
     ui.create.xjb_dialogBase = function () {
         if (game.xjb_create.baned) return null;
         //这个是对话框
-        var div = document.createElement("div")
-        div.classList.add("xjb_dialogBase")
-        ui.xjb_giveStyle(div, lib.xjb_style.storage_ul)
-        ui.xjb_giveStyle(div, {
-            opacity: "0.9",
-            padding: "5px",
-            "z-index": "10",
-            position: "absolute",
-            margin: "auto",
-            'right': '0px',
-            'top': '0px',
-            'left': '0px',
-            'bottom': '0px',
-            height: "159.34px",
-            width: "628.65px",
-            "border-radius": "0.5em",
-            border: "5px solid #cb6d51",
-            "font-size": "24px",
-            overflow: "auto",
-            display: "block"
-        })
-        ui.window.appendChild(div)
+        var div = element('div')
+            .addClass("xjb_dialogBase")
+            .style(lib.xjb_style.storage_ul)
+            .style({
+                opacity: "0.9",
+                padding: "5px",
+                "z-index": "10",
+                position: "absolute",
+                margin: "auto",
+                'right': '0px',
+                'top': '0px',
+                'left': '0px',
+                'bottom': '0px',
+                height: "159.34px",
+                width: "628.65px",
+                "border-radius": "0.5em",
+                border: "5px solid #cb6d51",
+                "font-size": "24px",
+                overflow: "auto",
+                display: "block"
+            })
+            .father(ui.window)
+            .exit();
         //这里写幕布
         var back = ui.create.xjb_curtain()
-        var length = document.createElement("div")
-        ui.xjb_giveStyle(length, {
-            "z-index": "8",
-            float: "left",
-            height: "137.16px",
-            width: "100%",
-            'right': '0px',
-            'top': '0px',
-            'left': '0px',
-            'bottom': '0px',
-            margin: "auto",
-            position: "relative",
-            'marginTop': "calc(32% + 32px)",
-            display: "block"
-        })
-        back.appendChild(length)
+        var length = element("div")
+            .style({
+                "z-index": "8",
+                float: "left",
+                height: "137.16px",
+                width: "100%",
+                'right': '0px',
+                'top': '0px',
+                'left': '0px',
+                'bottom': '0px',
+                margin: "auto",
+                position: "relative",
+                'marginTop': "calc(32% + 32px)",
+                display: "block"
+            })
+            .father(back)
+            .exit();
         var buttons = []
         for (var i = 0; i < arguments.length; i++) {
             var button = ui.create.xjb_button(length, arguments[i], [div, back])
@@ -164,20 +167,21 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
     };
     //创建按钮
     ui.create.xjb_button = function (length, str, remove) {
-        var button = document.createElement("div")
-        button.innerHTML = str
-        length.appendChild(button)
-        ui.xjb_giveStyle(button, {
-            color: "#041322",
-            "text-align": "center",
-            "font-size": "36px",
-            "background-color": "#e4d5b7",
-            "border-radius": "0.5em",
-            position: "relative",
-            margin: "auto",
-            marginLeft: "15px",
-            marginRight: "15px",
-        })
+        var button = element("div")
+            .innerHTML(str)
+            .father(length)
+            .style({
+                color: "#041322",
+                "text-align": "center",
+                "font-size": "36px",
+                "background-color": "#e4d5b7",
+                "border-radius": "0.5em",
+                position: "relative",
+                margin: "auto",
+                marginLeft: "15px",
+                marginRight: "15px",
+            })
+            .exit();
         if (remove && remove.length) {
             button.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function (e) {
                 e.stopPropagation();
@@ -357,9 +361,10 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             dialog.buttons[0].result = [...dialog.chosen];
         })
         if (src) {
-            dialog.back.style.backgroundImage = `url(${src})`
-            dialog.back.style["background-size"] = "100% 100%"
-            dialog.back.style.opacity = "1"
+            element().setTarget(dialog.back)
+                .setStyle("backgroundImage", `url(${src})`)
+                .setStyle("background-size", "100% 100%")
+                .setStyle("opacity", '1');
         }
         return dialog
     }
@@ -372,11 +377,11 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         var list = obj
         if (list) {
             for (let i in list) {
-                var li = document.createElement("li")
-                li.innerHTML = li.innerHTML + list[i]
-                ul.appendChild(li)
-                li.style.fontSize = "18px"
-                textarea.index.add(li)
+                element("li")
+                    .appendInnerHTML(list[i])
+                    .father(ul)
+                    .setStyle('fontSize', '18px')
+                    .hook(ele => textarea.index.add(ele));
             }
         }
         dialog.font = function (num) {
@@ -394,8 +399,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         if (game.xjb_create.baned) return;
         var dialog = game.xjb_create.prompt(str, "", func1, func2)
         dialog.Mysize()
-        ui.xjb_toBeHidden(dialog.buttons[0])
-        var textarea = dialog.input
+        ui.xjb_toBeHidden(dialog.buttons[0]);
         let file = document.createElement("input")
         file.type = "file"
         ui.xjb_giveStyle(file, {
@@ -503,27 +507,30 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                 color: "white",
                 "text-align": "center",
                 "border-radius": "0.5em",
-            })
-            img.name = arr2[i]
-            img.src = str2 + arr2[i]
-            img.innerHTML = img.name
-            img.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function (e) {
-                document.getElementById("xjb_dialog_p").innerHTML = this.name
-                ui.xjb_toBeVisible(dialog.buttons[0])
-                for (var a = 0; a < dialog.imgs.length; a++) {
-                    dialog.imgs[a].className = ""
-                }
-                this.className = "xjb_color_circle"
-                dialog.buttons[0].result = this.name
-                dialog.buttons[0].src = this.src
-            })
+            });
+            img.name = arr2[i];
+            element().setTarget(img)
+                .setAttribute('src', str2 + arr2[i])
+                .innerHTML(img.name)
+                .listen(lib.config.touchscreen ? 'touchend' : 'click', function (e) {
+                    document.getElementById("xjb_dialog_p").innerHTML = this.name
+                    ui.xjb_toBeVisible(dialog.buttons[0])
+                    for (var a = 0; a < dialog.imgs.length; a++) {
+                        dialog.imgs[a].className = ""
+                    }
+                    element().setTarget(this)
+                        .className("xjb_color_circle")
+                        .setTarget(dialog.buttons[0])
+                        .hook(ele => {
+                            ele.result = this.name;
+                        })
+                        .setAttribute('src', this.src);
+                })
             img.ondblclick = function () {
                 this.remove()
                 ui.xjb_toBeHidden(dialog.buttons[0])
-                if (arr2) {
-                    if (arr2.includes(this.name)) {
-                        arr2.remove(this.name)
-                    }
+                if (arr2&&arr2.includes(this.name)) {
+                    arr2.remove(this.name);
                 }
             }
         }

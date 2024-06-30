@@ -63,7 +63,9 @@ window["xjb_xyAPI_Directory_新将包"]={
         "library.js",
         "canvas.js",
         "economy.js",
-        "card.js"
+        "card.js",
+        "string.js",
+        "ui.js"
     ],
     "image": [
         "Lucky.png",
@@ -136,6 +138,9 @@ window["xjb_xyAPI_Directory_新将包"]={
     ],
     "log": [
         "log.txt"
+    ],
+    "json": [
+        "1.json"
     ],
     "image/card": [
         "xjb_lijingtuzhi.png",

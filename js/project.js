@@ -379,7 +379,8 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
             lib.translate['han'] = '汉';
             lib.groupnature.han = "fire"
             lib.group.push("xjb_hun");
-            lib.translate['xjb_hun'] = '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="32">'
+            lib.translate['xjb_hun'] = '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="22">'
+            //
             lib.groupnature.xjb_hun = "xjb_hun"
         },
         Intro: function () {

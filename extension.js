@@ -1,3 +1,4 @@
+import { lib, game, ui, get, ai, _status } from "../../noname.js"
 game.import("extension", function (lib, game, ui, get, ai, _status) {
     return {
         name: "新将包",
@@ -1054,11 +1055,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                                         game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
                                         game.xjb_create.alert('更改皮肤为' + this.result + '，重启即生效');
                                         if (lib.character.xjb_newCharacter) {
-                                            if (lib.character.xjb_newCharacter[4].includes("red")) { }
-                                            else {
-                                                lib.character.xjb_newCharacter[4] = [lib.config.xjb_newcharacter.selectedSink]
-                                                lib.characterPack["mode_extension_新将包"].xjb_newCharacter
-                                            }
+                                            lib.character.xjb_newCharacter[4] = [lib.config.xjb_newcharacter.selectedSink];
                                         }
                                     }, function () {
                                         game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
