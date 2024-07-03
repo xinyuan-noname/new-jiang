@@ -707,7 +707,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             }
             game.xjb_skillEditor = function () {
                 //
-                const playerCN = new Array("你", "玩家", "目标角色", "当前回合角色", "所选角色", "选择的角色", "所选的角色", "所有角色", "触发角色")
+                const playerCN = new Array("你", "玩家", "目标角色", "当前回合角色", "所选角色", "选择的角色", "所选的角色", "所有角色", "触发角色","伤害来源","触发来源");
                 let player = ui.create.player(); player.init('xjb_caocao')
                 let eventModel = {
                     ..._status.event,
@@ -1996,6 +1996,17 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     })
                     //处理变量词
                     appendWordToEvery(' ', ["令为", "变量"])
+
+                    //处理角色相关字符
+                    playerCN.forEach(i => {
+                        that.changeWord(new RegExp(i + '(的|于|在)回合外', 'g'), i + '不为当前回合角色')
+                        that.changeWord(new RegExp(i + '的', 'g'), i)
+                    });
+                    appendWordToEvery(' ', ["你", "玩家", "当前回合角色"]);
+                    that.changeWord(/体力(?!上限|值)/g, '体力值');
+                    appendWordToEvery(' ', ["体力值", "体力上限", "手牌数"]);
+                    //处理game相关字符
+                    that.changeWord(/游戏轮数/g, '游戏 轮数')
                     /*统一写法*/
                     for (let i = 999; i > 0; i--) {
                         that.changeWord("加" + get.cnNumber(i), "+" + i)
@@ -2019,16 +2030,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     that.changeWord(/(♥)/g, '红桃');
                     that.changeWord(/(♦)/g, '方片');
                     that.changeWord(/该回合/g, "本回合")
-                    //处理角色相关字符
-                    playerCN.forEach(i => {
-                        that.changeWord(new RegExp(i + '(的|于|在)回合外', 'g'), i + '不为当前回合角色')
-                        that.changeWord(new RegExp(i + '的', 'g'), i)
-                    });
-                    appendWordToEvery(' ', ["你", "玩家", "当前回合角色"]);
-                    that.changeWord(/体力(?!上限|值)/g, '体力值');
-                    appendWordToEvery(' ', ["体力值", "体力上限", "手牌数"]);
-                    //处理game相关字符
-                    that.changeWord(/游戏轮数/g, '游戏 轮数')
                     //处理一些特殊属性
                     appendWordToEvery(' ', ["火属性", "冰属性", "雷属性"]);
                     appendWordToEvery(' ', ['红色', '黑色', '梅花', '方片', '无花色', '黑桃', '红桃']);
@@ -2156,11 +2157,12 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                             update(wonderA[i], hook)
                         };
                     }
+                    //实例字符
                     function newLine() {
                         that.changeWord(/，/g, '\n')
                         that.changeWord(/。/g, '\n')
                         that.changeWord(/然后/g, '\n');
-                        that.changeWord(/\s\n/g, '\n');
+                        that.changeWord(/\s+\n/g, '\n');
                     }
                     newLine()
                     //
@@ -2170,31 +2172,9 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     //处理变量词
                     that.changeWord(/变量/g, "变量 ")
                     that.changeWord(/令为/g, " 令为 ")
-                    //统一写法
-                    for (let i = 999; i > 0; i--) {
-                        that.changeWord("加" + get.cnNumber(i), "+" + i)
-                        that.changeWord("减" + get.cnNumber(i), "-" + i)
-                        that.changeWord("乘" + get.cnNumber(i), "*" + i)
-                        that.changeWord("乘以" + get.cnNumber(i), "*" + i)
-                        that.changeWord("加" + (i), "+" + i)
-                        that.changeWord("减" + (i), "-" + i)
-                        that.changeWord("乘" + (i), "*" + i)
-                        that.changeWord("乘以" + (i), "*" + i)
-                        that.changeWord("*" + get.cnNumber(i), "*" + i)
-                        that.changeWord("+" + get.cnNumber(i), "+" + i)
-                        that.changeWord("-" + get.cnNumber(i), "-" + i)
-                    }
-                    that.changeWord(/(♣️)/g, '梅花');
-                    that.changeWord(/(♠️)/g, '黑桃');
-                    that.changeWord(/(♥️)/g, '红桃');
-                    that.changeWord(/(♦️)/g, '方片');
-                    that.changeWord(/(♣)/g, '梅花');
-                    that.changeWord(/(♠)/g, '黑桃');
-                    that.changeWord(/(♥)/g, '红桃');
-                    that.changeWord(/(♦)/g, '方片');
+                    //处理逻辑词
                     that.changeWord(/≯/g, '不大于')
                     that.changeWord(/≮/g, '不小于')
-                    //处理逻辑词
                     that.changeWord(/若你/g, "如果 你")
                     that.changeWord(/若游戏/g, "如果 游戏")
                     that.changeWord(/(?<!名|令)为/g, '为 ');
@@ -2204,8 +2184,12 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     ["大于", "小于", "是", "等于"].forEach(i => {
                         that.changeWord(new RegExp(`(?<!不)${i}`), ` ${i} `)
                     });
+                    that.changeWord(/(你|伤害来源|当前回合角色)对([\u4e00-\u9fa5]+?)造成(.*?)点伤害/,function(match,...p){
+                        return `${p[1]}受到由${p[0]}造成的${p[2]}点伤害`
+                    })
                     //处理player相关字符
                     playerCN.forEach(i => {
+                        that.changeWord(new RegExp(`由${i}造成的`, 'g'),`${i}`);
                         that.changeWord(new RegExp(`对${i}造成伤害的牌`, 'g'), "造成伤害的牌");
                         that.changeWord(new RegExp(i + '的', 'g'), i);
                         that.changeWord(new RegExp(i, 'g'), `${i} `);
@@ -2215,7 +2199,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         that.changeWord(new RegExp(i, 'g'), i + ' ');
                     });
                     //处理game相关字符
-                    that.changeWord('游戏轮数', '游戏 轮数')
+                    that.changeWord(/游戏轮数/g, '游戏 轮数')
                     //处理事件描述
                     that.changeWord(/再摸/g, "摸");
                     that.changeWord(/各摸/g, "摸");
@@ -2264,6 +2248,28 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         update(i.toUpperCase() + '点');
                         update(i.toUpperCase() + '名');
                     });
+                    //统一写法
+                    for (let i = 999; i > 0; i--) {
+                        that.changeWord("加" + get.cnNumber(i), "+" + i)
+                        that.changeWord("减" + get.cnNumber(i), "-" + i)
+                        that.changeWord("乘" + get.cnNumber(i), "*" + i)
+                        that.changeWord("乘以" + get.cnNumber(i), "*" + i)
+                        that.changeWord("加" + (i), "+" + i)
+                        that.changeWord("减" + (i), "-" + i)
+                        that.changeWord("乘" + (i), "*" + i)
+                        that.changeWord("乘以" + (i), "*" + i)
+                        that.changeWord("*" + get.cnNumber(i), "*" + i)
+                        that.changeWord("+" + get.cnNumber(i), "+" + i)
+                        that.changeWord("-" + get.cnNumber(i), "-" + i)
+                    }
+                    that.changeWord(/(♣️)/g, '梅花');
+                    that.changeWord(/(♠️)/g, '黑桃');
+                    that.changeWord(/(♥️)/g, '红桃');
+                    that.changeWord(/(♦️)/g, '方片');
+                    that.changeWord(/(♣)/g, '梅花');
+                    that.changeWord(/(♠)/g, '黑桃');
+                    that.changeWord(/(♥)/g, '红桃');
+                    that.changeWord(/(♦)/g, '方片');
                     //参数处理
                     parameter("火属性", "冰属性", "雷属性",
                         "任意张", "任意名",
@@ -2305,6 +2311,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     })
                     that.value = ty.join('\n');
                     that.ensure()
+                    that.changeWord(/受到的?\s+伤害/,"受到伤害");
                     that.changeWord(/\s+$/, '')
                 }
                 contentFree.zeroise = function () {
@@ -2359,7 +2366,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     back.skill.content = []
                     //数组为空则返回
                     if (contentFree.value.length === 0) {
-                        if (bool!==true) back.organize()
+                        if (bool !== true) back.organize()
                         return;
                     }
                     //后续处理，如果涉及到继承，则为数字1就返回
@@ -2381,7 +2388,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         return disposedList
                     }
                     back.skill.content.push(...disposeList());
-                    if (bool!==true) back.organize()
+                    if (bool !== true) back.organize()
                 }
                 listenAttributeChange(contentFree, 'selectionStart').start();
                 contentFree.addEventListener('selectionStartChange', function (e) {
