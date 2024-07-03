@@ -152,6 +152,15 @@ export function element(tag) {
             return this;
         }
         /**
+         * @param {HTMLElement} target 
+         * @param {boolean} bool
+         * @returns {elementTool}
+         */
+        clone(target,bool) {
+            this.ele = target.cloneNode(bool);
+            return this
+        }
+        /**
          * @param {Array<string>|string} toAddClass 
          * @returns {elementTool}
          */

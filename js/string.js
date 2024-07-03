@@ -1,7 +1,7 @@
 export const PiChar = String.fromCharCode(960);
 export const degChar = String.fromCharCode(176);
+export const cnCharRange = '\u4e00-\u9fa5'
 /**
- * 
  * @param {String} str 
  * @param {number} basic 
  * @returns {String}
@@ -9,9 +9,10 @@ export const degChar = String.fromCharCode(176);
 export function adjustTab(str, basic = 0) {
     const arr1 = str.split('\n');
     let tabLevel = basic;
+    let stack = []
     let arr2 = arr1.map(line => {
         const times = line.match(/^\t+/) ? line.match(/^\t+/)[0].length : 0;
-        if (line.endsWith('}') || line.endsWith('},')) tabLevel--;
+        if (!line.includes("{") && (line.endsWith('}') || line.endsWith('},'))) tabLevel--;
         const deltaValue = times - tabLevel;
         let result = line;
         if (deltaValue > 0) result = line.slice(deltaValue);
@@ -38,6 +39,20 @@ export function indexRange(str, target) {
     }
     return result;
 }
+/**
+ * @param {string} str 
+ * @param {string} insertContent 
+ * @param {number} i int
+ * @returns {string}
+ */
+export function insertStr(str, insertStart, insertContent, i = 0) {
+    let range = indexRange(str, insertStart);
+    if (!range.length) return false;
+    i = parseInt(i);
+    const index = range[i][1] + 1;
+    return `${str.slice(0, index)}${insertContent || ""}${str.slice(index)}`
+}
+
 /**
  * 
  * @param {number} number 
@@ -76,18 +91,44 @@ export function validParenthness(str, start, end) {
  * @param {string} prefix
  * @returns {Array<string>}
  */
-export function findPrefix(arr,prefix){
-    return arr.filter(str=>str.startsWith(prefix));
+export function findPrefix(arr, prefix) {
+    return arr.filter(str => str.startsWith(prefix));
 }
 /**
  * @param {string} str 
  * @param {Array<string>} list 
  * @returns {string}
  */
-export function whichPrefix(str,list){
-    let result=''
-    list.forEach(prefix=>{
-        if(str.startsWith(prefix))result=prefix;
+export function whichPrefix(str, list) {
+    let result = ''
+    list.forEach(prefix => {
+        if (str.startsWith(prefix)) result = prefix;
+    })
+    return result;
+}
+/**
+ * 
+ * @param {string} str 
+ * @param {function} callback 
+ * @returns {string}
+ */
+export function eachLine(str, callback) {
+    let result;
+    result = str.split("\n").map((item, index, arg) => {
+        return callback(item, index, arg) || item;
+    }).join("\n");
+    return result;
+}
+/**
+ * 
+ * @param {string} str 
+ * @param {RegExp} match 
+ * @param {string} prefix 
+ * @param {string} suffix 
+ */
+export function addPSFix(str, match, prefix, suffix) {
+    let result = str.replace(match, function (match, ...p) {
+        return `${prefix}${match}${suffix}`;
     })
     return result;
 }

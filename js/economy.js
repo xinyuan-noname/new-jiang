@@ -163,6 +163,7 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         return Math.floor(expectation);
     }
     game.xjb_inflationRate = function () {
+        if(!game.xjb_currencyRate||!game.xjb_currencyRate.CoinToEnergy) return 0
         return (game.xjb_currencyRate.CoinToEnergy * lib.config.xjb_hunbi / lib.config.xjb_systemEnergy)
     }
     /*consume*/
