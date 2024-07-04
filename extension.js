@@ -333,6 +333,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     getAPI: '获取工具',
                     update: '刷新工具',
                     putout: '输出目录',
+                    changeWay: '切换路径',
                     download: '下载更新'
                 },
                 visualMenu: function (node) {
@@ -347,15 +348,15 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                             }
                             game.download('https://gitee.com/xinyuanwm/xy-api/raw/master/xjb_xyAPI.js',
                                 'extension/新将包/xjb_xyAPI.js', () => {
-                                    lib.init.js("https://localhost/extension/新将包", "xjb_xyAPI", load => {
+                                    lib.init.js("新将包", location.href.replace("index.html") + "extension/xjb_xyAPI", load => {
                                         game.xjb_create.alert('xjb_xyAPI加载成功');
-                                        xjb_xyAPI.extensionListAddBasedOnShijianVersionAndroid(
+                                        xjb_xyAPI.setGameData(lib, game, ui, get, ai, _status);
+                                        xjb_xyAPI.autoAddExtension(
                                             '新将包',
                                             'https://gitee.com/xinyuanwm/new-jiang/raw/master/'
-                                        )
-                                        xjb_xyAPI.setGameData(lib, game, ui, get, ai, _status)
-                                    }, () => {
-                                        game.xjb_create.alert('xjb_xyAPI加载失败');
+                                        );
+                                    }, (err) => {
+                                        game.xjb_create.alert('xjb_xyAPI加载失败:' + err);
                                     });
                                 });
                         }; break;

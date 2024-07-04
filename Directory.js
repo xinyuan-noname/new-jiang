@@ -133,7 +133,8 @@ window["xjb_xyAPI_Directory_新将包"]={
         "5.jpg"
     ],
     "css": [
-        "css1.css"
+        "css1.css",
+        "tet.txt"
     ],
     "audio": [
         "fire1.mp3"

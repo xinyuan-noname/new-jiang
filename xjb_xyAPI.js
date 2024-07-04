@@ -1,5 +1,18 @@
 const xjb_xyAPI = {
-    extensionList: {},
+    extensionList: {
+    },
+    autoAddExtension(extensionName, gitURL) {
+        const RootUrl = location.href.replace("index.html", "");
+        let gameURL, fileURL
+        if (RootUrl.startsWith("https://")) {
+            gameURL = `${url}extension/${extensionName}/`;
+            fileURL = `${localStorage.getItem("noname_inited")}extension/${extensionName}/`
+        }
+        else if (RootUrl.startsWith("file:///")) {
+            gameURL = fileURL = `${url}extension/${extensionName}/`
+        }
+        this.extensionListAdd({ extensionName, fileURL, gameURL, gitURL })
+    },
     extensionListAdd({ fileURL, gitURL, gameURL, extensionName }) {
         this.extensionList[extensionName] = {
             fileURL,
@@ -121,11 +134,11 @@ const xjb_xyAPI = {
             fileTransfer.download(this.result, url + 'Directory.js', function () {
                 _this.game.print('目录文件生成成功')
                 _this.game.print(List)
-                if(_this.directoryDownloadSHook)_this.directoryDownloadSHook()
+                if (_this.directoryDownloadSHook) _this.directoryDownloadSHook()
             }, function (e) {
                 _this.game.print('目录文件生成失败;错误码:' + e.code)
                 _this.game.print(List)
-                if(_this.directoryDownloadFHook)_this.directoryDownloadFHook(e)
+                if (_this.directoryDownloadFHook) _this.directoryDownloadFHook(e)
             });
         }
     },
@@ -207,7 +220,7 @@ const xjb_xyAPI = {
             if (count >= urlList.length) {
                 _this.game.print('下载完成，下载失败的文件：', unloadFileList);
                 cancelAnimationFrame(testEnd);
-                if(_this.updateDownloadHook)_this.updateDownloadHook(unloadFileList)
+                if (_this.updateDownloadHook) _this.updateDownloadHook(unloadFileList)
             } else {
                 requestAnimationFrame(testEnd);
             }
