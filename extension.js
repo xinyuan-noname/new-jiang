@@ -333,7 +333,6 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     getAPI: '获取工具',
                     update: '刷新工具',
                     putout: '输出目录',
-                    changeWay: '切换路径',
                     download: '下载更新'
                 },
                 visualMenu: function (node) {
@@ -342,23 +341,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 onclick: function (layout) {
                     switch (layout) {
                         case 'getAPI': {
-                            if (window.xjb_xyAPI) {
-                                game.xjb_create.alert('工具已引入,无需重新引入!')
-                                return;
-                            }
-                            game.download('https://gitee.com/xinyuanwm/xy-api/raw/master/xjb_xyAPI.js',
-                                'extension/新将包/xjb_xyAPI.js', () => {
-                                    lib.init.js("新将包", location.href.replace("index.html") + "extension/xjb_xyAPI", load => {
-                                        game.xjb_create.alert('xjb_xyAPI加载成功');
-                                        xjb_xyAPI.setGameData(lib, game, ui, get, ai, _status);
-                                        xjb_xyAPI.autoAddExtension(
-                                            '新将包',
-                                            'https://gitee.com/xinyuanwm/new-jiang/raw/master/'
-                                        );
-                                    }, (err) => {
-                                        game.xjb_create.alert('xjb_xyAPI加载失败:' + err);
-                                    });
-                                });
+                            game.xjb_loadAPI()
                         }; break;
                         case 'update': {
                             xjb_xyAPI.updateServiceTarget('新将包');
@@ -979,9 +962,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                                     var that = this
                                     function theDownload(src) {
                                         var fileTransfer = new FileTransfer();
-                                        var Myalert = game.xjb_create.alert("正在导入中...", function () {
-                                            if (src !== lib.config.xjb_fileURL) theDownload(lib.config.xjb_fileURL)
-                                        })
+                                        var Myalert = game.xjb_create.alert("正在导入中...");
                                         ui.xjb_toBeHidden(Myalert.buttons[0])
                                         fileTransfer.download(that.file.result, src + "sink/xin_newCharacter/normal/" + that.result + that.file.type, function () {
                                             Myalert.innerHTML = "导入成功！"
@@ -991,15 +972,12 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                                         }, function (e) {
                                             Myalert.innerHTML = "导入失败！<br>" + e.code
                                             ui.xjb_toBeVisible(Myalert.buttons[0])
-                                            if (src !== lib.config.xjb_fileURL) {
-                                                Myalert.innerHTML = "导入失败！即将切换路径2。<br>"
-                                            }
                                         });
                                     }
                                     if (lib.config.xjb_newcharacter.sink.includes(that.result)) {
                                         game.xjb_create.confirm("你已有该同名的皮肤，是否覆盖？", theDownload, function () { sinks("img") })
                                     }
-                                    else theDownload(lib.xjb_src)
+                                    else theDownload(lib.config.xjb_fileURL)
                                 })
                             }
                             var object = {
@@ -1240,6 +1218,9 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     //引入css文件    
                     lib.init.css(lib.xjb_src + "css", "css1", () => {
                         game.print("样式表引入成功——新将包")
+                    },(err)=>{
+                        game.print("样式表引入失败——新将包");
+                        game.print(err)
                     })
                     //引入js文件
                     files.forEach(file => {
@@ -1268,30 +1249,43 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         window.XJB_LOAD_FINAL(_status, lib, game, ui, get, ai)
                     })
                 })
-                function loadJS() {
+                game.xjb_loadAPI = function (suc = () => void 0, fail = () => void 0) {
                     if (window.xjb_xyAPI) {
-                        game.print('xjb_xyAPI已引入,无需重新引入!')
+                        game.xjb_create.alert('工具已引入,无需重新引入!')
                         return;
                     }
-                    game.download('https://gitee.com/xinyuanwm/xy-api/raw/master/xjb_xyAPI.js',
-                        'extension/新将包/xjb_xyAPI.js', () => {
-                            lib.init.js("https://localhost/extension/新将包", "xjb_xyAPI", load => {
-                                game.print('xjb_xyAPI加载成功');
-                                xjb_xyAPI.extensionListAddBasedOnShijianVersionAndroid(
-                                    '新将包',
-                                    'https://gitee.com/xinyuanwm/new-jiang/raw/master/'
-                                );
-                                xjb_xyAPI.setGameData(lib, game, ui, get, ai, _status)
-                            }, () => {
-                                game.print('xjb_xyAPI加载失败');
-                            });
-                        });
+                    game.download(
+                        'https://gitee.com/xinyuanwm/xy-api/raw/master/xjb_xyAPI.js',
+                        'extension/新将包/xjb_xyAPI.js',
+                        () => {
+                            lib.init.js(
+                                location.href.replace("index.html", '') + "extension/新将包",
+                                "xjb_xyAPI",
+                                load => {
+                                    game.print('xjb_xyAPI加载成功');
+                                    xjb_xyAPI.setGameData(lib, game, ui, get, ai, _status);
+                                    xjb_xyAPI.autoAddExtension(
+                                        '新将包',
+                                        'https://gitee.com/xinyuanwm/new-jiang/raw/master/'
+                                    );
+                                    suc(load);
+                                },
+                                (err) => {
+                                    game.print('xjb_xyAPI加载失败');
+                                    game.print(err)
+                                    fail(err);
+                                });
+                        },
+                        (err) => {
+                            fail(err)
+                        }
+                    );
                 };
-                loadJS()
+                game.xjb_loadAPI();
             }
             function initialize() {
                 if (!lib.config.xjb_fileURL) {
-                    lib.config.xjb_fileURL = "file:///storage/emulated/0/Android/data/com.noname.shijian/extension/新将包/"
+                    lib.config.xjb_fileURL = `${localStorage.getItem("noname_inited")}extension/新将包`
                 }
                 //设置刘徽-祖冲之祖项目
                 //设置参数π、e、Φ，这些参数越大越精确

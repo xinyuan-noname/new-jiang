@@ -5,11 +5,11 @@ const xjb_xyAPI = {
         const RootUrl = location.href.replace("index.html", "");
         let gameURL, fileURL
         if (RootUrl.startsWith("https://")) {
-            gameURL = `${url}extension/${extensionName}/`;
+            gameURL = `${RootUrl}extension/${extensionName}/`;
             fileURL = `${localStorage.getItem("noname_inited")}extension/${extensionName}/`
         }
         else if (RootUrl.startsWith("file:///")) {
-            gameURL = fileURL = `${url}extension/${extensionName}/`
+            gameURL = fileURL = `${RootUrl}extension/${extensionName}/`
         }
         this.extensionListAdd({ extensionName, fileURL, gameURL, gitURL })
     },
@@ -190,6 +190,24 @@ const xjb_xyAPI = {
         }
         _this.game.print(urlList)
         return urlList
+    },
+    async updateDir(url, extensionName) {
+        if (!extensionName) extensionName = this.extensionName;
+        if (!url) url = this.fileURL;
+        const _this = this;
+        if (window[`xjb_xyAPI_Directory_${extensionName}`]) {
+            for (let k of Object.keys(window[`xjb_xyAPI_Directory_${extensionName}`])) {
+                if (k === "main") continue;
+                else {
+                    const dir = await new Promise((res, rej) => {
+                        resolveLocalFileSystemURL(url, res, rej)
+                    });
+                    await new Promise((res, rej) => {
+                        dir.getDirectory(k, { create: true }, res, rej)
+                    })
+                }
+            }
+        }
     },
     async updateOnline(gitURL, extensionName, urlHead) {
         if (!gitURL) gitURL = this.gitURL;
