@@ -2,10 +2,10 @@ const xjb_xyAPI = {
     extensionList: {
     },
     autoAddExtension(extensionName, gitURL) {
-        const RootUrl = location.href.replace("index.html", "");
+        const RootUrl = location.origin;
         let gameURL, fileURL
         if (RootUrl.startsWith("https://")) {
-            gameURL = `${RootUrl}extension/${extensionName}/`;
+            gameURL = `${RootUrl}/extension/${extensionName}/`;
             fileURL = `${localStorage.getItem("noname_inited")}extension/${extensionName}/`
         }
         else if (RootUrl.startsWith("file:///")) {
@@ -59,8 +59,7 @@ const xjb_xyAPI = {
     setExtensionName(extensionName) {
         this.extensionName = extensionName;
     },
-    getDirectory(url) {
-        if (!url) url = this.fileURL;
+    getDirectory(url = this.fileURL) {
         const List = {
             _files: [],
             directories: []
@@ -87,8 +86,7 @@ const xjb_xyAPI = {
             });
         })
     },
-    async getAllDirectories(url) {
-        if (!url) url = this.fileURL;
+    async getAllDirectories(url = this.fileURL) {
         const _this = this
         let List = await _this.getDirectory(url);
         List['main'] = [...List._files];
@@ -120,8 +118,7 @@ const xjb_xyAPI = {
      * 
      * @param {URL} url fileURL
      */
-    async directoryDownload(url) {
-        if (!url) url = this.fileURL;
+    async directoryDownload(url = this.fileURL) {
         const _this = this;
         const List = await this.getAllDirectories(url);
         let BLOB = new Blob([`window["xjb_xyAPI_Directory_${_this.extensionName}"]=${JSON.stringify(List, null, 4)} `], {
@@ -142,9 +139,7 @@ const xjb_xyAPI = {
             });
         }
     },
-    async getGitDirectory(url, extensionName) {
-        if (!url) url = this.gitURL;
-        if (!extensionName) extensionName = this.extensionName;
+    async getGitDirectory(url = this.gitURL, extensionName = this.extensionName) {
         const _this = this;
         return new Promise((res, rej) => {
             _this.game.download(url + 'Directory.js', `extension/${extensionName}/Directory.js`, () => {
@@ -167,9 +162,7 @@ const xjb_xyAPI = {
      * @param {String} extensionName 
      * @param {URL} urlHead 
      */
-    async objToUrlArray(url, extensionName) {
-        if (!url) url = this.gitURL;
-        if (!extensionName) extensionName = this.extensionName;
+    async objToUrlArray(url = this.gitURL, extensionName = this.extensionName) {
         const _this = this;
         const directory = await _this.getGitDirectory(url, extensionName);
         let urlList = [];
@@ -191,27 +184,10 @@ const xjb_xyAPI = {
         _this.game.print(urlList)
         return urlList
     },
-    async updateDir(url, extensionName) {
-        if (!extensionName) extensionName = this.extensionName;
-        if (!url) url = this.fileURL;
-        const _this = this;
-        if (window[`xjb_xyAPI_Directory_${extensionName}`]) {
-            for (let k of Object.keys(window[`xjb_xyAPI_Directory_${extensionName}`])) {
-                if (k === "main") continue;
-                else {
-                    const dir = await new Promise((res, rej) => {
-                        resolveLocalFileSystemURL(url, res, rej)
-                    });
-                    await new Promise((res, rej) => {
-                        dir.getDirectory(k, { create: true }, res, rej)
-                    })
-                }
-            }
-        }
-    },
-    async updateOnline(gitURL, extensionName, urlHead) {
+    async updateOnline(gitURL, extensionName, urlHead, fileURL) {
         if (!gitURL) gitURL = this.gitURL;
         if (!extensionName) extensionName = this.extensionName;
+        if (!fileURL) fileURL = this.extensionName;
         if (!urlHead) urlHead = `extension/${extensionName}/`;
         const _this = this;
         const urlList = await _this.objToUrlArray(gitURL, extensionName);
@@ -237,6 +213,7 @@ const xjb_xyAPI = {
         function testEnd() {
             if (count >= urlList.length) {
                 _this.game.print('下载完成，下载失败的文件：', unloadFileList);
+                if (unloadFileList.length) _this.game.print("请确保扩展文件夹下以下目录存在", Object.keys(window[`xjb_xyAPI_Directory_${extensionName}`]).filter(k => k != "main"))
                 cancelAnimationFrame(testEnd);
                 if (_this.updateDownloadHook) _this.updateDownloadHook(unloadFileList)
             } else {

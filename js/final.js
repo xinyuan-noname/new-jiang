@@ -256,7 +256,7 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                     }
                     game.saveConfig("xjb_cardAddToPile", lib.config.xjb_cardAddToPile)
                 })
-                location.hash = '#'
+                location.hash = ''
             })
         },
         "import": function () {
@@ -472,11 +472,10 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                 document.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function removeIt(e) {
                     if (e.target !== target && !Array.from(target.getElementsByTagName("*")).includes(e.target)) {
                         target.remove()
-                        location.hash = '#'
+                        location.hash = ''
                         document.removeEventListener(lib.config.touchscreen ? 'touchend' : 'click', removeIt)
                     }
                 })
-
             })
         },
         "Intro2": function () {
@@ -500,7 +499,7 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                     cancelable: true,
                     composed: true
                 }))
-                location.hash = '#'
+                location.hash = ''
             })
         },
         skillTag: function () {

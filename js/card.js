@@ -218,7 +218,9 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                 if (step == 2) return secondList;
                 const thirdList = secondList.map(i => i.split("-"))
                 if (step == 3) return thirdList;
-                const fourthList = thirdList.map(i => [lib.xjb_translate[i[0]].replace(/\"/g, ""), lib.xjb_translate[i[1]].replace(/\"/g, ""), i[2] * 1, i[3] * 1])
+                const fourthList = thirdList.map(i =>{                    
+                    return [lib.xjb_translate[i[0]].replace(/\"/g, ""), lib.xjb_translate[i[1]].replace(/\"/g, ""), i[2] * 1, i[3] * 1]
+                })
                 if (step == 4) return fourthList;
                 const fifthList = fourthList.filter(i => game.xjb_checkCardCanAdd(i[0]));
                 return fifthList;

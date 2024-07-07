@@ -1218,7 +1218,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     //引入css文件    
                     lib.init.css(lib.xjb_src + "css", "css1", () => {
                         game.print("样式表引入成功——新将包")
-                    },(err)=>{
+                    }, (err) => {
                         game.print("样式表引入失败——新将包");
                         game.print(err)
                     })
@@ -1244,7 +1244,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         }
                     }
                     setInterval(interval, 100)
-                }).then(data => {
+                }).then(() => {
                     lib.init.js(lib.xjb_src + "js", "final", () => {
                         window.XJB_LOAD_FINAL(_status, lib, game, ui, get, ai)
                     })
@@ -1259,7 +1259,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         'extension/新将包/xjb_xyAPI.js',
                         () => {
                             lib.init.js(
-                                location.href.replace("index.html", '') + "extension/新将包",
+                                location.origin + "/extension/新将包",
                                 "xjb_xyAPI",
                                 load => {
                                     game.print('xjb_xyAPI加载成功');
@@ -1561,11 +1561,11 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         help: {},
         config: {},
         package: {
-            intro: "<a href=https://gitee.com/xinyuanwm/new-jiang class=xjb_hunTitle>扩展已上传至git！</a>",
+            intro: "<a href=https://gitee.com/xinyuanwm/new-jiang class=xjb_hunTitle>扩展已上传至gitee！</a>",
             author: "<a href=https://b23.tv/RHn9COW class=xjb_hunTitle>新元noname</a>",
             diskURL: "",
             forumURL: "",
-            version: "1.2.0.020224",
+            version: "1.2.0",
         },
         files: {
             "character": [],
