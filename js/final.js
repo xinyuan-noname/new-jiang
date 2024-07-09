@@ -516,7 +516,7 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                     }
                 })
             }
-            ["xin_xiongli", "xin_yingfa", "xin_taoni"].forEach(function (item) {
+            ["xin_xiongli", "xin_taoni"].forEach(function (item) {
                 if (this[item]) this[item].qzj = true
                 let info = lib.translate[item + "_info"]
                 if (info && info.indexOf(get.translation("qzj")) < 0) lib.translate[item + "_info"] = get.translation("qzj") + "，" + lib.translate[item + "_info"]

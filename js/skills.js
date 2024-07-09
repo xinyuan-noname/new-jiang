@@ -1954,27 +1954,20 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                 "xin_yingfa": {
                     enable: "phaseUse",
                     filterTarget: true,
-                    usable: 1,
                     content: function () {
                         "step 0"
-                        var list = []
                         player.loseHp()
-                        if (target.countCards('h', { type: "basic" })) list.push("基本牌")
-                        if (target.countCards('he', { type: "equip" })) list.push("装备牌")
-                        if (target.countCards('h', { type: "trick" })) list.push("普通锦囊牌")
-                        if (target.countCards('h', { type: "delay" })) list.push("延时锦囊牌")
-                        player.chooseControl(list)
+                        player.chooseControl(["基本牌","装备牌","锦囊牌"]).set("prompt","选择一种类别，令其将其区域内所有该类别的牌置入弃牌堆。")
                         "step 1"
-                        var list = {
+                        const list = {
                             "基本牌": "basic",
                             "装备牌": "equip",
-                            "普通锦囊牌": "trick",
-                            "延时锦囊牌": "delay"
+                            "锦囊牌": ["trick","delay"]
                         }
-                        var type = list[result.control]
-                        var s = target.getCards("he", { type: type })
-                        target.fc_X(true, '弃牌', '旋转', { toDiscard: s })
-                        event.cards = s
+                        const type = list[result.control]
+                        const cards = target.getCards("hej", { type: type })
+                        target.loseToDiscardpile(cards)
+                        event.cards = cards
                         "step 2"
                         var s = event.cards
                         if (s.length) player.gain(s.randomGet(), "gain2")
@@ -1988,8 +1981,6 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                         },
                         threaten: 2,
                     },
-                    qzj: true,
-                    "_priority": 0,
                 },
                 "_xjb_remnantArea": {
                     mod: {

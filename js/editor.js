@@ -21,6 +21,7 @@ import {
 import {
     NonameCN
 } from './nonameCN.js'
+import { getSymbol } from './math.js';
 window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
     window.XJB_EDITOR_LIST = {
         filter: ['你已受伤', '你未受伤', '你体力不小于3',
@@ -63,6 +64,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
         gain: ['"gain2"', '"draw"'],
         logicConj: [" > ", " < ", " >= ", " <= ", " == ", ">", "<", ">=", "<=", "=="]
     }
+    get.xjb_en=(str)=>NonameCN.getEn(str);
     lib.xjb_translate = { ...NonameCN.AllList }
     lib.xjb_editorUniqueFunc = NonameCN.uniqueFunc
     let obj = {
@@ -169,16 +171,15 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                             "getStat:intoFunction://!?card://!?" + attribute
                     },
                 }
-                Object.keys(NonameCN.freeQuotation.cardName).forEach(i => {
-                    const cardId = i, cardTranslate = lib.translate[i], cardModelTranslate = ('【' + lib.translate[i] + '】')
+                for (let [cardTranslate, cardId] of Object.entries(NonameCN.freeQuotation.cardName)) {
                     CardMission.cardPile(cardId, 'name', cardTranslate)
                     CardMission.discardPile(cardId, 'name', cardTranslate)
                     CardMission.target(cardId, cardTranslate)
                     CardMission.player(cardId, cardTranslate)
                     CardMission.playerUse(cardId, cardTranslate)
                     CardMission.usedTimes(cardId, cardTranslate)
-                    lib.xjb_class.cardName.push('"' + i + '"')
-                })
+                    lib.xjb_class.cardName.push('"' + cardId + '"')
+                }
                 lib.suits.forEach(i => {
                     const suit = i, suitTranslate = lib.translate[i + '2'] + "牌"
                     CardMission.cardPile(suit, 'suit', suitTranslate)
@@ -309,6 +310,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 back.trigger = [];
                 back.phaseUse = [];
                 back.choose = [];
+                //获取变量,在两者已提交后
                 back.allVariable = function () {
                     back.skill.variable_content.clear();
                     back.skill.variable_filter.clear();
@@ -337,6 +339,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         }
                     });
                 }
+                //调整显示
                 back.updateDisplay = function () {
                     [...back.trigger, ...back.phaseUse, ...back.choose].forEach(i => {
                         i.style.display = 'none'
@@ -358,47 +361,29 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     back.skill.mod = {
                         cardUsable_Infinity: [],
                         targetInRange_Infinity: [],
+                        targetEnabled_false: [],
+                        globalFrom: [],
+                        globalTo: []
                     }
-                    Object.defineProperty(back.skill.mod, 'length', {
-                        get() {
-                            let result = 0;
-                            for (let k in back.skill.mod) {
-                                const atrr = back.skill.mod[k];
-                                if (Array.isArray(atrr)) result += atrr.length;
+                    function giveMethodOfGet(name, condition) {
+                        Object.defineProperty(back.skill.mod, name, {
+                            get() {
+                                let result = 0;
+                                for (let k in back.skill.mod) {
+                                    const atrr = back.skill.mod[k];
+                                    const bool = condition === void 0 ? true : k.startsWith(condition)
+                                    if (bool && Array.isArray(atrr)) result += atrr.length;
+                                }
+                                return result;
                             }
-                            return result;
-                        }
-                    });
-                    Object.defineProperty(back.skill.mod, 'lengthOfCardUsable', {
-                        get() {
-                            let result = 0;
-                            for (let k in back.skill.mod) {
-                                const atrr = back.skill.mod[k];
-                                if (k.startsWith("cardUsable") && Array.isArray(atrr)) result += atrr.length;
-                            }
-                            return result;
-                        }
-                    });
-                    Object.defineProperty(back.skill.mod, 'lengthOfTargetInRange', {
-                        get() {
-                            let result = 0;
-                            for (let k in back.skill.mod) {
-                                const atrr = back.skill.mod[k];
-                                if (k.startsWith("targetInRange") && Array.isArray(atrr)) result += atrr.length;
-                            }
-                            return result;
-                        }
-                    });
-                    Object.defineProperty(back.skill.mod, 'lengthOfGlobalFrom', {
-                        get() {
-                            let result = 0;
-                            for (let k in back.skill.mod) {
-                                const atrr = back.skill.mod[k];
-                                if (k.startsWith("targetInRange") && Array.isArray(atrr)) result += atrr.length;
-                            }
-                            return result;
-                        }
-                    })
+                        });
+                    }
+                    giveMethodOfGet('length')
+                    giveMethodOfGet('lengthOfCardUsable', 'cardUsable')
+                    giveMethodOfGet('lengthOfTargetInRange', 'targetInRange')
+                    giveMethodOfGet('lengthOfTargetEnabled', 'targetEnabled')
+                    giveMethodOfGet('lengthOfGlobalFrom', 'globalFrom')
+                    giveMethodOfGet('lengthOfGlobalTo', 'globalTo')
                     /**
                      * @param {RegExp} regexp 
                      * @param {string} output 
@@ -406,7 +391,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                      * @param {function} func
                      */
                     function addMod(regexp, output, attr, func) {
-                        back.skill.content.forEach((cont, i) => {
+                        [...back.skill.content].forEach((cont, i) => {
                             let match;
                             if ((match = regexp.exec(cont)) !== null) {
                                 const last = back.skill.content[i - 1]
@@ -417,20 +402,49 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                             }
                         })
                     }
-                    addMod(/^\s*(你|player)\s*使用的?(杀|酒|顺手牵羊|兵粮寸断)(无|没有)(次数|数量|距离)限制\s*$/, void 0, void 0, (match, ...p) => {
-                        return [`name:${NonameCN.getEn(p[1])}`, `${p[3] === '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`]
+                    addMod(/^\s*(你|player)\s*计算(与|和)其他角色的?距离时?(减|\-|减少|加|\+|增加)([0-9]+)\s*$/, void 0, void 0, (match, ...p) => {
+                        let symbol = getSymbol(p[2]);
+                        return [`${symbol}:${p[3]}`, `globalFrom`];
                     })
-                    addMod(/^\s*(你|player)\s*使用的?(基本牌|普通锦囊牌|延时锦囊牌)(无|没有)(次数|数量|距离)限制\s*$/, void 0, void 0, (match, ...p) => {
-                        return [`type:${NonameCN.getEn(p[1])}`, `${p[3] === '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`]
+                    addMod(/^\s*其他角色计算(与|和)(你|player)的?\s*距离时?(减|\-|减少|加|\+|增加)([0-9]+)\s*$/, void 0, void 0, (match, ...p) => {
+                        let symbol = getSymbol(p[2]);
+                        alert(symbol)
+                        return [`${symbol}:${p[3]}`, `globalTo`];
                     })
-                    //card_Infinity
-                    addMod(/^\s*(你|player)\s*使用的?卡?牌(无|没有)(次数|数量|距离)限制\s*$/, void 0, void 0, (match, ...p) => {
+                    //
+                    addMod(new RegExp(`^\s*(你|player)\s*不能成为\s*(${Object.keys(NonameCN.groupedList.cardName).join('|')})的?目标\s*$`), void 0, void 0, (match, ...p) => {
+                        return [`name:${NonameCN.getEn(p[1])}`, `targetEnabled_false`]
+                    })
+                    addMod(/^\s*(你|player)\s*不能成为\s*(基本牌|装备牌|普通锦囊牌|延时锦囊牌)的?目标\s*$/, void 0, void 0, (match, ...p) => {
+                        return [`type:${NonameCN.getEn(p[1])}`, `targetEnabled_false`]
+                    })
+                    addMod(/^\s*(你|player)\s*不能成为\s*锦囊牌的?目标\s*$/, "type:trick-delay", "targetEnabled_false");
+                    //
+                    addMod(/^\s*(你|player)\s*使用的?\s*卡?牌(无|没有)(次数|数量|距离)限制\s*$/, void 0, void 0, (match, ...p) => {
                         return [`all`, `${p[3] === '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`]
                     });
-                    //card_range_Infinity
-                    addMod(/^\s*(你|player)\s*使用的?卡?牌(无|没有)()限制\s*$/, "all", "targetInRange_Infinity");
-                    //trick&delay_range_Infinity
-                    addMod(/^\s*(你|player)\s*使用的?锦囊牌(无|没有)(距离)限制\s*$/, "type:trick-delay", "targetInRange_Infinity");
+                    addMod(/^\s*(你|player)\s*使用的?\s*锦囊牌(无|没有)(次数|数量|距离)限制\s*$/, void 0, void 0, (match, ...p) => {
+                        return ["type:trick-delay", `${p[3] === '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`]
+                    });
+                    addMod(/^\s*(你|player)\s*使用的?\s*(杀|酒|顺手牵羊|兵粮寸断)(无|没有)(次数|数量|距离)限制\s*$/, void 0, void 0, (match, ...p) => {
+                        return [`name:${NonameCN.getEn(p[1])}`, `${p[3] === '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`]
+                    })
+                    addMod(/^\s*(你|player)\s*使用的?\s*(基本牌|普通锦囊牌|延时锦囊牌)(无|没有)(次数|数量|距离)限制\s*$/, void 0, void 0, (match, ...p) => {
+                        return [`type:${NonameCN.getEn(p[1])}`, `${p[3] === '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`]
+                    })
+                }           
+                back.groupTest = function(){
+                    back.skill.group = [];
+                    return true;
+                }
+                back.aiTest = function () {
+                    back.skill.ai = [];
+                    back.skill.subSkillAi = [];
+                    back.aiArrange()
+                    return true;
+                }
+                back.aiArrange = function () {
+                    return true;
                 }
                 back.prepare = function () {
                     back.allVariable();
@@ -454,10 +468,17 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         const bool = back.skill.kind && back.skill.kind !== "trigger" && back.skill.kind !== 'enable:"phaseUse"'
                         return bool
                     }
+                    function moreViewAs() {
+                        const bool = back.skill.viewAs.length > 1 && back.skill.viewAsCondition.length > 1
+                        return bool;
+                    }
                     isJianxiongGain() && back.skill.boolList.push("jianxiong_gain");
                     isViewAs() && back.skill.boolList.push("viewAs");
+                    moreViewAs() && back.skill.boolList.push("moreViewAs")
                     //
                     back.modTest()
+                    back.groupTest()
+                    back.aiTest()
                     //dom部分
                     //更新显示状态
                     back.updateDisplay();
@@ -471,21 +492,21 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         /*初始化:逻辑变量*/
                         logic = false, IF = false, branch = false, afterBranch = [];
                     //根据所选的编辑器类型确定开头
-                    if (this.skill.mode === 'mt') {
-                        str = '"' + this.skill.id + '":{\n'
-                    } else if (this.skill.mode === 'mainCode') {
-                        str = 'lib.skill["' + this.skill.id + '"]={\n'
-                    } else if (!this.skill.mode) {
-                        this.skill.mode = 'self'
+                    if (back.skill.mode === 'mt') {
+                        str = '"' + back.skill.id + '":{\n'
+                    } else if (back.skill.mode === 'mainCode') {
+                        str = 'lib.skill["' + back.skill.id + '"]={\n'
+                    } else if (!back.skill.mode) {
+                        back.skill.mode = 'self'
                     }
                     //init部分
-                    if (this.skill.type.includes("mainSkill") || this.skill.type.includes("viceSkill")) {
+                    if (back.skill.type.includes("mainSkill") || back.skill.type.includes("viceSkill")) {
                         str += "init:function(player,skill){\n"
-                        if (this.skill.type.includes("mainSkill")) {
-                            str += `const bool = player.checkMainSkill("${this.skill.id}");\n`
+                        if (back.skill.type.includes("mainSkill")) {
+                            str += `const bool = player.checkMainSkill("${back.skill.id}");\n`
                         }
-                        if (this.skill.type.includes("viceSkill")) {
-                            str += `const bool = player.checkViceSkill("${this.skill.id}")\n&& !player.viceChanged;\n`
+                        if (back.skill.type.includes("viceSkill")) {
+                            str += `const bool = player.checkViceSkill("${back.skill.id}")\n&& !player.viceChanged;\n`
                         }
                         if (back.skill.uniqueList.includes("mainVice-remove1")) {
                             str += `bool && player.removeMaxHp();\n`
@@ -527,112 +548,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         str += i + ':true,\n'
                     })
                     //filter部分
-                    str += 'filter:function(event,player){\n'
-                    //主公技
-                    if (back.skill.type.includes("zhuSkill")) {
-                        str += 'if(! player.hasZhuSkill("' + back.skill.id +
-                            '")) return false;\n'
-                    }
-                    //势力技
-                    if (back.skill.type.includes("groupSkill")) {
-                        const group = findPrefix(back.skill.uniqueList, "group").map(k => k.slice(6))
-                        if (group.length > 0) {
-                            str += `if(player.group != "${group[0]}") return false;\n`
-                        }
-                    }
-                    //respond
-                    if (back.skill.trigger.player.includes("chooseToRespondBegin") || back.skill.trigger.player.includes("chooseToRespondBefore")) {
-                        str += "if(event.responded) return false;\n"
-
-                    }
-                    if (back.skill.tri_filterCard.length) {
-                        back.skill.tri_filterCard.forEach(resp => {
-                            str += `if(!event.filterCard({name:"${resp}",isCard:true},player,event)) return false;\n`
-                        })
-                    }
-                    const filterCardDispose = (filterCardType, standard) => {
-                        const filterTypeList = back.skill["filter_" + filterCardType].map(x => {
-                            return x.replace(/:.*$/, "")
-                        })
-                        const filterContentList = back.skill["filter_" + filterCardType].map(x => {
-                            return x.replace(/[^:\n]*:/, "")
-                        })
-                        let filterTypeAllList = new Set(filterTypeList)
-                        filterTypeAllList.forEach(x => {
-                            let arrList = filterContentList.filter((item, index) => {
-                                return filterTypeList[index] === x;
-                            })
-                            let tempStr = arrList.join()
-                            if (x === "useCardAfter") str += `if(event.name==='useCard'&&! [${tempStr}].includes(get.${standard}(event.card))) return false;\n`
-                            else str += `if(event.name==='${x}'&&! [${tempStr}].includes(get.${standard}(event.card))) return false;\n`
-                        })
-                    }
-                    back.skill.filter.forEach((i, k) => {
-                        //如果是空字符，则不处理
-                        if (i === "") return;
-                        //如果含赋值语句或本身就有return，则不添加return
-                        if (i.includes("return")
-                            || i.includes("var ") || i.includes("let ") || i.includes("const ")
-                            || i.includes(" = ") || i.includes(" += ") || i.includes(" -= ")) {
-                            str += i + '\n'
-                        }
-                        else if (i === 'if(' && IF === false) {
-                            str += i;
-                            IF = true
-                        }
-                        else if (i === ")" && IF === true) {
-                            str += i;
-                            IF = false;
-                        }
-                        else if (IF === true) {
-                            str += i;
-                        }
-                        else if (i === '{' || i === '}') {
-                            str += i + '\n';
-                        }
-                        else if (i.endsWith("||") || i.endsWith("&&")) {
-                            if (logic == false) str += 'if(! (' + i
-                            else str += '\n' + i;
-                            logic = true;
-                        }
-                        else if (logic === true) {
-                            str += '\n' + i + ')) return false;\n';
-                            logic = false;
-                        }
-                        else {
-                            str += 'if(! (' + i + ')) return false;\n'
-                        }
-                    });
-                    if (back.skill.filter_card.length > 0) filterCardDispose('card', 'name');
-                    if (back.skill.filter_suit.length > 0) filterCardDispose('suit', 'suit');
-                    if (back.skill.filter_color.length > 0) filterCardDispose('color', 'color')
-                    if (back.skill.uniqueTrigger.length > 0) {
-                        if (back.skill.uniqueTrigger.some(x => x.includes("outPhase"))) {
-                            const outPhaseList = back.skill.uniqueTrigger.filter(x => x.includes("outPhase")).map(x => x.replace('outPhase:', ''))
-                            outPhaseList.forEach(x => {
-                                const add = x === 'lose' ? '' : `event.name==="${x}"&&`
-                                str += `if(${add}player===_status.currentPhase) return false;\n`
-                            })
-                        }
-                        if (back.skill.uniqueTrigger.some(x => x.includes("inPhase"))) {
-                            const inPhaseList = back.skill.uniqueTrigger.filter(x => x.includes("inPhase")).map(x => x.replace('inPhase:', ''))
-                            inPhaseList.forEach(x => {
-                                const add = x === 'lose' ? '' : `event.name==="${x}"&&`
-                                str += `if(${add}player!==_status.currentPhase) return false;\n`
-                            })
-                        }
-                        if (this.skill.uniqueTrigger.includes('player:loseAfter')) {
-                            str += `if(event.name==="gain"&&event.player==player) return false;\n`
-                            str += `if(!(event.getl(player)&&event.getl(player).cards2&&event.getl(player).cards.length>0)) return false;\n`
-                        } else if (this.skill.uniqueTrigger.includes('player:loseAfter:h')) {
-                            str += `if(event.name==="gain"&&event.player==player) return false;\n`
-                            str += `if(!(event.getl(player)&&event.getl(player).hs&&event.getl(player).hs.length>0)) return false;\n`
-                        } else if (this.skill.uniqueTrigger.includes('player:loseAfter:discard')) {
-                            str += `if(!(event.type==='discard'&&event.getl(player).cards2.length>0)) return false;\n`
-                        }
-                    }
-                    if (!back.returnIgnore) str += 'return true;\n';
-                    str += '},\n';
+                    const filter = NonameCN.GenerateFilter(back, IF, logic)
+                    str += filter
                     if (back.skill.kind == 'enable:"phaseUse"' && back.skill.filterTarget && back.skill.filterTarget.length > 0 && back.skill.type.includes('filterTarget')) {
                         str += 'filterTarget:function(card,player,target){\n';
                         back.skill.filterTarget.forEach(i => {
@@ -687,8 +604,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                                     a += '\n.set("filterTarget",function(card,player,target){return player!=target})'
                                 }
                                 if (!back.stepIgnore) {
-                                    a += `\n.set("prompt",get.prompt("${this.skill.id}"))`
-                                    a += `\n.set("prompt2",(lib.translate["${this.skill.id}_info"]||''))`
+                                    a += `\n.set("prompt",get.prompt("${back.skill.id}"))`
+                                    a += `\n.set("prompt2",(lib.translate["${back.skill.id}_info"]||''))`
                                 }
                             }
                             if (i.indexOf('atLeast') > 0) {
@@ -702,7 +619,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                             }
                             if (i.indexOf("addToExpansion") > 0) {
                                 if (i.indexOf("gaintag.add") < 0) {
-                                    a += '.gaintag.add( "' + this.skill.id + '")'
+                                    a += '.gaintag.add( "' + back.skill.id + '")'
                                 }
                             }
                             if (i === 'if(' && IF === false) {
@@ -772,63 +689,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                             })
                         }
                     }
-                    else if (back.skill.viewAs.length === 1 && back.skill.viewAsCondition.length) {
-                        /**
-                         * @type {string}
-                         */
-                        const condition = back.skill.viewAsCondition[0]
-                        let asCard = back.skill.viewAs[0]
-                        let asNature;
-                        let costName = condition.startsWith("cardName-") && condition.slice(9)
-                        let costNature;
-                        let costColor;
-                        let costSuit;
-                        let position = get.type(costName) == "type" ? "'hes'" : "'hs'"
-                        if (asCard.startsWith("nature-")) {
-                            let list = asCard.slice(7).split(":")
-                            asNature = list[0];
-                            asCard = list[1];
-                        }
-                        if (costName && costName.startsWith("nature-")) {
-                            let list = costName.slice(7).split(":")
-                            costNature = list[0];
-                            costName = list[1];
-                        }
-                        if (condition.startsWith("color-pos-")) {
-                            let list = condition.slice(10).split(":");
-                            position = list[0]
-                            costColor = list[1];
-                        }
-                        if (condition.startsWith("suit-pos-")) {
-                            let list = condition.slice(9).split(":");
-                            position = list[0]
-                            costSuit = list[1];
-                        }
-                        str += "viewAs:{\n";
-                        str += `name:"${asCard}",\n`;
-                        if (asNature) str += `nature:"${asNature}",\n`;
-                        str += "},\n";
-                        str += "filterCard:{\n";
-                        if (costName) str += `name:"${costName}",\n`;
-                        if (costNature) str += `nature:"${costNature}",\n`;
-                        if (costColor) str += `color:"${costColor}",\n`;
-                        if (costSuit) str += `suit:"${costSuit}",\n`;
-                        str += `},\n`
-                        str += "viewAsFilter:function(player){\n"
-                        if (costName) str += `const name = "${costName}";\n`
-                        if (costNature) str += `const nature = "${costNature}";\n`;
-                        if (costColor) str += `const color = "${costColor}";\n`;
-                        if (costSuit) str += `const suit = "${costSuit}";\n`;
-                        str += `if(!player.countCards("${position}",{${costName ? "name," : ""}${costNature ? "nature," : ""}${costColor ? "color," : ""}${costSuit ? "suit," : ""}})) return false;\n`
-                        str += "},\n"
-                        if (position === 'hes') str += "position:'hes',\n"
-                        else if (position === 'hs') str += "position:'hs',\n"
-                        if (asCard === "tao") {
-                            str += "ai:{\n"
-                            str += "save:true,\n"
-                            str += "},\n"
-                        }
-                    } else {
+                    else if (back.skill.viewAs.length && back.skill.viewAsCondition.length) {
+                        str += NonameCN.GenerateViewAs(back, 0);
                     }
                     if (back.adjust) {
                         str = str.replace(/else\s*\n\s*{/g, "else{");
@@ -837,6 +699,26 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         */
                         str = str.replace(/(?<=(\=|^)\s*)\.(?=[a-z])/img, "player.");
                         str = str.replace(/([/][*])(.|\n)*([*][/])/g, "");
+                    }
+                    if (back.aiArrange() && back.skill.ai.length) {
+                        str += 'ai:{\n'
+                        back.skill.ai.forEach(line => {
+                            str += line + '\n'
+                        })
+                        str += '},\n'
+                    }
+                    if (back.skill.boolList.includes("moreViewAs")) {
+                        str += 'subSkill:{\n'
+                        const limit = Math.min(back.skill.viewAs.length, back.skill.viewAsCondition.length);
+                        for (let index = 1; index < limit; index++) {
+                            str += NonameCN.GenerateSubskill(back, index, `${back.skill.kind},\n`, filter, NonameCN.GenerateViewAs(back, index));
+                            back.skill.group.push(back.skill.id+"_"+index)
+                        }
+                        str += '},\n'
+                    }
+                    if (back.skill.group.length){
+                        const group = back.skill.group.map(id=>`"${id}"`)
+                        str += `group:[${group}],\n`
                     }
                     if (back.skill.mode === 'mt') str += '},'
                     else if (back.skill.mode === 'mainCode') str += '}'
@@ -1238,12 +1120,12 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         idFree.value = ''
                     }
                     //设置非法id，id为一些字符;id包含一些字符
-                    if ([...(',.?!:/@...";~()<>([{<*&[]\`#$%^+-={}|>}])'.split('')), "'",
+                    if ([...(',.?!:/@...";~()<>([{<*&[]\`#%^+-={}|>}])'.split('')), "'",
                         'NaN', 'Infinity', 'undefined', 'null',
                         'Math', 'Object', 'Array', 'Date', 'String', 'Number', 'Symbol', 'RegExp',
                         'player', 'target', 'event', 'result', 'trigger', 'card', 'cards', 'targets',
                         'var', 'let', 'const', 'try', 'catch', 'throw', 'if', 'else', 'switch', 'case', 'for', 'while', 'break', 'continue', 'function', 'return', 'new', 'class', 'async'].includes(idFree.value) ||
-                        bannedKeyWords.some(i => idFree.value.indexOf(i) >= 0)
+                        bannedKeyWords.some(i => idFree.value.includes(i) )
                     ) {
                         try {
                             throw ('"' + idFree.value + '"不是合法id');
@@ -1708,7 +1590,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     ["大于", "小于", "是", "等于"].forEach(i => {
                         that.changeWord(new RegExp(`(?<!不)${i}`), ` ${i} `)
                     });
-                    //
+                    that.changeWord(/(使用|打出)(杀|闪|桃|酒|无懈可击)次数/, "$1的$2次数")
                     that.changeWord(/(?<=使用|打出)(?=杀|闪|桃|酒|无懈可击)/, " ")
                     //长语句处理
                     that.changeWord(/可以(失去.+?点体力|受到.+?带你伤害)/g, function (match, ...p) {
@@ -1802,10 +1684,15 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     }
                     that.value = suitSymbolToCN(that.value)
                     //参数处理
+                    update('其他', function (disposing, disposed, previous) {
+                        if (previous.match(/其他角色计算(与|和)/)) return previous;
+                        if (previous.match(/计算(与|和)其他角色的?距离/)) return previous;
+                        return disposed;
+                    })
                     parameter("火属性", "冰属性", "雷属性",
                         "任意张", "任意名",
                         "从牌堆底");
-                    parameter("其他", "至多", "至少")
+                    parameter("至多", "至少")
                     parameter('梅花', '方片', '无花色', '黑桃', '红桃', '红色', '黑色', '无色', function (disposing, disposed, previous) {
                         if (previous.includes(`牌堆中${disposing}牌`)) return previous;
                         return disposed;
@@ -1814,6 +1701,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     that.value = eachLine(contentFree.value, line => {
                         let group = findWordsGroup(line, playerCN)
                         if (line.includes("变量") || !group.length) return;
+                        if (/其他角色计算(和|与)你的?距离/.test(line)) return;
                         let restWords = clearWordsGroup(line, playerCN);
                         return `${group.shift()} ${restWords} ${group.join(" ")}`
                     })
@@ -2188,7 +2076,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                      * @param {Array<string>} backAttr 
                      * @param {string} domEleAttr 
                      */
-                    function setDom(domEle, mapList, backAttr, domEleAttr) {
+                    function setDom(domEle, mapList, backAttr, domEleAttr, extra = []) {
                         let list = xjb_formatting(Object.values(mapList));
                         let list1 = xjb_formatting(Object.keys(mapList));
                         list.forEach((i, k) => {
@@ -2224,7 +2112,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                             }
                             if (backAttr.includes(e.target[domEleAttr])) backAttr.remove(e.target[domEleAttr]);
                             else if (backAttr.length < colorList.length) backAttr.push(e.target[domEleAttr]);
-                            Array.from(domEle.children).filter(ele => {
+                            Array.from([...domEle.children, ...extra]).filter(ele => {
                                 ele.style.backgroundColor = "#e4d5b7";
                                 return true;
                             }).forEach(ele => {
@@ -2256,7 +2144,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         ...lib.cardPack.guozhan].forEach(k => {
                             if (lib.translate[k]) mapList["cardName-" + k] = lib.translate[k]
                         })
-                        setDom(costFree1, mapList, back.skill.viewAsCondition, "condition")
+                        setDom(costFree1, mapList, back.skill.viewAsCondition, "condition", costFree2.children)
                     };
                     if (costFree2) {
                         const mapList = {
@@ -2273,7 +2161,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                             'suit-pos-hes:spade': "♠牌",
                             'suit-pos-hs:spade': "♠手牌",
                         };
-                        setDom(costFree2, mapList, back.skill.viewAsCondition, "condition")
+                        setDom(costFree2, mapList, back.skill.viewAsCondition, "condition", costFree1.children)
                     };
                     if (costFree3) {
                         const mapList = {
@@ -2316,7 +2204,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         if (back.skill.mode === 'mainCode') {
                             let func = new Function('_status', 'lib', 'game', 'ui', 'get', 'ai', back.target.value)
                             func(_status, lib, game, ui, get, ai);
-                            game.xjb_create.alert('技能' + back.skill.id + "已生成!")
+                            game.xjb_create.confirm('技能' + back.skill.id + "已生成(本局游戏内生效)!是否将该技能分配给玩家？",function(){
+                                game.me.addSkill(back.skill.id)
+                                if(back.skill.group) game.me.addSkill(back.skill.group)
+                            })
                         }
                     }
                     catch (err) {

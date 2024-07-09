@@ -7,6 +7,9 @@ import {
     _status
 } from "../../../noname.js"
 import {
+    findPrefix
+} from "./string.js";
+import {
     textareaTool
 } from './ui.js'
 const eventList = {
@@ -58,6 +61,14 @@ function getMapOfCard(bool = true) {
     const map = {};
     for (let k of idList) {
         map[lib.translate[k]] = `${bool ? '"' : ""}${k}${bool ? '"' : ""}`;
+    }
+    return map;
+}
+function getMapOfSuit(bool = true) {
+    const idList = lib.suit
+    const map = {};
+    for (let k of idList) {
+        map[lib.translate[k+"2"]] = `${bool ? '"' : ""}${k}${bool ? '"' : ""}`;
     }
     return map;
 }
@@ -113,7 +124,7 @@ function getMapOfTrigger() {
     list["受到伤害后"] = "damageEnd";
     return list
 }
-function getMapOfHasCard() {  
+function getMapOfHasCard() {
     const idList = cardNameList
     const map = {};
     for (let k of idList) {
@@ -142,8 +153,8 @@ function getMapOfHasType() {
     }
     return map;
 }
-function getMapOfCanAddJudge(){
-    const idList = cardNameList.filter(card=>get.type(card)==='delay')
+function getMapOfCanAddJudge() {
+    const idList = cardNameList.filter(card => get.type(card) === 'delay')
     const map = {};
     for (let k of idList) {
         //这里不加intoFunction标志,表明不能向其中添加参数
@@ -484,8 +495,9 @@ export class NonameCN {
         "处理区": "ui.ordering",
     }
     static freeQuotation = {
-        cardName: getMapOfCard(false),
+        cardName:getMapOfCard(false),
         type: getMapOfType(false),
+        suit:getMapOfSuit(false),
     }
     static groupedList = {
         player: {
@@ -508,6 +520,7 @@ export class NonameCN {
             "属于宗族": "hasClan",
             '获取判定区牌': 'getJudge',
             '获取装备区牌': 'getEquip',
+            "观看手牌":"viewHandcards"
         },
         player_withArg: {
             ...getMapOfHasCard(),
@@ -544,6 +557,7 @@ export class NonameCN {
         },
         suit: {
         },
+        suit:getMapOfSuit(),
         type: getMapOfType(),
         cardName: getMapOfCard(),
         group: getMapOfGroup(),
@@ -617,6 +631,24 @@ export class NonameCN {
             return `[${value}].includes(get.${key}(card,player))`
         }
         return `get.${key}(card,player) === "${value}"`
+    }
+    static getStrFormConst({ costName, costNature, costColor, costSuit }) {
+        let result = ''
+        if (costName) result += `const name = "${costName}";\n`;
+        if (costNature) result += `const nature = "${costNature}";\n`;
+        if (costColor) result += `const color = "${costColor}";\n`;
+        if (costSuit) result += `const suit = "${costSuit}";\n`;
+        return result;
+    }
+    static getStrFormVcard({ costName, costNature, costColor, costSuit }, changeLine = true) {
+        let result = '{\n'
+        if (costName) result += `name:"${costName}",\n`;
+        if (costNature) result += `nature:"${costNature}",\n`;
+        if (costColor) result += `color:"${costColor}",\n`;
+        if (costSuit) result += `suit:"${costSuit}"\n`;
+        result += `}`;
+        if (!changeLine) result = result.replaceAll('\n', '')
+        return result;
     }
     static getVirtualPlayer() {
         const player = ui.create.player();
@@ -732,7 +764,221 @@ export class NonameCN {
             })
             result += "},\n"
         }
+        if (mod.lengthOfTargetEnabled) {
+            result += "targetEnabled:function(card,player,target,now){\n"
+            mod.targetEnabled_false.forEach(condition => {
+                if (condition === "all") result += "return false;\n";
+                else {
+                    let list = condition.split(":");
+                    let cdt0 = list[0];
+                    let cdt1 = list[1];
+                    if (cdt1.includes('-')) {
+                        cdt1 = cdt1.split('-');
+                    }
+                    result += `if(${that.getStrFormFunc(cdt0, cdt1)}) return false;\n`;
+                }
+            })
+            result += "},\n";
+        }
+        if (mod.lengthOfGlobalFrom) {
+            result += `globalFrom:function(from,to,current){\n`
+            let number = mod.globalFrom.reduce((acc, cur) => {
+                let list = cur.split(":");
+                let cdt0 = list[0];
+                let cdt1 = parseInt(list[1]);
+                return cdt0 === "+" ? acc + cdt1 : acc - cdt1
+            }, 0);
+            if (!number) number = `+0`
+            if (number > 0) number = `+${number}`
+            result += `return distance${number};\n`
+            result += "},\n"
+        }
+        if (mod.lengthOfGlobalTo) {
+            result += `globalTo:function(from,to,current){\n`
+            let number = mod.globalTo.reduce((acc, cur) => {
+                let list = cur.split(":");
+                let cdt0 = list[0];
+                let cdt1 = parseInt(list[1]);
+                return cdt0 === "+" ? acc + cdt1 : acc - cdt1
+            }, 0);
+            if (!number) number = `+0`
+            if (number > 0) number = `+${number}`
+            result += `return distance${number};\n`
+            result += "},\n"
+        }
         result += "},\n";
         return result
+    }
+    static GenerateFilter(back, IF, logic) {
+        let result = ''
+        const { id, type, uniqueList, trigger, filter,
+            filter_card, filter_suit, filter_color,
+            uniqueTrigger } = back.skill
+        result += 'filter:function(event,player){\n'
+        //主公技
+        if (type.includes("zhuSkill")) {
+            result += `if(! player.hasZhuSkill("${id}")) return false;\n`;
+        }
+        //势力技
+        if (type.includes("groupSkill")) {
+            const group = findPrefix(uniqueList, "group").map(k => k.slice(6))
+            if (group.length > 0) {
+                result += `if(player.group != "${group[0]}") return false;\n`
+            }
+        }
+        //respond
+        if (trigger.player.includes("chooseToRespondBegin") || trigger.player.includes("chooseToRespondBefore")) {
+            result += "if(event.responded) return false;\n"
+
+        }
+        if (back.skill.tri_filterCard.length) {
+            back.skill.tri_filterCard.forEach(resp => {
+                result += `if(!event.filterCard({name:"${resp}",isCard:true},player,event)) return false;\n`
+            })
+        }
+        const filterCardDispose = (filterCardType, standard) => {
+            const filterTypeList = back.skill["filter_" + filterCardType].map(x => {
+                return x.replace(/:.*$/, "")
+            })
+            const filterContentList = back.skill["filter_" + filterCardType].map(x => {
+                return x.replace(/[^:\n]*:/, "")
+            })
+            let filterTypeAllList = new Set(filterTypeList)
+            filterTypeAllList.forEach(x => {
+                let arrList = filterContentList.filter((item, index) => {
+                    return filterTypeList[index] === x;
+                })
+                let tempStr = arrList.join()
+                if (x === "useCardAfter") result += `if(event.name==='useCard'&&! [${tempStr}].includes(get.${standard}(event.card))) return false;\n`
+                else result += `if(event.name==='${x}'&&! [${tempStr}].includes(get.${standard}(event.card))) return false;\n`
+            })
+        }
+        filter.forEach((i, k) => {
+            //如果是空字符，则不处理
+            if (i === "") return;
+            //如果含赋值语句或本身就有return，则不添加return
+            if (i.includes("return")
+                || i.includes("var ") || i.includes("let ") || i.includes("const ")
+                || i.includes(" = ") || i.includes(" += ") || i.includes(" -= ")) {
+                result += i + '\n'
+            }
+            else if (i === 'if(' && IF === false) {
+                result += i;
+                IF = true
+            }
+            else if (i === ")" && IF === true) {
+                result += i;
+                IF = false;
+            }
+            else if (IF === true) {
+                result += i;
+            }
+            else if (i === '{' || i === '}') {
+                result += i + '\n';
+            }
+            else if (i.endsWith("||") || i.endsWith("&&")) {
+                if (logic == false) result += 'if(! (' + i
+                else result += '\n' + i;
+                logic = true;
+            }
+            else if (logic === true) {
+                result += '\n' + i + ')) return false;\n';
+                logic = false;
+            }
+            else {
+                result += 'if(! (' + i + ')) return false;\n'
+            }
+        });
+        if (filter_card.length > 0) filterCardDispose('card', 'name');
+        if (filter_suit.length > 0) filterCardDispose('suit', 'suit');
+        if (filter_color.length > 0) filterCardDispose('color', 'color')
+        if (uniqueTrigger.length > 0) {
+            if (uniqueTrigger.some(x => x.includes("outPhase"))) {
+                const outPhaseList = uniqueTrigger.filter(x => x.includes("outPhase")).map(x => x.replace('outPhase:', ''))
+                outPhaseList.forEach(x => {
+                    const add = x === 'lose' ? '' : `event.name==="${x}"&&`
+                    result += `if(${add}player===_status.currentPhase) return false;\n`
+                })
+            }
+            if (uniqueTrigger.some(x => x.includes("inPhase"))) {
+                const inPhaseList = uniqueTrigger.filter(x => x.includes("inPhase")).map(x => x.replace('inPhase:', ''))
+                inPhaseList.forEach(x => {
+                    const add = x === 'lose' ? '' : `event.name==="${x}"&&`
+                    result += `if(${add}player!==_status.currentPhase) return false;\n`
+                })
+            }
+            if (uniqueTrigger.includes('player:loseAfter')) {
+                result += `if(event.name==="gain"&&event.player==player) return false;\n`
+                result += `if(!(event.getl(player)&&event.getl(player).cards2&&event.getl(player).cards.length>0)) return false;\n`
+            } else if (uniqueTrigger.includes('player:loseAfter:h')) {
+                result += `if(event.name==="gain"&&event.player==player) return false;\n`
+                result += `if(!(event.getl(player)&&event.getl(player).hs&&event.getl(player).hs.length>0)) return false;\n`
+            } else if (uniqueTrigger.includes('player:loseAfter:discard')) {
+                result += `if(!(event.type==='discard'&&event.getl(player).cards2.length>0)) return false;\n`
+            }
+        }
+        if (!back.returnIgnore) result += 'return true;\n';
+        result += '},\n';
+        return result
+    }
+    static GenerateViewAs(back, i = 0) {
+        const { viewAs, viewAsCondition } = back.skill;
+        const that = this;
+        let result = '';
+        const condition = viewAsCondition[i]
+        let asCard = viewAs[i]
+        let asNature;
+        let costName = condition.startsWith("cardName-") && condition.slice(9)
+        let costNature, costColor, costSuit;
+        let position = get.type(costName) == "type" ? "'hes'" : "'hs'"
+        if (asCard.startsWith("nature-")) {
+            let list = asCard.slice(7).split(":")
+            asNature = list[0];
+            asCard = list[1];
+        }
+        if (costName && costName.startsWith("nature-")) {
+            let list = costName.slice(7).split(":")
+            costNature = list[0];
+            costName = list[1];
+        }
+        if (condition.startsWith("color-pos-")) {
+            let list = condition.slice(10).split(":");
+            position = list[0]
+            costColor = list[1];
+        }
+        if (condition.startsWith("suit-pos-")) {
+            let list = condition.slice(9).split(":");
+            position = list[0]
+            costSuit = list[1];
+        }
+        result += "viewAs:";
+        result += that.getStrFormVcard({
+            'costName': asCard,
+            'costNature': asNature
+        });
+        result += ",\n";
+        result += "filterCard:";
+        result += that.getStrFormVcard({ costName, costNature, costColor, costSuit })
+        result += `,\n`
+        result += "viewAsFilter:function(player){\n"
+        result += that.getStrFormConst({ costName, costNature, costColor, costSuit });
+        result += `if(!player.countCards("${position}",{${costName ? "name," : ""}${costNature ? "nature," : ""}${costColor ? "color," : ""}${costSuit ? "suit," : ""}})) return false;\n`
+        result += "},\n"
+        if (position === 'hes') result += "position:'hes',\n"
+        else if (position === 'hs') result += "position:'hs',\n"
+        if (asCard === "tao") {
+            if (i === 0) back.skill.ai.push("save:true,");
+        }
+        return result;
+    }
+    static GenerateSubskill(back, name, ...content) {
+        const { id } = back.skill
+        let result = ''
+        result += `"${name}":{\n`;
+        result += content.join('');
+        result += 'sub:true,\n';
+        result += `sourceSkill:"${id}",\n`
+        result += '},\n';
+        return result;
     }
 }

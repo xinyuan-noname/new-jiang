@@ -1545,7 +1545,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 lib.translate._ztzbh_flowerDamage = '花伤'
                 lib.skill._ztzbh_liandong = {
                     trigger: {
-                        player: Object.keys(lib.extensionPack.枝头折百花.skill.skill).map(i => i + "After")
+                        player:[], 
                     },
                     filter: function (event, player) {
                         return player === game.me
@@ -1556,6 +1556,11 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                         game.xjb_getDaomo(player, "flower")
                     }
                 }
+                Object.defineProperty(lib.skill._ztzbh_liandong.trigger,"player",{
+                    get(){
+                        
+                    }
+                })
             }
         },
         help: {},

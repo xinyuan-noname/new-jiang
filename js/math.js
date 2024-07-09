@@ -1,11 +1,25 @@
-export function randomInt(min,max){
-    return Math.floor(Math.random()*(max-min)+min)
+export function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min) + min)
 };
-export function isEven(number){
-    return !(number&1);
+export function isEven(number) {
+    return !(number & 1);
 }
-export function isOdd(number){
-    return !(!(number&1));
+export function isOdd(number) {
+    return !(!(number & 1));
+}
+/**
+ * 根据输入字符串获取相应的运算符符号。
+ * @param {string} str - 表示运算符的字符串。
+ * @returns {string|undefined} 返回对应的运算符符号，如果输入字符串不匹配任何已知运算符，则返回 undefined。
+ */
+export function getSymbol(str) {
+    let symbol;
+    // 根据输入字符串的内容，确定并设置符号变量
+    if (['减', '-', '减少'].includes(str)) symbol = '-';
+    else if (['加', '+', '增加'].includes(str)) symbol = '+';
+    else if (['乘', '*', '乘以'].includes(str)) symbol = '*';
+    else if (['取模', '%', '模'].includes(str)) symbol = '%';
+    return symbol;
 }
 window.XJB_LOAD_MATH = function (_status, lib, game, ui, get, ai) {
     lib._xjb = {
@@ -328,7 +342,7 @@ window.XJB_LOAD_MATH = function (_status, lib, game, ui, get, ai) {
             return err
         }
     };
-    lib._xjb['randomInt']=function(min,max){
-        return Math.floor(Math.random()*(max-min)+min)
+    lib._xjb['randomInt'] = function (min, max) {
+        return Math.floor(Math.random() * (max - min) + min)
     }
 }

@@ -42,9 +42,10 @@ window["xjb_xyAPI_Directory_新将包"]={
         "soul_timer.jpg",
         "soul_chanter.jpg",
         "extension.js",
-        "Thumbs.db",
+        ".gitignore",
         "card_lw.jpg",
         "qimendunjia.png",
+        "info.json",
         "xjb_jin_simayi.jpg"
     ],
     "title": [
@@ -106,7 +107,8 @@ window["xjb_xyAPI_Directory_新将包"]={
         "dialog.js",
         "card.js",
         "string.js",
-        "ui.js"
+        "ui.js",
+        "nonameCN.js"
     ],
     "image": [
         "Lucky.png",
@@ -141,6 +143,13 @@ window["xjb_xyAPI_Directory_新将包"]={
     "sink": [],
     "json": [
         "1.json"
+    ],
+    ".vscode": [
+        "extensions.json",
+        "settings.json"
+    ],
+    "md": [
+        "skillEditor.md"
     ],
     "image/card": [
         "xjb_xiugengxuzi.png",
