@@ -376,8 +376,7 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                 bookWrite("曹植", ["白马篇", "洛神赋", "铜雀台赋", "赠白马王彪"], wonderfulP)
                 bookWrite("曹丕", ["燕歌行"], ["poem"])
                 bookWrite("陈琳", ["为袁绍檄豫州"], ["article"])
-                bookWrite("诸葛亮", ["隆中对", "出师表", "诫子书", "诫外生书"], wonderfulA)
-                bookWrite("嬴政", ["过秦论", "阿房宫赋"], wonderfulA)
+                bookWrite("诸葛亮", ["隆中对", "出师表", "诫子书", "诫外生书"], wonderfulA)                
                 bookWrite("李白", ['行路难', "蜀道难", "清平调", "梦游天姥吟留别", "将进酒"], wonderfulP)
                 bookWrite("芙艾派依", ["魂的货币体系"], ["lingli"])
                 if (1) {
@@ -516,7 +515,7 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                     }
                 })
             }
-            ["xin_xiongli", "xin_taoni"].forEach(function (item) {
+            ["xin_xiongli"].forEach(function (item) {
                 if (this[item]) this[item].qzj = true
                 let info = lib.translate[item + "_info"]
                 if (info && info.indexOf(get.translation("qzj")) < 0) lib.translate[item + "_info"] = get.translation("qzj") + "，" + lib.translate[item + "_info"]

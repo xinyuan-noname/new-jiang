@@ -1,4 +1,7 @@
-import {touchE} from './ui.js'
+import {
+    touchE,
+    element
+} from './ui.js'
 window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
     /**
      * 
@@ -995,11 +998,9 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                         if (player.storage.xin_huzhu2 <= 0) player.removeSkill('xin_huzhu2')
                     },
                     onrespond: function (event, player) {
-
                         player.draw()
                         player.storage.xin_huzhu2--;
                         player.update();
-
                         if (player.storage.xin_huzhu2 <= 0) player.removeSkill('xin_huzhu2')
                     },
                     marktext: "护",
@@ -1138,51 +1139,6 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     },
                     "_priority": 0,
                 },
-                "xin_shiyin": {
-                    trigger: {
-                        player: "phaseDiscardEnd",
-                    },
-                    direct: true,
-                    filter: function (event, player) {
-                        var cards = [];
-                        player.getHistory('lose', function (evt) {
-                            if (evt.type == 'discard' && evt.getParent('phaseDiscard') == event) cards.addArray(evt.cards2);
-                        });
-                        return cards.length > 0;
-                    },
-                    content: function () {
-                        'step 0'
-                        event.cards = [];
-                        player.getHistory('lose', function (evt) {
-                            if (evt.type == 'discard' && evt.getParent('phaseDiscard') == trigger) event.cards.addArray(evt.cards2);
-                        });
-                        'step 1'
-                        var colors = [], type = [], num1 = 0, num2 = 0;
-                        for (var i = 0; i < event.cards.length; i++) {
-                            colors.add(get.color(event.cards[i]));
-                            type.add(get.type(event.cards[i]));
-                        }
-                        event.colors = colors;
-                        event.type = type
-                        'step 2'
-                        var num2 = 0
-                        if (event.type.length == 1) {
-                            switch (get.type(event.cards[0], "trick")) {
-                                case 'basic': num2 = 11; break;
-                                case 'trick': num2 = 12; break;
-                                case 'equip': num2 = 4; break;
-                            }
-                        }
-                        if (num2) player.chooseBool(get.xjb_number(num2, -1))
-                        else event.finish()
-                        if (num2) event.num2 = num2
-                        'step 3'
-                        if (result.bool) {
-                            player.fc_X(true, event.num2, { onlyme: game.players.slice(0) })
-                        }
-                    },
-                    "_priority": 0,
-                },
                 "xin_liuxiang": {
                     group: ["xin_liuxiang_xiang", "xin_liuxiang_aid"],
                     subSkill: {
@@ -1288,31 +1244,26 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                 },
                 "xin_niepan": {
                     audio: "ext:新将包:false",
-                    enable: "chooseToUse",
+                    enable: "phaseUse",
                     filter: function (event, player) {
-                        if (event.type == 'dying') {
-                            if (player != event.dying) return false;
-                            return true;
-                        }
-                        else if (event.parent.name == 'phaseUse') {
-                            return true;
-                        }
-                        return false;
+                        return true;
                     },
-                    usable: 1,
-                    "translate1": "每回合限一次，你濒死时/出牌阶段时，你可以摸一张牌。",
-                    "translate2": "每回合限一次，你濒死时/出牌阶段时，你可以恢复一点体力。",
+                    usable: 2,
                     content: function () {
-                        var num = player.countCards('h') % 2 === 1 ? 1 : 11
-                        player.fc_X(true, num)
+                        var mode = player.countCards('h') % 2
+                        if(mode===0){
+                            player.loseHp()
+                            player.draw(3)
+                        } else{
+                            player.recover()
+                            player.draw()
+                        }
                     },
                     ai: {
-                        save: true,
                         order: 9,
                         result: {
                             player: function (player) {
-                                if (player.hp <= 0) return 10;
-                                if (player.hp <= 2 && player.countCards('he') <= 1) return 10;
+                                if (player.hp <= 2 && player.countCards('he')%2== 1) return 10;
                                 return 0;
                             },
                         },
@@ -1418,7 +1369,7 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                         return !target.isLinked()
                     },
                     position: "he",
-                    qzj: true,
+                    usable:1,
                     filter: function (event, player) {
                         return player.countCards('hes', { suit: 'diamond' }) > 0
                     },
@@ -1446,9 +1397,7 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                             target: -1,
                         },
                         threaten: 1.5,
-                    },
-                    xjb: true,
-                    "_priority": 0,
+                    }
                 },
                 "xin_jiang": {
                     audio: "ext:新将包:false",
@@ -1595,10 +1544,10 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     },
                     forced: true,
                     filter: function (event, player) {
-                        if (event.card && get.type(event.card) !== "equip") return true
+                        if (event.card && player!==event.player) return true
                     },
                     content: function () {
-                        trigger.player.fc_X(true, "残区", { remnant: trigger.card.name })
+                        trigger.player.fc_X(true, "残区", [2], { remnant: trigger.card.name })
                     },
                     ai: {
                         effect: {
@@ -1686,11 +1635,10 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                 },
                 "xin_lianhuan": {
                     enable: "phaseUse",
-                    selectTarget: [1, Infinity],
-                    filterTarget: function (card, player, target) {
-                        if (ui.selected.targets.length < player.hp) return true
-                        return false
+                    selectTarget: function(){
+                        return _status.event.player.hp;
                     },
+                    filterTarget: true,
                     usable: 1,
                     content: function () {
                         target.link()
@@ -1966,7 +1914,7 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                         }
                         const type = list[result.control]
                         const cards = target.getCards("hej", { type: type })
-                        target.loseToDiscardpile(cards)
+                        target.discard(cards)                        
                         event.cards = cards
                         "step 2"
                         var s = event.cards
@@ -2264,13 +2212,14 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                         })
                         game.resume()
                     },
+                    element:element,
                     content() {
                         "step 0"
                         //进入聚灵区
                         player.addTempSkill('xjb_P_gathering', { player: "phaseBegin" })
                         "step 1"
                         game.pause()
-                        let num = 0
+                        let num = 0,element = get.info(event.name).element
                         while (lib.skill['chant' + num] !== undefined) {
                             num++
                         }
@@ -2312,19 +2261,19 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                         }).then(data => {
                             return new Promise(res => {
                                 setTimeout(i => {
-                                    game.xjb_back.ele.kinds[0].click()
-                                    game.xjb_back.ele.kinds[0].dispatchEvent(touch)
-                                    game.xjb_back.ele.types[1].click()
-                                    game.xjb_back.ele.types[1].dispatchEvent(touch)
+                                    element().setTarget(game.xjb_back.ele.kinds[0])
+                                        .clickAndTouch()
+                                        .setTarget(game.xjb_back.ele.types[1])
+                                        .clickAndTouch()
                                     res()
                                 }, 200)
                             })
                         }).then(data => {
                             return new Promise(res => {
                                 setTimeout(i => {
-                                    game.xjb_back.ele.mode[2].click()
-                                    game.xjb_back.ele.mode[2].dispatchEvent(touch)
-                                    res()
+                                    element().setTarget(game.xjb_back.ele.mode[2])
+                                        .clickAndTouch()
+                                     res()
                                 }, 200)
                             })
                         }).then(data => {
@@ -2334,13 +2283,15 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                             })
                         }).then(data => {
                             return new Promise(res => {
-                                let list = XJB_EDITOR_LIST['filter'].randomGet() + '整理', a = 0
-                                lib.translate[skill + "_info"] = list
+                                let list = XJB_EDITOR_LIST['filter'].randomGet() , a = 0
+                                lib.translate[skill + "_info"] = `${list}整理`
                                 let timer = setInterval(i => {
                                     if (a === list.length) {
                                         res(game.xjb_back.ele.filter.value)
                                         clearInterval(timer)
-                                        game.xjb_back.ele.filter.submit()
+                                        element().setTarget(game.xjb_back.ele.filter)
+                                            .callMethod("arrange")
+                                            .callMethod("submit");
                                         return
                                     }
                                     game.xjb_back.ele.filter.value += list[a]
@@ -2354,17 +2305,20 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                             })
                         }).then(data => {
                             return new Promise(res => {
-                                let list = XJB_EDITOR_LIST['effect'].randomGet() + '整理', a = 0
-                                lib.translate[skill + "_info"] += list
+                                let list = XJB_EDITOR_LIST['effect'].randomGet() , a = 0
+                                lib.translate[skill + "_info"] += `${list}整理`
                                 let timer = setInterval(i => {
                                     if (a === list.length) {
                                         res();
                                         clearInterval(timer);
-                                        game.xjb_back.ele.content.submit();
+                                        element().setTarget(game.xjb_back.ele.content)
+                                            .callMethod("arrange")
+                                            .callMethod("submit");
                                         return;
                                     }
                                     game.xjb_back.ele.content.value += list[a];
-                                    game.xjb_back.ele.content.submit();
+                                    element().setTarget(game.xjb_back.ele.content)
+                                            .callMethod("submit");
                                     a++
                                 }, 100)
                             })
@@ -2375,13 +2329,15 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                             })
                         }).then(data => {
                             return new Promise(res => {
-                                let list = XJB_EDITOR_LIST['trigger'].randomGet() + '整理', a = 0
-                                lib.translate[skill + "_info"] += list
+                                let list = XJB_EDITOR_LIST['trigger'].randomGet(), a = 0
+                                lib.translate[skill + "_info"] += `${list}整理`
                                 let timer = setInterval(i => {
                                     if (a === list.length) {
                                         res()
                                         clearInterval(timer)
-                                        game.xjb_back.ele.trigger.submit()
+                                        element().setTarget(game.xjb_back.ele.trigger)
+                                            .callMethod("arrange")
+                                            .callMethod("submit");
                                         return
                                     }
                                     game.xjb_back.ele.trigger.value += list[a]
@@ -2409,11 +2365,12 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                                         arr[1] = `你"${get.translation(arr[1])}(${arr[1]})"一次`;
                                     }
                                     lib.translate[skill + '_info'] = "锁定技，" + arr[2] + '，若' + arr[0] + '，' + arr[1] + '。'
+                                    lib.translate[skill + '_info']  = lib.translate[skill + '_info'] .replace(/\s/g,"")
                                     res()
                                 }, 300)
                             })
                         }).then(data => {
-                            lib.skill.xjb_soul_chanter.nextDo(player, skill)
+                            get.info(event.name).nextDo(player, skill)
                         })
                     },
                     ai: {
@@ -2628,31 +2585,53 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
         SkillCreater(
             "xin_guixin", {
             trigger: {
-                player: ["damageEnd", "loseHpEnd"]
+                player: "damageEnd"
             },
             frequent: true,
-            content: function () {
-                "step 0"
-                event.num = trigger.num;
-                "step 1"
-                player.draw()
+            getIndex:function(event,player,triggername){
+                return event.num;
+            },
+            content:async function (event, trigger, player) {
+                await player.draw()
                 const orderingCards = [...ui.ordering.children]
                 if (orderingCards) {
                     let cards = []
                     orderingCards.forEach(i => {
                         cards.push(game.createCard(i.name, lib.card[i.name].cardColor, undefined, i.nature))
                     })
-                    player.gain(cards, 'gain2')
+                    await player.gain(cards, 'gain2')
                 }
-                event.num--
-                "step 2"
-                if (event.num > 0) {
-                    event.num--;
-                    event.goto(1)
+                const max=Math.min(
+                        player.countCards(),
+                        get.players(cur=>cur!=player&&cur.countCards("he")).length
+                    )
+                const {bool,cards} = await player.chooseCard(
+                    [1,max],
+                    get.prompt(event.name),
+                    `选择至多${get.cnNumber(max)}张牌弃置之，然后获得等量名角色各一张牌。`
+                ).forResult()
+                if(bool){
+                    await player.discard(cards)
+                    const {targets} = await player.chooseTarget(
+                        cards.length,
+                        true,
+                        get.prompt(event.name),
+                        `选择${get.cnNumber(cards.length)}名角色，获得这些角色各一张牌。`,
+                        (card, player, target) => {
+                            return target.countCards("he") > 0 && player != target;
+                        },
+                        target => {
+                            if (!_status.event.aicheck) return 0;
+                            const att = get.attitude(_status.event.player, target);
+                            if (target.hasSkill("tuntian")) return att / 10;
+                            return 1 - att;
+                        }
+                    ).forResult()
+                    player.gainMultiple(targets,"he")
                 }
             },
             translate: "归心",
-            description: "当你减少一点体力后，你可以摸一张牌然后获得与此时处理区的牌同名的牌。",
+            description: "当你受到一点伤害后，你可以摸一张牌并获得与此时处理区的牌同名的牌，然后你可以弃置任意张牌并获得等量名角色各一张牌。",
             ai: {
                 maixie: true,
                 "maixie_hp": true,
@@ -2668,6 +2647,79 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                 },
             },
         })
+        SkillCreater(
+              "xin_chongmou" ,{
+                  	trigger:{
+		                global:["useCardBefore"],
+                	},
+                	usable:1,
+                	filter(event,player){
+	                	return event.getParent("_xjb_remnantArea");
+                	},
+                	content(){
+	                	trigger.player = player
+                	},
+                	translate:"重谋",
+                    description:"每回合限一次，你可以将一张牌的使用者改为你。"
+              }
+        )
+        SkillCreater(
+              "xin_shiyin" , {
+                    trigger:{
+		                player:["loseAfter","loseAsyncAfter"],
+                	},
+                	getType( event , player ){
+                	    let cards = [];
+                        for (const target of [player, player.getPrevious()]) {
+                          const evt = event.getl(target);
+                          if (evt && evt.cards2 && evt.cards2.some(i => get.position(i) == "d")) {
+                               if (
+                                    target == player ||
+                                    target
+                                     .getHistory("lose", evt => {
+                                          return evt.type == "discard" && evt.getlx !== false;
+                                      })
+                                     .indexOf(event) == 0
+                              ) {
+                                cards.addArray(evt.cards2.filter(i => get.position(i) == "d"));
+                              }
+                          }
+                        }
+                        let types = [];
+                        for (let each of cards) {
+                            types.add(get.type2(each,player));
+                        }
+                        return types
+                	},
+                	filter(event,player){
+                	    if(player!==_status.currentPhase)return false;
+                		if (event.type != "discard" || event.getlx === false) return false;
+                        return get.info("xin_shiyin").getType(event, player).length===1;
+                	},
+                	async cost(event, trigger, player){
+                	    let type = get.info("xin_shiyin").getType(trigger, player)[0];
+                        let number = 0;
+                        switch (type) {
+                                case 'basic': number = 11; break;
+                                case 'trick': number = 12; break;
+                                case 'equip': number = 4; break;
+                        }
+                        event.result = await player.chooseTarget(get.xjb_number(number,1)).forResult();
+                	},
+                    async content(event, trigger, player) {
+                        let type = get.info("xin_shiyin").getType(trigger, player)[0];
+                        let toDo = 0;
+                        switch (type) {
+                                case 'basic': toDo = "recover"; break;
+                                case 'trick': toDo = "loseHp"; break;
+                                case 'equip': toDo = "damage"; break;
+                        }
+                        event.targets[0][toDo](toDo==="loseHp"?void 0:player,toDo==="damage"?"fire":void 0)
+                    },
+                    translate:"识音",
+                    description:"你于回合内因弃置失去牌后，若你失去的牌均为：基本牌/锦囊牌/装备牌，你可以令场上一名角色：恢复1点体力/失去1点体力/受到一点火属性伤害。"
+                }
+        )
         SkillCreater(
             "xjb_qizuo", {
             group: ["xjb_qizuo_gain"],

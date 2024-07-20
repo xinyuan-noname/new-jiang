@@ -7,6 +7,7 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                     '摸牌': 1, 'draw': 1,
                     '牌堆底摸牌': 51,
                     '恢复体力': 11, '回复体力': 11, '回血': 11, 'recover': 11,
+                    '失去体力':12,
                     '加体力上限': 21, 'gainMaxHp': 21,
                     '获得Buff': 41,
                     '获得其牌': 32,
@@ -38,20 +39,24 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 player.xjb_clearSkills()
                 player.init(name);
                 if (lib.character[name]) {
-                    player.skills = lib.character[name][3] || [];
-                    player.sex = lib.character[name][0];
-                    player.group = lib.character[name][1];
-                }
-                player.classList.remove('unseen');
+                        player.skills = lib.character[name][3] || [];
+                        player.sex = lib.character[name][0];
+                        player.group = lib.character[name][1];
+                    }
+                    player.classList.remove('unseen');
+                
             },
             "xjb_clearSkills": function () {
                 const player = this;
-                player.skills.length = 0;
-                player.hiddenSkills.length = 0;
+                game.broadcastAll(player=>{
+                    player.skills.length = 0;
+                    player.hiddenSkills.length = 0;
+                },player)
             },
             "xjb_addSkillCard": function (name) {
-                lib.card.xjb_skillCard.cardConstructor(name);
-                lib.card.xjb_skillCard.skillLeadIn(name);
+                const info=get.info({name:"xjb_skillCard"});
+                info.cardConstructor(name);
+                info.skillLeadIn(name);
                 var card = game.createCard2(name + "_card");
                 this.xjb_addZhenFa(card);
             },
@@ -90,7 +95,7 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 let MaxHpOk = () => {
                     return this.maxHp >= 30 && eventLine.includes("gainMaxHp")
                 }
-                game.print(CardOk(), MaxHpOk())
+                //game.print(CardOk(), MaxHpOk())
                 while (CardOk() || MaxHpOk()) {
                     eventLine = xjb_lingli.event.match(num)
                 }

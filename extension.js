@@ -1,8 +1,6 @@
-import { lib, game, ui, get, ai, _status } from "../../noname.js"
-game.import("extension", function (lib, game, ui, get, ai, _status) {
-    return {
-        name: "新将包",
-        content: function (config, pack) {
+import { lib, game, ui, get, ai, _status } from "../../noname.js";
+game.import("extension",function(){
+	return {name:"新将包",content:function (config, pack) {
             //新的数据处理函数部分            
             String.prototype.getNumberBefore = function (character) {
                 if (this.indexOf(character) == -1) return []
@@ -457,7 +455,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                                     catch (err) {
                                         game.xjb_create.alert("！！！报错：<br>" + err);
                                     }
-                                    textarea.remove();
+                                    textarea&&textarea.remove();
                                 }).higher();
                             }; break;
                             case "coordinate": {
@@ -903,11 +901,11 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                                             normalStr(skill).nextConfirm('是否回收此技能并获得5魂币？', function () {
                                                 lib.config.xjb_newcharacter.skill.remove(skill)
                                                 game.xjb_systemEnergyChange(skill.length)
-                                                game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                                                game.saveConfig('xjb_hunbi', lib.config.xjb_hunbi + 5)
+                                                game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter);
+                                                game.saveConfig('xjb_hunbi', lib.config.xjb_hunbi + 5);
                                                 game.xjb_create.alert('你已删除该技能，重启即生效！' + "<br>当前魂币值为" + lib.config.xjb_hunbi).nextConfirm("是否继续查看？", function () {
-                                                    obj.changeSkill2()
-                                                })
+                                                    obj.changeSkill2();
+                                                });
                                             }, function () {
                                                 game.xjb_create.confirm("是否继续查看？", function () {
                                                     obj.changeSkill2()
@@ -1185,8 +1183,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     })
                 }
             }
-        },
-        precontent: function () {
+        },precontent:function () {
             function way() {
                 //新将包路径来源     
                 if (document.body.outerHTML) {
@@ -1562,21 +1559,30 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     }
                 })
             }
+        },help:{},config:{},package:{
+    character:{
+        character:{
         },
-        help: {},
-        config: {},
-        package: {
-            intro: "<a href=https://gitee.com/xinyuanwm/new-jiang class=xjb_hunTitle>扩展已上传至gitee！</a>",
-            author: "<a href=https://b23.tv/RHn9COW class=xjb_hunTitle>新元noname</a>",
-            diskURL: "",
-            forumURL: "",
-            version: "1.2.0",
+        translate:{
         },
-        files: {
-            "character": [],
-            "card": [],
-            "skill": [],
-            "audio": []
-        }
-    }
-})
+    },
+    card:{
+        card:{
+        },
+        translate:{
+        },
+        list:[],
+    },
+    skill:{
+        skill:{
+        },
+        translate:{
+        },
+    },
+    intro:"<a href=https://gitee.com/xinyuanwm/new-jiang class=xjb_hunTitle>扩展已上传至gitee！</a>",
+    author:"<a href=https://b23.tv/RHn9COW class=xjb_hunTitle>新元noname</a>",
+    diskURL:"",
+    forumURL:"",
+    version:"1.2.1",
+},files:{"character":[],"card":[],"skill":[],"audio":[]}}
+});

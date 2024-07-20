@@ -896,6 +896,21 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         paint(25)
         return dialog
     }
+    game.xjb_create.iframe = function(src){
+        let dialog = game.xjb_create.alert()
+        let iframe = element("iframe")
+            .father(dialog)
+            .src(src)
+            .style({
+                "height":"100%",
+                "width":"100%"
+            })
+            .exit()
+            if(src.endsWith(".md")){
+                
+            }
+        dialog.frame = iframe;
+    }    
     //能量不足提醒
     game.xjb_NoEnergy = function () {
         game.xjb_create.alert("系统能量不足！<br>请支持刘徽-祖冲之项目为系统供能！")

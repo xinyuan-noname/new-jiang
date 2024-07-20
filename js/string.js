@@ -1,6 +1,10 @@
 export const PiChar = String.fromCharCode(960);
 export const degChar = String.fromCharCode(176);
 export const cnCharRange = '\u4e00-\u9fa5'
+export function isOpenCnStr(str){
+    const regexp = /(?<!["'`][\u4e00-\u9fa5，。？！“”]*?)[\u4e00-\u9fa5]+(?![\u4e00-\u9fa5，。？！“”]*?["'`])/;
+    return regexp.test(str);
+}
 /**
  * 将扑克牌花色符号转换为中文名称
  * @param {string} str - 包含扑克牌花色符号的字符串

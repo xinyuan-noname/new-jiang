@@ -1,3 +1,6 @@
+import {
+    element
+} from './ui.js'
 window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
     /*file*/
     game.xjb_transferFile = function (BLOB, fileWay, silent) {
@@ -275,7 +278,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 "xjbhan_caocao": ["male", "han", 4, ["xin_zhibang", "xin_chuhui"], []],
                 "xjbhan_xunyu": ["male", "han", 3, ["xin_bingjie", "xin_liuxiang"], []],
                 "xjb_pangtong": ["male", "shu", 3, ["xin_niepan", "xin_lianhuan"], []],
-                "xjb_caocao": ["male", "wei", 4, ["xin_guixin", "xin_fengtian", "xin_tanyan"], []],
+                "xjb_caocao": ["male", "wei", 3, ["xin_guixin", "xin_fengtian", "xin_tanyan"], []],
                 "xjb_zhouyu": ["male", "wu", 4, ["xin_shiyin", "xin_yingfa"], []],
                 "xjb_liushan": ["male", "shu", 5, ["xjb_fangquan", "xjb_xiangle"], []],
                 "xjb_dianwei": ["male", "wei", 5, ["xin_huzhu", "xin_xiongli"], []],
@@ -284,7 +287,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 "xjb_jin_simayi": ["male", "jin", 4, ["xin_huanshi", "xin_zhabing"], []],
                 "xjb_yingzheng": ["male", "shen", 3, ["xin_tianming", "xin_zulong", "xin_longpan"], []],
                 "xjb_fazheng": ["male", "shu", 3, ["xin_enyuan", "xin_qisuan", "xjb_fuyi"], []],
-                "xjb_jiaxu": ["male", "qun", 3, ["xin_whlw2", "xin_whlw1"], ["ext:新将包/xjb_jiaxu.jpg", "xjb_jiaxu.jpg"]],
+                "xjb_jiaxu": ["male", "qun", 3, ["xin_whlw2", "xin_whlw1", "xin_chongmou"], ["ext:新将包/xjb_jiaxu.jpg", "xjb_jiaxu.jpg"]],
             }
             for (let k in character) {
                 character[k][4].push("ext:新将包/" + k + ".jpg", k + ".jpg")

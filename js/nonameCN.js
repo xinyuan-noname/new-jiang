@@ -56,6 +56,13 @@ const cardNameList = (() => {
 const cardTypeList = (() => {
     return ['basic', 'equip', 'delay', ...Object.keys(lib.cardType)]
 })();
+function getMapOfOneOfPlayers(){
+    const map={}
+    for(let i=0;i<10;i++){
+        map[`第${get.cnNumber(i+1)}个所选角色`] = `result.targets[${i}]`
+    }
+    return map
+}
 function getMapOfCard(bool = true) {
     const idList = cardNameList
     const map = {};
@@ -69,6 +76,14 @@ function getMapOfSuit(bool = true) {
     const map = {};
     for (let k of idList) {
         map[lib.translate[k+"2"]] = `${bool ? '"' : ""}${k}${bool ? '"' : ""}`;
+    }
+    return map;
+}
+function getMapOfColor(bool = true) {
+    const idList = Object.keys(lib.color)
+    const map = {};
+    for (let k of idList) {
+        map[lib.translate[k]] = `${bool ? '"' : ""}${k}${bool ? '"' : ""}`;
     }
     return map;
 }
@@ -90,6 +105,13 @@ function getMapOfGroup(bool = true) {
     }
     return map;
 }
+function getMapOfColorCard(){
+    const map = {};
+    for (let [cn,attr] of Object.entries({...getMapOfColor(false),...getMapOfSuit(false)})) {
+        map[cn + "牌"] = `${attr}`;
+    }
+    return map;
+}
 function getMapOfTrigger() {
     const list = {}
     let event = eventList;
@@ -102,14 +124,12 @@ function getMapOfTrigger() {
         list[i + "结束时"] = k + "End"
         list[i + "结束后"] = k + "End"
         list[i + "前"] = k + "Before"
-        list[i + "之前"] = k + "Before"
         list[i + "后"] = k + "After"
         list[i + "结算后"] = k + "After"
         //
         list["令一名角色" + i + "时"] = "source:" + k + "Begin"
         list["令一名角色" + i + "结束"] = "source:" + k + "End"
         list["令一名角色" + i + "前"] = "source:" + k + "Before"
-        list["令一名角色" + i + "之前"] = "source:" + k + "Before"
         list["令一名角色" + i + "后"] = "source:" + k + "After"
         //
         list["获取本回合" + i + "事件"] = 'getHistory:"' + k + '"'
@@ -118,11 +138,29 @@ function getMapOfTrigger() {
         //
         list['名为' + i + '的父事件'] = 'getParent:"' + k + '":intoFunction'
     }
-    list["判定牌生效前"] = "judge";
-    list["判定牌生效后"] = "judgeEnd";
     list["失去手牌后"] = "loseAfter:h";
-    list["受到伤害后"] = "damageEnd";
     return list
+}
+function getMapOfTri_Target(){
+    const map = {}
+    for(let [cn,attr] of Object.entries({...getMapOfCard(false),...getMapOfColorCard()})){
+        map["成为" + cn + '的目标时'] = 'target:' + attr + ':' + 'useCardToTarget';
+        map["成为" + cn + '的目标后'] = 'target:' + attr + ':' + 'useCardToTargeted';
+        map["使用" + cn + '指定目标时'] = 'player:' + attr + ':' + 'useCardToPlayer';
+        map["使用" + cn + '指定目标后'] = 'player:' + attr + ':' + 'useCardToPlayered';
+    }
+    return map;
+}
+function getMapOfTri_Use(){
+    const map = {}
+    for(let [cn,attr] of Object.entries({...getMapOfCard(false),...getMapOfColorCard()})){
+        map["使用" + cn + '前'] = attr + ':' + 'useCardBegin';
+        map["使用" + cn + '时'] = attr + ':' + 'useCard';
+        map["使用" + cn] = attr + ':' + 'useCard';
+        map["使用" + cn + '后'] = attr + ':' + 'useCardAfter';
+                    
+    }
+    return map;
 }
 function getMapOfHasCard() {
     const idList = cardNameList
@@ -162,15 +200,17 @@ function getMapOfCanAddJudge() {
     }
     return map;
 }
+function getMapOfChangeGroup(){
+    const map = {};
+    for (let [cn,attr] of Object.entries(getMapOfGroup())) {
+        map["将势力改为"+cn] = `changeGroup:${attr}`;
+    }
+    return map;
+}
 export class NonameCN {
     static basicList = {
-        '每名角色': 'global',
-        '场上一名角色': 'global',
-        '场上一个角色': 'global',
-        '场上一位角色': 'global',
-        '一名角色': 'global',
-        '一个角色': 'global',
-        '一位角色': 'global',
+        //
+
         //
         '触发': 'trigger',
         '触发事件': 'trigger',
@@ -186,16 +226,19 @@ export class NonameCN {
         '数值调为0': "changeToZero",
         '数改为0': "changeToZero",
         '数调为0': "changeToZero",
-        //事件属性
+        //get
         '名字': "name",
         '卡牌': 'card',
-        '来源': 'source',
         '牌名': 'name',
         '花色': 'suit',
         '颜色': 'color',
         '类别': 'type',
         '副类别': 'subtype',
         '牌': 'cards',
+        '拼音':'pinyin',
+        '韵母':'yunmu',
+        '韵脚':'yunjiao',
+        '来源': 'source',
         //伤害事件
         '受伤点数': 'trigger.num',
         '受到伤害点数': 'trigger.num',
@@ -324,8 +367,7 @@ export class NonameCN {
         //
         '获取本回合指定其他角色为目标的使用牌事件': "getHistory:'useCard':function(evt){return evt.targets.filter(current=>target!=player)}",
         '获取本回合指定其他角色为目标的打出牌事件': "getHistory:'respond':function(evt){return evt.targets.filter(current=>target!=player)}",
-        '本回合使用牌的次数': `getHistory:'useCard':intoFunction://!?length`,
-        '本回合使用牌次数': `getHistory:'useCard':intoFunction://!?length`,
+        '本回合使用牌次数': `getHistory:'useCard'://!?length`,
         //其他写法
         '摸': 'draw',
         '获得护甲': 'changeHujia',
@@ -374,7 +416,9 @@ export class NonameCN {
         '废除进攻马栏': 'disableEquip:"equip4":intoFunction',
         '废除宝物栏': 'disableEquip:"equip5":intoFunction',
         '废除判定区': 'disableJudge',
-        //选择式事件-废除和恢复            
+        //选择式事件-废除和恢复         
+        '选择牌':'chooseCard:"he":intoFunction',
+        '选择手牌':'chooseCard',
         '废除装备区内一个装备栏': 'chooseToDisable',
         '选择废除装备区内一个装备栏': 'chooseToDisable',
         '废除一个装备栏': 'chooseToDisable',
@@ -512,6 +556,7 @@ export class NonameCN {
             '伤害来源': 'trigger.source',
             '受伤角色': 'trigger.player',
             '受到伤害的角色': 'trigger.player',
+            ...getMapOfOneOfPlayers(),
         },
         player_attribute: {
         },
@@ -520,12 +565,18 @@ export class NonameCN {
             "属于宗族": "hasClan",
             '获取判定区牌': 'getJudge',
             '获取装备区牌': 'getEquip',
-            "观看手牌":"viewHandcards"
+            "观看手牌":"viewHandcards",
+            "处于自己的出牌阶段":"isPhaseUsing",
+            "摸牌或回复体力值":"chooseDrawRecover"
         },
         player_withArg: {
             ...getMapOfHasCard(),
             ...getMapOfHasType(),
-            ...getMapOfCanAddJudge()
+            ...getMapOfCanAddJudge(),
+            ...getMapOfChangeGroup(),
+            "手牌上限":"getHandcardLimit:",
+            "可以使用手牌":`chooseToUse`,
+            "可以使用牌":`chooseToUse`,
         },
         players: {
             /*所(被)选(的)角色,所(被)选择(的)角色*/
@@ -533,21 +584,46 @@ export class NonameCN {
             '所有角色': 'game.players',
         },
         event: eventList,
-        card_method: {
+        trigger_type:{
+            '你':'player',
+            '每名角色': 'global',
+            '场上一名角色': 'global',
+            '场上一位角色': 'global',
+            '一名角色': 'global',
+            '一位角色': 'global',
         },
         triggerList: {
             ...getMapOfTrigger(),
+            ...getMapOfTri_Target(),
+            ...getMapOfTri_Use(),
+            //phase类
+            "回合开始后②":"phaseBeforeStart",
+            "回合开始后④":"phaseBeforeEnd",
+            "回合开始后⑦":"phaseBeginStart",
+            "回合开始后⑨":"phaseBegin",
+            "准备阶段":"phaseZhunbeiBegin",
+            "准备阶段开始时":"phaseZhunbeiBegin",
+            "结束阶段":"phaseJieshuBegin",
+            "结束阶段开始时":"phaseJieshuBegin",
+            //伤害
+            "受到伤害后": "damageEnd",
+            '造成伤害': 'damageSource',
+            '造成伤害时': 'damageSource',
+            '造成伤害后': 'damageSource',
+            //判定
+            "判定牌生效前":"judge",
+            "判定牌生效后":"judgeEnd",
             //特殊时机
             '成为牌的目标': "target:useCardToTarget",
             '成为牌的目标时': "target:useCardToTarget",
             '成为牌的目标后': "target:useCardToTargeted",
+            //拼点
             '亮出拼点牌前': 'compareCardShowBefore',
             '亮出拼点牌之前': 'compareCardShowBefore',
-            '造成伤害': 'damageSource',
-            '造成伤害时': 'damageSource',
-            '造成伤害后': 'damageSource',
+            //濒死
             '进入濒死状态时': 'dying',
             '脱离濒死状态时': 'dyingAfter',
+            //
             '牌被弃置后': 'loseAfter:discard',
             '需要打出闪时': 'chooseToRespondBefore:shan',
             '需要使用闪时': 'chooseToUseBefore:shan',
@@ -565,6 +641,10 @@ export class NonameCN {
             '令角色代为打出': 'packed_playerCode_sufferForAnother',
             '令角色代为使用': 'packed_playerCode_sufferForAnother',
             '令角色代为使用或打出': 'packed_playerCode_sufferForAnother',
+        },
+        filter_only:{
+            "不发动":"return false;",
+            "发动":"return true;"
         }
     }
     static packedCodeRePlaceMap = {
@@ -621,6 +701,10 @@ export class NonameCN {
         let list = Object.assign({}, this.basicList, ...Object.values(this.groupedList));
         return list
     }
+    static get TriList(){
+        let list = Object.assign({}, this.groupedList.triggerList,this.groupedList.trigger_type,this.groupedList.event);
+        return list
+    }
     static getEn(cn) {
         let list = Object.assign({}, ...Object.values(this.freeQuotation));
         return list[cn];
@@ -628,9 +712,9 @@ export class NonameCN {
     static getStrFormFunc(key, value) {
         if (Array.isArray(value)) {
             value = value.map(k => `"${k}"`)
-            return `[${value}].includes(get.${key}(card,player))`
+            return `[${value}].includes(get.${key}(card,false,player))`
         }
-        return `get.${key}(card,player) === "${value}"`
+        return `get.${key}(card,false,player) === "${value}"`
     }
     static getStrFormConst({ costName, costNature, costColor, costSuit }) {
         let result = ''
@@ -692,6 +776,7 @@ export class NonameCN {
     static standardEvent(that) {
         //处理事件描述
         textareaTool().setTarget(that)
+            .replace(/血量/g, "体力")
             .replace(/流失体力/g, "失去体力")
             .replace(/横置\/重置/g, "横置或重置")
             .replace(/(?<=置)于(?=判定区|装备区|弃牌堆)/g, "入")
@@ -814,7 +899,7 @@ export class NonameCN {
         const { id, type, uniqueList, trigger, filter,
             filter_card, filter_suit, filter_color,
             uniqueTrigger } = back.skill
-        result += 'filter:function(event,player){\n'
+        result += 'filter:function(event,player,triggername){\n'
         //主公技
         if (type.includes("zhuSkill")) {
             result += `if(! player.hasZhuSkill("${id}")) return false;\n`;
@@ -931,6 +1016,9 @@ export class NonameCN {
         let costName = condition.startsWith("cardName-") && condition.slice(9)
         let costNature, costColor, costSuit;
         let position = get.type(costName) == "type" ? "'hes'" : "'hs'"
+        let needCard = true,preEve
+        let selectedCard;
+        let conditionBool;
         if (asCard.startsWith("nature-")) {
             let list = asCard.slice(7).split(":")
             asNature = list[0];
@@ -951,6 +1039,11 @@ export class NonameCN {
             position = list[0]
             costSuit = list[1];
         }
+        if (condition.startsWith("preEve-link-")) {
+            conditionBool = condition.slice(12);
+            preEve="link"
+            needCard=false
+        }
         result += "viewAs:";
         result += that.getStrFormVcard({
             'costName': asCard,
@@ -958,12 +1051,22 @@ export class NonameCN {
         });
         result += ",\n";
         result += "filterCard:";
-        result += that.getStrFormVcard({ costName, costNature, costColor, costSuit })
+        if(needCard)result += that.getStrFormVcard({ costName, costNature, costColor, costSuit })
+        else result+=`()=>false`
         result += `,\n`
         result += "viewAsFilter:function(player){\n"
         result += that.getStrFormConst({ costName, costNature, costColor, costSuit });
-        result += `if(!player.countCards("${position}",{${costName ? "name," : ""}${costNature ? "nature," : ""}${costColor ? "color," : ""}${costSuit ? "suit," : ""}})) return false;\n`
+        if(needCard)result += `if(!player.countCards("${position}",{${costName ? "name," : ""}${costNature ? "nature," : ""}${costColor ? "color," : ""}${costSuit ? "suit," : ""}})) return false;\n`
+        if(preEve){
+            if(preEve==="link") result+=`if(player.isLinked()!==${conditionBool}) return false;\n`
+        }
         result += "},\n"
+        if(preEve){
+            result +=`precontent:function(){\n`            
+            if(preEve==="link")result+=`player.link()\n`
+            result+=`},\n`
+        }
+        if(selectedCard) result+=`selectedCard:${selectedCard},\n`
         if (position === 'hes') result += "position:'hes',\n"
         else if (position === 'hs') result += "position:'hs',\n"
         if (asCard === "tao") {

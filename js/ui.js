@@ -110,6 +110,10 @@ export class elementTool {
      * @param {string} value 
      * @returns {elementTool}
      */
+    src(src){
+        this.ele.setAttribute(`src`, src);
+        return this;
+    }
     setAttribute(key, value) {
         if (key.startsWith("data-") || this.ele.hasAttribute(key)) {
             this.ele.setAttribute(key, value);
@@ -134,6 +138,73 @@ export class elementTool {
      */
     hook(func) {
         func(this.ele);
+        return this;
+    }
+    /**
+     * @param {String} name
+     * @param {ang[]} args
+     * @returns {elementTool}
+     */
+    callMethod(name,...args){
+        this.ele[name](...args)
+        return this;
+    }
+    /**
+     * @param {String} typeof
+     * @param {object} options
+     * @param {boolean} options.bubbles
+     * @param {boolean} options.cancelable
+     * @param {boolean} options.composed
+     * @param {String} options.key
+     * @param {String} options.code
+     * @returns {elementTool}
+     */
+    triggerKey(type,options){
+        let evt = new KeyboardEvent(type,{
+            ...options,
+            target:this.ele
+        })
+        this.ele.dispatchEvent(evt)
+        return this;
+    }
+    triggerInput(value,options){
+        this.ele.value +=value;
+        let evt = new InputEvent("input",{
+            ...options,
+            target:this.ele
+        })
+        this.ele.dispatchEvent(evt)
+        return this;
+    }
+    /**
+     * @param {String} typeof
+     * @param {object} options
+     * @param {boolean} options.bubbles
+     * @param {boolean} options.composed
+     * @param {boolean} options.cancelable
+     * @returns {elementTool}
+     */
+    triggerTouch(type,options){
+        let evt = new TouchEvent(type,{
+            ...options,
+            target:this.ele            
+        })
+        this.ele.dispatchEvent(evt)
+        return this;
+    }
+    clickAndTouch(type="touchend"){
+        this.ele.click()
+        let evt = new TouchEvent(type,{
+            bubbles:true,
+            composed:true,
+            cancelable:true,
+            target:this.ele            
+        })
+        this.ele.dispatchEvent(evt)
+        return this;
+    }
+    click(){
+        this.ele.click()
         return this;
     }
     /**
