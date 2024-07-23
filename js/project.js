@@ -4,9 +4,7 @@ import {
 window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
     /*file*/
     game.xjb_transferFile = function (BLOB, fileWay, silent) {
-        var reader = new FileReader()
-        reader.readAsDataURL(BLOB, "UTF-8")
-        reader.onload = function () {
+        function download(){
             var fileTransfer = new FileTransfer();
             const obj = {}
             if (!silent) obj.Myalert = game.xjb_create.alert("正在导出中...")
@@ -15,6 +13,17 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
             }, function (e) {
                 if (obj.Myalert) obj.Myalert.innerHTML = "导出失败！<br>" + e.code
             });
+        }
+        if(typeof BLOB ==="string"){
+            const myTarget={
+                result:BLOB,
+            }
+            download.apply(myTarget,[]);
+            return;
+        }else{
+            var reader = new FileReader()
+            reader.onload = download;
+            reader.readAsDataURL(BLOB, "UTF-8")
         }
     };
     lib.skill.xjb_6 = {

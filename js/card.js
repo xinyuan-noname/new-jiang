@@ -210,6 +210,11 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                 let randomIndex = Math.floor(Math.random() * (cardPileItems.length + 1));
                 ui.cardPile.insertBefore(Acard, cardPileItems[randomIndex]);
             };
+            get.xjb_enFromCn=function(cn){
+                return Object.entries(lib.translate).find(item=>{
+                    return item[1]===cn
+                })[0]
+            }
             //类似迭代器
             game.xjb_getCardToAdd = function (step) {
                 const firstList = Object.entries(lib.config.xjb_cardAddToPile).filter(i => i[1] !== "0");
@@ -218,9 +223,8 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                 if (step == 2) return secondList;
                 const thirdList = secondList.map(i => i.split("-"))
                 if (step == 3) return thirdList;
-                const fourthList = thirdList.map(i =>{    
-                    game.print([get.xjb_en(i[0]), get.xjb_en(i[1]), i[2] * 1, i[3] * 1])
-                    return [get.xjb_en(i[0]), get.xjb_en(i[1]), i[2] * 1, i[3] * 1]
+                const fourthList = thirdList.map(i =>{ 
+                    return [get.xjb_enFromCn(i[0]), get.xjb_enFromCn(i[1]).slice(0,-1), i[2] * 1, i[3] * 1]
                 })
                 if (step == 4) return fourthList;
                 const fifthList = fourthList.filter(i => game.xjb_checkCardCanAdd(i[0]));

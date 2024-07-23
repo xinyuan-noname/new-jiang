@@ -1,6 +1,17 @@
-import { lib, game, ui, get, ai, _status } from "../../noname.js";
-game.import("extension",function(){
-	return {name:"新将包",content:function (config, pack) {
+import {
+    lib,
+    game,
+    ui,
+    get,
+    ai,
+    _status
+} from "../../noname.js";
+import {
+    randomBase36
+} from "./js/string.js"
+game.import("extension", function () {
+    return {
+        name: "新将包", content: function (config, pack) {
             //新的数据处理函数部分            
             String.prototype.getNumberBefore = function (character) {
                 if (this.indexOf(character) == -1) return []
@@ -425,6 +436,7 @@ game.import("extension",function(){
                         point: "点与向量",
                         vibrante3seconds: "震动三秒",
                         readFileURL: '读取文件',
+                        filterNotASCLL: "纯ASCLL",
                     },
                     visualMenu: function (node) {
                         node.className = 'button controlbutton';
@@ -455,7 +467,7 @@ game.import("extension",function(){
                                     catch (err) {
                                         game.xjb_create.alert("！！！报错：<br>" + err);
                                     }
-                                    textarea&&textarea.remove();
+                                    textarea && textarea.remove();
                                 }).higher();
                             }; break;
                             case "coordinate": {
@@ -519,7 +531,7 @@ game.import("extension",function(){
                                 navigator.vibrate ? navigator.vibrate(3000) : game.xjb_systemEnergyChange(5);
                             }; break;
                             case "readFileURL": {
-                                game.xjb_create.file('选择一个文件,我们将获取一个url', 'all', function () {
+                                game.xjb_create.file('选择一个文件,我们将获取一个url复制到剪切板上，并会在other文件夹下生成相应文件', 'all', function () {
                                     let _this = this, dialog = game.xjb_create.alert('')
                                     var textarea = ui.xjb_addElement({
                                         target: dialog,
@@ -528,7 +540,14 @@ game.import("extension",function(){
                                     })
                                     textarea.select();
                                     document.execCommand("copy");
-
+                                    let fileWay = lib.config.xjb_fileURL + "other/" + randomBase36(8) + ".txt"
+                                    game.xjb_transferFile(new Blob([_this.file.result], { type: "text/plain;charset=utf-8" }), fileWay)
+                                })
+                            }; break;
+                            case "filterNotASCLL": {
+                                let dialog = game.xjb_create.prompt("输入一系列文字，将自动过滤其中的非ASCLL可见字符。")
+                                dialog.input.addEventListener("input", function () {
+                                    this.value = this.value.replaceAll(/[^\u0020-\u007e]/g, "")
                                 })
                             }; break;
                         };
@@ -1183,7 +1202,8 @@ game.import("extension",function(){
                     })
                 }
             }
-        },precontent:function () {
+        },
+        precontent: function () {
             function way() {
                 //新将包路径来源     
                 if (document.body.outerHTML) {
@@ -1278,11 +1298,11 @@ game.import("extension",function(){
                         }
                     );
                 };
-                game.xjb_loadAPI();
+                if (navigator.connection.type == 'wifi') game.xjb_loadAPI();
             }
             function initialize() {
                 if (!lib.config.xjb_fileURL) {
-                    lib.config.xjb_fileURL = `${localStorage.getItem("noname_inited")}extension/新将包`
+                    lib.config.xjb_fileURL = `${localStorage.getItem("noname_inited")}extension/新将包/`
                 }
                 //设置刘徽-祖冲之祖项目
                 //设置参数π、e、Φ，这些参数越大越精确
@@ -1542,7 +1562,7 @@ game.import("extension",function(){
                 lib.translate._ztzbh_flowerDamage = '花伤'
                 lib.skill._ztzbh_liandong = {
                     trigger: {
-                        player:[], 
+                        player: [],
                     },
                     filter: function (event, player) {
                         return player === game.me
@@ -1553,36 +1573,37 @@ game.import("extension",function(){
                         game.xjb_getDaomo(player, "flower")
                     }
                 }
-                Object.defineProperty(lib.skill._ztzbh_liandong.trigger,"player",{
-                    get(){
-                        
+                Object.defineProperty(lib.skill._ztzbh_liandong.trigger, "player", {
+                    get() {
+
                     }
                 })
             }
-        },help:{},config:{},package:{
-    character:{
-        character:{
-        },
-        translate:{
-        },
-    },
-    card:{
-        card:{
-        },
-        translate:{
-        },
-        list:[],
-    },
-    skill:{
-        skill:{
-        },
-        translate:{
-        },
-    },
-    intro:"<a href=https://gitee.com/xinyuanwm/new-jiang class=xjb_hunTitle>扩展已上传至gitee！</a>",
-    author:"<a href=https://b23.tv/RHn9COW class=xjb_hunTitle>新元noname</a>",
-    diskURL:"",
-    forumURL:"",
-    version:"1.2.1",
-},files:{"character":[],"card":[],"skill":[],"audio":[]}}
+        }, help: {}, config: {}, package: {
+            character: {
+                character: {
+                },
+                translate: {
+                },
+            },
+            card: {
+                card: {
+                },
+                translate: {
+                },
+                list: [],
+            },
+            skill: {
+                skill: {
+                },
+                translate: {
+                },
+            },
+            intro: "<a href=https://gitee.com/xinyuanwm/new-jiang class=xjb_hunTitle>扩展已上传至gitee！</a>",
+            author: "<a href=https://b23.tv/RHn9COW class=xjb_hunTitle>新元noname</a>",
+            diskURL: "",
+            forumURL: "",
+            version: "1.2.1",
+        }, files: { "character": [], "card": [], "skill": [], "audio": [] }
+    }
 });

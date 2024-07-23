@@ -1,7 +1,31 @@
 export const PiChar = String.fromCharCode(960);
 export const degChar = String.fromCharCode(176);
 export const cnCharRange = '\u4e00-\u9fa5'
-export function isOpenCnStr(str){
+/**
+ * 生成一个随机的36进制字符串。
+ * 
+ * 该函数用于生成指定长度的随机36进制字符串，可用于创建唯一标识符或其他需要随机字符串的场景。
+ * 36进制字符串包含0-9和A-Z，共计36个字符。
+ * 
+ * @param {number} length - 指定生成的随机字符串的长度。
+ * @returns {string} 生成的随机36进制字符串。
+ */
+export function randomBase36(length) {
+    const temp = []
+    for (let i = 0; i < length; i++) {
+        temp.push(parseInt(Math.random() * 36).toString(36))
+    }
+    return temp.join("")
+}
+/**
+ * 检查给定字符串是否为独立的中文句子。
+ * 中文句子指的是不被引号或特定标点直接包围的中文字符序列。
+ * 这个函数主要用于判断一段文本中是否存在符合要求的中文句子。
+ * 
+ * @param {string} str 待检查的字符串。
+ * @returns {boolean} 如果字符串是一个独立的中文句子，则返回true；否则返回false。
+ */
+export function isOpenCnStr(str) {
     const regexp = /(?<!["'`][\u4e00-\u9fa5，。？！“”]*?)[\u4e00-\u9fa5]+(?![\u4e00-\u9fa5，。？！“”]*?["'`])/;
     return regexp.test(str);
 }
@@ -39,17 +63,17 @@ export function suitSymbolToCN(str) {
  * @param {number} basic 
  * @returns {String}
  */
-export function adjustTab(str, basic = 0) {
+export function adjustTab(str, basic = 0, start = '{', end = '}') {
     const arr1 = str.split('\n');
     let tabLevel = basic;
     let arr2 = arr1.map(line => {
         const times = line.match(/^\t+/) ? line.match(/^\t+/)[0].length : 0;
-        if (!line.includes("{") && (line.endsWith('}') || line.endsWith('},'))) tabLevel--;
+        if (!line.includes(start) && (line.endsWith(end) || line.endsWith(end + ','))) tabLevel--;
         const deltaValue = times - tabLevel;
         let result = line;
         if (deltaValue > 0) result = line.slice(deltaValue);
         else if (deltaValue < 0) result = '\t'.repeat(Math.abs(deltaValue)) + line;
-        if (line.endsWith('{')) tabLevel++;
+        if (line.endsWith(start)) tabLevel++;
         return result;
     })
     return arr2.join('\n');
@@ -103,10 +127,10 @@ export function clearWordsGroup(str, wordsgroup) {
  * @param {String} target 
  * @returns {Array<Array<number>>} 
  */
-export function indexRange(str, target) {
+export function indexRange(str, target, mode = 'g') {
     const result = [];
     const { length } = target;
-    const regexp = new RegExp(target, 'g');
+    const regexp = new RegExp(target, mode);
     let match;
     while ((match = regexp.exec(str)) !== null) {
         const i = match.index;
@@ -194,6 +218,12 @@ export function addPSFix(str, match, prefix, suffix) {
     })
     return result;
 }
+/**
+ * 
+ * @param {string} str 
+ * @param {RegExp} regexp 
+ * @returns 
+ */
 export function deleteRepeat(str, regexp) {
     let result = str;
     let match;
@@ -201,11 +231,35 @@ export function deleteRepeat(str, regexp) {
     while ((match = regexp.exec(str)) !== null) {
         pList.push(match[0])
     }
-    pList = [...new Set(pList)].map(p=>{
+    pList = [...new Set(pList)].map(p => {
         return p.replace(/([\\^$.|?*+(){}\[\]])/g, '\\$1')
     });
     for (let k of pList) {
         result = result.replace(new RegExp(`(?<=${k})\\s*(${k})+`, 'g'), '')
     }
     return result;
+}
+/**
+ * 
+ * @param {string} str 
+ * @returns {string}
+ */
+export function trimEnd(str) {
+    if (typeof str !== 'string') throw new TypeError(`${str} is not string`)
+    return str.slice(0, -1);
+}
+/**
+ * 
+ * @param {string} str 
+ * @param {string|RegExp} match 
+ * @returns {number}
+ */
+export function countWords(str, match) {
+    if (typeof match === 'string') {
+        match = new RegExp(match, 'g')
+    }
+    if (!match.global) {
+        match = new RegExp(match.source, 'g')
+    }
+    return [...str.matchAll(match)].length;
 }

@@ -38,6 +38,9 @@ const xjb_xyAPI = {
             this.setGameURL(target.gameURL);
             this.setGitURL(target.gitURL);
         };
+        this.updateDownloadHook = undefined;
+        this.directoryDownloadSHook = undefined;
+        this.directoryDownloadFHook = undefined;
     },
     setGameData(lib, game, ui, get, ai, _status) {
         this.lib = lib;

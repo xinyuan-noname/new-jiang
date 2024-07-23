@@ -265,7 +265,7 @@ export class TextareaTool extends elementTool {
      */
     setTarget(ele) {
         if (!(ele instanceof HTMLTextAreaElement)) {
-            throw new Error('传入的元素必须是<textarea>类型');
+            throw new TypeError('传入的元素必须是<textarea>类型');
         }
         super.setTarget(ele);
         return this;

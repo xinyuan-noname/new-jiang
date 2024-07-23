@@ -456,13 +456,19 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             var reader = new FileReader()
             reader.readAsDataURL(this.files[0], "UTF-8")
             reader.onload = function () {
-                function extractBase64FromDataURL(dataURL) {
-                    // 查找base64字符串开始的位置（即"data:image/jpeg;base64,"之后的部分）
-                    let base64Index = dataURL.indexOf(';base64,') + ';base64,'.length;
+                function getBase64Index(dataURL){
+                    let base64Index = dataURL.indexOf(';base64,') + 8
                     // 如果没有找到";base64,"，则从"data:"后面开始截取
                     if (base64Index === -1) {
                         base64Index = dataURL.indexOf(',') + 1;
                     }
+                    return base64Index;
+                }
+                function getHead(dataURL){
+                    return dataURL.slice(0,getBase64Index(dataURL))
+                }
+                function extractBase64FromDataURL(dataURL) {
+                    let base64Index=getBase64Index(dataURL)
                     // 提取并返回base64编码的数据
                     return dataURL.substring(base64Index);
                 }
@@ -473,15 +479,16 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                 dialog.buttons[0].file = {
                     result: this.result,
                     type: lastnamefortype,
+                    head:getHead(this.result),
                     base64: extractBase64FromDataURL(this.result)
                 }
                 dialog.buttons[1].file = {
                     result: this.result,
                     type: lastnamefortype,
+                    head:getHead(this.result),
                     base64: extractBase64FromDataURL(this.result)
                 }
                 if (target.xjb_check) target.xjb_check()
-
             }
         }
         return dialog

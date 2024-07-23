@@ -260,13 +260,13 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
             })
         },
         "import": function () {
-            let script=lib.init.js(lib.xjb_src + "js", "editor", () => {
+            let script = lib.init.js(lib.xjb_src + "js", "editor", () => {
                 window.XJB_LOAD_EDITOR(_status, lib, game, ui, get, ai);
-            }, err =>{
+            }, err => {
                 console.log("技能编辑器数据引入失败——新将包");
                 throw err;
-            } );
-            script.type="module";
+            });
+            script.type = "module";
             if (lib.xjb_yangcheng1) {
                 lib.xjb_yangcheng = lib.xjb_yangcheng1.onclick("other");
                 delete lib.xjb_yangcheng1
@@ -376,7 +376,7 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                 bookWrite("曹植", ["白马篇", "洛神赋", "铜雀台赋", "赠白马王彪"], wonderfulP)
                 bookWrite("曹丕", ["燕歌行"], ["poem"])
                 bookWrite("陈琳", ["为袁绍檄豫州"], ["article"])
-                bookWrite("诸葛亮", ["隆中对", "出师表", "诫子书", "诫外生书"], wonderfulA)                
+                bookWrite("诸葛亮", ["隆中对", "出师表", "诫子书", "诫外生书"], wonderfulA)
                 bookWrite("李白", ['行路难', "蜀道难", "清平调", "梦游天姥吟留别", "将进酒"], wonderfulP)
                 bookWrite("芙艾派依", ["魂的货币体系"], ["lingli"])
                 if (1) {
@@ -575,7 +575,7 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
             game.xjb_jiangchiUpDate()
         },
         daka: function () {
-            if (lib.config.xjb_hun) {
+            if (lib.config.xjb_hun) {                
                 var num1 = game.xjb_getCurrentDate()
                 var num2 = lib.config.xjb_hundaka
                 if (num1[0] > num2[0] || num1[1] > num2[1] || num1[2] > num2[2]) {
@@ -591,7 +591,7 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                     //
                     game.xjb_addDakadian(3, true)
                     game.xjb_create.alert('打卡成功！<br>你已打卡过' + lib.config.xjb_hundaka[3] + '次');
-                }               
+                }
             }
         },
     }
