@@ -171,7 +171,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xuemo3.jpg",
         "xuemo4.jpg"
     ],
-    "sink/xin_newCharacter\\normal": [
+    "sink/xin_newCharacter/normal": [
         "xin_newCharacter.jpg"
     ]
 }

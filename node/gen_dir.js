@@ -112,7 +112,7 @@ fsPromise.showDirFilter(
 ).then(data => {
     let result = {};
     for (let [dirName, files] of Object.entries(data)) {
-        result[dirName.replace('\\', '/')] = files
+        result[dirName.replace(/\\/g, '/')] = files
     }
     fs.writeFile(
         '../Directory.js',
