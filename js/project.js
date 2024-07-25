@@ -287,7 +287,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 "xjbhan_caocao": ["male", "han", 4, ["xin_zhibang", "xin_chuhui"], []],
                 "xjbhan_xunyu": ["male", "han", 3, ["xin_bingjie", "xin_liuxiang"], []],
                 "xjb_pangtong": ["male", "shu", 3, ["xin_niepan", "xin_lianhuan"], []],
-                "xjb_caocao": ["male", "wei", 3, ["xin_guixin", "xin_fengtian", "xin_tanyan"], []],
+                "xjb_caocao": ["male", "wei", 4, ["xjb_jianxiong", "xin_fengtian"], []],
                 "xjb_zhouyu": ["male", "wu", 4, ["xin_shiyin", "xin_yingfa"], []],
                 "xjb_liushan": ["male", "shu", 5, ["xjb_fangquan", "xjb_xiangle"], []],
                 "xjb_dianwei": ["male", "wei", 5, ["xin_huzhu", "xin_xiongli"], []],
@@ -396,7 +396,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
             lib.groupnature.xjb_hun = "xjb_hun"
         },
         Intro: function () {
-            lib.characterIntro.xjb_caocao = "操携樵沛诸夏侯曹氏，同汝颖荀之所进退，奋起于兖州之地。济天子，假天子之威，御天下之士，修政事，广屯田，征伐四方，十战九胜，可抵其锋者，唯孙刘二者。以其功高，自比于周公，置魏国，修行宫，立太子，分香卖履，薄葬于高陵。观其平生所则多杀戮，忿急至于过者亦多也。然其兴兴之政也广及率土三二，亦一世之雄也。";
+            lib.characterIntro.xjb_caocao = "操携樵沛诸夏侯曹氏，同汝颖荀之所进退，奋起于兖州之地。济天子，假天子之威，御天下之士。修政事，广屯田，缮水利。征伐四方，十战九胜，可抵其锋者，唯孙刘二者。以其功高，自比于周公，置魏国，修行宫，立太子，分香卖履，薄葬于高陵。观其平生则多杀戮，忿急至于过者亦多也。然其兴兴之政也广及率土三二，亦一世之雄也。";
             lib.characterIntro.xjb_yingzheng = "秦始皇，赵氏嬴姓，名政，是我国的第一位皇帝。\
 他年少继位，\
 奋六世之余烈，振长策而御宇内，吞二周而亡诸侯，履至尊而制六合，执敲扑而鞭笞天下，威震四海。\

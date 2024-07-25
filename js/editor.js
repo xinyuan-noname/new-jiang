@@ -1727,7 +1727,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 that.changeWord(/场上(的|有)?(装备)?牌被?置入判定区/g, "一名角色牌置入装备区")
                 //关于角色
                 appendWordToEvery(' ', ['你', '每名角色']);
-                that.changeWord(/(?<!令)(一名角色)/g, '$1 ');
+                that.changeWord(/(?<!(令|杀死))(一名角色)/g, '$1 ');
                 NonameCN.standardEvent(that)
                 NonameCN.standardTri(that)
                 that.changeWord(/([\u4e00-\u9fa5]*?)使用或打出([\u4e00-\u9fa5]+)/g, function (match, ...p) {

@@ -49,7 +49,8 @@ const eventList = {
     //
     '横置或重置': 'link',
     '翻面': 'turnOver',
-    '武将牌翻面': 'turnOver'
+    '武将牌翻面': 'turnOver',
+    '死亡':'die'
 }
 const cardNameList = (() => {
     return [].concat(...lib.config.cards.map(name => lib.cardPack[name]))
@@ -568,6 +569,7 @@ export class NonameCN {
         '变量': 'var ',
         '常量': 'const ',
         '块级变量': 'let ',
+        '块变': 'let ',
         '令为': ' = ',
         '自增': '++',
         '自减': '--',
@@ -740,6 +742,8 @@ export class NonameCN {
             //拼点
             '亮出拼点牌前': 'compareCardShowBefore',
             '亮出拼点牌之前': 'compareCardShowBefore',
+            //
+            '杀死一名角色后':'source:dieAfter',
             //濒死
             '进入濒死状态时': 'dying',
             '脱离濒死状态时': 'dyingAfter',

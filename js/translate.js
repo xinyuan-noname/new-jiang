@@ -27,7 +27,7 @@ window.XJB_LOAD_TRANSLATE = function (_status, lib, game, ui, get, ai) {
         "xin_ziruo": "自若",
         "xin_ziruo_info": "当你成为其他角色的牌的目标时，你可为此牌减少任意名未横置的目标，然后这些目标横置。",
         "xin_fengtian": "挥鞭",
-        "xin_fengtian_info": "结束阶段，若你还有带有伤害标签的牌，你可以摸两张牌然后额外执行一个出牌阶段。",
+        "xin_fengtian_info": "结束阶段/你杀死一名角色后，若你还有带有伤害标签的牌，你可以摸两张牌然后额外执行一个出牌阶段。",
         "xin_niepan": "涅槃",
         "xin_niepan_info": "出牌阶段限两次时，你若你手牌数为奇数，你可回复一点体力并摸一张牌;手牌数为偶数，你可以失去一点体力并摸三张牌。",
         "xin_tianming": "天命",

@@ -89,6 +89,8 @@
 //var x = trigger.num
 块级变量 y 令为 伤害点数
 //let y = trigger.num
+块变 _y 令为 伤害点数
+//let _y = trigger.num
 常量 z 令为 伤害点数
 //const z = trigger.num
 ```

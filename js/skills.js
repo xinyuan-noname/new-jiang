@@ -1224,6 +1224,7 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                 "xin_fengtian": {
                     trigger: {
                         player: "phaseJieshuBegin",
+                        source:"dieAfter"
                     },
                     filter: function (event, player) {
                         return player.getCards("h").filter(function (i) { return get.tag(i, "damage") }).length > 0
@@ -1232,7 +1233,9 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                         player.draw(2);
                         var next = player.phaseUse();
                         event.next.remove(next);
-                        trigger.getParent().next.push(next);
+                        let phase = trigger.getParent("phase")
+                        if(!phase.name) phase = trigger.getParent("phaseUse")
+                        phase.next.push(next);
                     },
                     ai: {
                         order: 8,
@@ -2583,7 +2586,7 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
             }
         });
         SkillCreater(
-            "xin_guixin", {
+            "xjb_jianxiong", {
             trigger: {
                 player: "damageEnd"
             },
@@ -2592,46 +2595,20 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                 return event.num;
             },
             content:async function (event, trigger, player) {
-                await player.draw()
                 const orderingCards = [...ui.ordering.children]
-                if (orderingCards) {
-                    let cards = []
-                    orderingCards.forEach(i => {
-                        cards.push(game.createCard(i.name, lib.card[i.name].cardColor, undefined, i.nature))
-                    })
-                    await player.gain(cards, 'gain2')
+                const num = orderingCards.length+2
+                const dialog = ui.create.dialog(`请选择${get.cnNumber(num)}张牌获得之`)
+                dialog.add('<div class="text center" style="margin: 0px;">牌堆顶</div>')
+                dialog.add(get.cards(num))
+                if(orderingCards.length){
+                    dialog.add('<div class="text center" style="margin: 0px;">中央区</div>')
+                    dialog.add(orderingCards)
                 }
-                const max=Math.min(
-                        player.countCards(),
-                        get.players(cur=>cur!=player&&cur.countCards("he")).length
-                    )
-                const {bool,cards} = await player.chooseCard(
-                    [1,max],
-                    get.prompt(event.name),
-                    `选择至多${get.cnNumber(max)}张牌弃置之，然后获得等量名角色各一张牌。`
-                ).forResult()
-                if(bool){
-                    await player.discard(cards)
-                    const {targets} = await player.chooseTarget(
-                        cards.length,
-                        true,
-                        get.prompt(event.name),
-                        `选择${get.cnNumber(cards.length)}名角色，获得这些角色各一张牌。`,
-                        (card, player, target) => {
-                            return target.countCards("he") > 0 && player != target;
-                        },
-                        target => {
-                            if (!_status.event.aicheck) return 0;
-                            const att = get.attitude(_status.event.player, target);
-                            if (target.hasSkill("tuntian")) return att / 10;
-                            return 1 - att;
-                        }
-                    ).forResult()
-                    player.gainMultiple(targets,"he")
-                }
+                const {links} = await player.chooseButton(dialog,num,true).forResult()
+                await player.gain(links, 'gain2')
             },
-            translate: "归心",
-            description: "当你受到一点伤害后，你可以摸一张牌并获得与此时处理区的牌同名的牌，然后你可以弃置任意张牌并获得等量名角色各一张牌。",
+            translate: "奸雄",
+            description: "当你受到一点伤害后，你可以从牌堆顶的X张牌、此时中央区的牌中选择X张获得之(X为此时中央区的牌数+2)。",
             ai: {
                 maixie: true,
                 "maixie_hp": true,
