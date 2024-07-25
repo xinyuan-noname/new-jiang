@@ -123,7 +123,9 @@ window["xjb_xyAPI_Directory_新将包"]={
     "node": [
         "gen_dir.js"
     ],
-    "other": [],
+    "other": [
+        "lingliData.txt"
+    ],
     "position": [
         "azureSky.jpg",
         "lake.jpg",
@@ -131,9 +133,6 @@ window["xjb_xyAPI_Directory_新将包"]={
         "redSpace.jpg"
     ],
     "sink": [],
-    "text": [
-        "lingliData.txt"
-    ],
     "title": [
         "xjb_boss1.png",
         "xjb_damageZero.png",
@@ -148,12 +147,12 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_yin2.png",
         "xjb_yin3.png"
     ],
-    "image\\card": [
+    "image/card": [
         "xjb_chucanquhui.png",
         "xjb_lijingtuzhi.png",
         "xjb_xiugengxuzi.png"
     ],
-    "sink\\Red": [
+    "sink/Red": [
         "小红.png",
         "小红1.png",
         "小红2.png",
@@ -165,14 +164,14 @@ window["xjb_xyAPI_Directory_新将包"]={
         "红2.png",
         "红3.png"
     ],
-    "sink\\xin_newCharacter": [],
-    "sink\\xjb_xuemo": [
+    "sink/xin_newCharacter": [],
+    "sink/xjb_xuemo": [
         "xuemo1.jpg",
         "xuemo2.jpg",
         "xuemo3.jpg",
         "xuemo4.jpg"
     ],
-    "sink\\xin_newCharacter\\normal": [
+    "sink/xin_newCharacter\\normal": [
         "xin_newCharacter.jpg"
     ]
 }

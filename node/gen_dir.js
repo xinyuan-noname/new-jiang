@@ -95,8 +95,10 @@ class fsPromise {
             judge(file) && fs.unlink(file)
         })
     }
-
 }
+fsPromise.unlinkFiles('../', file => file.includes('Thumbs.db'))
+fsPromise.clearContent('../json/1.json')
+fsPromise.clearContent('../log/log.txt')
 fsPromise.showDirFilter(
     '../',
     dirName => {
@@ -105,13 +107,15 @@ fsPromise.showDirFilter(
     (file, index) => {
         if (file === 'Thumbs.db') return false;
         return true;
-    }
+    },
+    false
 ).then(data => {
+    let result = {};
+    for (let [dirName, files] of Object.entries(data)) {
+        result[dirName.replace('\\', '/')] = files
+    }
     fs.writeFile(
         '../Directory.js',
-        `window["xjb_xyAPI_Directory_新将包"]=${JSON.stringify(data, null, 4)}`
+        `window["xjb_xyAPI_Directory_新将包"]=${JSON.stringify(result, null, 4)}`
     )
 })
-fsPromise.unlinkFiles('../', file => file.includes('Thumbs.db'))
-fsPromise.clearContent('../json/1.json')
-fsPromise.clearContent('../log/log.txt')
