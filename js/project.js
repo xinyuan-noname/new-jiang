@@ -1,10 +1,7 @@
-import {
-    element
-} from './ui.js'
 window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
     /*file*/
     game.xjb_transferFile = function (BLOB, fileWay, silent) {
-        function download(){
+        function download() {
             var fileTransfer = new FileTransfer();
             const obj = {}
             if (!silent) obj.Myalert = game.xjb_create.alert("正在导出中...")
@@ -14,18 +11,26 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 if (obj.Myalert) obj.Myalert.innerHTML = "导出失败！<br>" + e.code
             });
         }
-        if(typeof BLOB ==="string"){
-            const myTarget={
-                result:BLOB,
+        if (typeof BLOB === "string") {
+            const myTarget = {
+                result: BLOB,
             }
-            download.apply(myTarget,[]);
+            download.apply(myTarget, []);
             return;
-        }else{
+        } else {
             var reader = new FileReader()
             reader.onload = download;
             reader.readAsDataURL(BLOB, "UTF-8")
         }
     };
+    game.xjb_checkCharacterCount = function (id, attr, preValue) {
+        if (!lib.config.xjb_count[id]) lib.config.xjb_count[id] = {}
+        if (!lib.config.xjb_count[id][attr]) lib.config.xjb_count[id][attr] = preValue;
+    }
+    game.xjb_checkCharacterDaomo = function (id, type) {
+        if (!lib.config.xjb_count[id]) lib.config.xjb_count[id] = {}
+        if (!lib.config.xjb_count[id].daomo[type]) lib.config.xjb_count[id].daomo[type] = { number: 0 };
+    }
     lib.skill.xjb_6 = {
         "xjb_storage": function () {
             get.xjb_storage = function () {
@@ -124,7 +129,8 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                         return i
                     }
                     //体力牌统计
-                    if (1) {
+                    {
+                        game.xjb_checkCharacterCount(player, "HpCard")
                         let dataSource = lib.config.xjb_count[player].HpCard;
                         let dataList = game.countHpCard(dataSource)
                         new Array(1, 2, 3, 4, 5).forEach(function (item) {
@@ -137,35 +143,33 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                             )
                         })
                     }
-                    if (1) {
-                        let dataSource = lib.config.xjb_count[player].daomo
-                        if (dataSource) {
-                            dataSource = Object.keys(dataSource)
-                            dataSource.forEach(function (i) {
-                                result.push(new Means(
-                                    this[i].translation,
-                                    this[i].number,
-                                    picture("lingli/" + i + ".jpg", 75, 75),
-                                    this[i].intro
-                                ))
-                            }, lib.config.xjb_count[player].daomo)
+                    {
+                        game.xjb_checkCharacterCount(player, "daomo")
+                        for (const [daomo, info] of Object.entries(lib.config.xjb_count[player].daomo)) {
+                            game.xjb_checkCharacterDaomo(player, daomo)
+                            const basicInformation = get.xjb_daomoInformation(daomo)
+                            result.push(new Means(
+                                basicInformation.translation,
+                                info.number,
+                                picture("lingli/" + daomo + ".jpg", 75, 75),
+                                basicInformation.intro
+                            ))
                         }
                     }
                     //书统计
-                    if (1) {
+                    {
+                        game.xjb_checkCharacterCount(player, "book")
                         let dataSource = lib.config.xjb_count[player].book
-                        if (dataSource) {
-                            dataSource.forEach(i => {
-                                result.push(new Means(
-                                    i.headline + "(单击点开后，双击可以收起)",
-                                    1,
-                                    picture("lingli/book.jpg", 100, 100),
-                                    () => {
-                                        ui.create.xjb_book(ui.window, xjb_library[i.type][i.headline])
-                                    }
-                                ))
-                            })
-                        }
+                        dataSource.forEach(i => {
+                            result.push(new Means(
+                                i.headline + "(单击点开后，双击可以收起)",
+                                1,
+                                picture("lingli/book.jpg", 100, 100),
+                                () => {
+                                    ui.create.xjb_book(ui.window, xjb_library[i.type][i.headline])
+                                }
+                            ))
+                        })
                     }
                     return result
                 }
@@ -238,30 +242,30 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                         }
                         if (name === event.yi) {
                             list.push("益");
-                            let cards = game.xjb_cardFactory(["xin_baiyin", "club", 1], ["xin_hutou", "spade", 11])
+                            let cards = game.xjb_cardFactory(["xjb_baiyin", "club", 1], ["xjb_hutou", "spade", 11])
                             player.expandEquip && player.expandEquip(4);
                             object.es.add(...cards);
                         }
                         if (name === event.po) {
                             list.push("破");
-                            let cards = game.xjb_cardFactory(["xin_chitu", "heart", 5], ["xin_qinglong", "spade", 5])
+                            let cards = game.xjb_cardFactory(["xjb_chitu", "heart", 5], ["xjb_qinglong", "spade", 5])
                             player.expandEquip && player.expandEquip(1);
                             object.es.add(...cards);
                         }
                         if (name === event.yu) {
                             list.push("愈");
-                            let cards = game.xjb_cardFactory(["xin_qinnangshu", "heart", 7])
+                            let cards = game.xjb_cardFactory(["xjb_qingnangshu", "heart", 7])
                             player.expandEquip && player.expandEquip(5);
                             object.es.add(...cards);
                         }
                         if (name === event.ji) {
                             list.push("疾");
-                            let cards = game.xjb_cardFactory(["card_lw", "red", 13])
+                            let cards = game.xjb_cardFactory(["xjb_card_lw", "red", 13])
                             player.expandEquip && player.expandEquip(3);
                             object.hs.add(...cards);
                         }
                         if (name == event.all) {
-                            let cards = game.xjb_cardFactory(["xin_qixing", "diamond", 7])
+                            let cards = game.xjb_cardFactory(["xjb_qixing", "diamond", 7])
                             player.expandEquip && player.expandEquip(2);
                             object.hs.add(...cards);
                         }
@@ -1512,14 +1516,14 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 game.xjb_systemEnergyChange(-5 * num)
             }
             game.xjb_newCharacterChangeName = function (num = 1, free) {
-                game.xjb_create.prompt("请输入你更改后的姓名", lib.config.xjb_newcharacter.name2, function () {
+                game.xjb_create.prompt("请输入你更改后的姓名:", lib.config.xjb_newcharacter.name2, function () {
                     if (this.result !== "") {
                         lib.config.xjb_newcharacter.name2 = this.result
                         game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
                         game.xjb_create.alert("你已更名为:<br>" + lib.config.xjb_newcharacter.name2 + "。<br>重启即更新数据");
                         game.xjb_systemEnergyChange(-5)
                     }
-                }).inputSmall()
+                }).inputOneLine()
             }
             game.xjb_newCharacterChangeSex = function (num = 1, free) {
                 const informationList = {
@@ -1537,7 +1541,6 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 }
                 game.xjb_create.UABobjectsToChange(informationList)
             }
-            lib.config.xjb_developer = false
             game.xjb_newCharacterChangeGroup = function (num = 1, free) {
                 const informationList = {
                     object: "changeGroupCard",
@@ -1562,9 +1565,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
             }
             game.xjb_newCharacterAddHp = function (num = 1, free) {
                 var hp = lib.config.xjb_newcharacter.hp
-                if (hp >= 8) return game.xjb_create.alert("你的体力值已达到最大！")
-                if (hp + num > 8) num = 8 - hp;
-                var countCostE = function () {
+                var countCost = function () {
                     let count = 0, i = 0
                     while (i < num) {
                         count += (hp + i) * (hp + i) * 2
@@ -1572,26 +1573,29 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                     }
                     return count
                 }
-                var cost = hp * hp * 2
                 function addHp(func) {
                     lib.config.xjb_newcharacter.hp += num
                     game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
                     var hp_str = '你现在体力值为:<br>' + lib.config.xjb_newcharacter.hp + '<br>重启即更新数据'
                     game.xjb_create.alert(hp_str, func)
-                    game.xjb_systemEnergyChange(-countCostE())
+                    game.xjb_systemEnergyChange(-countCost())
                 }
                 if (free === false) {
-                    game.xjb_create.confirm('你已有' + lib.config.xjb_newcharacter.hp + '点体力。<br>加1点体力需要' + cost + '个魂币。<br>确定要增加吗？', function () {
-                        if (lib.config.xjb_hunbi < cost) return game.xjb_create.alert("你的魂币不足！")
-                        game.cost_xjb_cost(1, cost, '增加养成武将体力值')
-                        addHp(function () {
-                            game.xjb_create.confirm('是否继续？', function () {
-                                game.xjb_newCharacterAddHp(1, false)
-                            })
-                        })
-                        game.xjb_systemEnergyChange(-countCostE() - 20)
-                    })
-                } else addHp()
+                    game.cost_xjb_cost("B", countCost())
+                    game.xjb_systemEnergyChange(-countCost() - 100)
+                }
+                addHp()
+            }
+            game.xjb_newCharacterGetSkill = function (skillName) {
+                if (Object.keys(lib.skill).includes(skillName)) {
+                    if (game.xjb_condition(3, 1)) { }
+                    if (game.xjb_condition(3, 1)) {
+                        game.xjb_create.alert(`你获得了技能${get.translation(skillName)}`)
+                        lib.config.xjb_newcharacter.skill.add(skillName)
+                        game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
+                        game.xjb_systemEnergyChange(-20)
+                    }
+                }
             }
         }
     }

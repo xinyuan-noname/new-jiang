@@ -426,135 +426,8 @@ game.import("extension", function () {
                 }
             }
             if (lib.config.xjb_hun) {
-                lib.extensionMenu.extension_新将包.systemTool = {
-                    name: '<img src="' + lib.xjb_src + 'image/tool.png" height="20" >' + '工具箱',
-                    init: '1',
-                    item: {
-                        returnBoard: "执行代码",
-                        coordinate: "函数绘制",
-                        BinaryLinearEquations: "二元一次",
-                        point: "点与向量",
-                        vibrante3seconds: "震动三秒",
-                        readFileURL: '读取文件',
-                        filterNotASCLL: "纯ASCLL",
-                    },
-                    visualMenu: function (node) {
-                        node.className = 'button controlbutton';
-                    },
-                    onclick: function (item) {
-                        if (lib.config.xjb_systemEnergy < 0) return game.xjb_NoEnergy();
-                        game.xjb_systemEnergyChange(-5);
-                        switch (item) {
-                            case "returnBoard": {
-                                game.xjb_create.prompt('在此输入一串代码，将构造函数，然后执行此代码，并将返回值粘贴到剪切板上', void 0, function () {
-                                    if (this.result === "APTX4869" && lib.config.xjb_developer) {
-                                        lib.config.xjb_hundaka[0] = 1994
-                                        lib.config.xjb_hundaka[1] = 1
-                                        lib.config.xjb_hundaka[2] = 1
-                                        game.saveConfig('xjb_hundaka', lib.config.xjb_hundaka);
-                                        return game.reload();
-                                    }
-                                    try {
-                                        let func = new Function("_status", "lib", "game", "ui", "get", "ai", this.result);
-                                        var textarea = ui.xjb_addElement({
-                                            target: ui.window,
-                                            tag: 'textarea',
-                                            innerHTML: func(_status, lib, game, ui, get, ai),
-                                        })
-                                        textarea.select();
-                                        document.execCommand("copy");
-                                    }
-                                    catch (err) {
-                                        game.xjb_create.alert("！！！报错：<br>" + err);
-                                    }
-                                    textarea && textarea.remove();
-                                }).higher();
-                            }; break;
-                            case "coordinate": {
-                                game.xjb_create.coordinate()
-                            }; break;
-                            case "BinaryLinearEquations": {
-                                game.xjb_create.blprompt("这里写第一个关于x,y的二元一次方程", void 0, "这里写第二个关于x,y的二元一次方程", void 0, function () {
-                                    const answer = lib._xjb["Math_2Equal1"](this.result, this.result2)
-                                    game.xjb_create.alert(`x=${answer[0]}</br>y=${answer[1]}`)
-                                })
-                            }; break;
-                            case "point": {
-                                let dialog = game.xjb_create.blprompt("这里写点的坐标，如果为直角坐标，则写成cartesian(x,y)，例如(2,1);如果为极坐标，则写成polar(magnitude,angle)，例如(3,2/PI)", "",
-                                    `对点进行的操作:</br>
-                                 translate(x,y):将点平移x个单位和y个单位；</br>
-                                 project(x,y):求向量在向量(x,y)上的射影;</br>
-                                 symmetry(A,B,C):求点关于Ax+By+C=0的对称点;</br>
-                                 multiply(a,b):求点表示的复数与(a,b)表示的复数相乘表示的复数对应的点;</br>
-                                 beDividedBy(a,b):求点表示的复数除以(a,b)表示的复数表示的复数对应的点`, void 0, function () {
-                                    let point = lib._xjb["Math_point"](this.result)
-                                    if (this.result2) {
-                                        let string = lib._xjb.usuallyUsedString.Math + `
-                                           return PreviousPoint.${this.result2}
-                                        `
-                                        string = lib._xjb.StringDispose.disposeSpecialCharacter(string)
-                                        try {
-                                            let func = new Function("PreviousPoint", string)
-                                            point = func(point)
-                                        } catch (err) {
-                                            return game.xjb_create.alert(`错误:${err}`)
-                                        }
-                                    }
-                                    const decimal = 3
-                                    const x = point.cartesian[0].toFixed(decimal)
-                                    const y = point.cartesian[1].toFixed(decimal)
-                                    const m = point.polar[0].toFixed(decimal)
-                                    const a = point.polar[1]
-                                    const PI = lib._xjb.usuallyUsedString.PI
-                                    const deg = lib._xjb.usuallyUsedString.deg
-                                    game.xjb_create.alert(`直角坐标:(${x},${y})</br>
-                                     极坐标:(${m},${a.toFixed(decimal)})</br>
-                                     极坐标:(${m},${(a / Math.PI).toFixed(decimal)}${PI})
-                                     </br>极坐标:(${m},${((180 * a) / Math.PI).toFixed(decimal)}${deg})`)
-                                })
-                                dialog.input.addButton("清")
-                                dialog.input.addButton("°")
-                                dialog.input.addButton("π")
-                                dialog.input.addButton("p", "polar(,)")
-                                dialog.input.addButton("c", "cartesian(,)")
-                                dialog.input2.addButton("清")
-                                dialog.input2.addButton("°")
-                                dialog.input2.addButton("π")
-                                dialog.input2.addButton("d", "beDividedBy(,)")
-                                dialog.input2.addButton("m", "multiply(,)")
-                                dialog.input2.addButton("s", "symmetry(,,)")
-                                dialog.input2.addButton("p", "project(,)")
-                                dialog.input2.addButton("t", "translate(,)")
-
-                            }; break;
-                            case "vibrante3seconds": {
-                                navigator.vibrate ? navigator.vibrate(3000) : game.xjb_systemEnergyChange(5);
-                            }; break;
-                            case "readFileURL": {
-                                game.xjb_create.file('选择一个文件,我们将获取一个url复制到剪切板上，并会在other文件夹下生成相应文件', 'all', function () {
-                                    let _this = this, dialog = game.xjb_create.alert('')
-                                    var textarea = ui.xjb_addElement({
-                                        target: dialog,
-                                        tag: 'textarea',
-                                        innerHTML: _this.file.result,
-                                    })
-                                    textarea.select();
-                                    document.execCommand("copy");
-                                    let fileWay = lib.config.xjb_fileURL + "other/" + randomBase36(8) + ".txt"
-                                    game.xjb_transferFile(new Blob([_this.file.result], { type: "text/plain;charset=utf-8" }), fileWay)
-                                })
-                            }; break;
-                            case "filterNotASCLL": {
-                                let dialog = game.xjb_create.prompt("输入一系列文字，将自动过滤其中的非ASCLL可见字符。")
-                                dialog.input.addEventListener("input", function () {
-                                    this.value = this.value.replaceAll(/[^\u0020-\u007e]/g, "")
-                                })
-                            }; break;
-                        };
-                    }
-                }
                 lib.extensionMenu.extension_新将包.hunbi = {
-                    name: '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="20" >' + '查看魂币数据',
+                    name: '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="20" >' + '魂币数据',
                     clear: true,
                     onclick: function () {
                         function hun(num) {
@@ -575,7 +448,6 @@ game.import("extension", function () {
                             "dakadian": "打卡点:" + (hun(lib.config.xjb_hundaka2)),
                             "energy": "能量:" + (hun(lib.config.xjb_systemEnergy)),
                             "HunbiExpectation": "魂币期望:" + (hun(game.xjb_hunbiExpectation())),
-                            "threeRate": "三等率:" + dataBase.firstRate + "/" + dataBase.secondRate + "/" + dataBase.thirdRate,
                             "floatRate": "浮流率:" + (game.xjb_inflationRate() * 100).toFixed(2) + "%"
                         }
                         let target = game.xjb_create.condition(condition).font(30)
@@ -749,7 +621,7 @@ game.import("extension", function () {
                     }
                 }
                 lib.extensionMenu.extension_新将包.level = {
-                    name: '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="16"><font color=yellow>技能附魔',
+                    name: '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="16"><font color=yellow>技能附魔！',
                     init: "openType",
                     item: {
                         openType: "开启标签",
@@ -887,28 +759,32 @@ game.import("extension", function () {
                                     return game.xjb_create.alert(str)
                                 }
                                 obj.changeSkill1 = function () {
-                                    var num = lib.config.xjb_jnc
-                                    game.xjb_create.prompt('每开启一个技能槽，消费便多5个魂币，你当前有' + num + '个技能槽，请输入你要开启的技能槽数量', "", function () {
-                                        var add = this.result
-                                        if (add <= 0) {
-                                            game.xjb_create.alert("请规范输入！", function () {
-                                                obj.changeSkill1()
-                                            })
+                                    let num = lib.config.xjb_jnc;
+                                    let max = 0;
+                                    function apSum(first, endIndex, difference) {
+                                        const last = first + (endIndex - 1) * difference
+                                        return (first + last) * endIndex / 2
+                                    }
+                                    for (let add = 0; add < 15; add++) {
+                                        let first = game.xjb_goods.jnc.price
+                                        let cost = apSum(first, add, 5)
+                                        if (lib.config.xjb_hunbi < cost) break;
+                                        max = add;
+                                    }
+                                    game.xjb_create.range('你当前有' + num + '个技能槽，开启0个技能槽,共需0个魂币', 0, max, 0, function () {
+                                        let add = this.result
+                                        let first = game.xjb_goods.jnc.price
+                                        let cost = apSum(first, add, 5)
+                                        if (lib.config.xjb_hunbi >= cost) {
+                                            game.cost_xjb_cost("B", cost)
+                                            game.xjb_newCharacterAddJnc(add)
                                         }
-                                        else {
-                                            add = parseInt(add, 10)//将add转化为十进制数
-                                            var first = (15 + (num + 1) * 5)//获取第一个技能槽的cost
-                                            var last = (15 + (num + add) * 5)//最后一个cost
-                                            var cost = ((first + last) * add) / 2//高斯求和公式
-                                            if (lib.config.xjb_hunbi >= cost) {
-                                                game.xjb_create.confirm('开启' + add + '个技能槽，需要' + cost + '个魂币，是否开启？', function () {
-                                                    game.cost_xjb_cost("B", cost)
-                                                    game.xjb_newCharacterAddJnc(add)
-                                                })
-                                            }
-                                            else game.xjb_create.alert('需要' + cost + '个魂币，你的魂币不足！')
-                                        }
-                                    }).inputSmall()
+                                    }, function () {
+                                        let add = this.value;
+                                        let first = game.xjb_goods.jnc.price
+                                        let cost = apSum(first, add, 5)
+                                        this.prompt.innerHTML = '你当前有' + num + '个技能槽，开启' + add + '个技能槽,共需' + cost + '个魂币'
+                                    })
                                 }
                                 obj.changeSkill2 = function () {
                                     var list = lib.config.xjb_newcharacter.skill
@@ -1017,7 +893,32 @@ game.import("extension", function () {
                                     })
                                 },
                                 hp: function () {
-                                    game.xjb_gainJP("体力值(1点)", false)
+                                    let hp = lib.config.xjb_newcharacter.hp;
+                                    let max = 0;
+                                    function getCost(num) {
+                                        let count = 0, i = 0;
+                                        while (i < num) {
+                                            count += (hp + i) * (hp + i) * 2
+                                            i++
+                                        }
+                                        return count;
+                                    }
+                                    for (let add = 0; add < 15; add++) {
+                                        let cost = getCost(add)
+                                        if (lib.config.xjb_hunbi < cost) break;
+                                        max = add;
+                                    }
+                                    game.xjb_create.range('你已有' + hp + '点体力。增加0点体力需要0个魂币。', 0, max, 0, function () {
+                                        const add = this.result;
+                                        let cost = getCost(add)
+                                        if (lib.config.xjb_hunbi >= cost) {
+                                            game.xjb_newCharacterAddHp(this.result, false)
+                                        }
+                                    }, function () {
+                                        const add = this.value;
+                                        let cost = getCost(add);
+                                        this.prompt.innerHTML = '你已有' + hp + '点体力。增加' + add + '点体力需要' + cost + '个魂币。'
+                                    })
                                 },
                                 intro: function () {
                                     game.xjb_create.prompt('请输入该角色的背景信息', lib.config.xjb_newcharacter.intro, function () {

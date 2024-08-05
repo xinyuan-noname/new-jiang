@@ -1,5 +1,5 @@
 import { horizontalLine, plumbLine } from './canvas.js';
-import { element } from './ui.js';
+import { element, textareaTool } from './ui.js';
 window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
     //这是创建对话框
     ui.create.xjb_dialogBase = function () {
@@ -215,7 +215,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         return dialog
     }
     //确认型对话框
-    game.xjb_create.confirm = function (str, func1, func2) {
+    game.xjb_create.confirm = function (str = '', func1, func2) {
         if (game.xjb_create.baned) return;
         var dialog = ui.create.xjb_dialogBase("确定", "取消")
         dialog.innerHTML = str
@@ -232,30 +232,6 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             }
         })
         return dialog
-    }
-    game.xjb_create.blprompt = function (str1, str2, str3, str4, func1, func2) {
-        if (game.xjb_create.baned) return;
-        let dialog = game.xjb_create.prompt(str1, str2, void 0, void 0).Mysize();
-        let textarea1 = dialog.input;
-        dialog.addElement("div", str3)
-        let textarea2 = dialog.addElement("textarea", str4, {
-            display: "block",
-            margin: "auto",
-            width: "99%",
-            marginTop: "10px",
-            height: "26px",
-            fontSize: "24px"
-        })
-        dialog.input2 = textarea2
-        dialog.buttons[0].addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function () {
-            this.result2 = textarea2.value
-        })
-        dialog.buttons[1].addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function () {
-            this.result2 = textarea2.value
-        })
-        if (func1) dialog.buttons[0].addEventListener(lib.config.touchscreen ? 'touchend' : 'click', func1)
-        if (func2) dialog.buttons[1].addEventListener(lib.config.touchscreen ? 'touchend' : 'click', func2)
-        return dialog;
     }
     //互动性对话框
     game.xjb_create.prompt = function (str1, str2 = "", func1, func2) {
@@ -297,12 +273,87 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         dialog.inputSmall = function () {
             ui.xjb_giveStyle(textarea, {
                 width: "5em",
-                height: "26px"
+                height: "1em"
             })
+            return dialog
+        }
+        dialog.inputOneLine = function () {
+            textareaTool().setTarget(textarea)
+                .width('95%')
+                .height('1.5em')
+                .style({
+                    margin: '0',
+                    marginTop: '20px',
+                    padding: '0'
+                })
+                .clearThenAnotherClickTouch('\n', dialog.buttons[0], 'touchend')
             return dialog
         }
         dialog.prompt = textarea
         return dialog
+    }
+    game.xjb_create.blprompt = function (str1, str2, str3, str4, func1, func2) {
+        if (game.xjb_create.baned) return;
+        let dialog = game.xjb_create.prompt(str1, str2, void 0, void 0).Mysize();
+        let textarea1 = dialog.input;
+        dialog.addElement("div", str3)
+        let textarea2 = dialog.addElement("textarea", str4, {
+            display: "block",
+            margin: "auto",
+            width: "99%",
+            marginTop: "10px",
+            height: "26px",
+            fontSize: "24px"
+        })
+        dialog.input2 = textarea2
+        dialog.buttons[0].addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function () {
+            this.result2 = textarea2.value
+        })
+        dialog.buttons[1].addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function () {
+            this.result2 = textarea2.value
+        })
+        if (func1) dialog.buttons[0].addEventListener(lib.config.touchscreen ? 'touchend' : 'click', func1)
+        if (func2) dialog.buttons[1].addEventListener(lib.config.touchscreen ? 'touchend' : 'click', func2)
+        return dialog;
+    }
+    game.xjb_create.multiprompt = function (func1, func2) {
+        if (game.xjb_create.baned) return;
+        const dialog = game.xjb_create.confirm(void 0);
+        dialog.prompts = []
+        dialog.higher()
+        dialog.appendPrompt = function (str, value, placeholder = '', times = 1) {
+            element("div")
+                .style({
+                    position: "relative",
+                })
+                .innerHTML(str)
+                .father(this)
+                .block()
+                .exit()
+            const textarea = element("textarea")
+                .style({
+                    display: "block",
+                    margin: "auto",
+                    width: "99%",
+                    fontSize: "24px",
+                    height: `${34 * times}px`
+                })
+                .father(this)
+                .exit()
+            if (value) textarea.value = value
+            textarea.placeholder = placeholder
+            dialog.prompts.push(textarea)
+            dialog.buttons[0].addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function () {
+                this.resultList = dialog.prompts.map(prompt => prompt.value);
+            })
+            dialog.buttons[1].addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function () {
+                this.resultList = dialog.prompts.map(prompt => prompt.value);
+            })
+            dialog.buttons[0].addEventListener(lib.config.touchscreen ? 'touchend' : 'click', func1)
+            dialog.buttons[1].addEventListener(lib.config.touchscreen ? 'touchend' : 'click', func2)
+            return dialog;
+        }
+        return dialog;
     }
     //选项型对话框
     game.xjb_create.chooseAnswer = function (str, choicesList, single, func, src) {
@@ -315,22 +366,42 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         dialog.chosen = [];
         dialog.choiceList = [];
         dialog.single = single;
+        dialog.chosenIndex = [];
         dialog.addElement("div", str);
         dialog.addElement("hr");
         choicesList.forEach((string, index) => {
-            const option = dialog.addElement("div", void 0, {
-                fontSize: "30px",
-                marginBottom: "0.5em"
-            });
-            const theNumber = option.addElement("span", String.fromCharCode(index + 65), {
-                display: "inline-block",
-                borderRadius: "50%",
-                height: "30px",
-                width: "30px",
-                textAlign: "center",
-                border: "#FFFFE0 1.5px solid"
-            });
-            option.addElement("span", string);
+            const option = element("div")
+                .style({
+                    position: "relative",
+                    fontSize: "30px",
+                    marginBottom: "0.5em",
+                    alignItems: "center"
+                })
+                .flexRow()
+                .father(dialog)
+                .exit();
+            const theNumber = element("div")
+                .innerHTML(String.fromCharCode(index + 65))
+                .style({
+                    display: "block",
+                    borderRadius: "50%",
+                    height: "30px",
+                    width: "30px",
+                    textAlign: "center",
+                    border: "#FFFFE0 1.5px solid",
+                    marginRight: "10px",
+                    position: "relative"
+                })
+                .father(option)
+                .exit();
+            element("div")
+                .innerHTML(string)
+                .style({
+                    display: "block",
+                    position: "relative",
+                    fontSize: "26px",
+                })
+                .father(option)
             option.index = index;
             dialog.choiceList.push(option)
         })
@@ -342,12 +413,13 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         dialog.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function (e) {
             if (!Array.from(dialog.getElementsByTagName("*")).includes(e.target)) return false;
             const chosen = dialog.choiceList.filter(option => {
-                return (Array.from(option.getElementsByTagName("*")).includes(e.target) || e.target == option)
+                return (Array.from(option.getElementsByTagName("*")).includes(e.target))
             })[0];
             if (!chosen) return;
             if (dialog.chosen.includes(chosen)) {
                 updateBackStyle(chosen.firstElementChild, "")
-                dialog.chosen = dialog.chosen.filter(i => i != chosen)
+                dialog.chosenIndex = dialog.chosenIndex.filter(i => i != chosen.index);
+                dialog.chosen = dialog.chosen.filter(i => i != chosen);
             } else {
                 updateBackStyle(chosen.firstElementChild, "#FFFFE0")
                 if (dialog.single) {
@@ -355,42 +427,23 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                         updateBackStyle(option.firstElementChild, "")
                         return false;
                     });
+                    dialog.chosenIndex = [];
                 }
                 dialog.chosen.push(chosen)
+                dialog.chosenIndex.push(chosen.index)
             }
-            dialog.buttons[0].result = [...dialog.chosen];
+            dialog.buttons[0].result = dialog.chosen.map(option => option.children[1].innerText);
+            dialog.buttons[0].resultIndex = [...dialog.chosenIndex];
+            if (single) {
+                dialog.buttons[0].result = dialog.buttons[0].result[0];
+                dialog.buttons[0].resultIndex = dialog.buttons[0].resultIndex[0];
+            }
         })
         if (src) {
             element().setTarget(dialog.back)
                 .setStyle("backgroundImage", `url(${src})`)
                 .setStyle("background-size", "100% 100%")
                 .setStyle("opacity", '1');
-        }
-        return dialog
-    }
-    //这种对话框用于展示条件
-    game.xjb_create.condition = function (obj, arr1, arr2) {
-        if (game.xjb_create.baned) return;
-        let dialog = game.xjb_create.search("<div style=position:relative;overflow:auto;font-size:24px>输入关键词后，敲击回车以进行搜索</div><hr>",)
-        let textarea = dialog.textarea;
-        let ul = dialog.ul;
-        var list = obj
-        if (list) {
-            for (let i in list) {
-                element("li")
-                    .appendInnerHTML(list[i])
-                    .father(ul)
-                    .setStyle('fontSize', '18px')
-                    .hook(ele => textarea.index.add(ele));
-            }
-        }
-        dialog.font = function (num) {
-            Array.from(textarea.index).forEach(a => {
-                ui.xjb_giveStyle(a, {
-                    fontSize: (num + "px")
-                })
-            })
-            return dialog
         }
         return dialog
     }
@@ -456,7 +509,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             var reader = new FileReader()
             reader.readAsDataURL(this.files[0], "UTF-8")
             reader.onload = function () {
-                function getBase64Index(dataURL){
+                function getBase64Index(dataURL) {
                     let base64Index = dataURL.indexOf(';base64,') + 8
                     // 如果没有找到";base64,"，则从"data:"后面开始截取
                     if (base64Index === -1) {
@@ -464,11 +517,11 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                     }
                     return base64Index;
                 }
-                function getHead(dataURL){
-                    return dataURL.slice(0,getBase64Index(dataURL))
+                function getHead(dataURL) {
+                    return dataURL.slice(0, getBase64Index(dataURL))
                 }
                 function extractBase64FromDataURL(dataURL) {
-                    let base64Index=getBase64Index(dataURL)
+                    let base64Index = getBase64Index(dataURL)
                     // 提取并返回base64编码的数据
                     return dataURL.substring(base64Index);
                 }
@@ -479,13 +532,13 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                 dialog.buttons[0].file = {
                     result: this.result,
                     type: lastnamefortype,
-                    head:getHead(this.result),
+                    head: getHead(this.result),
                     base64: extractBase64FromDataURL(this.result)
                 }
                 dialog.buttons[1].file = {
                     result: this.result,
                     type: lastnamefortype,
-                    head:getHead(this.result),
+                    head: getHead(this.result),
                     base64: extractBase64FromDataURL(this.result)
                 }
                 if (target.xjb_check) target.xjb_check()
@@ -536,7 +589,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             img.ondblclick = function () {
                 this.remove()
                 ui.xjb_toBeHidden(dialog.buttons[0])
-                if (arr2&&arr2.includes(this.name)) {
+                if (arr2 && arr2.includes(this.name)) {
                     arr2.remove(this.name);
                 }
             }
@@ -544,8 +597,14 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         dialog.imgs = dialog.getElementsByTagName("div")
         return dialog
     }
+
+
     //寻找信息型对话框
-    game.xjb_create.search = function (str, func) {
+    game.xjb_create.search = function (
+        str = "<div style=position:relative;overflow:auto;font-size:24px>输入关键词后，敲击回车以进行搜索</div><hr>",
+        func,
+        liDisplay = 'block'
+    ) {
         if (game.xjb_create.baned) return;
         let dialog = game.xjb_create.alert(str, func)
         ui.xjb_giveStyle(dialog, {
@@ -563,11 +622,15 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         })
         textarea.onchange = myFunc
         textarea.onkeyup = function (e) {
-            if (textarea.value == "") {
-                textarea.index.forEach(function (item) {
-                    item.style.display = "block"
-                })
-                return;
+            if (textarea.value.length) return;
+            for (const item of textarea.index) {
+                let count = 0;
+                const searchIndex = () => {
+                    count++
+                    item.style.display = liDisplay;
+                }
+                if (count <= 30) searchIndex()
+                else setTimeout(searchIndex, 33)
             }
         };
         textarea.onkeydown = function (e) {
@@ -579,12 +642,16 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             }
         }
         function myFunc() {
-            textarea.index.forEach(function (item) {
-                item.style.display = "block"
-            })
-            textarea.index.forEach(function (item) {
-                if (item.innerHTML.indexOf(textarea.value) < 0) item.style.display = "none"
-            })
+            for (const item of textarea.index) {
+                let count = 0;
+                const searchIndex = () => {
+                    count++
+                    item.style.display = liDisplay
+                    if (item.innerHTML.indexOf(textarea.value) < 0) item.style.display = "none"
+                }
+                if (count <= 30) searchIndex()
+                else setTimeout(searchIndex, 33)
+            }
         }
         dialog.textarea = textarea;
         dialog.textarea.index = [];
@@ -724,11 +791,147 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         textarea.index = Array.from(ul.children)
         return dialog;
     }
+    //这种对话框用于展示条件
+    game.xjb_create.condition = function (obj, arr1, arr2) {
+        if (game.xjb_create.baned) return;
+        let dialog = game.xjb_create.search()
+        let textarea = dialog.textarea;
+        let ul = element().setTarget(dialog.ul)
+            .setStyle('height', '210px')
+            .exit();
+        var list = obj
+        if (list) {
+            for (let i in list) {
+                element("li")
+                    .appendInnerHTML(list[i])
+                    .father(ul)
+                    .setStyle('fontSize', '18px')
+                    .hook(ele => textarea.index.add(ele));
+            }
+        }
+        dialog.font = function (num) {
+            Array.from(textarea.index).forEach(a => {
+                ui.xjb_giveStyle(a, {
+                    fontSize: (num + "px")
+                })
+            })
+            return dialog
+        }
+        return dialog
+    }
+    game.xjb_create.seeDelete = function (map, seeStr = "查看", deleteStr = "删除", seeCallback = () => true, deleteCallback = () => true, func) {
+        if (game.xjb_create.baned) return;
+        const dialog = game.xjb_create.search(void 0, func)
+        const textarea = dialog.textarea;
+        const ul = dialog.ul;
+        const listenType = lib.config.touchscreen ? "touchend" : "click";
+        dialog.buttons[0].result = [];
+        for (const [attr, desc] of Object.entries(map)) {
+            function addLi() {
+                if (!dialog.parentNode) return;
+                const container = element('li')
+                    .setAttribute('xjb_id', attr)
+                    .father(ul)
+                    .block()
+                    .style({
+                        position: 'relative',
+                        width: "100%"
+                    })
+                    .exit()
+                const descEle = element("div")
+                    .father(container)
+                    .innerHTML(desc)
+                    .block()
+                    .style({
+                        position: 'relative',
+                    })
+                    .exit()
+                const seeButton = ui.create.xjb_button(container, seeStr);
+                element().setTarget(seeButton)
+                    .listen(listenType, seeCallback)
+                    .style({
+                        position: 'relative',
+                        fontSize: '1.5rem'
+                    })
+                    .exit()
+                seeButton.descEle = descEle;
+                seeButton.container = container;
+                seeButton.yesButton = dialog.buttons[0];
+                const deleteButton = ui.create.xjb_button(container, deleteStr)
+                element().setTarget(deleteButton)
+                    .father(container)
+                    .listen(listenType, deleteCallback)
+                    .listen(listenType, function () {
+                        this.parentNode.remove();
+                    })
+                    .style({
+                        position: 'relative',
+                        fontSize: '1.5rem',
+                    })
+                    .exit()
+                deleteButton.descEle = descEle;
+                deleteButton.container = container;
+                deleteButton.yesButton = dialog.buttons[0];
+                textarea.index.push(container);
+                if (!desc.includes(textarea.value)) container.style.display = "none";
+            }
+            if (ul.children.length <= 30) addLi();
+            else setTimeout(addLi, 33)
+        }
+        return dialog
+    }
+
+
+    game.xjb_create.range = function (str, min, max, value = 0, callback, changeValue = () => true) {
+        if (game.xjb_create.baned) return;
+        let dialog = game.xjb_create.confirm(void 0, callback);
+        const prompt = element('div')
+            .block()
+            .setStyle('position', 'relative')
+            .innerHTML(str)
+            .father(dialog)
+            .exit()
+        const showValue = element('div')
+            .block()
+            .style({
+                position: 'relative',
+                height: '52px',
+                margin: 'auto',
+                width: '52px',
+                textAlign: "center",
+                fontSize: '50px',
+                marginBottom: '32px'
+            })
+            .father(dialog)
+            .exit()
+        const range = element('input')
+            .type('range')
+            .value(value)
+            .block()
+            .style({
+                position: 'relative',
+                margin: 'auto',
+                width: '90%',
+            })
+            .max(max)
+            .min(min)
+            .father(dialog)
+            .listen('change', e => {
+                dialog.buttons[0].result = parseInt(e.target.value);
+                showValue.innerHTML = e.target.value;
+            })
+            .listen('change', changeValue)
+            .exit();
+        range.prompt = prompt
+        dialog.buttons[0].result = parseInt(value);
+        showValue.innerHTML = value;
+        return dialog;
+    }
     game.xjb_create.UABobjectsToChange = function ({ object, num, free, list, previousPrice, objectName, changeFunc }) {
         const energyConsume = previousPrice * game.xjb_currencyRate.CoinToEnergy
         if (free === false) {
             if (game.xjb_hasIt(object)) { }
-            else if (!game.xjb_purchaseIt(object, 1, previousPrice)) return game.xjb_create.alert(`需要购买${objectName}(${previousPrice}魂币)，你的魂币不足`)
+            else if (!game.xjb_purchaseIt(object, 1, previousPrice)) return game.xjb_create.alert(`购买${objectName}需要${game.xjb_goods[object].price}魂币，你的魂币不足!`)
             var word = '请按以下规则输入:'
             for (let i = 0; i < list.length; i++) {
                 word = word + '改为' + get.xjb_translation(list[i]) + '，请输入' + i + '，'
@@ -903,21 +1106,21 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         paint(25)
         return dialog
     }
-    game.xjb_create.iframe = function(src){
+    game.xjb_create.iframe = function (src) {
         let dialog = game.xjb_create.alert()
         let iframe = element("iframe")
             .father(dialog)
             .src(src)
             .style({
-                "height":"100%",
-                "width":"100%"
+                "height": "100%",
+                "width": "100%"
             })
             .exit()
-            if(src.endsWith(".md")){
-                
-            }
+        if (src.endsWith(".md")) {
+
+        }
         dialog.frame = iframe;
-    }    
+    }
     //能量不足提醒
     game.xjb_NoEnergy = function () {
         game.xjb_create.alert("系统能量不足！<br>请支持刘徽-祖冲之项目为系统供能！")

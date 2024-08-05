@@ -1,6 +1,52 @@
 export const PiChar = String.fromCharCode(960);
 export const degChar = String.fromCharCode(176);
 export const cnCharRange = '\u4e00-\u9fa5'
+export const JavascriptKeywords = [
+    'abstract', 'await', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'class', 'const',
+    'continue', 'debugger', 'default', 'delete', 'do', 'double', 'else', 'enum', 'export', 'extends',
+    'false', 'final', 'finally', 'float', 'for', 'function', 'goto', 'if', 'implements', 'import',
+    'in', 'instanceof', 'int', 'interface', 'let', 'long', 'native', 'new', 'null', 'package', 'private',
+    'protected', 'public', 'return', 'short', 'static', 'super', 'switch', 'synchronized', 'this',
+    'throw', 'throws', 'transient', 'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while', 'with',
+    'yield'
+];
+export const JavascriptUsualType = [
+    'undefined',
+    'boolean', 'Boolean',
+    'number', 'Number',
+    'string', 'String',
+    'bigint', 'BigInt',
+    'symbol', 'Symbol',
+    'function', 'Function',
+    'object', 'Object',
+    'Math', 'Array', 'Date', 'RegExp', 'Map', 'Set'
+]
+export const JavascriptGlobalVariable = [
+    'NaN','Infinity','-Infinity',
+    'globalThis'
+]
+/**
+ * 
+ * 该函数使用正则表达式替换字符串中多余的逗号和其他标点符号
+ * 具体来说，它修复了以下几种情况：
+ * 1. 逗号和右括号之间的多余逗号
+ * 2. 左括号和逗号之间的多余逗号
+ * 3. 字符串中多余的逗号
+ * 4. 字符串中多余的分号
+ * 5. 逗号和大括号之间的多余逗号
+ * 6. 大括号和逗号之间的多余逗号
+ * 
+ * @param {string} str - 需要修正的字符串
+ * @returns {string}
+ */
+export function correctPunctuation(str) {
+    return str.replace(/,+[)]/g, ')')
+        .replace(/[(],+/g, '(')
+        .replace(/,,+/g, ',')
+        .replace(/;;+/g, ';')
+        .replace(/\,\}/g, '}')
+        .replace(/\{\,/g, '{')
+}
 /**
  * 生成一个随机的36进制字符串。
  * 

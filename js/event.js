@@ -7,7 +7,7 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                     '摸牌': 1, 'draw': 1,
                     '牌堆底摸牌': 51,
                     '恢复体力': 11, '回复体力': 11, '回血': 11, 'recover': 11,
-                    '失去体力':12,
+                    '失去体力': 12,
                     '加体力上限': 21, 'gainMaxHp': 21,
                     '获得Buff': 41,
                     '获得其牌': 32,
@@ -39,22 +39,29 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 player.xjb_clearSkills()
                 player.init(name);
                 if (lib.character[name]) {
-                        player.skills = lib.character[name][3] || [];
-                        player.sex = lib.character[name][0];
-                        player.group = lib.character[name][1];
-                    }
-                    player.classList.remove('unseen');
-                
+                    player.skills = lib.character[name][3] || [];
+                    player.sex = lib.character[name][0];
+                    player.group = lib.character[name][1];
+                }
+                player.classList.remove('unseen');
+
             },
             "xjb_clearSkills": function () {
                 const player = this;
-                game.broadcastAll(player=>{
-                    player.skills.length = 0;
-                    player.hiddenSkills.length = 0;
-                },player)
+                player.skills.length = 0;
+                player.hiddenSkills.length = 0;
+                
+            },
+            "xjb_recordTalentCard": function (num, skillName) {
+                const player = this;
+                const storage =player.storage
+                if (!storage.xjb_unique_talent) storage.xjb_unique_talent = [];
+                let records = storage.xjb_unique_talent
+                records.push([game.roundNumber + num, skillName])
+                player.update();
             },
             "xjb_addSkillCard": function (name) {
-                const info=get.info({name:"xjb_skillCard"});
+                const info = get.info({ name: "xjb_skillCard" });
                 info.cardConstructor(name);
                 info.skillLeadIn(name);
                 var card = game.createCard2(name + "_card");
@@ -971,8 +978,8 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 event.player.callSubPlayer(event.call)
                 event.player.addMark('_xin_bianshen')
                 "step 2"
-                event.player.storage["qimendunjia"] = event.qimen
-                event.player.useCard(game.createCard('qimendunjia'), event.player)
+                event.player.storage["xjb_qimendunjia"] = event.qimen
+                event.player.useCard(game.createCard('xjb_qimendunjia'), event.player)
                 game.xjb_systemEnergyChange(-50)
                 game.cost_xjb_cost(1, event.cost)
             },

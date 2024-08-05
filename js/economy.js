@@ -163,7 +163,7 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         return Math.floor(expectation);
     }
     game.xjb_inflationRate = function () {
-        if(!game.xjb_currencyRate||!game.xjb_currencyRate.CoinToEnergy) return 0
+        if (!game.xjb_currencyRate || !game.xjb_currencyRate.CoinToEnergy) return 0
         return (game.xjb_currencyRate.CoinToEnergy * lib.config.xjb_hunbi / lib.config.xjb_systemEnergy)
     }
     /*consume*/
@@ -229,8 +229,25 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
     /*goods*/
     class Goods {
         constructor(previousPrice, minCost, translate) {
-            this.previousPrice = previousPrice;
-            this.minCost = minCost;
+
+            if (typeof previousPrice === "function") {
+                Object.defineProperty(this, "previousPrice", {
+                    get() {
+                        return previousPrice()
+                    }
+                })
+            } else {
+                this.previousPrice = previousPrice;
+            }
+            if (typeof minCost === "function") {
+                Object.defineProperty(this, "minCost", {
+                    get() {
+                        return minCost()
+                    }
+                })
+            } else {
+                this.minCost = minCost;
+            }
             this.translate = translate;
         }
         getPrice() {
@@ -239,16 +256,26 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         getEnergyConsume() {
             return this.previousPrice * game.xjb_currencyRate.CoinToEnergy;
         }
-        get price(){
-            return getPrice();
+        get price() {
+            return this.getPrice();
         }
-        
-        get energyConsume(){
-            return getEnergyConsume();
+        get energyConsume() {
+            return this.getEnergyConsume();
         }
     }
     game.xjb_goods = {
         changeSexCard: new Goods(5, 3, '性转卡'),
         changeGroupCard: new Goods(4, 3, '择木卡'),
+        jnc: new Goods(
+            () => {
+                const num = lib.config.xjb_jnc;
+                return (15 + (num + 1) * 5)
+            },
+            () => {
+                const num = lib.config.xjb_jnc;
+                return (15 + (num + 1) * 5)
+            },
+            "技能槽"
+        )
     }
 }

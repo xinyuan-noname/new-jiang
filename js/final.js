@@ -334,24 +334,27 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
             }
         },
         "xjb_count": function () {
-            _status.xjb_CharacterCount = {}
             let list = { ...lib.character, 'xjb_newCharacter': [] }
             for (var i in list) {
-                if (!lib.config.xjb_count[i]) lib.config.xjb_count[i] = {}
-                if (!lib.config.xjb_count[i].kill) lib.config.xjb_count[i].kill = 0;
-                if (lib.config.xjb_count[i].skill) lib.config.xjb_count[i].skill = undefined;
-                if (!lib.config.xjb_count[i].strongDamage) lib.config.xjb_count[i].strongDamage = 0;
-                if (!lib.config.xjb_count[i].thunder) lib.config.xjb_count[i].thunder = 0;
-                if (!lib.config.xjb_count[i].fire) lib.config.xjb_count[i].fire = 0;
-                if (!lib.config.xjb_count[i].ice) lib.config.xjb_count[i].ice = 0;
-                if (!lib.config.xjb_count[i].loseMaxHp) lib.config.xjb_count[i].loseMaxHp = 0;
-                if (!lib.config.xjb_count[i].gainMaxHp) lib.config.xjb_count[i].gainMaxHp = 0;
-                if (!lib.config.xjb_count[i].win1) lib.config.xjb_count[i].win1 = 0;
-                if (!lib.config.xjb_count[i].win2) lib.config.xjb_count[i].win2 = 0;
-                if (!lib.config.xjb_count[i].HpCard) lib.config.xjb_count[i].HpCard = [];
-                if (!lib.config.xjb_count[i].uniqueSkill) lib.config.xjb_count[i].uniqueSkill = [];
-                if (!lib.config.xjb_count[i].daomo) lib.config.xjb_count[i].daomo = {}
-                if (!lib.config.xjb_count[i].book) lib.config.xjb_count[i].book = []
+                const id = i;
+                const map = {
+                    kill: 0,
+                    strongDamage: 0,
+                    thunder: 0,
+                    fire: 0,
+                    ice: 0,
+                    loseMaxHp: 0,
+                    gainMaxHp: 0,
+                    win1: 0,
+                    win2: 0,
+                    HpCard: [],
+                    uniqueSkill: [],
+                    daomo: {},
+                    book: []
+                }
+                for (const [attr, preValue] of Object.entries(map)) {
+                    game.xjb_checkCharacterCount(id, attr, preValue)
+                }
                 function bookWrite(author, books, type) {
                     if (!lib.translate[i]) return;
                     let target = lib.config.xjb_count[i].book
@@ -366,34 +369,24 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                         })
                     }
                 }
-                let wonderfulP = new Array();
-                wonderfulP.length = 10;
-                wonderfulP.fill("poem");
-                let wonderfulA = new Array()
-                wonderfulA.length = 10
-                wonderfulA.fill("article")
+                let wonderfulP = new Array(10).fill("poem")
+                let wonderfulA = new Array(10).fill("article")
                 bookWrite("曹操", ["龟虽寿", "短歌行", "观沧海", "述志令"], ["poem", "poem", "poem", "article"])
                 bookWrite("曹植", ["白马篇", "洛神赋", "铜雀台赋", "赠白马王彪"], wonderfulP)
                 bookWrite("曹丕", ["燕歌行"], ["poem"])
                 bookWrite("陈琳", ["为袁绍檄豫州"], ["article"])
                 bookWrite("诸葛亮", ["隆中对", "出师表", "诫子书", "诫外生书"], wonderfulA)
                 bookWrite("李白", ['行路难', "蜀道难", "清平调", "梦游天姥吟留别", "将进酒"], wonderfulP)
-                bookWrite("芙艾派依", ["魂的货币体系"], ["lingli"])
-                if (1) {
-                    let target = lib.config.xjb_count[i].daomo
-                    if (!target.xuemo) target.xuemo = { ...get.xjb_daomoInformation("xuemo"), number: 0 }
-                    if (!target.tear) target.tear = { ...get.xjb_daomoInformation("tear"), number: 0 }
-                    if (!target.taoyao) target.taoyao = { ...get.xjb_daomoInformation("taoyao"), number: 0 }
-                    if (!target.dragon) target.dragon = { ...get.xjb_daomoInformation("dragon"), number: 0 }
-                    if (!target.sun) target.sun = { ...get.xjb_daomoInformation("sun"), number: 0 }
-                    if (!target.blood) target.blood = { ...get.xjb_daomoInformation("blood"), number: 0 }
+                bookWrite("芙艾派依", ["魂的货币体系"], ["lingli"]);
+                const daomoes = ["xuemo", "tear", "taoyao", "dragon", "sun", "blood"];
+                for (const daomo of daomoes) {
+                    game.xjb_checkCharacterDaomo(id, daomo)
                 }
                 lib.config.xjb_count[i].titles = [];
                 lib.config.xjb_count[i].lingtan = [];
                 lib.config.xjb_count[i].lingfa = [];
                 lib.config.xjb_count[i].kind = "人类"
             }
-            game.saveConfig('xjb_count', lib.config.xjb_count);
         },
         lingli: function () {
             //
@@ -515,11 +508,6 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                     }
                 })
             }
-            ["xin_xiongli"].forEach(function (item) {
-                if (this[item]) this[item].qzj = true
-                let info = lib.translate[item + "_info"]
-                if (info && info.indexOf(get.translation("qzj")) < 0) lib.translate[item + "_info"] = get.translation("qzj") + "，" + lib.translate[item + "_info"]
-            }, lib.skill)
         },
         choujiang: function () {
             {
@@ -575,7 +563,7 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
             game.xjb_jiangchiUpDate()
         },
         daka: function () {
-            if (lib.config.xjb_hun) {                
+            if (lib.config.xjb_hun) {
                 var num1 = game.xjb_getCurrentDate()
                 var num2 = lib.config.xjb_hundaka
                 if (num1[0] > num2[0] || num1[1] > num2[1] || num1[2] > num2[2]) {

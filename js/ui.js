@@ -34,6 +34,28 @@ export class elementTool {
         this.ele.innerHTML += str;
         return this;
     }
+    block() {
+        this.ele.style.display = 'block';
+        return this;
+    }
+    width(size) {
+        this.ele.style.width = size;
+        return this;
+    }
+    height(size) {
+        this.ele.style.height = size;
+        return this;
+    }
+    flexColumn() {
+        this.ele.style.display = "flex";
+        this.ele.style.flexDirection = "column";
+        return this;
+    }
+    flexRow() {
+        this.ele.style.display = "flex";
+        this.ele.style.flexDirection = "row";
+        return this;
+    }
     /**
      * @param {string} key 
      * @param {string} value 
@@ -68,6 +90,10 @@ export class elementTool {
      */
     father(fatherEle) {
         fatherEle.appendChild(this.ele);
+        return this;
+    }
+    child(childEle) {
+        this.ele.appendChild(childEle);
         return this;
     }
     /**
@@ -110,8 +136,24 @@ export class elementTool {
      * @param {string} value 
      * @returns {elementTool}
      */
-    src(src){
+    src(src) {
         this.ele.setAttribute(`src`, src);
+        return this;
+    }
+    type(type) {
+        this.ele.setAttribute(`type`, type);
+        return this;
+    }
+    value(value) {
+        this.ele.setAttribute(`value`, value);
+        return this;
+    }
+    min(min) {
+        this.ele.min = min;
+        return this;
+    }
+    max(max) {
+        this.ele.max = max;
         return this;
     }
     setAttribute(key, value) {
@@ -140,12 +182,13 @@ export class elementTool {
         func(this.ele);
         return this;
     }
+
     /**
      * @param {String} name
      * @param {ang[]} args
      * @returns {elementTool}
      */
-    callMethod(name,...args){
+    callMethod(name, ...args) {
         this.ele[name](...args)
         return this;
     }
@@ -159,19 +202,19 @@ export class elementTool {
      * @param {String} options.code
      * @returns {elementTool}
      */
-    triggerKey(type,options){
-        let evt = new KeyboardEvent(type,{
+    triggerKey(type, options) {
+        let evt = new KeyboardEvent(type, {
             ...options,
-            target:this.ele
+            target: this.ele
         })
         this.ele.dispatchEvent(evt)
         return this;
     }
-    triggerInput(value,options){
-        this.ele.value +=value;
-        let evt = new InputEvent("input",{
+    triggerInput(value, options) {
+        this.ele.value += value;
+        let evt = new InputEvent("input", {
             ...options,
-            target:this.ele
+            target: this.ele
         })
         this.ele.dispatchEvent(evt)
         return this;
@@ -184,27 +227,43 @@ export class elementTool {
      * @param {boolean} options.cancelable
      * @returns {elementTool}
      */
-    triggerTouch(type,options){
-        let evt = new TouchEvent(type,{
+    triggerTouch(type, options) {
+        let evt = new TouchEvent(type, {
             ...options,
-            target:this.ele            
+            target: this.ele
         })
         this.ele.dispatchEvent(evt)
         return this;
     }
-    clickAndTouch(type="touchend"){
+    clickAndTouch(type = "touchend") {
         this.ele.click()
-        let evt = new TouchEvent(type,{
-            bubbles:true,
-            composed:true,
-            cancelable:true,
-            target:this.ele            
+        let evt = new TouchEvent(type, {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+            target: this.ele
         })
         this.ele.dispatchEvent(evt)
         return this;
     }
-    click(){
+    click() {
         this.ele.click()
+        return this;
+    }
+    /**
+     * 
+     * @param {HTMLElement} traget 
+     * @param {string} type 
+     * @returns {elementTool}
+     */
+    anotherClickTouch(target, type) {
+        target.click()
+        target.dispatchEvent(new TouchEvent(
+            type, {
+            bubbles: true,
+            cancelable: true,
+            composed: true
+        }))
         return this;
     }
     /**
@@ -270,6 +329,20 @@ export class TextareaTool extends elementTool {
         super.setTarget(ele);
         return this;
     }
+    /**
+     * @param {string} value
+     * @returns {TextareaTool}
+     */
+    placeholder(value) {
+        this.ele.setAttribute('placeholder', value)
+        return this;
+    }
+    /**
+     * 
+     * @param {string|RegExp} match 
+     * @param {function} func 
+     * @returns {TextareaTool}
+     */
     order(match, func) {
         let callback;
         if (typeof match === "string") {
@@ -286,12 +359,18 @@ export class TextareaTool extends elementTool {
         })
         return this;
     }
+    /**
+     * @returns {TextareaTool} 返回当前对象实例，允许链式调用。
+     */
     clearOrder() {
         this.order('清空', () => {
             this.ele.value = ''
         })
         return this;
     }
+    /**
+     * @returns {TextareaTool} 返回当前对象实例，允许链式调用。
+     */
     dittoOrder() {
         this.order('\n同上', () => {
             const callback = item => {
@@ -302,6 +381,9 @@ export class TextareaTool extends elementTool {
         })
         return this;
     }
+    /**
+     * @returns {TextareaTool} 返回当前对象实例，允许链式调用。
+     */
     dittoUnderOrder() {
         this.order('同下\n', () => {
             const callback = item => {
@@ -312,12 +394,18 @@ export class TextareaTool extends elementTool {
         })
         return this;
     }
+    /**
+     * @returns {TextareaTool} 返回当前对象实例，允许链式调用。
+     */
     replaceOrder(searchValue = '', replaceValue = '') {
         this.order(searchValue, () => {
             this.ele.value = this.ele.value.replaceAll(searchValue, replaceValue)
         })
         return this;
     }
+    /**
+     * @returns {TextareaTool} 返回当前对象实例，允许链式调用。
+     */
     clearThenOrder(clearValue, func) {
         this.order(clearValue, e => {
             this.ele.value = this.ele.value.replace(clearValue, "")
@@ -325,6 +413,25 @@ export class TextareaTool extends elementTool {
         })
         return this;
     }
+    /**
+     * @returns {TextareaTool} 返回当前对象实例，允许链式调用。
+     */
+    clearThenAnotherClickTouch(clearValue, target, type) {
+        this.order(clearValue, e => {
+            this.ele.value = this.ele.value.replace(clearValue, "");
+            target.click()
+            target.dispatchEvent(new TouchEvent(
+                type, {
+                bubbles: true,
+                cancelable: true,
+                composed: true
+            }))
+        })
+        return this;
+    }
+    /**
+     * @returns {TextareaTool} 返回当前对象实例，允许链式调用。
+     */
     replaceThenOrder(searchValue = '', replaceValue = '', func) {
         this.order(searchValue, e => {
             this.ele.value = this.ele.value.replaceAll(searchValue, replaceValue)
@@ -335,6 +442,7 @@ export class TextareaTool extends elementTool {
     /**
      * @param {string|RegExp} searchValue - 要搜索并替换的值或正则表达式。
      * @param {string} replaceValue - 用于替换搜索值的新字符串。
+     * @return {elementTool}
      */
     replace(searchValue = '', replaceValue = '') {
         if (searchValue instanceof RegExp && !searchValue.global) searchValue = new RegExp(searchValue.source, 'g')

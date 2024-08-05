@@ -185,6 +185,11 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
             }
         },
         CardFunction: function () {
+            get.xjb_enFromCn = function (cn) {
+                return Object.entries(lib.translate).find(item => {
+                    return item[1] === cn
+                })[0]
+            }
             //创建卡牌并返回数组
             game.xjb_cardFactory = function () {
                 var cards = []
@@ -210,12 +215,8 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                 let randomIndex = Math.floor(Math.random() * (cardPileItems.length + 1));
                 ui.cardPile.insertBefore(Acard, cardPileItems[randomIndex]);
             };
-            get.xjb_enFromCn=function(cn){
-                return Object.entries(lib.translate).find(item=>{
-                    return item[1]===cn
-                })[0]
-            }
-            //类似迭代器
+
+            //获取可以加入牌堆的牌的信息
             game.xjb_getCardToAdd = function (step) {
                 const firstList = Object.entries(lib.config.xjb_cardAddToPile).filter(i => i[1] !== "0");
                 if (step == 1) return firstList;
@@ -223,8 +224,8 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                 if (step == 2) return secondList;
                 const thirdList = secondList.map(i => i.split("-"))
                 if (step == 3) return thirdList;
-                const fourthList = thirdList.map(i =>{ 
-                    return [get.xjb_enFromCn(i[0]), get.xjb_enFromCn(i[1]).slice(0,-1), i[2] * 1, i[3] * 1]
+                const fourthList = thirdList.map(i => {
+                    return [get.xjb_enFromCn(i[0]), get.xjb_enFromCn(i[1]).slice(0, -1), i[2] * 1, i[3] * 1]
                 })
                 if (step == 4) return fourthList;
                 const fifthList = fourthList.filter(i => game.xjb_checkCardCanAdd(i[0]));
@@ -238,7 +239,7 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                 subtype: "xjb_unique_talent",
                 enable: true,
                 filterTarget: function (card, player, target) {
-                    return card.storage.xjb_allowed == true;;
+                    return card.storage.xjb_allowed == true;
                 },
                 content() {
                     'step 0'
@@ -249,14 +250,12 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                     event.num = [1, 2, 3].randomGet()
                     player.$skill(event.num + '', 'legend', 'wood');
                     'step 1'
-                    var list = [[]], num = game.roundNumber + event.num
-                    list[0] = [num, 'xjb_penglai']
-                    target.storage.xjb_unique_talent = [...target.storage.xjb_unique_talent, ...list]
+                    target.xjb_recordTalentCard(event.num, 'xjb_penglai');
                     'step 2'
-                    target.addSkillLog('xjb_penglai')
-                    target.update()
+                    target.addSkillLog('xjb_penglai');
+                    target.update();
                     'step 3'
-                    target.getStat().card.jiu = 0
+                    target.getStat().card.jiu = 0;
                     target.restoreSkill = function () {
                         return this;
                     }
@@ -309,21 +308,18 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                         event.finish()
                     }
                     "step 1"
-                    target.storage.xjb_unique_talent = target.storage.xjb_unique_talent || []
                     event.num = [1, 2, 3].randomGet()
                     player.$skill(event.num + '', 'legend', 'wood');
                     "step 2"
-                    var list = [[]], num = game.roundNumber + event.num
-                    list[0] = [num, 'skill_noskill']
-                    target.storage.xjb_unique_talent = target.storage.xjb_unique_talent.concat(list)
-                    "step 3"
+                    target.xjb_recordTalentCard(event.num, 'skill_noskill')
+                     "step 3"
                     target.addSkill("skill_noskill")
                     target.turnOver()
                 },
                 fullskin: true,
                 image: "ext:新将包/xjb_jingu.png",
                 translate: '禁锢卡',
-                description: '出牌阶段，你对一名角色使用此牌，其翻面，然后其封印所有技能，持续回合由抽取数字决定。'
+                description: '出牌阶段，你对一名角色使用此牌，其翻面并封印所有技能，持续回合由抽取数字决定。'
             });
             const xjb_zhihuan = CardObjectCreater(
                 'xjb_zhihuan', {
@@ -354,7 +350,8 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                 translate: '置换卡',
                 description: '出牌阶段，你对一名角色使用此牌，其弃置至少一张牌，然后你摸等量张牌。<br><b description=[当卡牌点数大于4时，使用牌结算后就不能再次获得此牌]>最大回收点数:4</b>'
             });
-            lib.card.xjb_lingliCheck = {
+            const xjb_lingliCheck = CardObjectCreater(
+                "xjb_lingliCheck", {
                 type: "xjb_unique",
                 subtype: "xjb_unique_money",
                 enable: true,
@@ -371,6 +368,8 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                 },
                 fullskin: true,
                 image: "ext:新将包/lingli/check.png",
+                translate: "灵力支票",
+                description: '出牌阶段对一名角色使用，其获得灵力。',
                 ai: {
                     order: 2,
                     basic: {
@@ -381,10 +380,9 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                         target: 1
                     },
                 },
-            }
-            lib.translate.xjb_lingliCheck = "灵力支票";
-            lib.translate.xjb_lingliCheck_info = "出牌阶段对一名角色使用，其获得灵力。"
-            lib.card.xjb_shenshapo = {
+            });
+            const xjb_shenshapo = CardObjectCreater(
+                "xjb_shenshapo", {
                 ai: {
                     order: 3,
                     basic: {
@@ -422,13 +420,11 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
 
                 },
                 fullskin: true,
-            }
-            lib.translate.xjb_shenshapo_info = "出牌阶段指定三名角色:1.视为对目标使用一张神杀;<br>2.出牌阶段使用过【杀】的次数清零<br><b description=[当卡牌点数大于1时，使用牌结算后就不能再次获得此牌]>最大回收点数:1点</b>"
-            lib.translate.xjb_shenshapo = "神杀破";
-            lib.translate.xjb_seizeHpCard = "体力抓取"
-            lib.translate.xjb_seizeHpCard_info = "出牌阶段对一名手牌数大于你的其他角色使用:你与其的拼点，若你赢，你获得其一张体力牌<br><b description=[当卡牌点数大于1时，使用牌结算后就不能再次获得此牌]>最大回收点数:1</b>"
-            lib.card.xjb_seizeHpCard = {
-                image: "ext:新将包/xjb_seizeHpCard.png",
+                translate: '神杀破',
+                description: '出牌阶段指定三名角色:1.视为对目标使用一张神杀;<br>2.出牌阶段使用过【杀】的次数清零<br><b description=[当卡牌点数大于1时，使用牌结算后就不能再次获得此牌]>最大回收点数:1点</b>'
+            })
+            const xjb_seizeHpCard = CardObjectCreater(
+                "xjb_seizeHpCard", {
                 audio: true,
                 fullskin: true,
                 type: "xjb_unique",
@@ -450,6 +446,9 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                     if (cards[0].number < 2) player.gain(game.createCard(cards[0].name, cards[0].suit, num))
 
                 },
+                image: "ext:新将包/xjb_seizeHpCard.png",
+                translate: '体力抓取',
+                description: '出牌阶段对一名手牌数大于你的其他角色使用:你与其的拼点，若你赢，你获得其一张体力牌<br><b description=[当卡牌点数大于1时，使用牌结算后就不能再次获得此牌]>最大回收点数:1</b>',
                 ai: {
                     order: 6,
                     basic: {
@@ -460,8 +459,9 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                         target: -2,
                     },
                 },
-            }
-            lib.card.xjb_tianming_huobi2 = {
+            })
+            const xjb_tianming_huobi2 = CardObjectCreater(
+                "xjb_tianming_huobi2", {
                 image: "ext:新将包/xjb_tianming_huobi2.png",
                 audio: true,
                 fullskin: true,
@@ -477,9 +477,11 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                 },
                 modTarget: true,
                 content: function () {
-                    game.xjb_gainJP("80上限")
+                    game.xjb_gainJP("160上限")
                     delete card.storage.vanish;
                 },
+                translate: '金币',
+                description: '珍贵的金币',
                 ai: {
                     basic: {
                         useful: 4.5,
@@ -489,10 +491,9 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                         target: 2,
                     },
                 },
-            }
-            lib.translate.xjb_tianming_huobi2 = "金币"
-            lib.translate.xjb_tianming_huobi2_info = "珍贵的金币"
-            lib.card.xjb_tianming_huobi1 = {
+            })
+            const xjb_tianming_huobi1 = CardObjectCreater(
+                "xjb_tianming_huobi1", {
                 image: "ext:新将包/xjb_tianming_huobi1.png",
                 audio: true,
                 fullskin: true,
@@ -511,6 +512,8 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                     game.xjb_gainJP("40上限")
                     delete card.storage.vanish;
                 },
+                translate: '铜币',
+                description: '普通的铜币',
                 ai: {
                     basic: {
                         useful: 4.5,
@@ -520,10 +523,9 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                         target: 2,
                     },
                 },
-            }
-            lib.translate.xjb_tianming_huobi1 = "铜币"
-            lib.translate.xjb_tianming_huobi1_info = "普通的铜币"
-            lib.card.xjb_skillCard = {
+            })
+            const xjb_skillCard = CardObjectCreater(
+                "xjb_skillCard", {
                 audio: "ext:新将包",
                 type: "xjb_unique",
                 subtype: "xjb_unique_talent",
@@ -642,8 +644,9 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                 },
                 fullskin: true,
                 image: "ext:新将包/skillCard.png",
-            }
-            lib.translate.xjb_skillCard_info = "出牌阶段，你可使用此牌，然后选择一项:1.输入id，获得一张对应的技能牌;2.获得一张神圣技能牌。"
+                translate: "技能卡",
+                description: '出牌阶段，你可使用此牌，然后选择一项:1.输入id，获得一张对应的技能牌;2.获得一张神圣技能牌。'
+            })
         },
         CardStore: function () {
             game.xjb_storeCard = [
@@ -721,7 +724,7 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                     game.xjb_storeCard.forEach(function (item, index) {
                         const _this = game.xjb_storeCard_information[item];
                         if (!_this) return;
-                        if (!_this.cost||!_this.ok) return;
+                        if (!_this.cost || !_this.ok) return;
                         if (!game.xjb_condition(1, _this.cost)) return;
                         list.push(item);
                     })
@@ -734,7 +737,7 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                     game.xjb_storeCard.forEach(function (item, index) {
                         const _this = game.xjb_storeCard_information[item];
                         if (!_this) return;
-                        if (!_this.cost||!_this.ok) return;
+                        if (!_this.cost || !_this.ok) return;
                         if (!game.xjb_condition(1, _this.cost)) return;
                         list.push(["", "<font color=white>" + _this.cost + "魂币", item])
                     })
@@ -765,17 +768,17 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                 },
                 load: [],
                 direct: true,
-                content: function () {
-                    "step 0"
-                    for (var i = 0; i < lib.skill._unique_talent_xjb.load.length; i++) {
-                        lib.skill._unique_talent_xjb.load[i]()
+                async content(event, trigger, player) {
+                    const loads = get.info(event.name).load
+                    for (const load of loads) {
+                        load();
                     }
-                    player.storage.xjb_unique_talent == undefined && event.finish()
-                    "step 1"
-                    if (player.storage.xjb_unique_talent.length > 0) {
-                        for (var i = 0; i < player.storage.xjb_unique_talent.length; i++) {
-                            if (player.storage.xjb_unique_talent[i][0] == game.roundNumber) {
-                                var skill = player.storage.xjb_unique_talent[i][1]
+                    const storage = player.storage.xjb_unique_talent;
+                    if (storage && storage.length) {
+                        for (const info of storage) {
+                            const endRound = info[0];
+                            const skill = info[1];
+                            if (endRound === game.roundNumber) {
                                 player.removeSkill(skill)
                                 player.update()
                             }
@@ -794,7 +797,6 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
             lib.translate.xjb_unique_talent = "💡天赋卡💡"
             lib.translate.xjb_unique_money = "💎货币卡💎"
             lib.translate.xjb_unique_reusable = "♻️循环卡♻️"
-            lib.translate.xjb_skillCard = "技能卡"
         },
         CardSkills: function () {
             //蓬莱卡
@@ -825,467 +827,486 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
             }
         },
         equip: function () {
-            let cards = {
-                qimendunjia: {
-                    type: "trick",
-                    toself: true,
-                    enable: function (event, player) {
-                        return true;
-                    },
-                    selectTarget: -1,
-                    modTarget: true,
-                    filterTarget: function (card, player, target) {
-                        return target == player;
-                    },
-                    content: function () {
-                        'step 0'
-                        if (target.name1.indexOf("zhugeliang") > -1) {
-                            var list = ["盈", "缺", "愈", "疾", "焰", "雷"]
-                            target.fc_X(true, 'choose', 'needResult', { choice: list, storage: "qimendunjia", chopro: "请选择一个魂将的X技能力" })
-                            event.bool = true
-                        }
-                        'step 1'
-                        var ability = target.storage["qimendunjia"]
-                        player.$skill(ability, "legend")
-                        var num = lib.xjb_list_xinyuan.X_skill_num[ability]
-                        target.storage._skill_xin_X_locked = num
-                        target.fc_X(num)
-                    },
-                    fullskin: true,
+            const xjb_qimendunjia = CardObjectCreater(
+                "xjb_qimendunjia", {
+                type: "trick",
+                toself: true,
+                enable: function (event, player) {
+                    return true;
                 },
-                "xin_qinnangshu": {
-                    type: "equip",
-                    subtype: "equip5",
-                    skills: ["xin_qinnang2", "xin_qns"],
-                    nomod: true,
-                    nopower: true,
-                    cardcolor: "red",
-                    unique: true,
-                    onLose: function () {
-                        card.fix();
-                        card.remove();
-                        card.destroyed = true;
-                        player.addSkillLog("xin_qinnang2")
-                        game.log(card, '被销毁了');
-                    },
-                    ai: {
-                        equipValue: 7.5,
-                        basic: {
-                            order: function (card, player) {
-                                if (player && player.hasSkillTag('reverseEquip')) {
-                                    return 8.5 - get.equipValue(card, player) / 20;
-                                }
-                                else {
-                                    return 8 + get.equipValue(card, player) / 20;
-                                }
-                            },
-                            useful: 2,
-                            equipValue: 1,
-                            value: function (card, player, index, method) {
-                                if (player.isDisabled(get.subtype(card))) return 0.01;
-                                var value = 0;
-                                var info = get.info(card);
-                                var current = player.getEquip(info.subtype);
-                                if (current && card != current) {
-                                    value = get.value(current, player);
-                                }
-                                var equipValue = info.ai.equipValue;
-                                if (equipValue == undefined) {
-                                    equipValue = info.ai.basic.equipValue;
-                                }
-                                if (typeof equipValue == 'function') {
-                                    if (method == 'raw') return equipValue(card, player);
-                                    if (method == 'raw2') return equipValue(card, player) - value;
-                                    return Math.max(0.1, equipValue(card, player) - value);
-                                }
-                                if (typeof equipValue != 'number') equipValue = 0;
-                                if (method == 'raw') return equipValue;
-                                if (method == 'raw2') return equipValue - value;
-                                return Math.max(0.1, equipValue - value);
-                            },
-                        },
-                        result: {
-                            target: function (player, target, card) {
-                                return get.equipResult(player, target, card.name);
-                            },
-                        },
-                    },
-                    enable: true,
-                    selectTarget: -1,
-                    filterTarget: function (card, player, target) {
-                        return target == player;
-                    },
-                    modTarget: true,
-                    allowMultiple: false,
-                    content: function () {
-                        if (cards.length && get.position(cards[0], true) == 'o') target.equip(cards[0]);
-                    },
-                    toself: true,
-                    image: "ext:新将包/xin_qingnangshu.jpg",
-                    fullskin: true,
+                selectTarget: -1,
+                modTarget: true,
+                filterTarget: function (card, player, target) {
+                    return target == player;
                 },
-                "card_lw": {
-                    enable: true,
-                    type: "trick",
-                    derivation: "jiaxu",
-                    toself: true,
-                    selectTarget: -1,
-                    modTarget: true,
-                    filterTarget: function (card, player, target) {
-                        return target == player;
-                    },
-                    content: function () {
-                        "step 0"
-                        player.logSkill('luanwu')
-                        event.current = target.next;
-                        event.currented = [];
-                        event.preCurrent = game.players.length
-                        "step 1"
-                        event.currented.push(event.current);
-                        event.current.chooseToUse('乱武:使用一张杀或失去一点体力', function (card) {
-                            if (get.name(card) != 'sha') return false;
-                            return lib.filter.filterCard.apply(this, arguments)
-                        }, function (card, player, target) {
-                            if (player == target) return false;
-                            var dist = get.distance(player, target);
-                            if (dist > 1) {
-                                if (game.hasPlayer(function (current) {
-                                    return current != player && get.distance(player, current) < dist;
-                                })) {
-                                    return false;
-                                }
+                content: function () {
+                    'step 0'
+                    if (target.name1.indexOf("zhugeliang") > -1) {
+                        var list = ["盈", "缺", "愈", "疾", "焰", "雷"]
+                        target.fc_X(true, 'choose', 'needResult', { choice: list, storage: "qimendunjia", chopro: "请选择一个魂将的X技能力" })
+                        event.bool = true
+                    }
+                    'step 1'
+                    var ability = target.storage["qimendunjia"]
+                    player.$skill(ability, "legend")
+                    var num = lib.xjb_list_xinyuan.X_skill_num[ability]
+                    target.storage._skill_xin_X_locked = num
+                    target.fc_X(num)
+                },
+                fullskin: true,
+                translate: '奇门遁甲',
+                description: '出牌阶段，对自己使用，执行奇门遁甲事件。'
+            })
+            const xjb_qinnangshu = CardObjectCreater(
+                "xjb_qingnangshu", {
+                type: "equip",
+                subtype: "equip5",
+                skills: ["xin_qinnang2", "xin_qns"],
+                nomod: true,
+                nopower: true,
+                cardcolor: "red",
+                unique: true,
+                onLose: function () {
+                    card.fix();
+                    card.remove();
+                    card.destroyed = true;
+                    player.addSkillLog("xin_qinnang2")
+                    game.log(card, '被销毁了');
+                },
+                ai: {
+                    equipValue: 7.5,
+                    basic: {
+                        order: function (card, player) {
+                            if (player && player.hasSkillTag('reverseEquip')) {
+                                return 8.5 - get.equipValue(card, player) / 20;
                             }
-                            return lib.filter.filterTarget.apply(this, arguments)
-                        }).set('ai2', function () {
-                            return get.effect_use.apply(this, arguments) + 0.01;
-                        });
-                        "step 2"
-                        if (result.bool == false) {
-                            event.current.chooseToDiscard('he', true)
-                            event.current.loseHp();
+                            else {
+                                return 8 + get.equipValue(card, player) / 20;
+                            }
+                        },
+                        useful: 2,
+                        equipValue: 1,
+                        value: function (card, player, index, method) {
+                            if (player.isDisabled(get.subtype(card))) return 0.01;
+                            var value = 0;
+                            var info = get.info(card);
+                            var current = player.getEquip(info.subtype);
+                            if (current && card != current) {
+                                value = get.value(current, player);
+                            }
+                            var equipValue = info.ai.equipValue;
+                            if (equipValue == undefined) {
+                                equipValue = info.ai.basic.equipValue;
+                            }
+                            if (typeof equipValue == 'function') {
+                                if (method == 'raw') return equipValue(card, player);
+                                if (method == 'raw2') return equipValue(card, player) - value;
+                                return Math.max(0.1, equipValue(card, player) - value);
+                            }
+                            if (typeof equipValue != 'number') equipValue = 0;
+                            if (method == 'raw') return equipValue;
+                            if (method == 'raw2') return equipValue - value;
+                            return Math.max(0.1, equipValue - value);
+                        },
+                    },
+                    result: {
+                        target: function (player, target, card) {
+                            return get.equipResult(player, target, card.name);
+                        },
+                    },
+                },
+                enable: true,
+                selectTarget: -1,
+                filterTarget: function (card, player, target) {
+                    return target == player;
+                },
+                modTarget: true,
+                allowMultiple: false,
+                content: function () {
+                    if (cards.length && get.position(cards[0], true) == 'o') target.equip(cards[0]);
+                },
+                toself: true,
+                image: "ext:新将包/xin_qingnangshu.jpg",
+                translate: '青囊',
+                description: '装备此牌，出牌阶段限一次，可对一名角色使用【桃】，每使用一张，则你与其各摸一张牌。',
+                fullskin: true,
+            })
+            const xjb_card_lw = CardObjectCreater(
+                "xjb_card_lw", {
+                enable: true,
+                type: "trick",
+                derivation: "jiaxu",
+                toself: true,
+                selectTarget: -1,
+                modTarget: true,
+                filterTarget: function (card, player, target) {
+                    return target == player;
+                },
+                content: function () {
+                    "step 0"
+                    player.logSkill('luanwu')
+                    event.current = target.next;
+                    event.currented = [];
+                    event.preCurrent = game.players.length
+                    "step 1"
+                    event.currented.push(event.current);
+                    event.current.chooseToUse('乱武:使用一张杀或失去一点体力', function (card) {
+                        if (get.name(card) != 'sha') return false;
+                        return lib.filter.filterCard.apply(this, arguments)
+                    }, function (card, player, target) {
+                        if (player == target) return false;
+                        var dist = get.distance(player, target);
+                        if (dist > 1) {
+                            if (game.hasPlayer(function (current) {
+                                return current != player && get.distance(player, current) < dist;
+                            })) {
+                                return false;
+                            }
                         }
-                        event.current = event.current.next;
-                        if (event.current != player && !event.currented.includes(event.current)) {
-                            game.delay(0.5);
-                            event.goto(1);
-                        } else {
-                            (event.preCurrent > game.players.length) && player.gain(cards, 'gain2')
-                        }
-                    },
-                    contentAfter: function () {
-                        player.chooseUseTarget('sha', '是否使用一张【杀】？', false, 'nodistance');
-                    },
-                    fullimage: true,
+                        return lib.filter.filterTarget.apply(this, arguments)
+                    }).set('ai2', function () {
+                        return get.effect_use.apply(this, arguments) + 0.01;
+                    });
+                    "step 2"
+                    if (result.bool == false) {
+                        event.current.chooseToDiscard('he', true)
+                        event.current.loseHp();
+                    }
+                    event.current = event.current.next;
+                    if (event.current != player && !event.currented.includes(event.current)) {
+                        game.delay(0.5);
+                        event.goto(1);
+                    } else {
+                        (event.preCurrent > game.players.length) && player.gain(cards, 'gain2')
+                    }
                 },
-                "xin_qinglong": {
-                    fullskin: true,
-                    type: "equip",
-                    subtype: "equip1",
-                    distance: {
-                        attackFrom: -2,
-                    },
-                    onLose: function () {
-                        card.fix();
-                        card.remove();
-                        card.destroyed = true;
-                        game.log(card, '被销毁了');
-                        player.$skill('二龙互化', 'legend', 'metal');
-                        player.equip(game.createCard('qinglong', 'spade', 5))
-                    },
-                    ai: {
-                        equipValue: function (card, player) {
-                            var num = 2.5 + (player.countCards('h') + player.countCards('e')) / 2.5;
-                            return Math.min(num, 5);
-                        },
-                        basic: {
-                            equipValue: 4.5,
-                        },
-                    },
-                    skills: ["xin_yanyue", "xin_hlyyd"],
+                contentAfter: function () {
+                    player.chooseUseTarget('sha', '是否使用一张【杀】？', false, 'nodistance');
                 },
-                "xin_chitu": {
-                    fullskin: true,
-                    type: "equip",
-                    subtype: "equip4",
-                    nomod: true,
-                    nopower: true,
-                    distance: {
-                        globalFrom: -1,
-                        globalTo: 1,
+                fullimage: true,
+                translate: "文和乱武",
+                description: "出牌阶段，对你自己使用，所有其他角色除非对其距离最近的角色使用【杀】，否则其弃置一张牌并失去一点体力。结算完后，你视为使用一张无距离限制的【杀】。",
+            })
+            const xjb_qinglong = CardObjectCreater(
+                "xjb_qinglong", {
+                fullskin: true,
+                type: "equip",
+                subtype: "equip1",
+                distance: {
+                    attackFrom: -2,
+                },
+                onLose: function () {
+                    card.fix();
+                    card.remove();
+                    card.destroyed = true;
+                    game.log(card, '被销毁了');
+                    player.$skill('二龙互化', 'legend', 'metal');
+                    player.equip(game.createCard('qinglong', 'spade', 5))
+                },
+                ai: {
+                    equipValue: function (card, player) {
+                        var num = 2.5 + (player.countCards('h') + player.countCards('e')) / 2.5;
+                        return Math.min(num, 5);
                     },
-                    enable: true,
-                    selectTarget: -1,
-                    filterTarget: function (card, player, target) {
-                        return target == player;
-                    },
-                    modTarget: true,
-                    allowMultiple: false,
-                    content: function () {
-                        if (cards.length && get.position(cards[0], true) == 'o') target.equip(cards[0]);
-                    },
-                    toself: true,
-                    onLose: function () {
-                        card.fix();
-                        card.remove();
-                        card.destroyed = true;
-                        game.log(card, '被销毁了');
-                        player.equip(game.createCard('chitu', 'heart', 5))
-                    },
-                    skills: ["xin_zhuihun", "new_wuhun"],
-                    ai: {
-                        basic: {
-                            order: function (card, player) {
-                                if (player && player.hasSkillTag('reverseEquip')) {
-                                    return 8.5 - get.equipValue(card, player) / 20;
-                                }
-                                else {
-                                    return 8 + get.equipValue(card, player) / 20;
-                                }
-                            },
-                            useful: 2,
-                            equipValue: 4,
-                            value: function (card, player, index, method) {
-                                if (player.isDisabled(get.subtype(card))) return 0.01;
-                                var value = 0;
-                                var info = get.info(card);
-                                var current = player.getEquip(info.subtype);
-                                if (current && card != current) {
-                                    value = get.value(current, player);
-                                }
-                                var equipValue = info.ai.equipValue;
-                                if (equipValue == undefined) {
-                                    equipValue = info.ai.basic.equipValue;
-                                }
-                                if (typeof equipValue == 'function') {
-                                    if (method == 'raw') return equipValue(card, player);
-                                    if (method == 'raw2') return equipValue(card, player) - value;
-                                    return Math.max(0.1, equipValue(card, player) - value);
-                                }
-                                if (typeof equipValue != 'number') equipValue = 0;
-                                if (method == 'raw') return equipValue;
-                                if (method == 'raw2') return equipValue - value;
-                                return Math.max(0.1, equipValue - value);
-                            },
-                        },
-                        result: {
-                            target: function (player, target, card) {
-                                return get.equipResult(player, target, card.name);
-                            },
-                        },
+                    basic: {
+                        equipValue: 4.5,
                     },
                 },
-                "xin_baiyin": {
-                    fullskin: true,
-                    type: "equip",
-                    subtype: "equip2",
-                    loseDelay: false,
-                    onLose: function () {
-                        card.fix();
-                        card.remove();
-                        card.destroyed = true;
-                        game.log(card, '被销毁了');
-                        player.equip(game.createCard('baiyin', 'club', 1))
-                        player.recover();
-                    },
-                    skills: ["xin_shinu"],
-                    tag: {
-                        recover: 1,
-                    },
-                    ai: {
-                        order: 9.5,
-                        equipValue: function (card, player) {
-                            if (player.hp == player.maxHp) return 5;
-                            if (player.countCards('h', 'baiyin')) return 6;
-                            return 0;
-                        },
-                        basic: {
-                            equipValue: 5,
-                            order: function (card, player) {
-                                if (player && player.hasSkillTag('reverseEquip')) {
-                                    return 8.5 - get.equipValue(card, player) / 20;
-                                }
-                                else {
-                                    return 8 + get.equipValue(card, player) / 20;
-                                }
-                            },
-                            useful: 2,
-                            value: function (card, player, index, method) {
-                                if (player.isDisabled(get.subtype(card))) return 0.01;
-                                var value = 0;
-                                var info = get.info(card);
-                                var current = player.getEquip(info.subtype);
-                                if (current && card != current) {
-                                    value = get.value(current, player);
-                                }
-                                var equipValue = info.ai.equipValue;
-                                if (equipValue == undefined) {
-                                    equipValue = info.ai.basic.equipValue;
-                                }
-                                if (typeof equipValue == 'function') {
-                                    if (method == 'raw') return equipValue(card, player);
-                                    if (method == 'raw2') return equipValue(card, player) - value;
-                                    return Math.max(0.1, equipValue(card, player) - value);
-                                }
-                                if (typeof equipValue != 'number') equipValue = 0;
-                                if (method == 'raw') return equipValue;
-                                if (method == 'raw2') return equipValue - value;
-                                return Math.max(0.1, equipValue - value);
-                            },
-                        },
-                        result: {
-                            target: function (player, target, card) {
-                                return get.equipResult(player, target, card.name);
-                            },
-                        },
-                    },
-                    enable: true,
-                    selectTarget: -1,
-                    filterTarget: function (card, player, target) {
-                        return target == player;
-                    },
-                    modTarget: true,
-                    allowMultiple: false,
-                    content: function () {
-                        if (cards.length && get.position(cards[0], true) == 'o') target.equip(cards[0]);
-                    },
-                    toself: true,
+                skills: ["xin_yanyue", "xin_hlyyd"],
+                translate: "黄龙偃月刀",
+                description: "<br>偃月:当你对一名角色造成伤害前，你可以弃置两张牌令此伤害+1，你令其获得一个\"梦魇\"标记。<br>二龙互化：你失去此牌时你立即销毁之，你装备【青龙偃月刀】。",
+            })
+            const xjb_chitu = CardObjectCreater(
+                "xjb_chitu", {
+                fullskin: true,
+                type: "equip",
+                subtype: "equip4",
+                nomod: true,
+                nopower: true,
+                distance: {
+                    globalFrom: -1,
+                    globalTo: 1,
                 },
-                "xin_hutou": {
-                    fullskin: true,
-                    type: "equip",
-                    subtype: "equip1",
-                    distance: {
-                        attackFrom: -2,
-                    },
-                    skills: ["xin_htzjq2", "mashu"],
-                    loseDelay: false,
-                    onLose: function () {
-                        card.fix();
-                        card.remove();
-                        card.destroyed = true;
-                        game.log(card, '被销毁了');
-                        player.$skill('虎恨', 'legend', 'metal');
-                        player.equip(game.createCard(get.typeCard('equip').randomGet()))
-                    },
-                    ai: {
-                        basic: {
-                            equipValue: 2,
-                            order: function (card, player) {
-                                if (player && player.hasSkillTag('reverseEquip')) {
-                                    return 8.5 - get.equipValue(card, player) / 20;
-                                }
-                                else {
-                                    return 8 + get.equipValue(card, player) / 20;
-                                }
-                            },
-                            useful: 2,
-                            value: function (card, player) {
-                                var value = 0;
-                                var info = get.info(card);
-                                var current = player.getEquip(info.subtype);
-                                if (current && card != current) {
-                                    value = get.value(current, player);
-                                }
-                                var equipValue = info.ai.equipValue;
-                                if (equipValue == undefined) {
-                                    equipValue = info.ai.basic.equipValue;
-                                }
-                                if (typeof equipValue == 'function') return equipValue(card, player) - value;
-                                if (typeof equipValue != 'number') equipValue = 0;
-                                return equipValue - value;
-                            },
-                        },
-                        result: {
-                            target: function (player, target, card) {
-                                return get.equipResult(player, target, card.name);
-                            },
-                        },
-                    },
-                    enable: true,
-                    selectTarget: -1,
-                    filterTarget: function (card, player, target) {
-                        return target == player;
-                    },
-                    modTarget: true,
-                    allowMultiple: false,
-                    content: function () {
-                        target.equip(card);
-                    },
-                    toself: true,
+                enable: true,
+                selectTarget: -1,
+                filterTarget: function (card, player, target) {
+                    return target == player;
                 },
-                "xin_qixing": {
-                    type: "equip",
-                    subtype: "equip2",
-                    skills: ["qixing", "xin_xuming"],
-                    onLose: function () {
-                        player.gain(player.getExpansions('qixing'), 'gain2', 'fromStorage');
-                        card.fix();
-                        card.remove();
-                        card.destroyed = true;
-                        game.log(card, '被销毁了');
-                        player.removeSkill('guanxing')
-                    },
-                    ai: {
-                        basic: {
-                            equipValue: 6.5,
-                            order: function (card, player) {
-                                if (player && player.hasSkillTag('reverseEquip')) {
-                                    return 8.5 - get.equipValue(card, player) / 20;
-                                }
-                                else {
-                                    return 8 + get.equipValue(card, player) / 20;
-                                }
-                            },
-                            useful: 2,
-                            value: function (card, player, index, method) {
-                                if (player.isDisabled(get.subtype(card))) return 0.01;
-                                var value = 0;
-                                var info = get.info(card);
-                                var current = player.getEquip(info.subtype);
-                                if (current && card != current) {
-                                    value = get.value(current, player);
-                                }
-                                var equipValue = info.ai.equipValue;
-                                if (equipValue == undefined) {
-                                    equipValue = info.ai.basic.equipValue;
-                                }
-                                if (typeof equipValue == 'function') {
-                                    if (method == 'raw') return equipValue(card, player);
-                                    if (method == 'raw2') return equipValue(card, player) - value;
-                                    return Math.max(0.1, equipValue(card, player) - value);
-                                }
-                                if (typeof equipValue != 'number') equipValue = 0;
-                                if (method == 'raw') return equipValue;
-                                if (method == 'raw2') return equipValue - value;
-                                return Math.max(0.1, equipValue - value);
-                            },
+                modTarget: true,
+                allowMultiple: false,
+                content: function () {
+                    if (cards.length && get.position(cards[0], true) == 'o') target.equip(cards[0]);
+                },
+                toself: true,
+                onLose: function () {
+                    card.fix();
+                    card.remove();
+                    card.destroyed = true;
+                    game.log(card, '被销毁了');
+                    player.equip(game.createCard('chitu', 'heart', 5))
+                },
+                skills: ["xin_zhuihun", "new_wuhun"],
+                translate: "梦魇赤兔马",
+                description: "增加以下效果:<br>追魂:锁定技，你受到伤害后，伤害来源须弃置一张牌并获得一个\"梦魇\"，然后你额外进行一个回合。<br>关公之魂：你失去此牌时立即销毁之，然后你装备【赤兔】。",
+                ai: {
+                    basic: {
+                        order: function (card, player) {
+                            if (player && player.hasSkillTag('reverseEquip')) {
+                                return 8.5 - get.equipValue(card, player) / 20;
+                            }
+                            else {
+                                return 8 + get.equipValue(card, player) / 20;
+                            }
                         },
-                        result: {
-                            target: function (player, target, card) {
-                                return get.equipResult(player, target, card.name);
-                            },
+                        useful: 2,
+                        equipValue: 4,
+                        value: function (card, player, index, method) {
+                            if (player.isDisabled(get.subtype(card))) return 0.01;
+                            var value = 0;
+                            var info = get.info(card);
+                            var current = player.getEquip(info.subtype);
+                            if (current && card != current) {
+                                value = get.value(current, player);
+                            }
+                            var equipValue = info.ai.equipValue;
+                            if (equipValue == undefined) {
+                                equipValue = info.ai.basic.equipValue;
+                            }
+                            if (typeof equipValue == 'function') {
+                                if (method == 'raw') return equipValue(card, player);
+                                if (method == 'raw2') return equipValue(card, player) - value;
+                                return Math.max(0.1, equipValue(card, player) - value);
+                            }
+                            if (typeof equipValue != 'number') equipValue = 0;
+                            if (method == 'raw') return equipValue;
+                            if (method == 'raw2') return equipValue - value;
+                            return Math.max(0.1, equipValue - value);
                         },
                     },
-                    fullskin: true,
-                    enable: true,
-                    selectTarget: -1,
-                    filterTarget: function (card, player, target) {
-                        return target == player;
+                    result: {
+                        target: function (player, target, card) {
+                            return get.equipResult(player, target, card.name);
+                        },
                     },
-                    modTarget: true,
-                    allowMultiple: false,
-                    content: function () {
-                        target.equip(cards[0]);
-                        player.$skill('武侯之魂', 'legend', 'metal');
-                        game.me.addToExpansion(get.cards(7), 'gain2').gaintag.add('qixing');
+                },
+            })
+            const xjb_baiyin = CardObjectCreater(
+                "xjb_baiyin", {
+                fullskin: true,
+                type: "equip",
+                subtype: "equip2",
+                loseDelay: false,
+                onLose: function () {
+                    card.fix();
+                    card.remove();
+                    card.destroyed = true;
+                    game.log(card, '被销毁了');
+                    player.equip(game.createCard('baiyin', 'club', 1))
+                    player.recover();
+                },
+                skills: ["xin_shinu"],
+                tag: {
+                    recover: 1,
+                },
+                translate: "曜日银狮子",
+                description: "<br>狮怒:你受到伤害前，你立即反伤;若你此时体力值为1，你移去此牌并取消此次伤害。<br>你失去装备区里的该牌时立即销毁之，然后你恢复1点体力并装备【白银狮子】。",
+                ai: {
+                    order: 9.5,
+                    equipValue: function (card, player) {
+                        if (player.hp == player.maxHp) return 5;
+                        if (player.countCards('h', 'baiyin')) return 6;
+                        return 0;
+                    },
+                    basic: {
+                        equipValue: 5,
+                        order: function (card, player) {
+                            if (player && player.hasSkillTag('reverseEquip')) {
+                                return 8.5 - get.equipValue(card, player) / 20;
+                            }
+                            else {
+                                return 8 + get.equipValue(card, player) / 20;
+                            }
+                        },
+                        useful: 2,
+                        value: function (card, player, index, method) {
+                            if (player.isDisabled(get.subtype(card))) return 0.01;
+                            var value = 0;
+                            var info = get.info(card);
+                            var current = player.getEquip(info.subtype);
+                            if (current && card != current) {
+                                value = get.value(current, player);
+                            }
+                            var equipValue = info.ai.equipValue;
+                            if (equipValue == undefined) {
+                                equipValue = info.ai.basic.equipValue;
+                            }
+                            if (typeof equipValue == 'function') {
+                                if (method == 'raw') return equipValue(card, player);
+                                if (method == 'raw2') return equipValue(card, player) - value;
+                                return Math.max(0.1, equipValue(card, player) - value);
+                            }
+                            if (typeof equipValue != 'number') equipValue = 0;
+                            if (method == 'raw') return equipValue;
+                            if (method == 'raw2') return equipValue - value;
+                            return Math.max(0.1, equipValue - value);
+                        },
+                    },
+                    result: {
+                        target: function (player, target, card) {
+                            return get.equipResult(player, target, card.name);
+                        },
+                    },
+                },
+                enable: true,
+                selectTarget: -1,
+                filterTarget: function (card, player, target) {
+                    return target == player;
+                },
+                modTarget: true,
+                allowMultiple: false,
+                content: function () {
+                    if (cards.length && get.position(cards[0], true) == 'o') target.equip(cards[0]);
+                },
+                toself: true,
+            })
+            const xjb_hutou = CardObjectCreater(
+                "xjb_hutou", {
+                fullskin: true,
+                type: "equip",
+                subtype: "equip1",
+                distance: {
+                    attackFrom: -2,
+                },
+                skills: ["xin_htzjq2", "mashu"],
+                loseDelay: false,
+                onLose: function () {
+                    card.fix();
+                    card.remove();
+                    card.destroyed = true;
+                    game.log(card, '被销毁了');
+                    player.$skill('虎恨', 'legend', 'metal');
+                    player.equip(game.createCard(get.typeCard('equip').randomGet()))
+                },
+                translate: "虎头湛金枪",
+                description: "马超之魂：你装备了此牌则视为拥有【横骛】<br>虎恨：当你装备区失去此牌时你立即销毁之，然后你装备任意一张装备牌。",
+                ai: {
+                    basic: {
+                        equipValue: 2,
+                        order: function (card, player) {
+                            if (player && player.hasSkillTag('reverseEquip')) {
+                                return 8.5 - get.equipValue(card, player) / 20;
+                            }
+                            else {
+                                return 8 + get.equipValue(card, player) / 20;
+                            }
+                        },
+                        useful: 2,
+                        value: function (card, player) {
+                            var value = 0;
+                            var info = get.info(card);
+                            var current = player.getEquip(info.subtype);
+                            if (current && card != current) {
+                                value = get.value(current, player);
+                            }
+                            var equipValue = info.ai.equipValue;
+                            if (equipValue == undefined) {
+                                equipValue = info.ai.basic.equipValue;
+                            }
+                            if (typeof equipValue == 'function') return equipValue(card, player) - value;
+                            if (typeof equipValue != 'number') equipValue = 0;
+                            return equipValue - value;
+                        },
+                    },
+                    result: {
+                        target: function (player, target, card) {
+                            return get.equipResult(player, target, card.name);
+                        },
+                    },
+                },
+                enable: true,
+                selectTarget: -1,
+                filterTarget: function (card, player, target) {
+                    return target == player;
+                },
+                modTarget: true,
+                allowMultiple: false,
+                content: function () {
+                    target.equip(card);
+                },
+                toself: true,
+            })
+            const xjb_qixing = CardObjectCreater(
+                "xjb_qixing", {
+                type: "equip",
+                subtype: "equip2",
+                skills: ["qixing", "xin_xuming"],
+                onLose: function () {
+                    player.gain(player.getExpansions('qixing'), 'gain2', 'fromStorage');
+                    card.fix();
+                    card.remove();
+                    card.destroyed = true;
+                    game.log(card, '被销毁了');
+                    player.removeSkill('guanxing')
+                },
+                translate: "卧龙七星袍",
+                description: "<br>武侯之魂：你装备有此牌时，则拥有技能【七星】;你装备此牌时，立即获得七颗“星”。<br>七星续命：当一名角色濒死时，然后选择一项执行：1.使用一张【奇门遁甲】;2.自动弃置一颗\"星\"，令其恢复1点体力;<br>你失去此牌时，你立即销毁之，你获得你武将牌上的所有“星\"",
+                ai: {
+                    basic: {
+                        equipValue: 6.5,
+                        order: function (card, player) {
+                            if (player && player.hasSkillTag('reverseEquip')) {
+                                return 8.5 - get.equipValue(card, player) / 20;
+                            }
+                            else {
+                                return 8 + get.equipValue(card, player) / 20;
+                            }
+                        },
+                        useful: 2,
+                        value: function (card, player, index, method) {
+                            if (player.isDisabled(get.subtype(card))) return 0.01;
+                            var value = 0;
+                            var info = get.info(card);
+                            var current = player.getEquip(info.subtype);
+                            if (current && card != current) {
+                                value = get.value(current, player);
+                            }
+                            var equipValue = info.ai.equipValue;
+                            if (equipValue == undefined) {
+                                equipValue = info.ai.basic.equipValue;
+                            }
+                            if (typeof equipValue == 'function') {
+                                if (method == 'raw') return equipValue(card, player);
+                                if (method == 'raw2') return equipValue(card, player) - value;
+                                return Math.max(0.1, equipValue(card, player) - value);
+                            }
+                            if (typeof equipValue != 'number') equipValue = 0;
+                            if (method == 'raw') return equipValue;
+                            if (method == 'raw2') return equipValue - value;
+                            return Math.max(0.1, equipValue - value);
+                        },
+                    },
+                    result: {
+                        target: function (player, target, card) {
+                            return get.equipResult(player, target, card.name);
+                        },
+                    },
+                },
+                fullskin: true,
+                enable: true,
+                selectTarget: -1,
+                filterTarget: function (card, player, target) {
+                    return target == player;
+                },
+                modTarget: true,
+                allowMultiple: false,
+                content: function () {
+                    target.equip(cards[0]);
+                    player.$skill('武侯之魂', 'legend', 'metal');
+                    game.me.addToExpansion(get.cards(7), 'gain2').gaintag.add('qixing');
 
-                    },
-                    toself: true,
                 },
-            }
-            for (let k in cards) {
-                lib.card[k] = cards[k];
-            }
+                toself: true,
+            })
         }
     }
 }

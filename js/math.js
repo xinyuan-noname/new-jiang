@@ -21,6 +21,10 @@ export function getSymbol(str) {
     else if (['取模', '%', '模'].includes(str)) symbol = '%';
     return symbol;
 }
+export function apSum(first, endIndex, difference) {
+    const last = first + (endIndex - 1) * difference
+    return (first + last) * endIndex / 2
+}
 window.XJB_LOAD_MATH = function (_status, lib, game, ui, get, ai) {
     lib._xjb = {
         usuallyUsedString: {
