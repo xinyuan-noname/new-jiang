@@ -21,7 +21,7 @@ class elementTool {
     }
     shortCut(key){
         this.ele.tabIndex=-1;
-        this.ele.next.setAttribute('accesskey',key);
+        this.ele.setAttribute('accesskey',key);
         this.listen("focus",function(){
             requestAnimationFrame(()=>{
                 this.blur();
