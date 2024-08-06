@@ -2,11 +2,12 @@ import {
     eachLine,
     addPSFix
 } from './string.js'
-export class elementTool {
+class elementTool {
     /**
      * @type {HTMLElement}
      */
     ele
+
     constructor(tag) {
         if (tag) this.ele = document.createElement(tag)
     }
@@ -17,6 +18,16 @@ export class elementTool {
     setTarget(ele) {
         this.ele = ele
         return this
+    }
+    shortCut(key){
+        this.ele.tabIndex=-1;
+        this.ele.next.setAttribute('accesskey',key);
+        this.listen("focus",function(){
+            requestAnimationFrame(()=>{
+                this.blur();
+            })
+        })
+        return this;
     }
     /**
      * @param {string} str 
@@ -82,6 +93,10 @@ export class elementTool {
      */
     listen(event, callback) {
         this.ele.addEventListener(event, callback)
+        return this;
+    }
+    accesskey(key) {
+        this.setAttribute('accesskey', key)
         return this;
     }
     /**
@@ -306,8 +321,9 @@ export class elementTool {
         return this.ele;
     }
 }
-
-export class TextareaTool extends elementTool {
+elementTool.prototype.needListenPressedCtrlElements = [];
+elementTool.prototype.pressedCtrl = false;
+class TextareaTool extends elementTool {
     /**
      * @type {HTMLTextAreaElement}
      */

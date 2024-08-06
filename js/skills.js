@@ -262,19 +262,19 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                 },
                 filter: function (event, player) {
                     let skillname = (event.sourceSkill || event.skill)
-                    let thierSkills = event.player.getStockSkills(true,true)
+                    let thierSkills = event.player.getStockSkills(true, true)
                     if (!skillname) return false;
                     if (!thierSkills.includes(skillname)) return false;
                     if (player != event.player) return true;
                 },
-                cost:async function(event, trigger, player){
+                cost: async function (event, trigger, player) {
                     const skill = trigger.sourceSkill || trigger.skill;
-                    event.result = await player.chooseBool(get.prompt("xjb_huojue"),"令"+get.translation(trigger.player)+"失去技能【"+get.translation(skill)+"】并受到1点火属性伤害").forResult()
+                    event.result = await player.chooseBool(get.prompt("xjb_huojue"), "令" + get.translation(trigger.player) + "失去技能【" + get.translation(skill) + "】并受到1点火属性伤害").forResult()
                 },
                 usable: 1,
-                content:async function (event, trigger, player) {
+                content: async function (event, trigger, player) {
                     trigger.player.removeSkill((trigger.sourceSkill || trigger.skill))
-                    trigger.player.damage("fire",player)                    
+                    trigger.player.damage("fire", player)
                 },
             }
             lib.translate.xjb_huojue = "火诀"
@@ -285,31 +285,31 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                 },
                 filter: function (event, player) {
                     let skillsList = []
-                    for (const skillName of event.player.getStockSkills(true,true)) {
-                        if (! lib.config.xjb_newcharacter.skill.includes(skillName)) {
-                             skillsList.add(skillName)
+                    for (const skillName of event.player.getStockSkills(true, true)) {
+                        if (!lib.config.xjb_newcharacter.skill.includes(skillName)) {
+                            skillsList.add(skillName)
                         }
                     }
                     if (skillsList.length) return true
                 },
-                cost:async function(event,trigger,player){
+                cost: async function (event, trigger, player) {
                     let skillsList = []
-                    for (const skillName of trigger.player.getStockSkills(true,true)) {
-                        if (! lib.config.xjb_newcharacter.skill.includes(skillName)) {
-                             skillsList.add(skillName)
+                    for (const skillName of trigger.player.getStockSkills(true, true)) {
+                        if (!lib.config.xjb_newcharacter.skill.includes(skillName)) {
+                            skillsList.add(skillName)
                         }
                     }
-                    const {control} = await player.chooseControl([...skillsList,'cancel2'])
-                        .set("choiceList",skillsList.map(skill=>`【${get.translation(skill)}】${lib.translate[skill+'_info']}`))
+                    const { control } = await player.chooseControl([...skillsList, 'cancel2'])
+                        .set("choiceList", skillsList.map(skill => `【${get.translation(skill)}】${lib.translate[skill + '_info']}`))
                         .forResult()
-                    if(control in lib.skill) event.result = {bool:true,cost_data:control}
+                    if (control in lib.skill) event.result = { bool: true, cost_data: control }
                 },
-                content:async function (event,trigger,player) {
+                content: async function (event, trigger, player) {
                     player.addSkillLog(event.cost_data)
-                        if (game.xjb_condition(3, 1)&&player===game.me) {   
-                            lib.config.xjb_newcharacter.skill.add(result.control)
-                            game.saveConfig("xjb_newcharacter", lib.config.xjb_newcharacter)                                              
-                        }                                            
+                    if (game.xjb_condition(3, 1) && player === game.me) {
+                        lib.config.xjb_newcharacter.skill.add(result.control)
+                        game.saveConfig("xjb_newcharacter", lib.config.xjb_newcharacter)
+                    }
                 }
             }
             lib.translate.xjb_pomie = "破灭"
@@ -537,10 +537,10 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     if (player.maxHp > 15 && lib.config.xjb_maxHpLimitation === 1) return true
                 },
                 content() {
-                    if(player.hp===Infinity){
-                        player.hp=15;
+                    if (player.hp === Infinity) {
+                        player.hp = 15;
                         player.update();
-                    } 
+                    }
                     player.useSkill('benghuai');
                 },
                 translate: '体力上限限制',
@@ -2214,11 +2214,8 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                         game.resume()
                     },
                     element: element,
-                    content() {
-                        "step 0"
-                        //进入聚灵区
+                    async content(event, trigger, player) {
                         player.addTempSkill('xjb_P_gathering', { player: "phaseBegin" })
-                        "step 1"
                         game.pause()
                         let num = 0, element = get.info(event.name).element
                         while (lib.skill['chant' + num] !== undefined) {
@@ -2272,7 +2269,7 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                         }).then(data => {
                             return new Promise(res => {
                                 setTimeout(i => {
-                                    element().setTarget(game.xjb_back.ele.mode[2])
+                                    element().setTarget(game.xjb_back.ele.modes[2])
                                         .clickAndTouch()
                                     res()
                                 }, 200)

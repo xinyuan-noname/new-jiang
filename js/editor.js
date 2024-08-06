@@ -33,7 +33,12 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             '你已受伤',
             '你未受伤',
             '你体力不小于3',
-            '你本回合使用牌次数大于1'
+            '你有空置的武器栏',
+            '你有空置的防具栏',
+            '你有空置的宝物栏',
+            '场上有男性角色',
+            '你已横置',
+            '你已翻面'
         ],
         effect: [
             '你可以摸三张牌或回复一点体力值',
@@ -1033,7 +1038,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             })//*/
             //换页功能
             //切换至下一页
-            let next = newElement('span', '下一页', h1).setStyle({
+            const next = newElement('span', '下一页', h1).setStyle({
                 float: 'right'
             });
             back.ele.nextPage = next;
@@ -1044,9 +1049,11 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     i.style.display = back.pageNum == k ? 'flex' : 'none'
                 })
             }
-            listener(next, turnNextPage)
+            element().setTarget(next)
+                .listen(DEFAULT_EVENT,turnNextPage)
+                .shortCut('n')
             //切换至上一页
-            let last = newElement('span', '上一页', h1).setStyle({
+            const last = newElement('span', '上一页', h1).setStyle({
                 float: 'right',
                 marginRight: '10px'
             })
@@ -1058,7 +1065,9 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     i.style.display = back.pageNum == k ? 'flex' : 'none'
                 })
             }
-            listener(last, turnLastPage);
+            element().setTarget(last)
+                .listen(DEFAULT_EVENT,turnLastPage)
+                .shortCut('l')
             (function touchPageChange() {
                 function hasParentBack(ele) {
                     let parentNode = ele.parentNode;
@@ -1590,7 +1599,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .style({
                     flex: 2,
                     position: 'relative',
-                    'backgroundColor': 'rgba(60,65,81,0.7)'
+                    'backgroundColor': 'rgba(63,65,81,0.9)'
                 })
                 .exit()
             const contentContainer2 = element('div')
@@ -1599,7 +1608,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .style({
                     flex: 1,
                     position: 'relative',
-                    'backgroundColor': 'rgba(63,65,81,0.9)'
+                    'backgroundColor': 'rgba(60,65,81,0.7)'
                 })
                 .exit()
             addSidebarButton(contentFree, contentContainer2, "content")
