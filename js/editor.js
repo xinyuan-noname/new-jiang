@@ -1067,7 +1067,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             }
             element().setTarget(last)
                 .listen(DEFAULT_EVENT,turnLastPage)
-                .shortCut('l')
+                .shortCut('l');
             (function touchPageChange() {
                 function hasParentBack(ele) {
                     let parentNode = ele.parentNode;
