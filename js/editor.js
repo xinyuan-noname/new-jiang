@@ -15,7 +15,9 @@ import {
     correctPunctuation,
     JavascriptKeywords,
     JavascriptUsualType,
-    JavascriptGlobalVariable
+    JavascriptGlobalVariable,
+    getLineOfInput,
+    getLineRangeOfInput
 } from './string.js'
 import {
     listenAttributeChange,
@@ -1558,6 +1560,30 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 that.changeWord(/\t/g, '')
                 that.value = adjustTab(that.value, 0, '分支开始', '分支结束')
             }
+            function tabChange(type) {
+                let list = []
+                return function (e) {
+                    if (e.key != 'Tab') return;
+                    e.preventDefault();
+                    const range = getLineRangeOfInput(this);
+                    const start = range[0];
+                    const end = range[1];
+                    const content = this.value;
+                    const subStr = content.slice(start, end).replace('\t', '');
+                    if (this.selectionEnd == this.selectionStart) {
+                        list = Object.keys(NonameCN.giveSentence[type]).filter(item => item.startsWith(subStr));
+                    }
+                    if (!list.length) {
+                        this.selectionStart = start;
+                        this.selectionEnd = end;
+                        return;
+                    }
+                    const replacer = list.shift();
+                    this.value = content.slice(0, start) + replacer + content.slice(end);
+                    this.selectionStart = start;
+                    this.selectionEnd = start + replacer.length;
+                }
+            }
             listenAttributeChange(filterFree, 'selectionStart').start();
             textareaTool().setTarget(filterFree)
                 .clearOrder()
@@ -1572,6 +1598,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .debounce('keyup', back.ele.filter.submit, 200)
                 .listen('keydown', deleteModule)
                 .listen('selectionStartChange', adjustSelection)
+                .listen('keydown', tabChange("filter"))
                 .style({
                     height: '11em',
                     fontSize: '0.75em',
@@ -1845,6 +1872,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .debounce('keyup', back.ele.content.submit, 200)
                 .listen('keydown', deleteModule)
                 .listen('selectionStartChange', adjustSelection)
+                .listen('keydown', tabChange("content"))
                 .style({
                     height: '11em',
                     fontSize: '0.75em',
@@ -2288,6 +2316,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", back.ele.filterTarget.adjustTab)
                 .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", back.ele.filterTarget.adjustTab)
                 .debounce('keyup', back.ele.filterTarget.submit, 200)
+                .listen('keydown', tabChange("trigger"))
                 .style({
                     marginTop: '10px',
                     marginLeft: '10px',

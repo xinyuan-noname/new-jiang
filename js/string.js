@@ -22,7 +22,7 @@ export const JavascriptUsualType = [
     'Math', 'Array', 'Date', 'RegExp', 'Map', 'Set'
 ]
 export const JavascriptGlobalVariable = [
-    'NaN','Infinity','-Infinity',
+    'NaN', 'Infinity', '-Infinity',
     'globalThis'
 ]
 /**
@@ -62,6 +62,54 @@ export function randomBase36(length) {
         temp.push(parseInt(Math.random() * 36).toString(36))
     }
     return temp.join("")
+}
+/**
+ * 
+ * @param {Element} element - 一个文本输入元素（input或textarea）
+ * @returns {string[]} 当前行的输入索引的范围
+ * @throws {Error} 如果传入的元素不是文本元素，抛出错误
+ */
+export function getLineRangeOfInput(element) {
+    const tagName = element.tagName.toLowerCase();
+    const errorNotText = new Error(`传入的元素类型不是文本元素:${tagName}`);
+    if (!['input', 'textarea'].includes(tagName)) throw errorNotText
+    if (tagName === 'input' && ['text', 'password', 'search'].includes(element.type)) throw errorNotText
+    const start = element.selectionStart;
+    const end = element.selectionEnd;
+    const content = element.value
+    if (content.slice(start, end).includes('\n')) return [0, 0];
+    let last = 0;
+    for (let index of getStrAllIndex(content,'\n')) {
+        if (index >= start) return [last, index]
+        last = index + 1;
+    }
+    return [last, content.length];
+}
+/**
+ * 获取指定元素中的某一行文本内容。
+ * 
+ * @param {HTMLElement} element - 需要获取文本内容的DOM元素。
+ * @returns {string} 返回指定元素某一行的内容字符串。
+ */
+export function getLineOfInput(element) {
+    return element.value.slice(...getLineRangeOfInput(element));
+}
+/**
+ * 获取字符串中所有指定子字符串的索引
+ * 
+ * @param {string} str 原始字符串
+ * @param {string} searchValue 需要搜索的子字符串
+ * @throws {TypeError} 如果任一参数不是字符串类型
+ * @returns {number[]} 包含所有匹配的索引的数组，如果没有匹配则返回空数组
+ */
+export function getStrAllIndex(str, searchValue) {
+    if (typeof str !== 'string' || typeof searchValue !== 'string') throw new TypeError('参数都应为string类型');
+    if (!str.length || !searchValue.length) return [];
+    const result = [];
+    for (let i = 0; i < str.length; i++) {
+        str[i] === searchValue && result.push(i);
+    }
+    return result;
 }
 /**
  * 检查给定字符串是否为独立的中文句子。

@@ -1097,6 +1097,7 @@ export class NonameCN {
             .replace("受到 伤害 ", "受到伤害 ")
             .replace(/(?<=代为) (?=使用 |打出 |使用或打出 )/g, "")
             .replace(/体力值 (回复|恢复)至 /g, "体力值回复至 ")
+            .replace(/(体力值|手牌数) 为全场最少/g, "$1为全场最少")
             .replace(new RegExp(`(?<=${this.playerCN.join('|')})[ ]+(?=防具的牌)`, 'g'), "")
     }
     static underlieVariable(that) {
@@ -1104,7 +1105,7 @@ export class NonameCN {
             .replace(/(变量|常量|块变)/g, "$1 ")
             .replace(/令为/g, " 令为 ")
             .replace(/(?<=\w+)为/g, " 为 ")
-            .replace(/(?<!名|令|成|视)为/g, '为 ')
+            .replace(/(?<!名|令|成|视)为(?!全场最少或之一)/g, '为 ')
     }
     static standardBoolExpBefore(that) {
         const JOINED_PLAYAERCN = this.playerCN.join("|")
