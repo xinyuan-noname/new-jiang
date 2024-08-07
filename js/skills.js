@@ -2388,26 +2388,30 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
             SkillCreater(
                 "xjb_fangquan", {
                 enable: "phaseUse",
-                filterCard: true,
+                usable: 1,
+                filter(event, player, triggername) {
+                    if (!player.countCards('he', get.info("xjb_fangquan").filterCard)) return false;
+                    if (!(!player.getHistory("damgageSource")
+                        || player.getHistory('damageSource').length == 0)) return false;
+                    return true;
+                },
+                filterCard: function (card) {
+                    return get.tag(card, 'damage') || ["equip1", "equip4"].includes(get.subtype(card))
+                },
+                selectCard: -1,
                 discard: false,
                 lose: false,
-                position: "hes",
-                check: function (card) {
-                    return 6 - get.value(card)
-                },
-                usable: 1,
+                position: "he",
                 filterTarget: function (card, player, target) {
                     return target != player;
                 },
-                prompt: "将一张牌交给一名其他角色并结束你的出牌阶段,令其额外进行一个回合",
+                prompt: "将带有伤害标签的牌、武器牌、-1马牌，交给一名其他角色并结束你的出牌阶段，令其额外进行一个回合",
                 content: function () {
                     target.gain(cards, "giveAuto")
                     target.insertPhase();
-                    let evt = event.getParent("phaseUse");
-                    evt.finish();
                 },
                 translate: '放权',
-                description: "出牌阶段限一次，你可以将一张牌交给一名其他角色并结束你的出牌阶段,你令其进行一个额外的回合。",
+                description: "出牌阶段限一次，若你本回合未造成过伤害，你可以将所有的带有伤害标签的牌、武器牌、-1马牌，交给一名其他角色并令其进行一个额外的回合。",
                 ai: {
                     order: 2,
                     result: {

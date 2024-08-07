@@ -958,14 +958,14 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     .listen(DEFAULT_EVENT, e => {
                         e.preventDefault();
                         myTarget.arrange();
-                        back.organize();
+                        myTarget.submit();
                     })
                 const button_clear = ui.create.xjb_button(myContainer, '清空');
                 element().setTarget(button_clear)
                     .listen(DEFAULT_EVENT, e => {
                         e.preventDefault();
                         myTarget.value = '';
-                        back.organize();
+                        myTarget.submit();
                     })
                 const button_replace = ui.create.xjb_button(myContainer, '替换');
                 element().setTarget(button_replace)
@@ -974,6 +974,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                             const searchValue = this.resultList[0];
                             const replaceValue = this.resultList[1];
                             myTarget.value = myTarget.value.replaceAll(searchValue, replaceValue)
+                            myTarget.submit();
                         })
                             .appendPrompt('替换什么', void 0, '这里写替换的文字,不支持正则!')
                             .appendPrompt('替换为', void 0, '这里替换后的文字')
@@ -983,7 +984,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     .listen(DEFAULT_EVENT, e => {
                         e.preventDefault()
                         myTarget.value += `"${back.getID()}"`
-                        back.organize();
+                        myTarget.submit();
                     })
                 const button_giveSentence = ui.create.xjb_button(myContainer, '查询语句')
                 element().setTarget(button_giveSentence)
@@ -1050,7 +1051,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 })
             }
             element().setTarget(next)
-                .listen(DEFAULT_EVENT,turnNextPage)
+                .listen(DEFAULT_EVENT, turnNextPage)
                 .shortCut('n')
             //切换至上一页
             const last = newElement('span', '上一页', h1).setStyle({
@@ -1065,9 +1066,12 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     i.style.display = back.pageNum == k ? 'flex' : 'none'
                 })
             }
-            element().setTarget(last)
-                .listen(DEFAULT_EVENT,turnLastPage)
-                .shortCut('l');
+            {
+                element().setTarget(last)
+                    .listen(DEFAULT_EVENT, turnLastPage)
+                    .shortCut('l');
+            }
+
             (function touchPageChange() {
                 function hasParentBack(ele) {
                     let parentNode = ele.parentNode;
