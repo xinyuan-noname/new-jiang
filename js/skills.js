@@ -2391,8 +2391,8 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                 usable: 1,
                 filter(event, player, triggername) {
                     if (!player.countCards('he', get.info("xjb_fangquan").filterCard)) return false;
-                    if (!(!player.getHistory("damgageSource")
-                        || player.getHistory('damageSource').length == 0)) return false;
+                    if (!(!player.getHistory("sourceDamage")
+                        || player.getHistory('sourceDamage').length == 0)) return false;
                     return true;
                 },
                 filterCard: function (card) {

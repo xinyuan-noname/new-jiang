@@ -7,25 +7,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         //这个是对话框
         var div = element('div')
             .addClass("xjb_dialogBase")
-            .style(lib.xjb_style.storage_ul)
-            .style({
-                opacity: "0.9",
-                padding: "5px",
-                "z-index": "10",
-                position: "absolute",
-                margin: "auto",
-                'right': '0px',
-                'top': '0px',
-                'left': '0px',
-                'bottom': '0px',
-                height: "159.34px",
-                width: "628.65px",
-                "border-radius": "0.5em",
-                border: "5px solid #cb6d51",
-                "font-size": "24px",
-                overflow: "auto",
-                display: "block"
-            })
+            .addClass("xjbToCenter")
             .father(ui.window)
             .exit();
         //这里写幕布
@@ -33,21 +15,15 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         var length = element("div")
             .style({
                 "z-index": "8",
-                float: "left",
-                height: "137.16px",
                 width: "100%",
-                'right': '0px',
-                'top': '0px',
-                'left': '0px',
-                'bottom': '0px',
-                margin: "auto",
-                position: "relative",
-                'marginTop': "calc(32% + 32px)",
-                display: "block"
+                display: "block",
+                height: "36px",
+                top: "250px"
             })
+            .addClass("xjbToCenter")
             .father(back)
             .exit();
-        var buttons = []
+        var buttons = [];
         for (var i = 0; i < arguments.length; i++) {
             var button = ui.create.xjb_button(length, arguments[i], [div, back])
             buttons.push(button)
@@ -448,7 +424,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         return dialog
     }
     //文件交互对话框
-    game.xjb_create.file = function (str, type, func1, func2) {
+    game.xjb_create.file = function (str, type, func1, func2, needBuffer) {
         if (game.xjb_create.baned) return;
         var dialog = game.xjb_create.prompt(str, "", func1, func2)
         dialog.Mysize()
@@ -505,42 +481,25 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             ui.xjb_toBeHidden(dialog.buttons[0])
         }
         file.onchange = function () {
+            const readingFile = this.files[0];
             ui.xjb_toBeHidden(dialog.buttons[0])
             var reader = new FileReader()
-            reader.readAsDataURL(this.files[0], "UTF-8")
+            if (needBuffer) reader.readAsArrayBuffer(readingFile)
+            else reader.readAsDataURL(readingFile, "UTF-8")
             reader.onload = function () {
-                function getBase64Index(dataURL) {
-                    let base64Index = dataURL.indexOf(';base64,') + 8
-                    // 如果没有找到";base64,"，则从"data:"后面开始截取
-                    if (base64Index === -1) {
-                        base64Index = dataURL.indexOf(',') + 1;
-                    }
-                    return base64Index;
-                }
-                function getHead(dataURL) {
-                    return dataURL.slice(0, getBase64Index(dataURL))
-                }
-                function extractBase64FromDataURL(dataURL) {
-                    let base64Index = getBase64Index(dataURL)
-                    // 提取并返回base64编码的数据
-                    return dataURL.substring(base64Index);
-                }
+                const fileData = this.result;
+                //文件类型
                 let lastnamefortype = file.value.slice(file.value.lastIndexOf("."))
-                target.src = this.result
+                target.src = URL.createObjectURL(readingFile)
                 target.xjb_type = lastnamefortype
                 ui.xjb_toBeVisible(dialog.buttons[0])
-                dialog.buttons[0].file = {
-                    result: this.result,
+                const fileResult = {
+                    self: readingFile,
+                    result: fileData,
                     type: lastnamefortype,
-                    head: getHead(this.result),
-                    base64: extractBase64FromDataURL(this.result)
                 }
-                dialog.buttons[1].file = {
-                    result: this.result,
-                    type: lastnamefortype,
-                    head: getHead(this.result),
-                    base64: extractBase64FromDataURL(this.result)
-                }
+                dialog.buttons[0].file = fileResult;
+                dialog.buttons[1].file = fileResult;
                 if (target.xjb_check) target.xjb_check()
             }
         }
@@ -848,7 +807,6 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                     .exit()
                 const seeButton = ui.create.xjb_button(container, seeStr);
                 element().setTarget(seeButton)
-                    .listen(listenType, seeCallback)
                     .style({
                         position: 'relative',
                         fontSize: '1.5rem'
@@ -860,10 +818,6 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                 const deleteButton = ui.create.xjb_button(container, deleteStr)
                 element().setTarget(deleteButton)
                     .father(container)
-                    .listen(listenType, deleteCallback)
-                    .listen(listenType, function () {
-                        this.parentNode.remove();
-                    })
                     .style({
                         position: 'relative',
                         fontSize: '1.5rem',
@@ -878,6 +832,15 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             if (ul.children.length <= 30) addLi();
             else setTimeout(addLi, 33)
         }
+        dialog.addEventListener(listenType, function (e) {
+            if (e.target.innerText === deleteStr || e.target.deleteExpanding) {
+                deleteCallback.apply(e.target, [e]);
+                e.target.parentNode.remove();
+            }
+            if (e.target.innerText === seeStr || e.target.seeExpanding) {
+                seeCallback.apply(e.target, [e])
+            }
+        })
         return dialog
     }
 

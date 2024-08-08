@@ -6,9 +6,6 @@ import {
     ai,
     _status
 } from "../../noname.js";
-import {
-    randomBase36
-} from "./js/string.js"
 game.import("extension", function () {
     return {
         name: "新将包", content: function (config, pack) {
@@ -851,27 +848,66 @@ game.import("extension", function () {
                             }
                             var sinks = function (str1) {
                                 if (!lib.config.xjb_newcharacter.sink) lib.config.xjb_newcharacter.sink = []
-                                game.xjb_create.file("请输入你的皮肤名，并选定图片，待确定出现后按确定即可。<br>注意:本功能仅手机端支持！", str1, function () {
-                                    var that = this
-                                    function theDownload(src) {
-                                        var fileTransfer = new FileTransfer();
-                                        var Myalert = game.xjb_create.alert("正在导入中...");
-                                        ui.xjb_toBeHidden(Myalert.buttons[0])
-                                        fileTransfer.download(that.file.result, src + "sink/xin_newCharacter/normal/" + that.result + that.file.type, function () {
-                                            Myalert.innerHTML = "导入成功！"
-                                            ui.xjb_toBeVisible(Myalert.buttons[0])
-                                            lib.config.xjb_newcharacter.sink.add(that.result + that.file.type)
-                                            game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                                        }, function (e) {
-                                            Myalert.innerHTML = "导入失败！<br>" + e.code
-                                            ui.xjb_toBeVisible(Myalert.buttons[0])
-                                        });
+                                const downloadByCordova = function () {
+                                    const that = this;
+                                    var Myalert = game.xjb_create.alert("正在导入中...");
+                                    const sucCallback = () => {
+                                        Myalert.innerHTML = "导入成功！"
+                                        ui.xjb_toBeVisible(Myalert.buttons[0])
+                                        lib.config.xjb_newcharacter.sink.add(that.result + that.file.type)
+                                        game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
                                     }
-                                    if (lib.config.xjb_newcharacter.sink.includes(that.result)) {
-                                        game.xjb_create.confirm("你已有该同名的皮肤，是否覆盖？", theDownload, function () { sinks("img") })
+                                    const failCallback = err => {
+                                        Myalert.innerHTML = "导入失败！<br>" + err
+                                        ui.xjb_toBeVisible(Myalert.buttons[0])
                                     }
-                                    else theDownload(lib.config.xjb_fileURL)
-                                })
+                                    const downloadWay = lib.config.xjb_fileURL + "sink/xin_newCharacter/normal/" + that.result + that.file.type;
+                                    ui.xjb_toBeHidden(Myalert.buttons[0])
+                                    var fileTransfer = new FileTransfer();
+                                    fileTransfer.download(
+                                        that.file.result,
+                                        downloadWay,
+                                        sucCallback,
+                                        failCallback
+                                    )
+                                };
+                                const downloadByNode = function () {
+                                    const that = this;
+                                    var Myalert = game.xjb_create.alert("正在导入中...");
+                                    const sucCallback = () => {
+                                        Myalert.innerHTML = "导入成功！"
+                                        ui.xjb_toBeVisible(Myalert.buttons[0])
+                                        lib.config.xjb_newcharacter.sink.add(that.result + that.file.type)
+                                        game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
+                                    }
+                                    const failCallback = err => {
+                                        Myalert.innerHTML = "导入失败！<br>" + err
+                                        ui.xjb_toBeVisible(Myalert.buttons[0])
+                                    }
+                                    const downloadWay = lib.config.xjb_fileURL + "sink/xin_newCharacter/normal/" + that.result + that.file.type;
+                                    ui.xjb_toBeHidden(Myalert.buttons[0])
+                                    lib.node.fs.writeFile(
+                                        window.decodeURIComponent(new URL(downloadWay).pathname).substring(1),
+                                        Buffer.from(new Uint8Array(that.file.result)),
+                                        err => {
+                                            if (err) return failCallback(err);
+                                            sucCallback();
+                                        }
+                                    )
+                                }
+                                game.xjb_create.file(
+                                    "请输入你的皮肤名，并选定图片，待确定出现后按确定即可。",
+                                    str1,
+                                    function () {
+                                        const theDownload = lib.node ? downloadByNode : downloadByCordova
+                                        if (lib.config.xjb_newcharacter.sink.includes(this.result)) {
+                                            game.xjb_create.confirm("你已有该同名的皮肤，是否覆盖？", theDownload, function () { sinks("img") })
+                                        }
+                                        else theDownload.apply(this,[])
+                                    },
+                                    () => { },
+                                    lib.node ? true : false
+                                )
                             }
                             var object = {
                                 other: o => 1,
@@ -1066,7 +1102,7 @@ game.import("extension", function () {
                 }
             }
             lib.extensionMenu.extension_新将包.storage = {
-                name: '<div>导出魂币系统数据！(仅供手机端)</div>',
+                name: '<div>导出魂币系统数据！</div>',
                 clear: true,
                 onclick: function () {
                     new Promise(res => {
@@ -1120,7 +1156,12 @@ game.import("extension", function () {
                         lib.xjb_src = src
                     }
                 }
-                lib.xjb_src = lib.xjb_src || lib.assetURL + "extension/新将包/"
+                if (!lib.config.xjb_fileURL) {
+                    const initWay = localStorage.getItem("noname_inited");
+                    lib.config.xjb_fileURL = `${initWay}extension/新将包/`;
+                    if (initWay === "nodejs") lib.config.xjb_fileURL = lib.xjb_src;
+                }
+                lib.xjb_fileURL = lib.config.xjb_fileURL;
             }
             function importFile() {
                 let count = 0;
@@ -1202,9 +1243,6 @@ game.import("extension", function () {
                 if (navigator.connection.type == 'wifi') game.xjb_loadAPI();
             }
             function initialize() {
-                if (!lib.config.xjb_fileURL) {
-                    lib.config.xjb_fileURL = `${localStorage.getItem("noname_inited")}extension/新将包/`
-                }
                 //设置刘徽-祖冲之祖项目
                 //设置参数π、e、Φ，这些参数越大越精确
                 if (!lib.config.xjb_π) {

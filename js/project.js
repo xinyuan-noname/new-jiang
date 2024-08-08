@@ -2,14 +2,29 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
     /*file*/
     game.xjb_transferFile = function (BLOB, fileWay, silent) {
         function download() {
-            var fileTransfer = new FileTransfer();
             const obj = {}
             if (!silent) obj.Myalert = game.xjb_create.alert("正在导出中...")
-            fileTransfer.download(this.result, fileWay, function () {
-                if (obj.Myalert) obj.Myalert.innerHTML = "导出成功！"
-            }, function (e) {
-                if (obj.Myalert) obj.Myalert.innerHTML = "导出失败！<br>" + e.code
-            });
+            const sucCallback = e => obj.Myalert && (obj.Myalert.innerHTML = "导出成功！");
+            const failCallback = err => obj.Myalert && (obj.Myalert.innerHTML = "导出失败！<br>" + err);
+            try {
+                if ("FileTransfer" in window) var fileTransfer = new FileTransfer();
+                if (fileTransfer) return fileTransfer.download(
+                    this.result,
+                    fileWay,
+                    sucCallback,
+                    failCallback
+                );
+                if (lib.node) return lib.node.fs.writeFile(
+                    window.decodeURIComponent(new URL(fileWay).pathname).substring(1),
+                    Buffer.from(new Uint8Array(this.result)),
+                    err => {
+                        if (err) return failCallback(err);
+                        sucCallback();
+                    }
+                )
+            } catch (err) {
+                failCallback(err);
+            }
         }
         if (typeof BLOB === "string") {
             const myTarget = {
@@ -17,9 +32,11 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
             }
             download.apply(myTarget, []);
             return;
-        } else {
+        }
+        else {
             var reader = new FileReader()
             reader.onload = download;
+            if (lib.node) return reader.readAsArrayBuffer(BLOB)
             reader.readAsDataURL(BLOB, "UTF-8")
         }
     };
@@ -443,12 +460,16 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 }
                 ui.xjb_giveStyle(ele, { visibility: "visible" })
             }
-            ui.xjb_addElement = function ({ target, tag, innerHTML, style, className, addclass, ctEvent, src, type, max, min, hideFun, display, inherit }) {
+            ui.xjb_addElement = function ({ target, tag, innerHTML,
+                style, className, addclass,
+                ctEvent, src, type, max, min,
+                hideFun, display, inherit,
+                ignorePosition }) {
                 let ele = document.createElement(tag);
-                if (tag = "canvas") ele.setHW = function (height, width) { this.height = height; this.width = width; return this };
+                if (tag == "canvas") ele.setHW = function (height, width) { this.height = height; this.width = width; return this };
                 if (tag == "div") ui.xjb_giveStyle(ele, { display: "block" });
                 if (display) ui.xjb_giveStyle(ele, { display: display });
-                ui.xjb_giveStyle(ele, { position: "relative" });
+                if (!ignorePosition) ui.xjb_giveStyle(ele, { position: "relative" });
                 target.appendChild(ele);
                 if (innerHTML) {
                     if (tag == "textarea") ele.value = innerHTML;
@@ -708,6 +729,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                     "text-align": "center",
                     "font-size": "32px",
                 })
+                back.classList.add('xjbTocenter')
                 return back
             }
             ui.create.xjb_double = function (str) {
@@ -757,9 +779,10 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                     tag: 'div',
                     className: 'interact_back',
                     hideFun: true,
-                    display: 'inline-block',
+                    ignorePosition: true,
                     style: lib.xjb_style.back
                 })
+                back.classList.add('xjbToCenter')
                 game.xjb_back = back//将back设置为game.xjb_back
                 //点击close关闭back
                 function closeIt() {
@@ -809,13 +832,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 back: {
                     width: "800px",
                     height: "400px",
-                    position: "absolute",
-                    margin: "auto",
                     'z-index': '8',
-                    'right': '0px',
-                    'top': '0px',
-                    'left': '0px',
-                    'bottom': '0px',
                     'border-radius': '3em',
                     'background-image': 'linear-gradient(to bottom right,#f0acf7,#7093DB,#f7f0ac)',
                     'border': '3px solid black',

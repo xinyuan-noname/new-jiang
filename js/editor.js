@@ -2604,6 +2604,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                                             const id = this.container.dataset.xjb_id
                                             this.descEle.innerHTML += `<span>${lib.translate[id + '_info']}</span>`
                                             this.innerText = "收起"
+                                            this.seeExpanding = true;
                                         } else if (this.innerText === "收起") {
                                             /**
                                              * @type {HTMLElement}
@@ -2612,6 +2613,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                                             const span = descEle.querySelector('span')
                                             span && span.remove();
                                             this.innerText = '查看'
+                                            this.seeExpanding = false;
                                         }
 
                                     },

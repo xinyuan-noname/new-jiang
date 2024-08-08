@@ -804,9 +804,9 @@ export class NonameCN {
             //历史类
             '获取本回合指定其他角色为目标的使用牌事件': "getHistory:'useCard':function(evt){return evt.targets.filter(current=>target!=player)}",
             '获取本回合指定其他角色为目标的打出牌事件': "getHistory:'respond':function(evt){return evt.targets.filter(current=>target!=player)}",
-            '本回合造成伤害次数': `getHistory:'damageSource'://!?length`,
-            '获取本回合造成伤害事件':`getHistory:"damgageSource"`,
-            '不能获取本回合造成伤害事件':`getHistory:"damgageSource":denyPrefix`
+            '本回合造成伤害次数': `getHistory:"sourceDamage"://!?length`,
+            '获取本回合造成伤害事件':`getHistory:"sourceDamage"`,
+            '不能获取本回合造成伤害事件':`getHistory:"sourceDamage":denyPrefix`
         },
         players: {
             /*所(被)选(的)角色,所(被)选择(的)角色*/
