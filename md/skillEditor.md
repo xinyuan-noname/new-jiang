@@ -248,7 +248,8 @@
 
 对于查询语句，你可以在某一行按下Tab键，便可以选中该行，我们尝试根据查询语句中的样例补全它。
 
-[点此处观看演示视频](./Editor-Tab.mp4)
+
+[点击此处跳转观看视频](https://www.bilibili.com/video/BV1U5YYeEEMo/?share_source=copy_web&vd_source=aee52d36faeb2629aa310872aa1f1da5)
 
 ---
 ## 限制条件输入框  
