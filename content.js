@@ -343,13 +343,17 @@ export function XJB_CONTENT(config, pack) {
         onclick: function (layout) {
             switch (layout) {
                 case 'getAPI': {
-                    game.xjb_loadAPI()
+                    game.xjb_loadAPI(function(){
+                        game.xjb_create.alert("xjb_xyAPI加载成功!")
+                    })
                 }; break;
                 case 'update': {
+                    if (!("xjb_xyAPI" in window)) return game.xjb_create.alert("xjb_xyAPI未引入,请点击获取工具引入!")
                     xjb_xyAPI.updateServiceTarget('新将包');
                     game.xjb_create.alert('工具已刷新')
                 }; break;
                 case 'putout': {
+                    if (!("xjb_xyAPI" in window)) return game.xjb_create.alert("xjb_xyAPI未引入,请点击获取工具引入!")
                     xjb_xyAPI.directoryDownload();
                     xjb_xyAPI.directoryDownloadFHook = function () {
                         game.xjb_create.alert('目录导出失败')
@@ -359,6 +363,7 @@ export function XJB_CONTENT(config, pack) {
                     }
                 }; break;
                 case 'download': {
+                    if (!("xjb_xyAPI" in window)) return game.xjb_create.alert("xjb_xyAPI未引入,请点击获取工具引入!")
                     xjb_xyAPI.updateOnline()
                     game.xjb_create.alert('请耐心等待,直到出现alert提示框!此前请不要关闭无名杀!')
                     xjb_xyAPI.updateDownloadHook = function (list) {

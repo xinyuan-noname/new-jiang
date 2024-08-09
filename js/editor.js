@@ -1014,6 +1014,39 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         )
                     })
             }
+            function tabChange(type) {
+                let list = [];
+                let tabMode = false;
+                return function (e) {
+                    if (e.key != 'Tab') {
+                        if (!tabMode) return;
+                        if (e.key === 'Backspace') return;
+                        this.arrange();
+                        this.submit();
+                        tabMode = false;
+                        return;
+                    }
+                    if (!tabMode) tabMode = true;
+                    e.preventDefault();
+                    const range = getLineRangeOfInput(this);
+                    const start = range[0];
+                    const end = range[1];
+                    const content = this.value;
+                    const subStr = content.slice(start, end).replace('\t', '');
+                    if (this.selectionEnd == this.selectionStart) {
+                        list = Object.keys(NonameCN.giveSentence[type]).filter(item => item.startsWith(subStr));
+                    }
+                    if (!list.length) {
+                        this.selectionStart = start;
+                        this.selectionEnd = end;
+                        return;
+                    }
+                    const replacer = list.shift();
+                    this.value = content.slice(0, start) + replacer + content.slice(end);
+                    this.selectionStart = start;
+                    this.selectionEnd = start + replacer.length;
+                }
+            }
             /**
              * @type {HTMLElement}
              */
@@ -1555,12 +1588,16 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 }
                 back.skill.filter = []
                 if (!filterFree.value || filterFree.value.length === 0) return back.skill.filter.push('true') && back.organize()
-                let list = dispose(filterFree.value, back.FilterInherit ? 1 : void 0, NonameCN.FilterList)
-                list = list.map(t => {
+                const list = dispose(
+                    filterFree.value,
+                    back.FilterInherit ? 1 : void 0,
+                    NonameCN.FilterList
+                )
+                const redispose = NonameCN.replace(list.join('\n')).map(t => {
                     let result = t.replace(/trigger(?!name)/g, 'event')
                     return result
-                })
-                back.skill.filter.push(...list);
+                });
+                back.skill.filter.push(...redispose);
                 back.organize()
             }
             back.ele.filter.adjustTab = function () {
@@ -1568,39 +1605,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 that.changeWord(/\t/g, '')
                 that.value = adjustTab(that.value, 0, '分支开始', '分支结束')
             }
-            function tabChange(type) {
-                let list = [];
-                let tabMode = false;
-                return function (e) {
-                    if (e.key != 'Tab') {
-                        if (!tabMode) return;
-                        if (e.key === 'Backspace') return;
-                        this.arrange();
-                        this.submit();
-                        tabMode = false;
-                        return;
-                    }
-                    if (!tabMode) tabMode = true;
-                    e.preventDefault();
-                    const range = getLineRangeOfInput(this);
-                    const start = range[0];
-                    const end = range[1];
-                    const content = this.value;
-                    const subStr = content.slice(start, end).replace('\t', '');
-                    if (this.selectionEnd == this.selectionStart) {
-                        list = Object.keys(NonameCN.giveSentence[type]).filter(item => item.startsWith(subStr));
-                    }
-                    if (!list.length) {
-                        this.selectionStart = start;
-                        this.selectionEnd = end;
-                        return;
-                    }
-                    const replacer = list.shift();
-                    this.value = content.slice(0, start) + replacer + content.slice(end);
-                    this.selectionStart = start;
-                    this.selectionEnd = start + replacer.length;
-                }
-            }
+
             listenAttributeChange(filterFree, 'selectionStart').start();
             textareaTool().setTarget(filterFree)
                 .clearOrder()
@@ -1953,41 +1958,24 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             }
             triggerFree.arrange = function () {
                 const that = triggerFree;
-                /**
-                 * @param {string} appendWord 
-                 * @param {string[]} every 
-                 */
-                function appendWordToEvery(appendWord, every) {
-                    every.forEach(i => {
-                        that.changeWord(new RegExp(i, 'g'), i + appendWord);
-                    });
-                }
-                //
                 that.changeWord(/【([\u4e00-\u9fa5]+)】/g, function (match, ...p) {
                     return p[0];
                 })
-                that.changeWord(/之(前|时|后)/g, "$1")
                 //逻辑处理
                 that.changeWord(/(?<!使用)或(?!打出)/g, ' ')
                 //省略
-                that.changeWord(/的判定牌生效/g, '判定牌生效');
                 that.changeWord(/一张/g, '');
                 that.changeWord(/^(.*?)(一点)(.*?)$/mg, '$1$3 $2')
                 //统一写法                    
                 that.changeWord(/红牌/g, '红色牌');
                 that.changeWord(/黑牌/g, '黑色牌');
                 that.value = suitSymbolToCN(that.value)
-                //
                 NonameCN.standardTriBefore(that)
                 //关于角色
-                appendWordToEvery(' ', ['你', '每名角色']);
-                that.changeWord(/(?<!(令|杀死))(一名角色)/g, '$1 ');
-                NonameCN.standardEvent(that)
-                NonameCN.standardTri(that)
-                that.changeWord(/([\u4e00-\u9fa5]*?)使用或打出([\u4e00-\u9fa5]+)/g, function (match, ...p) {
-                    return `${p[0]}使用${p[1]} ${p[0]}打出${p[1]}`;
-                })
-                that.changeWord(/[ ][ ]+/g, ' ');
+                that.changeWord(/^(你|每名角色|一名角色)/mg, "$1 ")
+                NonameCN.standardEvent(that);
+                NonameCN.standardTri(that);
+                NonameCN.deleteBlank(that);
             }
             back.ele.trigger.submit = function (e) {
                 back.skill.uniqueTrigger = [];
@@ -2011,6 +1999,27 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 }
                 let list = dispose(disposeTriggerValue(), 3, NonameCN.TriList)
                 let tri_player = [], tri_global = [], tri_target = [], tri_source = [], tri_players = []
+                let cardsNames = Object.keys(lib.card),
+                    suits = lib.suits,
+                    colors = Object.keys(lib.color)
+                let strToArrayTarget = function (pending, str, global) {
+                    if (!pending.includes(str)) return false;
+                    if (!global) tri_target.includes(str) || tri_target.push(str);
+                    pending = pending.replace(str, '').replace(':', '');
+                    if (cardsNames.includes(pending)) back.skill.filter_card.push(str + ':"' + pending + '"')
+                    if (suits.includes(pending)) back.skill.filter_suit.push(str + ':"' + pending + '"')
+                    if (colors.includes(pending)) back.skill.filter_color.push(str + ':"' + pending + '"')
+                    return true
+                }
+                let strToArrayPlayer = function (pending, str, global) {
+                    if (!pending.includes(str)) return false;
+                    if (!global) tri_player.includes(str) || tri_player.push(str);
+                    pending = pending.replace(str, '').replace(':', '')
+                    if (cardsNames.includes(pending)) back.skill.filter_card.push(str + ':"' + pending + '"')
+                    if (suits.includes(pending)) back.skill.filter_suit.push(str + ':"' + pending + '"')
+                    if (colors.includes(pending)) back.skill.filter_color.push(str + ':"' + pending + '"')
+                    return true
+                }
                 list.forEach(i => {
                     let a = i
                     if (i.includes("一点")) {
@@ -2028,45 +2037,27 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     }
                 })
                 tri_players.forEach(i => {
-                    let a = i, cardsNames = Object.keys(lib.card), suits = lib.suits, colors = Object.keys(lib.color)
+                    let a = i
                     if (i === 'damageSource') tri_source.push(a)
-                    else if (i.indexOf("source:") === 0) {
+                    else if (i.startsWith("source:")) {
                         a = a.slice(7)
                         tri_source.push(a)
                     }
                     else if (i.startsWith("target:")) {
                         a = a.slice(7)
-                        let strToArray = function (pending, str) {
-                            if (!pending.includes(str)) return false;
-                            tri_target.includes(str) || tri_target.push(str);
-                            pending = pending.replace(str, '').replace(':', '');
-                            if (cardsNames.includes(pending)) back.skill.filter_card.push(str + ':"' + pending + '"')
-                            if (suits.includes(pending)) back.skill.filter_suit.push(str + ':"' + pending + '"')
-                            if (colors.includes(pending)) back.skill.filter_color.push(str + ':"' + pending + '"')
-                            return true
-                        }
-                        if (strToArray(a, 'useCardToTargeted')) { }
-                        else if (strToArray(a, 'useCardToTarget')) { }
+                        if (strToArrayTarget(a, 'useCardToTargeted')) { }
+                        else if (strToArrayTarget(a, 'useCardToTarget')) { }
                         else tri_target.push(a)
                     }
-                    else if (i.indexOf("loseAfter") === 0) {
+                    else if (i.startsWith("loseAfter")) {
                         back.skill.uniqueTrigger.push('player:' + i);
                         tri_player.push("loseAfter", "loseAsyncAfter");
                         if (i !== 'loseAfter:discard') tri_global.push("equipAfter", "addJudgeAfter", "gainAfter", "addToExpansionAfter");
                     }
-                    else if (i.indexOf("player:") === 0) {
+                    else if (i.startsWith("player:")) {
                         a = a.slice(7)
-                        let strToArray = function (pending, str) {
-                            if (!pending.includes(str)) return false;
-                            tri_player.includes(str) || tri_player.push(str);
-                            pending = pending.replace(str, '').replace(':', '')
-                            if (cardsNames.includes(pending)) back.skill.filter_card.push(str + ':"' + pending + '"')
-                            if (suits.includes(pending)) back.skill.filter_suit.push(str + ':"' + pending + '"')
-                            if (colors.includes(pending)) back.skill.filter_color.push(str + ':"' + pending + '"')
-                            return true
-                        }
-                        if (strToArray(a, 'useCardToPlayered')) { }
-                        else if (strToArray(a, 'useCardToPlayer')) { }
+                        if (strToArrayPlayer(a, 'useCardToPlayered')) { }
+                        else if (strToArrayPlayer(a, 'useCardToPlayer')) { }
                         else tri_player.push(a)
                     }
                     else if (i.includes(':useCard')) {
@@ -2091,8 +2082,21 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     else tri_player.push(a)
                 })
                 tri_global = tri_global.map(i => {
-                    let a = i, cardsNames = Object.keys(lib.card), suits = lib.suits, colors = Object.keys(lib.color)
-                    if (i.includes(':useCardAfter')) {
+                    let a = i
+                    if (i.startsWith("source:")) {
+                        let result = a.slice(7);
+                        return result
+                    } else if (i.startsWith("target:")) {
+                        let result = a.slice(7)
+                        if (strToArrayTarget(result, 'useCardToTargeted', true)) return "useCardToTargeted"
+                        if (strToArrayTarget(result, 'useCardToTarget', true)) return "useCardToTarget"
+                        return result;
+                    } else if (i.startsWith("player:")) {
+                        let result = a.slice(7)
+                        if (strToArrayPlayer(result, 'useCardToPlayered', true)) return 'useCardToPlayered'
+                        if (strToArrayPlayer(result, 'useCardToPlayer', true)) return "useCardToPlayer"
+                        return result;
+                    } else if (i.includes(':useCardAfter')) {
                         const str = "useCardAfter"
                         a = a.replace(':useCardAfter', '')
                         if (cardsNames.includes(a)) back.skill.filter_card.push(str + ':"' + a + '"')
@@ -2105,7 +2109,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 back.skill.trigger.player.push(...tri_player)
                 back.skill.trigger.source.push(...tri_source)
                 back.skill.trigger.target.push(...tri_target)
-                back.skill.trigger.global.push(...tri_global)
+                back.skill.trigger.global.push(...new Set(tri_global))
                 back.ele.filter.submit();
                 back.ele.content.submit();
                 back.organize()

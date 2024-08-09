@@ -4,7 +4,7 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         var time = game.xjb_getCurrentDate();
         var str = `${time[0]}-${time[1]}-${time[2]}-${time[3]}-${time[4]}:`;
         str += log
-        const fileWay = lib.config.xjb_fileURL + "log/log.txt";
+        const fileWay = lib.xjb_fileURL + "log/log.txt";
         const xhr = new XMLHttpRequest();
         let file
         xhr.onreadystatechange = function () {

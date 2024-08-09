@@ -58,9 +58,7 @@ function importFile() {
             window.XJB_LOAD_title(_status, lib, game, ui, get, ai)
             count++;
         })
-        lib.init.js(lib.xjb_src + "js", "library", () => {
-            game.print("图书馆资料引入成功——新将包")
-        })
+        lib.init.js(lib.xjb_src + "js", "library", () => {});
         function interval() {
             if (count >= files.length + 2) {
                 res()
@@ -105,7 +103,7 @@ function importFile() {
             }
         );
     };
-    if (navigator.connection.type == 'wifi') game.xjb_loadAPI();
+    if (navigator.connection.type == 'wifi') game.xjb_loadAPI(void 0, () => { game.print("xjb_xyAPI未成功引入") });
 }
 function initialize() {
     //设置刘徽-祖冲之祖项目
@@ -340,48 +338,43 @@ export function XJB_PRECONTENT() {
     initialize()
     importFile()
     //折头折百花联动
-    if (lib.config.extensions.includes('枝头折百花') && lib.config.extension_枝头折百花_enable) {
-        lib.nature && lib.nature.push && lib.nature.push('flower')
-        game.addNature && game.addNature('flower')
-        lib.skill._ztzbh_flowerDamage = {
-            trigger: {
-                source: ["damageBegin"],
-            },
-            filter: function (event, player) {
-                if (game.roundNumber % 4 == 1) lib.translate._ztzbh_flowerDamage = '春雷'
-                if (game.roundNumber % 4 == 2) lib.translate._ztzbh_flowerDamage = '炎夏'
-                if (game.roundNumber % 4 == 3) lib.translate._ztzbh_flowerDamage = '寂秋'
-                if (game.roundNumber % 4 == 0) lib.translate._ztzbh_flowerDamage = '凌冬'
-                if (!(event.nature == "flower")) return false;
-                return true;
-            },
-            content: function () {
-                "step 0"
-                trigger.cancel()
-                if (game.roundNumber % 4 == 1) trigger.player.damage(1, "thunder", player) && player.popup('春雷')
-                if (game.roundNumber % 4 == 2) trigger.player.damage(1, "fire", player) && player.popup('炎夏')
-                if (game.roundNumber % 4 == 3) trigger.player.loseHp(1, player) && player.popup('寂秋')
-                if (game.roundNumber % 4 == 0) trigger.player.damage(1, "ice", player) && player.popup('凌冬')
-            },
-        }
-        lib.translate._ztzbh_flowerDamage = '花伤'
-        lib.skill._ztzbh_liandong = {
-            trigger: {
-                player: [],
-            },
-            filter: function (event, player) {
-                return player === game.me
-            },
-            direct: true,
-            content: function () {
-                let name = player.name
-                game.xjb_getDaomo(player, "flower")
-            }
-        }
-        Object.defineProperty(lib.skill._ztzbh_liandong.trigger, "player", {
-            get() {
-
-            }
-        })
-    }
+    // if (lib.config.extensions.includes('枝头折百花') && lib.config.extension_枝头折百花_enable) {
+    //     lib.nature && lib.nature.push && lib.nature.push('flower')
+    //     game.addNature && game.addNature('flower')
+    //     lib.skill._ztzbh_flowerDamage = {
+    //         trigger: {
+    //             source: ["damageBegin"],
+    //         },
+    //         filter: function (event, player) {
+    //             if (game.roundNumber % 4 == 1) lib.translate._ztzbh_flowerDamage = '春雷'
+    //             if (game.roundNumber % 4 == 2) lib.translate._ztzbh_flowerDamage = '炎夏'
+    //             if (game.roundNumber % 4 == 3) lib.translate._ztzbh_flowerDamage = '寂秋'
+    //             if (game.roundNumber % 4 == 0) lib.translate._ztzbh_flowerDamage = '凌冬'
+    //             if (!(event.nature == "flower")) return false;
+    //             return true;
+    //         },
+    //         content: function () {
+    //             "step 0"
+    //             trigger.cancel()
+    //             if (game.roundNumber % 4 == 1) trigger.player.damage(1, "thunder", player) && player.popup('春雷')
+    //             if (game.roundNumber % 4 == 2) trigger.player.damage(1, "fire", player) && player.popup('炎夏')
+    //             if (game.roundNumber % 4 == 3) trigger.player.loseHp(1, player) && player.popup('寂秋')
+    //             if (game.roundNumber % 4 == 0) trigger.player.damage(1, "ice", player) && player.popup('凌冬')
+    //         },
+    //     }
+    //     lib.translate._ztzbh_flowerDamage = '花伤'
+    //     lib.skill._ztzbh_liandong = {
+    //         trigger: {
+    //             player: [],
+    //         },
+    //         filter: function (event, player) {
+    //             return player === game.me
+    //         },
+    //         direct: true,
+    //         content: function () {
+    //             let name = player.name
+    //             game.xjb_getDaomo(player, "flower")
+    //         }
+    //     }
+    // }
 }

@@ -284,22 +284,23 @@ function getMapOfUSeVcard() {
     }
     return map
 }
-function getMapOfActionHistory(){
+function getMapOfActionHistory() {
     const list = [
-        ["使用牌","useCard"],
-        ["打出牌","respond"],
-        ["跳过阶段","skipped"],
-        ["获得牌","gain"],
-        ["失去牌","lose"],
-        ["造成伤害","sourceDamage"],
-        ["受到伤害","damage"],
-        ["使用技能","useSkill"]
+        ["使用牌", "useCard"],
+        ["打出牌", "respond"],
+        ["跳过阶段", "skipped"],
+        ["获得牌", "gain"],
+        ["失去牌", "lose"],
+        ["造成伤害", "sourceDamage"],
+        ["受到伤害", "damage"],
+        ["使用技能", "useSkill"]
     ]
     const map = {}
-    for(const [cn,en] of list){
+    for (const [cn, en] of list) {
         map[`本回合${cn}次数`] = `getHistory:"${en}"://!?length`
         map[`获取本回合${cn}事件`] = `getHistory:"${en}"`
     }
+    return map;
 }
 function getMapAboutCard() {
     const map = {}
@@ -768,9 +769,9 @@ export class NonameCN {
             //
             "攻击范围": "getAttackRange:",
             //标记类
-            "有蓄力值":`hasMark:"charge"`,
-            "没有蓄力值":`hasMark:"charge":denyPrefix`,
-            "无蓄力值":`hasMark:"charge":denyPrefix`,
+            "有蓄力值": `hasMark:"charge"`,
+            "没有蓄力值": `hasMark:"charge":denyPrefix`,
+            "无蓄力值": `hasMark:"charge":denyPrefix`,
             //装备栏类
             "已废除的装备栏数量": "countDisabled:",
             "有空置的防具栏": "hasEmptySlot:2",
@@ -823,8 +824,8 @@ export class NonameCN {
             //历史类
             '获取本回合指定其他角色为目标的使用牌事件': "getHistory:'useCard':function(evt){return evt.targets.filter(current=>target!=player)}",
             '获取本回合指定其他角色为目标的打出牌事件': "getHistory:'respond':function(evt){return evt.targets.filter(current=>target!=player)}",
-            '本回合造成伤害次数': `getHistory:"sourceDamage"://!?length`,
-            '获取本回合造成伤害事件':`getHistory:"sourceDamage"`,
+            '本回合没有对角色造成过伤害': `getHistory:"sourceDamage"`,
+            ...getMapOfActionHistory()
         },
         players: {
             /*所(被)选(的)角色,所(被)选择(的)角色*/
@@ -968,6 +969,7 @@ export class NonameCN {
             '令角色代为打出': 'packed_playerCode_sufferForAnother',
             '令角色代为使用': 'packed_playerCode_sufferForAnother',
             '令角色代为使用或打出': 'packed_playerCode_sufferForAnother',
+            '本回合对角色造成伤害的次数': 'packed_playerCode_getDamagedThemTimes',
         },
         filter_only: {
             "不发动": "return false;",
@@ -1023,6 +1025,17 @@ export class NonameCN {
                 result += `event.goto(event.step-1);\n`
                 result += `}\n`
                 result += `}\n`
+                return result;
+            })
+        },
+        'packed_playerCode_getDamagedThemTimes'(str) {
+            let match = /(.+)\.packed_playerCode_getDamagedThemTimes(\(.*\))/g;
+            return str.replace(match, function (match, ...p) {
+                const player = p[0]
+                const args = p[1].replace(/[\(\)]/g, '').split(",")
+                const targets = args.filter(item => Object.values(NonameCN.groupedList.player).includes(item));
+                let result = '';
+                result += `${player}.getHistory("sourceDamage",evt=>[${targets}].includes(evt.player)).length`
                 return result;
             })
         }
@@ -1157,8 +1170,9 @@ export class NonameCN {
             .replace(/(不?)(大于|小于|是|等于)/g, " $1$2 ")
             .replace(/[上拥]?有父事件[ ]*["']?(.+?)["']?$/mg, '获取名为$1的父事件的名字  不为 undefined')
             .replace(/不为/g, ' 不为 ')
-            .replace(/(.+?)本回合未(使用|造成)过?(牌|伤害)$/mg,'$1本回合$2$3次数\n为\n0')
-            .replace(/(.+?)本回合(使用|造成)过(牌|伤害)$/mg,'$1本回合$2$3次数\n大于\n0')
+            .replace(/(.+?)本回合未(使用|造成)过?(牌|伤害)$/mg, '$1本回合$2$3次数\n为\n0')
+            .replace(/(.+?)本回合(使用|造成)过(牌|伤害)$/mg, '$1本回合$2$3次数\n大于\n0')
+            .replace(/^(.+?)本回合未对(.+?)造成过?伤害$/mg,'$1 本回合对角色造成伤害的次数 $2\n等于\n0')
     }
     static standardModBefore(that) {
         textareaTool().setTarget(that)
@@ -1231,6 +1245,8 @@ export class NonameCN {
     }
     static standardTriBefore(that) {
         textareaTool().setTarget(that)
+            .replace(/之(前|时|后)/g, "$1")
+            .replace(/的判定牌生效/g, '判定牌生效')
             .replace(/(?<=你|一名角色)的?判定区被?置入(延时)?类?(锦囊)?牌/g, "牌置入判定区")
             .replace(/(?<=你|一名角色)的?装备区被?置入(装备)?牌/g, "牌置入装备区")
             .replace(/场上(的|有)?(延时)?类?(锦囊)?牌被?置入判定区/g, "一名角色牌置入判定区")
@@ -1240,6 +1256,9 @@ export class NonameCN {
     static standardTri(that) {
         textareaTool().setTarget(that)
             .replace(/(?<=濒死)(状态|阶段)/g, "状态")
+            .replace(/([\u4e00-\u9fa5]*?)使用或打出([\u4e00-\u9fa5]+)/g, function (match, ...p) {
+                return `${p[0]}使用${p[1]} ${p[0]}打出${p[1]}`;
+            })
     }
     //处理模拟代码块
     static replace(undisposed) {
@@ -1487,9 +1506,9 @@ export class NonameCN {
             }
             result += `${i}:true,\n`;
         })
-        if(type.includes("locked-false")){
-            result = result.replaceAll('locked-false:true',"locked:flase")
-            result = result.replaceAll('locked:true,\n',"")
+        if (type.includes("locked-false")) {
+            result = result.replaceAll('locked-false:true', "locked:flase")
+            result = result.replaceAll('locked:true,\n', "")
         }
         if (uniqueList.some(tag => tag.includes("animation-"))) {
             const animation = findPrefix(uniqueList, "animation").map(k => k.slice(10))
@@ -2182,10 +2201,11 @@ export class NonameCN {
             '你有空置的+1马栏': '你有空置的+1马栏',
             '你有空置的-1马栏': '你有空置的-1马栏',
             '你有空置的宝物栏': '你有空置的宝物栏',
-            '你本回合未造成伤害':"你本回合未造成伤害",
-            '你本回合造成过伤害':"你本回合造成过伤害",
-            '你本回合未使用过牌':"你本回合未使用过牌",
-            '你本回合使用过牌':"你本回合使用过牌",
+            '你本回合未造成伤害': "你本回合未造成伤害",
+            '你本回合造成过伤害': "你本回合造成过伤害",
+            '你本回合未使用过牌': "你本回合未使用过牌",
+            '你本回合使用过牌': "你本回合使用过牌",
+            '你本回合未对触发事件的角色造成过伤害':"你本回合未对触发事件的角色造成过伤害",
             '场上有男性角色': '场上有男性角色',
             '场上有其他男性角色': '场上有其他男性角色',
             '场上有女性角色': '场上有女性角色',
@@ -2214,7 +2234,7 @@ export class NonameCN {
             "你失去一点体力": "你失去一点体力(体力类)",
             "你获得一点护甲": "你获得一点护甲(体力类-护甲)",
             "你可以摸两张牌或回复一点体力值": "你可以摸两张牌或回复一点体力值(牌类-体力类)",
-            "你本回合非锁定技失效":"你本回合非锁定技失效",
+            "你本回合非锁定技失效": "你本回合非锁定技失效",
             "你翻面": "你翻面",
             "你横置或重置": "你横置或重置",
             "此杀的伤害+1": "此杀伤害+1(触发技专属:使用杀时|使用杀指定目标时-可将加号(+)改为减号(-)或者乘号(*))",
@@ -2248,18 +2268,23 @@ export class NonameCN {
             '你使用牌指定目标后': "你使用牌指定目标后(使用牌类)",
             '你成为牌的目标时': "你成为牌的目标时(使用牌类)",
             '你成为牌的目标后': "你成为牌的目标后(使用牌类)",
-            "判定牌生效前": "判定牌生效前(判定牌类)",
-            "判定牌生效后": "判定牌生效后(判定牌类)",
+            "你判定牌生效前": "你判定牌生效前(判定牌类)",
+            "你判定牌生效后": "你判定牌生效后(判定牌类)",
             "你受到伤害后": "你受到伤害后(伤害类)",
             "你造成伤害后": "你造成伤害后(伤害类)",
             "你受到一点伤害后": "你受到一点伤害后(伤害类)",
             "你造成一点伤害后": "你造成一点伤害后(伤害类)",
             "你失去体力后": "你失去体力后(体力类)",
             "你失去一点体力后": "你失去一点体力后(体力类)",
+            "你体力减少后": "你体力减少后(体力类)",
             "你令一名角色进入濒死状态": "你令一名角色进入濒死状态(濒死类)",
             '你进入濒死状态时': '你进入濒死状态时(濒死类)',
             '你脱离濒死状态时': "你脱离濒死状态时(濒死类)",
             "你杀死一名角色后": "你杀死一名角色后",
         }
     }
+}
+for (const [item, explanation] of Object.entries(NonameCN.giveSentence.trigger)) {
+    if (!item.startsWith("你")) continue;
+    NonameCN.giveSentence.trigger["一名角色" + item.substring(1)] = "一名角色" + explanation.substring(1)
 }
