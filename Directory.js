@@ -117,6 +117,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "log.txt"
     ],
     "md": [
+        "Editor-Tab.mp4",
         "skillEditor.md"
     ],
     "node": [
