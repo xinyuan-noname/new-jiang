@@ -2,10 +2,12 @@ window["xjb_xyAPI_Directory_新将包"]={
     "main": [
         ".gitignore",
         "card_lw.jpg",
+        "content.js",
         "Directory.js",
         "extension.js",
         "info.json",
         "LICENSE",
+        "precontent.js",
         "qimendunjia.png",
         "README.md",
         "skillCard.png",
@@ -42,6 +44,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_sunce.jpg",
         "xjb_tianming_huobi1.png",
         "xjb_tianming_huobi2.png",
+        "xjb_xyAPI.js",
         "xjb_yingzheng.jpg",
         "xjb_zhangliang_liuhou.jpg",
         "xjb_zhihuan.png",
@@ -117,7 +120,6 @@ window["xjb_xyAPI_Directory_新将包"]={
         "log.txt"
     ],
     "md": [
-        "Editor-Tab.mp4",
         "skillEditor.md"
     ],
     "node": [
@@ -174,4 +176,4 @@ window["xjb_xyAPI_Directory_新将包"]={
     "sink/xin_newCharacter/normal": [
         "xin_newCharacter.jpg"
     ]
-}
+} 

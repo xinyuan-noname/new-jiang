@@ -161,8 +161,6 @@ function getMapOfTrigger() {
         list["令一名角色" + i + "后"] = "source:" + k + "After"
         //
         list["获取本回合" + i + "事件"] = 'getHistory:"' + k + '"'
-        list["不能获取本回合" + i + "事件"] = 'getHistory:"' + k + '":denyPrefix'
-        list["本回合" + i + "次数"] = 'getHistory:"' + k + '"://!?length'
         //
         list["获取" + i + "事件"] = 'getAllHistory:"' + k + '"'
         //
@@ -285,6 +283,23 @@ function getMapOfUSeVcard() {
         map[`视为使用${cn}`] = `useCard:{name:${en},isCard:true}:intoFunction`
     }
     return map
+}
+function getMapOfActionHistory(){
+    const list = [
+        ["使用牌","useCard"],
+        ["打出牌","respond"],
+        ["跳过阶段","skipped"],
+        ["获得牌","gain"],
+        ["失去牌","lose"],
+        ["造成伤害","sourceDamage"],
+        ["受到伤害","damage"],
+        ["使用技能","useSkill"]
+    ]
+    const map = {}
+    for(const [cn,en] of list){
+        map[`本回合${cn}次数`] = `getHistory:"${en}"://!?length`
+        map[`获取本回合${cn}事件`] = `getHistory:"${en}"`
+    }
 }
 function getMapAboutCard() {
     const map = {}
@@ -810,7 +825,6 @@ export class NonameCN {
             '获取本回合指定其他角色为目标的打出牌事件': "getHistory:'respond':function(evt){return evt.targets.filter(current=>target!=player)}",
             '本回合造成伤害次数': `getHistory:"sourceDamage"://!?length`,
             '获取本回合造成伤害事件':`getHistory:"sourceDamage"`,
-            '不能获取本回合造成伤害事件':`getHistory:"sourceDamage":denyPrefix`
         },
         players: {
             /*所(被)选(的)角色,所(被)选择(的)角色*/
@@ -1143,8 +1157,8 @@ export class NonameCN {
             .replace(/(不?)(大于|小于|是|等于)/g, " $1$2 ")
             .replace(/[上拥]?有父事件[ ]*["']?(.+?)["']?$/mg, '获取名为$1的父事件的名字  不为 undefined')
             .replace(/不为/g, ' 不为 ')
-            .replace(/(.+?)本回合未(使用|造成)过?(牌|伤害)$/mg,'$1不能获取本回合$2$3事件\n或者\n$1本回合$2$3次数\n为\n0')
-            .replace(/(.+?)本回合(使用|造成)过(牌|伤害)$/mg,'$1获取本回合$2$3事件\n并且\n$1$2次数\n大于\n0')
+            .replace(/(.+?)本回合未(使用|造成)过?(牌|伤害)$/mg,'$1本回合$2$3次数\n为\n0')
+            .replace(/(.+?)本回合(使用|造成)过(牌|伤害)$/mg,'$1本回合$2$3次数\n大于\n0')
     }
     static standardModBefore(that) {
         textareaTool().setTarget(that)
@@ -2200,6 +2214,7 @@ export class NonameCN {
             "你失去一点体力": "你失去一点体力(体力类)",
             "你获得一点护甲": "你获得一点护甲(体力类-护甲)",
             "你可以摸两张牌或回复一点体力值": "你可以摸两张牌或回复一点体力值(牌类-体力类)",
+            "你本回合非锁定技失效":"你本回合非锁定技失效",
             "你翻面": "你翻面",
             "你横置或重置": "你横置或重置",
             "此杀的伤害+1": "此杀伤害+1(触发技专属:使用杀时|使用杀指定目标时-可将加号(+)改为减号(-)或者乘号(*))",
