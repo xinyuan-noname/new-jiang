@@ -248,9 +248,7 @@
 
 对于查询语句，你可以在某一行按下Tab键，便可以选中该行，我们尝试根据查询语句中的样例补全它。
 
-<video width="320" height="240" controls>
-<source src="./Editor-Tab.mp4">
-</video>
+[点此处观看演示视频](./Editor-Tab.mp4)
 
 ---
 ## 限制条件输入框  
