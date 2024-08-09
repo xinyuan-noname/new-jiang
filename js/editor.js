@@ -985,7 +985,12 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 element().setTarget(button_thisIdWithQuotes)
                     .listen(DEFAULT_EVENT, e => {
                         e.preventDefault()
-                        myTarget.value += `"${back.getID()}"`
+                        const start = myTarget.selectionStart;
+                        const end = myTarget.selectionEnd;
+                        const content = myTarget.value;
+                        const id = `"` + back.getID() + `"`
+                        myTarget.value = content.slice(0, start) + id + content.slice(end);
+                        myTarget.selectionStart = myTarget.selectionEnd = start + id.length
                         myTarget.submit();
                     })
                 const button_giveSentence = ui.create.xjb_button(myContainer, '查询语句')
@@ -1222,10 +1227,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     "juexingji": "觉醒技",
                     "dutySkill": "使命技",
                     "skillAnimation": "技能动画",
-                    "locked":"锁定技",
+                    "locked": "锁定技",
                     "persevereSkill": "持恒技",
                     "charlotte": "Charlotte技",
-                    "locked-false":"非锁定技",
+                    "locked-false": "非锁定技",
                     "zhenfa": "阵法技",
                     "mainSkill": "主将技",
                     "viceSkill": "副将技",
@@ -1236,7 +1241,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     "groupSkill": "势力技",
                     "mark": "标记持显",
                     'round': "每轮一次",
-                    "direct":"直接发动",
+                    "direct": "直接发动",
                     "sunbenSkill": "昂扬技",
                     "chargeSkill": "蓄力技",
                     "chargingSkill": "蓄能技",
@@ -1564,9 +1569,18 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 that.value = adjustTab(that.value, 0, '分支开始', '分支结束')
             }
             function tabChange(type) {
-                let list = []
+                let list = [];
+                let tabMode = false;
                 return function (e) {
-                    if (e.key != 'Tab') return;
+                    if (e.key != 'Tab') {
+                        if (!tabMode) return;
+                        if (e.key === 'Backspace') return;
+                        this.arrange();
+                        this.submit();
+                        tabMode = false;
+                        return;
+                    }
+                    if (!tabMode) tabMode = true;
                     e.preventDefault();
                     const range = getLineRangeOfInput(this);
                     const start = range[0];
@@ -2103,6 +2117,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .clearThenOrder("整理", back.ele.trigger.arrange)
                 .replaceOrder(/(本|此|该)技能id/g, back.getID)
                 .debounce('keyup', back.ele.trigger.submit, 200)
+                .listen('keydown', tabChange("trigger"))
                 .style({
                     height: '11em',
                     fontSize: '0.75em',
