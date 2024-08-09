@@ -752,6 +752,10 @@ export class NonameCN {
             "本回合非锁定技失效": `addTempSkill:"fengyin"`,
             //
             "攻击范围": "getAttackRange:",
+            //标记类
+            "有蓄力值":`hasMark:"charge"`,
+            "没有蓄力值":`hasMark:"charge":denyPrefix`,
+            "无蓄力值":`hasMark:"charge":denyPrefix`,
             //装备栏类
             "已废除的装备栏数量": "countDisabled:",
             "有空置的防具栏": "hasEmptySlot:2",
@@ -1469,6 +1473,10 @@ export class NonameCN {
             }
             result += `${i}:true,\n`;
         })
+        if(type.includes("locked-false")){
+            result = result.replaceAll('locked-false:true',"locked:flase")
+            result = result.replaceAll('locked:true,\n',"")
+        }
         if (uniqueList.some(tag => tag.includes("animation-"))) {
             const animation = findPrefix(uniqueList, "animation").map(k => k.slice(10))
             result += `animationColor:"${animation}",\n`

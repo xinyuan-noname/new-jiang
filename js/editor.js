@@ -1214,14 +1214,18 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             {
                 const mapList = {
                     'zhuSkill': '主公技',
-                    'forced': "锁定技",
-                    'multitarget': "多角色",
+                    'forced': "强制发动",
                     "frequent": "自动发动",
                     'usable': '每回合一次',
+                    'multitarget': "多角色",
                     "limited": "限定技",
                     "juexingji": "觉醒技",
                     "dutySkill": "使命技",
                     "skillAnimation": "技能动画",
+                    "locked":"锁定技",
+                    "persevereSkill": "持恒技",
+                    "charlotte": "Charlotte技",
+                    "locked-false":"非锁定技",
                     "zhenfa": "阵法技",
                     "mainSkill": "主将技",
                     "viceSkill": "副将技",
@@ -1230,13 +1234,12 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     "hiddenSkill": "隐匿技",
                     "clanSkill": "宗族技",
                     "groupSkill": "势力技",
-                    "chargeSkill": "蓄力技",
-                    "chargingSkill": "蓄能技",
-                    "sunbenSkill": "昂扬技",
-                    "persevereSkill": "持恒技",
                     "mark": "标记持显",
                     'round': "每轮一次",
-                    "charlotte": "charlotte技",
+                    "direct":"直接发动",
+                    "sunbenSkill": "昂扬技",
+                    "chargeSkill": "蓄力技",
+                    "chargingSkill": "蓄能技",
                 }
                 let list = xjb_formatting(Object.values(mapList));
                 let list1 = xjb_formatting(Object.keys(mapList));
