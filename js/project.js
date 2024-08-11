@@ -895,9 +895,8 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 })
                 textarea.onkeydown = function (e) {
                     if (e && e.keyCode === 13) {
-                        event.cancelBubble = true;
-                        event.preventDefault();
-                        event.stopPropagation();
+                        e.preventDefault();
+                        e.stopPropagation();
                         //现在所有角色的样式设置为块级元素
                         this.index.forEach(function (item) {
                             item.style.display = "block"

@@ -84,225 +84,6 @@ export function XJB_CONTENT(config, pack) {
             }
         }
     })
-    game.xjb_bossLoad = function (str, player) {
-        if (_status.timeout) game.pause()
-        if (!player) player = game.me
-        if (!str) str = "0000"
-        lib.skill.xjb_theLevel.theLevel[str].init(player)
-    }
-    game.xjb_filterData = function (Array) {
-        if (arguments.length > 1) {
-            for (var i = 0; i < arguments.length; i++) {
-                game.xjb_filterData(arguments[i])
-            }
-            return;
-        }
-        var target = lib
-        for (var i = 0; i < Array.length; i++) {
-            target = target[Array[i]]
-        }
-        var list = {}
-        for (var i in target) {
-            if (target[i] != null) list[i] = target[i]
-        }
-        target = list
-        return target
-    }
-    game.xjb_gainJP = function (str, boolean, turn = 1) {
-        switch (str) {
-            //有技能槽则获得，消耗能量
-            case "技能(1个)": {
-                var haven = lib.config.xjb_newcharacter.skill
-                var first = lib.config.xjb_list_hunbilist.skill.first
-                var second = lib.config.xjb_list_hunbilist.skill.second
-                var third = lib.config.xjb_list_hunbilist.skill.third
-                var list = first.concat(second, third)
-                var willget = list.randomGet()
-                if (game.xjb_condition(3, 1)) {
-                    game.xjb_create.alert('你获得了技能' + get.translation(willget))
-                    lib.config.xjb_newcharacter.skill.add(willget)
-                    game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                    game.xjb_systemEnergyChange(-20)
-                }
-                else {
-                    game.xjb_getHunbi(8, void 0, true, true)
-                    game.xjb_create.alert("请确保你有获得技能的能力！已退还8魂币")
-                }
-            }; break
-            case "称号(1个)": {
-                game.xjb_newCharacterGetTitle(1 * turn)
-            }; break
-            case "技能槽(1个)": {
-                game.xjb_newCharacterAddJnc(1 * turn)
-            }; break
-            case "体力卡(1张，3点)": {
-                game.xjb_getHpCard('xjb_newCharacter', 3, turn)
-            }; break
-            case "体力卡(1张，1点)": {
-                game.xjb_getHpCard('xjb_newCharacter', 1, turn)
-            }; break
-            case "体力值(1点)": {
-                game.xjb_newCharacterAddHp(1 * turn, boolean)
-            }; break
-            case "免费更改势力": {
-                game.xjb_newCharacterChangeGroup(1 * turn, boolean)
-            }; break
-            case "免费更改性别": {
-                game.xjb_newCharacterChangeSex(1 * turn, boolean)
-            }; break
-            case "免费更改姓名": {
-                game.xjb_newCharacterChangeName(1 * turn)
-            }; break
-            default: {
-                var num = get.xjb_number(str)
-                if (str.indexOf("打卡点数+") === 0) {
-                    let dakadianAdded = str.replace("打卡点数+", "")
-                    game.xjb_addDakadian(dakadianAdded * turn, boolean)
-                }
-                else if (Object.keys(lib.skill).includes(str)) {
-                    if (game.xjb_condition(3, 1)) {
-                        game.xjb_create.alert('你获得了技能' + get.translation(str))
-                        lib.config.xjb_newcharacter.skill.add(str)
-                        game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                        game.xjb_systemEnergyChange(-20)
-                    }
-                }
-                else if (num != NaN) {
-                    game.xjb_getHunbi(num, turn, boolean, false, 'Bonus')
-                }
-            }; break
-        }
-
-    }
-    game.xjb_getCurrentDate = function (boolean) {
-        var date = new Date()
-        var a = date.getFullYear(), b = date.getMonth() + 1, c = date.getDate(), d = date.getHours(), e = date.getMinutes()
-        if (boolean) {
-            var d = date.getDay()
-            return d === 0 ? 7 : d
-        }
-        return [a, b, c, d, e]
-    };
-    game.xjb_newcharacter_zeroise = function () {
-        lib.config.xjb_newcharacter.name2 = '李华'
-        lib.config.xjb_newcharacter.sex = 'male';
-        lib.config.xjb_newcharacter.group = 'qun';
-        lib.config.xjb_newcharacter.hp = 1;
-        lib.config.xjb_newcharacter.skill = [];
-        lib.config.xjb_newcharacter.intro = '';
-        lib.config.xjb_newcharacter.sink = [];
-        lib.config.xjb_newcharacter.selectedSink = "ext:新将包/xin_newCharacter.jpg"
-        game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-    }
-    game.zeroise_xjbCount = function (target) {
-        lib.config.xjb_count[target.name1] = {
-            kill: 0,
-            thunder: 0,
-            fire: 0,
-            ice: 0,
-            loseMaxHp: 0,
-            gainMaxHp: 0,
-            HpCard: [],
-            uniqueSkill: []
-        }
-    }
-    //Hpcard创建函数，第一个值为体力牌类型，第二个值为体力牌样式高度
-    game.createHpCard = function (num, num2 = 100) {
-        if (Array.isArray(num)) {
-            let list = []
-            for (let i = 0; i < num.length; i++) {
-                list.push(game.createHpCard(num[i]))
-            }
-            return list
-        }
-        var HpCard = ui.create.div('.HpCard')
-        HpCard.number = num
-        HpCard.innerHTML = '<img src="' + lib.xjb_src + 'HpCard/' + HpCard.number + '.jpg" height=' + num2 + '>'
-        HpCard.style['position'] = 'relative'
-        var word = ui.create.div('.word', HpCard)
-        word.innerHTML = get.cnNumber(num)
-        word.style['font-size'] = '25px'
-        word.style['position'] = 'relative'
-        word.style['float'] = 'right'
-        word.style['color'] = 'red'
-        word.style['left'] = '-25px'
-        word.style['top'] = '-10px'
-        return HpCard
-    }
-    //统计体力牌张数
-    game.countHpCard = function (arr) {
-        let array = {
-            1: 0,
-            2: 0,
-            3: 0,
-            4: 0,
-            5: 0
-        }
-        arr.forEach(function (i) {
-            array[i] = array[i] + 1
-        }, arr)
-        return array
-    }
-    //技能=object(强制技恢复)
-    game.xjb_EqualizeSkillObject = function (string1, object2) {
-        lib.skill[string1] = {}
-        var list = Object.keys(object2)
-        for (var i = 0; i < list.length; i++) {
-            lib.skill[string1][list[i]] = object2[list[i]]
-        }
-        return lib.skill[string1]
-    }
-    game.xjb_choujiangStr = function (object, num) {
-        var willget = JSON.stringify(object)
-        willget = willget.replace(/\"|'/g, "");
-        if (num && num === 1) {
-            willget = willget.replace(/\{|}/g, "");
-            willget = willget.replace(/\gainMaxHp/g, "获得体力上限");
-            willget = willget.replace(/\loseMaxHp/g, "失去体力上限");
-            willget = willget.replace(/\uniqueSkill/g, "特殊技能");
-            willget = willget.replace(/\HpCard/g, "体力牌");
-            willget = willget.replace(/\,/g, "<br>");
-        } else {
-            willget = willget.replace(/\*/g, "%<br>");
-            willget = willget.replace(/\{|}/g, "<hr>");
-            willget = willget.replace(/\,|100/g, "");
-            willget = willget.replace(/\,|1?00/g, "");
-        }
-        return willget
-    }
-    //get函数
-    //新将包翻译
-    get.xjb_translation = function (target) {
-        if (Array.isArray(target)) {
-            var spare = []
-            for (var i = 0; i < target.length; i++) {
-                spare.push(get.xjb_translation(target[i]))
-            }
-            return spare
-        }
-        var translation
-        var list1 = Object.keys(lib.xjb_list_xinyuan.translate)
-        var list2 = Object.values(lib.xjb_list_xinyuan.translate)
-        for (var i = 0; i < list1.length; i++) {
-            if (list1[i] == target) translation = list2[i]
-            if (list2[i] == target) translation = list1[i]
-        }
-        if (!translation) {
-            translation = []
-            var list3 = Object.keys(lib.translate)
-            var list4 = Object.values(lib.translate)
-            for (var i = 0; i < list3.length; i++) {
-                if (list4[i] == target) translation.push(list3[i])
-                if (list3[i] == target) {
-                    translation = list4[i]
-                }
-            }
-        }
-        if (typeof target === 'number') translation = get.xjb_number(target)
-        if (Array.isArray(translation) && translation.length === 0) return target
-        return translation
-    }
-    //
     lib.extensionMenu.extension_新将包.delete.name = '<img src="' + lib.xjb_src + 'image/trash.png" width="16">' + '删除'
     lib.extensionMenu.extension_新将包['Eplanation'] = {
         name: '<img src="' + lib.xjb_src + 'image/instruction.png" width="16"></img>说明编辑',
@@ -343,7 +124,7 @@ export function XJB_CONTENT(config, pack) {
         onclick: function (layout) {
             switch (layout) {
                 case 'getAPI': {
-                    game.xjb_loadAPI(function(){
+                    game.xjb_loadAPI(function () {
                         game.xjb_create.alert("xjb_xyAPI加载成功!")
                     })
                 }; break;
@@ -380,7 +161,21 @@ export function XJB_CONTENT(config, pack) {
             const strategyList = {
                 xjb_lingli_Allallow: '全员灵力策略',
                 xjb_skillsNumberLimitation: '技能数限制策略',
-                xjb_maxHpLimitation: '体力上限限制策略'
+                xjb_maxHpLimitation: '体力上限限制策略',
+                // xjb_perfectPair: "<b description=增加:"
+                //     + "刘宏-何太后;"
+                //     + "刘辩-唐姬;"
+                //     + "刘协-[董贵人,曹节,曹宪,曹华];"
+                //     + "曹操-丁夫人"
+                //     + "曹丕-郭照"
+                //     + "曹叡-明元郭皇后"
+                //     + "刘备-[糜夫人,吴苋];"
+                //     + "孙权-[潘淑]"
+                //     + "孙亮-全惠解"
+                //     + "孙皓-[张媱,张嫙];"
+                //     + "何晏-曹金玉;"
+                //     + "赵昂-王异;"
+                //     +">扩展珠联璧合策略</b>",
             };
             const restList = {
                 xjb_yangcheng: '养成武将策略',
@@ -630,16 +425,20 @@ export function XJB_CONTENT(config, pack) {
                 node.className = 'button controlbutton';
             },
             onclick: function (e) {
-                if (e === "openType") {//标签开关
-                    game.xjb_create.configList({
-                        xjb_skillTag_fuSkill: "福技:首次使用后恢复体力并加护甲的技能",
-                        xjb_skillTag_luSkill: "禄技:首次使用后摸四张牌的技能",
-                        xjb_skillTag_shouSkill: "寿技:首次使用后加两点体力上限的技能",
-                        xjb_skillTag_qzj: "强制技:令目标失去技能的技能",
-                        xjb_skillTag_suidongSkill: "随动技:因此技能发动而获得牌，得牌角色可以立即使用其中第一张牌的技能",
+                if (e === "openType") {
+                    //标签开关
+                    const dialog = game.xjb_create.configList({
+                        xjb_skillTag_fuSkill: "福技:首次使用后恢复体力并加护甲",
+                        xjb_skillTag_luSkill: "禄技:首次使用后摸四张牌",
+                        xjb_skillTag_shouSkill: "寿技:首次使用后加两点体力上限",
+                        xjb_skillTag_qzj: "强制技:结算后,令目标失去技能",
+                        xjb_skillTag_suidongSkill: "随动技:因本技能而获得牌，该角色可以立即使用之",
+                        xjb_skillTag_queqiaoxian: "鹊桥仙:结算后,可令有姻缘的珠联璧合角色额外结算一次",
                     })
+                    dialog.style.width = '800px'
                     lib.skill.xjb_final.skillTag()
-                } else if (e === "addCharacter") {//角色开关
+                } else if (e === "addCharacter") {
+                    //角色开关
                     let obj = {}
                     for (let i in lib.character) {
                         if (lib.character[i][4].includes("unseen")) continue;
@@ -654,43 +453,65 @@ export function XJB_CONTENT(config, pack) {
                     })
                     lib.skill.xjb_final.skillTag()
                 } else if (e === "enchanting") {//技能开关
-                    let obj = {}
-                    if (!lib.config.xjb_skillTag_Character || !lib.config.xjb_skillTag_Character.length) return game.xjb_create.alert("你没有任何武将解锁了技能标签，请于 添删武将 中设置！")//检测是否有武将解锁了该功能
-                    lib.config.xjb_skillTag_Character.forEach(function (item, index) {
-                        if (lib.character[item] && lib.character[item][3] && lib.character[item][3].length) {//判断玩家是否有技能
-                            lib.character[item][3].forEach(function (item1, index1) {
-                                if (lib.skill[item1]) {//检测该技能是否存在
-                                    let info = get.info(item1)
-                                    if (!info.content) return;
-                                    if (lib.config.xjb_skillTag_suidongSkill == 1) {
-                                        obj["xjb_skillTag_suidongSkill_" + item1] = "【随动技】" + get.translation(item1) +
-                                            "(来源:" + get.translation(item) + "|" + item + ")"
-                                    }
-                                    if (info.enable && info.filterTarget) {//判断该技能为主动技且会选择角色
-                                        if (lib.config.xjb_skillTag_qzj == 1) {
-                                            obj["xjb_skillTag_qzj_" + item1] = "【强制技】" + get.translation(item1) +
-                                                "(来源:" + get.translation(item) + "|" + item + ")"
-                                        }
-                                    }
-                                    /*下面这两行连写，会先判断是否有player.logSkill再判断是否为触发技*/
-                                    else if (info.direct && info.content.toString().indexOf("player.logSkill") < 0) return //判断是否有技能提示
-                                    else if (info.trigger) {//判断是否为触发技
-                                        if (lib.config.xjb_skillTag_fuSkill == 1) {
-                                            obj["xjb_skillTag_fuSkill_" + item1] = "【福技】" + get.translation(item1) +
-                                                "(来源:" + get.translation(item) + "|" + item + ")"
-                                        }
-                                        if (lib.config.xjb_skillTag_luSkill == 1) {
-                                            obj["xjb_skillTag_luSkill_" + item1] = "【禄技】" + get.translation(item1) +
-                                                "(来源:" + get.translation(item) + "|" + item + ")"
-                                        }
-                                        if (lib.config.xjb_skillTag_shouSkill == 1) {
-                                            obj["xjb_skillTag_shouSkill_" + item1] = "【寿技】" + get.translation(item1) +
-                                                "(来源:" + get.translation(item) + "|" + item + ")"
-                                        }
-                                    }
+                    const obj = {}
+                    function addItem(skillName, characterID, type) {
+                        obj["xjb_skillTag_" + type + "_" + skillName] = "【" + get.translation(type) + "】"
+                            + `<b description=${get.plainText(`${lib.translate[skillName + "_info"] || ''}`).replaceAll(/(福技|禄技|寿技|随动技|强制技|鹊桥仙)[,，]/g, '')}>${get.translation(skillName)}</b>`
+                            + "(来源:" + get.translation(characterID) + ")"
+                    }
+                    const {
+                        xjb_skillTag_Character,
+                        xjb_skillTag_qzj,
+                        xjb_skillTag_queqiaoxian,
+                        xjb_skillTag_suidongSkill,
+                        xjb_skillTag_fuSkill,
+                        xjb_skillTag_luSkill,
+                        xjb_skillTag_shouSkill
+                    } = lib.config;
+                    if (!xjb_skillTag_Character || !xjb_skillTag_Character.length) {
+                        //检测是否有武将解锁了该功能
+                        return game.xjb_create.alert("你没有任何武将解锁了技能标签，请于 添删武将 中设置！")
+                    }
+                    const queqiaoxianBan = ["yingzi", "olhuoji", "olkanpo", "cangzhuo"]
+                    xjb_skillTag_Character.forEach(item => {
+                        if (!lib.character[item]) return;
+                        if (!lib.character[item][3]) return;
+                        if (!lib.character[item][3].length) return;
+                        lib.character[item][3].forEach(skillName => {
+                            if (!lib.skill[skillName]) return;
+                            //检测该技能是否存在
+                            const info = get.info(skillName)
+                            if (!info.content) return;
+                            const contentStr = info.content.toString()
+                            if (xjb_skillTag_suidongSkill == 1) {
+                                addItem(skillName, item, 'suidongSkill')
+                            }
+                            //判断该技能为主动技且会选择角色
+                            if (info.enable) {
+                                if (info.filterTarget && xjb_skillTag_qzj == 1) {
+                                    addItem(skillName, item, 'qzj')
                                 }
-                            })
-                        }
+                                if (xjb_skillTag_queqiaoxian == 1 && get.info("_xjb_queqiaoxian").getCP(item).length) {
+                                    addItem(skillName, item, 'queqiaoxian')
+                                }
+                            }
+                            /*下面这两行连写，会先判断是否有player.logSkill再判断是否为触发技*/
+                            else if (info.direct && !contentStr.includes("player.logSkill")) return //判断是否有技能提示
+                            else if (info.trigger) {//判断是否为触发技
+                                if (xjb_skillTag_fuSkill == 1) {
+                                    addItem(skillName, item, 'fuSkill')
+                                }
+                                if (xjb_skillTag_luSkill == 1) {
+                                    addItem(skillName, item, 'luSkill')
+                                }
+                                if (xjb_skillTag_shouSkill == 1) {
+                                    addItem(skillName, item, 'shouSkill')
+                                }
+                                if (xjb_skillTag_queqiaoxian == 1 && get.info("_xjb_queqiaoxian").getCP(item).length) {
+                                    if (!info.forceDie && ["yingzi"] && queqiaoxianBan.every(ban => !skillName.endsWith(ban))) addItem(skillName, item, 'queqiaoxian')
+                                }
+                            }
+                        })
                     })
                     game.xjb_create.configList(obj, function () {
                         let arr = this.isOpened, object = {
@@ -698,22 +519,23 @@ export function XJB_CONTENT(config, pack) {
                             luSkill: [],
                             shouSkill: [],
                             qzj: [],
-                            suidongSkill: []
+                            suidongSkill: [],
+                            queqiaoxian: []
                         }
-                        arr.forEach(function (item, index) {
-                            function addTag(type) {
-                                if (item.indexOf("xjb_skillTag_" + type + "_") > -1) {
-                                    object[type].add(item.replace("xjb_skillTag_" + type + "_", ""))
-                                }
+                        function addTag(item, type) {
+                            if (item.indexOf("xjb_skillTag_" + type + "_") > -1) {
+                                object[type].add(item.replace("xjb_skillTag_" + type + "_", ""))
                             }
-                            ["suidongSkill", "fuSkill", "luSkill", "shouSkill", "qzj"].forEach(WonderfulTag => {
-                                addTag(WonderfulTag)
+                        }
+                        arr.forEach(item => {
+                            Object.keys(object).forEach(Tag => {
+                                addTag(item, Tag)
                             })
-
                         })
                         game.saveConfig("xjb_skillTag_Skill", object)
                     })
-                    lib.skill.xjb_final.skillTag()//更新技能附魔
+                    //更新技能附魔
+                    lib.skill.xjb_final.skillTag()
                 }
             }
         }

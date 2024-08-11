@@ -572,6 +572,9 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             overflow: ""
         })
         let textarea = dialog.addElement("textarea", void 0, lib.xjb_style.textarea1)
+        /**
+         * @type {HTMLUListElement}
+         */
         let ul = dialog.addElement("ul", void 0, {
             overflow: "auto",
             marginTop: "0px",
@@ -579,42 +582,63 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             paddingLeft: "0px",
             height: "180px"
         })
-        textarea.onchange = myFunc
         textarea.onkeyup = function (e) {
-            if (textarea.value.length) return;
-            for (const item of textarea.index) {
+            if (this.value.length) return;
+            const showList = this.index.filter(item => !this.shown.includes(item))
+            for (const item of showList) {
                 let count = 0;
                 const searchIndex = () => {
                     count++
                     item.style.display = liDisplay;
                 }
                 if (count <= 30) searchIndex()
-                else setTimeout(searchIndex, 33)
+                else setTimeout(searchIndex, 0)
             }
         };
         textarea.onkeydown = function (e) {
-            if (e && e.keyCode === 13) {
-                event.cancelBubble = true;
-                event.preventDefault();
-                event.stopPropagation();
-                myFunc();
-            }
-        }
-        function myFunc() {
-            for (const item of textarea.index) {
+            if (e.keyCode !== 13) return;
+            e.preventDefault();
+            e.stopPropagation();
+            console.log(this)
+            for (const item of this.index) {
                 let count = 0;
                 const searchIndex = () => {
-                    count++
+                    if (!item.innerText.includes(this.value)) {
+                        item.style.display = "none";
+                        return;
+                    }
                     item.style.display = liDisplay
-                    if (item.innerHTML.indexOf(textarea.value) < 0) item.style.display = "none"
+                    this.shown.push(item)
                 }
                 if (count <= 30) searchIndex()
-                else setTimeout(searchIndex, 33)
+                else setTimeout(searchIndex, 0)
             }
         }
+        textarea.index = [];
+        textarea.shown = [];
         dialog.textarea = textarea;
-        dialog.textarea.index = [];
         dialog.ul = ul;
+        const observer = new IntersectionObserver(
+            entries => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    const target = entry.target;
+                    const b = target.querySelector("b")
+                    if (!b) return;
+                    if (![target.parentNode.lastElementChild, textarea.shown.at(-1)].includes(target)) return;
+                    element("div").width("100%").height("5em").father(ul);
+                    observer.disconnect()
+                })
+            },
+            {
+                root: ul,
+            }
+        )
+        dialog.observer = observer;
+        dialog.buttons[0].observer = dialog.observer;
+        dialog.buttons[0].addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function (e) {
+            this.observer.disconnect()
+        });
         return dialog;
     }
     //数字调整型对话框
@@ -689,15 +713,17 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                 tag: 'li',
                 innerHTML: list[i],
                 style: {
-                    height: "34px",
+                    height: "28px",
                     fontSize: "21px",
                     width: "97%",
+                    paddingTop: "7px"
                 }
             })
             let span = ui.xjb_addElement({
                 target: li,
                 tag: 'span',
                 style: {
+                    top: "-4px",
                     float: 'right'
                 }
             })
@@ -748,6 +774,9 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             game.saveConfig(_this.myName, lib.config[_this.myName]);
         })
         textarea.index = Array.from(ul.children)
+        if (ul.querySelector("b")) textarea.index.forEach(ele => {
+            dialog.observer.observe(ele)
+        })
         return dialog;
     }
     //这种对话框用于展示条件
@@ -922,7 +951,6 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             let string = lib._xjb.usuallyUsedString.Math + `
                        return -(${AnaFun})`
             try {
-                console.log(AnaFun)
                 var func = new Function("x", string);
                 func(1)
             } catch (err) {

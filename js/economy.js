@@ -114,7 +114,7 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         } else {
             lib.config.xjb_chupingjisha === 1 && lib.xjb_list_xinyuan.theFunction.xjb_chupingjisha()
         }
-        return lib.config.xjb_systemEnergy
+        return lib.config.xjb_systemEnergy;
     }
     /*Bonus*/
     game.xjb_jiangchiUpDate = function () {
@@ -152,7 +152,6 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
     // 计算期望值
     game.xjb_hunbiExpectation = function () {
         const inputString = game.xjb_choujiangStr(lib.config.xjb_list_hunbilist.choujiang["2"])
-        // 使用正则表达式提取礼包价值和概率
         const pattern = /(\d+)魂币.*?:(\d+\%)/g;
         const matches = [];
         let match;

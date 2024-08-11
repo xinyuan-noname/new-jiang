@@ -514,7 +514,7 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                 if (!get.xjb_number) return false
                 if (!lib.config.xjb_hun) return false
             }
-            var Array = []
+            var Array = [];
             lib.config.xjb_list_hunbilist.choujiang = {
                 "1": {
                     "称号(1个)": "4*100",

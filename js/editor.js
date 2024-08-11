@@ -473,17 +473,19 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     let symbol = getSymbol(p[2]);
                     return [`${symbol}:${p[3]}`, `globalTo`];
                 })
+
                 //
-                addMod(new RegExp(`^\s*(你|player)\s*不能成为\s*(${matchCardName})的?目标\s*$`), void 0, void 0, (match, ...p) => {
+                addMod(new RegExp(`^\s*(你|player)\s*不能成为\s*(${matchCardName})的?\s*(目标|target)\s*$`), void 0, void 0, (match, ...p) => {
                     return [`name:${NonameCN.getEn(p[1])}`, `targetEnabled_false`]
                 })
-                addMod(new RegExp(`^\s*(你|player)\s*不能成为\s*(${matchCardName})(和|与|或|、)(${matchCardName})的?目标\s*$`), void 0, void 0, (match, ...p) => {
+                addMod(new RegExp(`^\s*(你|player)\s*不能成为\s*(${matchCardName})(和|与|或|、)(${matchCardName})的?\s*(目标|target)\s*$`), void 0, void 0, (match, ...p) => {
                     return [`name:${NonameCN.getEn(p[1])}-${NonameCN.getEn(p[3])}`, `targetEnabled_false`]
                 })
-                addMod(/^\s*(你|player)\s*不能成为\s*(基本牌|装备牌|普通锦囊牌|延时锦囊牌)的?目标\s*$/, void 0, void 0, (match, ...p) => {
+                addMod(/^\s*(你|player)\s*不能成为\s*(基本牌|装备牌|普通锦囊牌|延时锦囊牌)的?\s*(目标|target)\s*$/, void 0, void 0, (match, ...p) => {
                     return [`type:${NonameCN.getEn(p[1])}`, `targetEnabled_false`]
                 })
-                addMod(/^\s*(你|player)\s*不能成为\s*锦囊牌的?目标\s*$/, "type:trick-delay", "targetEnabled_false");
+                addMod(/^\s*(你|player)\s*不能成为\s*锦囊牌的?\s*(目标|target)\s*$/, "type:trick-delay", "targetEnabled_false");
+                
                 //
                 addMod(/^\s*(你|player)\s*使用的?\s*卡?牌(无|没有)(次数|数量|距离)限制\s*$/, void 0, void 0, (match, ...p) => {
                     return [`all`, `${p[2] == '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`]
@@ -497,6 +499,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 addMod(/^\s*(你|player)\s*使用的?\s*(基本牌|普通锦囊牌|延时锦囊牌)(无|没有)(次数|数量|距离)限制\s*$/, void 0, void 0, (match, ...p) => {
                     return [`type:${NonameCN.getEn(p[1])}`, `${p[3] == '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`]
                 });
+
+                //
                 addMod(new RegExp(`^\s*(你|player)\s*不能使用(${matchCardName})\s*$`), void 0, void 0, (match, ...p) => {
                     return [`name:${NonameCN.getEn(p[1])}`, `cardEnabled_false`]
                 });
@@ -1504,14 +1508,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             }
             filterFree.arrange = function () {
                 const that = filterFree;
-                function update(str) {
-                    let wonder = filterFree.value.split('\n')
-                    wonder = wonder.map(t => {
-                        let wonder1 = t.split(str).join('')
-                        return wonder1 + (t.indexOf(str) > 0 ? (' ' + str) : '')
-                    })
-                    filterFree.value = wonder.join('\n')
-                }
                 /**
                 * @param {string} appendWord 
                 * @param {string[]} every 
@@ -1556,8 +1552,13 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 that.value = suitSymbolToCN(that.value)
                 that.changeWord(/该回合/g, "本回合")
                 //处理一些特殊属性
-                appendWordToEvery(' ', ["火属性", "冰属性", "雷属性"]);
-                appendWordToEvery(' ', ['红色', '黑色', '梅花', '方片', '无花色', '黑桃', '红桃']);
+                that.changeWord(/([火雷冰])杀/g,'$1属性杀')
+                that.changeWord(/([红黑])杀/g,'$1色杀')
+                that.changeWord(/([火雷冰]属性)/g,' $1 ')
+                that.changeWord(/([红黑]色)/g,' $1 ')
+                that.changeWord(/(红桃|方片|梅花|黑桃|无花色)/g,' $1 ')
+                that.changeWord(/(武器牌|防具牌|\+1马牌|\-1马牌|宝物牌)/g,' $1 ')
+                //
                 that.changeWord(/(?<!\n)(并且|或者)/g, '\n$1')
                 that.changeWord(/(并且|或者)(?!\n)/g, '$1\n')
                 NonameCN.standardFilter(that);
@@ -1771,6 +1772,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     update(get.cnNumber(i) + '点');
                     update(i + '名');
                     update(get.cnNumber(i) + '名');
+                    update(i + '枚');
+                    update(get.cnNumber(i) + '枚');
                 }
                 "abcdefghjlmnopqrstuvwxyz".split('').forEach(i => {
                     update(i + '点');
@@ -1779,6 +1782,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     update(i.toUpperCase() + '名');
                     update(i + '张');
                     update(i.toUpperCase() + '张');
+                    update(i + '枚');
+                    update(i.toUpperCase() + '枚');
                 });
                 //统一写法
                 for (let i = 999; i > 0; i--) {
@@ -1795,7 +1800,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     that.changeWord("-" + get.cnNumber(i), "-" + i);
                 }
                 that.value = suitSymbolToCN(that.value);
-                //参数处理
+                
                 update('其他', function (disposing, disposed, previous) {
                     if (previous.match(/其他角色计算(与|和)/)) return previous;
                     if (previous.match(/计算(与|和)其他角色的?距离/)) return previous;
@@ -1820,6 +1825,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     return `${group.shift()} ${restWords} ${group.join(" ")}`
                 })
                 that.changeWord(new RegExp(`(${JOINED_PLAYAERCN})`, 'g'), '$1 ');
+                NonameCN.standardEeffect(that)
                 NonameCN.standardEvent(that);
                 NonameCN.deleteBlank(that);
                 that.changeWord(/(?<!\n)(并且|或者)/g, '\n$1');

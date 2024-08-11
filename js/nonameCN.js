@@ -13,7 +13,7 @@ import {
 import {
     textareaTool
 } from './ui.js'
-const eventList = {
+const phaseList = {
     "回合": "phase",
     "准备阶段": "phaseZhunbei",
     "出牌阶段": "phaseUse",
@@ -21,6 +21,9 @@ const eventList = {
     "判定阶段": "phaseJudge",
     "弃牌阶段": "phaseDiscard",
     "摸牌阶段": "phaseDraw",
+}
+const eventList = {
+    ...phaseList,
     //
     '摸牌': 'draw',
     "判定牌生效": "judge",
@@ -140,6 +143,14 @@ function getMapOfColorCard() {
     }
     return map;
 }
+function getMapOfgetParent() {
+    const list = {}
+    for (let [i, k] of Object.entries(eventList)) {
+        list['获取名为' + i + '的父事件'] = 'getParent:"' + k + '"'
+        list['获取名为' + i + '的父事件的名字'] = 'getParent:"' + k + '"://!?name'
+    }
+    return list
+}
 function getMapOfTrigger() {
     const list = {}
     let event = eventList;
@@ -154,18 +165,12 @@ function getMapOfTrigger() {
         list[i + "前"] = k + "Before"
         list[i + "后"] = k + "After"
         list[i + "结算后"] = k + "After"
+        list[i + "完成结算后"] = k + "After"
         //
         list["令一名角色" + i + "时"] = "source:" + k + "Begin"
         list["令一名角色" + i + "结束"] = "source:" + k + "End"
         list["令一名角色" + i + "前"] = "source:" + k + "Before"
         list["令一名角色" + i + "后"] = "source:" + k + "After"
-        //
-        list["获取本回合" + i + "事件"] = 'getHistory:"' + k + '"'
-        //
-        list["获取" + i + "事件"] = 'getAllHistory:"' + k + '"'
-        //
-        list['名为' + i + '的父事件'] = 'getParent:"' + k + '"'
-        list['名为' + i + '的父事件的名字'] = 'getParent:"' + k + '"://!?name'
     }
     list["失去手牌后"] = "loseAfter:h";
     return list
@@ -256,14 +261,18 @@ function getMapOfQuan() {
         map[get.cnNumber(i) + "名"] = '' + i
         map[i + "点"] = '' + i
         map[get.cnNumber(i) + "点"] = '' + i
+        map[i + "枚"] = '' + i
+        map[get.cnNumber(i) + "枚"] = '' + i
     }
     for (let i of "bcdfghlmnoprstuvwxyz") {
         map[i + '点'] = i
         map[i.toUpperCase() + '点'] = i.toUpperCase()
         map[i + '张'] = i
         map[i.toUpperCase() + '张'] = i.toUpperCase()
-        map[i + '张'] = i
-        map[i.toUpperCase() + '点'] = i.toUpperCase()
+        map[i + '名'] = i
+        map[i.toUpperCase() + '名'] = i.toUpperCase()
+        map[i + '枚'] = i
+        map[i.toUpperCase() + '枚'] = i.toUpperCase()
     }
     return map;
 }
@@ -295,10 +304,15 @@ function getMapOfActionHistory() {
         ["受到伤害", "damage"],
         ["使用技能", "useSkill"]
     ]
-    const map = {}
+    const map = {
+        "本回合的出牌阶段使用牌次数": `getHistory:"useCard":evt=>evt.isPhaseUsing()`,
+        "本回合的出牌阶段打出牌次数": `getHistory:"respond":evt=>evt.isPhaseUsing()`,
+    }
     for (const [cn, en] of list) {
-        map[`本回合${cn}次数`] = `getHistory:"${en}"://!?length`
-        map[`获取本回合${cn}事件`] = `getHistory:"${en}"`
+        map[`本回合${cn}次数`] = `getHistory:"${en}"://!?length`;
+        map[`获取本回合${cn}事件`] = `getHistory:"${en}"`;
+        map[`本局游戏${cn}次数`] = `getAllHistory:"${en}"://!?length`
+        map[`获取本局游戏${cn}事件`] = `getAllHistory:"${en}"`
     }
     return map;
 }
@@ -329,9 +343,7 @@ function getMapAboutCard() {
          * @param {String} cn attribute in Chinese
          */
         usedTimes: (attribute, cn) => {
-            map['使用' + cn + '次数'] =
-                map[cn + '使用次数'] =
-                "getStat://!?card://!?" + attribute
+            map[cn + '的出牌阶段使用次数'] = "getStat://!?card://!?" + attribute
         },
     }
     cardNameList.forEach(i => {
@@ -357,6 +369,14 @@ function getMapAboutCard() {
     }
     return map
 };
+function getMapOfSkip(){
+    const map = {}
+    for(const [cn,en] of Object.entries(phaseList)){
+        if(cn==='回合')continue;
+        map['跳过下一个'+cn]=`skip:"${en}"`
+    }
+    return map
+}
 export class NonameCN {
     static playerCN = ["你", "玩家",
         "当前回合角色",
@@ -436,9 +456,7 @@ export class NonameCN {
         '游戏': 'game',
         '轮数': 'roundNumber',
         //
-        '火属性': '"fire"',
-        '雷属性': '"thunder"',
-        '冰属性': '"ice"',
+
         //颜色和花色
         '红色': '"red"',
         '黑色': '"black"',
@@ -621,6 +639,11 @@ export class NonameCN {
         cardName: getMapOfCard(false),
         type: getMapOfType(false),
         suit: getMapOfSuit(false),
+        nature: {
+            '火属性': 'fire',
+            '雷属性': 'thunder',
+            '冰属性': 'ice',
+        },
         gender: {
             "男性": `male`,
             "女性": `female`,
@@ -764,6 +787,7 @@ export class NonameCN {
             ...getMapOfCanAddJudge(),
             ...getMapOfChangeGroup(),
             ...getMapOfUSeVcard(),
+            ...getMapOfSkip(),
             "本回合被破甲": `addTempSkill:"qinggang2"`,
             "本回合非锁定技失效": `addTempSkill:"fengyin"`,
             //
@@ -869,6 +893,7 @@ export class NonameCN {
             "统计场上蜀势力角色数量": `countPlayer:cur=>cur.group!="shu"`,
             "统计场上吴势力角色数量": `countPlayer:cur=>cur.group!="wu"`,
             "统计场上群势力角色数量": `countPlayer:cur=>cur.group!="qun"`,
+            "统计场上晋势力角色数量": `countPlayer:cur=>cur.group!="jin"`,
             "统计场上神势力角色数量": `countPlayer:cur=>cur.group!="shen"`,
             "统计场上西势力角色数量": `countPlayer:cur=>cur.group!="western"`,
             "统计场上键势力角色数量": `countPlayer:cur=>cur.group!="key"`,
@@ -876,9 +901,13 @@ export class NonameCN {
             "统计场上其他蜀势力角色数量": `countPlayer:cur=>cur.group!="shu"&&cur!=player`,
             "统计场上其他吴势力角色数量": `countPlayer:cur=>cur.group!="wu"&&cur!=player`,
             "统计场上其他群势力角色数量": `countPlayer:cur=>cur.group!="qun"&&cur!=player`,
+            "统计场上其他晋势力角色数量": `countPlayer:cur=>cur.group!="jin"&&cur!=player`,
             "统计场上其他神势力角色数量": `countPlayer:cur=>cur.group!="shen"&&cur!=player`,
             "统计场上其他西势力角色数量": `countPlayer:cur=>cur.group!="western"&&cur!=player`,
             "统计场上其他键势力角色数量": `countPlayer:cur=>cur.group!="key"&&cur!=player`,
+        },
+        event_withArg: {
+            ...getMapOfgetParent()
         },
         trigger_type: {
             '你': 'player',
@@ -930,10 +959,6 @@ export class NonameCN {
             '需要使用闪时': 'chooseToUseBefore:shan',
             '需要打出杀时': 'chooseToRespondBefore:sha',
         },
-        color: {
-        },
-        suit: {
-        },
         step: {
             ...getMapOfStep()
         },
@@ -957,6 +982,12 @@ export class NonameCN {
             "进攻马牌": `"equip4"`,
             "宝物牌": `"equip5"`,
         },
+        color: getMapOfColor(),
+        nature: {
+            '火属性': '"fire"',
+            '雷属性': '"thunder"',
+            '冰属性': '"ice"',
+        },
         cardName: getMapOfCard(),
         group: getMapOfGroup(),
         gender: {
@@ -970,6 +1001,8 @@ export class NonameCN {
             '令角色代为使用': 'packed_playerCode_sufferForAnother',
             '令角色代为使用或打出': 'packed_playerCode_sufferForAnother',
             '本回合对角色造成伤害的次数': 'packed_playerCode_getDamagedThemTimes',
+            '本回合出牌阶段使用某牌的次数': 'packed_playerCode_getUsedCardTimes',
+            '本回合出牌阶段打出某牌的次数': 'packed_playerCode_getRespondedCardTimes',
         },
         filter_only: {
             "不发动": "return false;",
@@ -989,8 +1022,6 @@ export class NonameCN {
                 let card;
                 if (args.includes('"sha"')) card = 'sha'
                 if (args.includes('"shan"')) card = 'shan'
-                console.log(player)
-                console.log(args)
                 let result = '';
                 result += `event.suffers = game.players\n`
                 if (args.includes('other')) result += `.filter(each=>each!=player)\n`
@@ -1036,6 +1067,54 @@ export class NonameCN {
                 const targets = args.filter(item => Object.values(NonameCN.groupedList.player).includes(item));
                 let result = '';
                 result += `${player}.getHistory("sourceDamage",evt=>[${targets}].includes(evt.player)).length`
+                return result;
+            })
+        },
+        'packed_playerCode_getUsedCardTimes'(str) {
+            let match = /(.+)\.packed_playerCode_getUsedCardTimes(\(.*\))/g;
+            return str.replace(match, function (match, ...p) {
+                const player = p[0]
+                const args = p[1].replace(/[\(\)]/g, '').split(",")
+                const color = args.find(item => Object.values(NonameCN.groupedList.color).includes(item))
+                const suit = args.find(item => Object.values(NonameCN.groupedList.suit).includes(item))
+                const type = args.find(item => Object.values(NonameCN.groupedList.type).includes(item))
+                const subtype = args.find(item => Object.values(NonameCN.groupedList.subtype).includes(item))
+                const name = args.find(item => Object.values(NonameCN.groupedList.cardName).includes(item))
+                const nature = args.find(item => Object.values(NonameCN.groupedList.nature).includes(item))
+                let result = '';
+                result += `${player}.getHistory("useCard",evt=>evt.isPhaseUsing()`
+                if (name) result += `\n && \nget.name(evt.card)===${name}`
+                if (color) result += `\n && \nget.color(evt.card)===${color}`
+                if (suit) result += `\n && \nget.suit(evt.card)===${suit}`
+                if (type) result += `\n && \nget.type(evt.card)===${type}`
+                if (args.includes('锦囊牌')) result += `\n && \nget.type2(evt.card)==="trick"`
+                if (subtype) result += `\n && \nget.subtype(evt.card)===${subtype}`
+                if (nature) result += `\n && \nget.nature(evt.card)===${nature}`
+                result += `)`
+                return result;
+            })
+        },
+        'packed_playerCode_getRespondedCardTimes'(str) {
+            let match = /(.+)\.packed_playerCode_getRespondedCardTimes(\(.*\))/g;
+            return str.replace(match, function (match, ...p) {
+                const player = p[0]
+                const args = p[1].replace(/[\(\)]/g, '').split(",")
+                const color = args.find(item => Object.values(NonameCN.groupedList.color).includes(item))
+                const suit = args.find(item => Object.values(NonameCN.groupedList.suit).includes(item))
+                const type = args.find(item => Object.values(NonameCN.groupedList.type).includes(item))
+                const subtype = args.find(item => Object.values(NonameCN.groupedList.subtype).includes(item))
+                const name = args.find(item => Object.values(NonameCN.groupedList.cardName).includes(item))
+                const nature = args.find(item => Object.values(NonameCN.groupedList.nature).includes(item))
+                let result = '';
+                result += `${player}.getHistory("respond",evt=>evt.isPhaseUsing()`
+                if (name) result += `\n && \nget.name(evt.card)===${name}`
+                if (color) result += `\n && \nget.color(evt.card)===${color}`
+                if (suit) result += `\n && \nget.suit(evt.card)===${suit}`
+                if (type) result += `\n && \nget.type(evt.card)===${type}`
+                if (args.includes('锦囊牌')) result += `\n && \nget.type2(evt.card)==="trick"`
+                if (subtype) result += `\n && \nget.subtype(evt.card)===${subtype}`
+                if (nature) result += `\n && \nget.nature(evt.card)===${nature}`
+                result += `)`
                 return result;
             })
         }
@@ -1172,7 +1251,11 @@ export class NonameCN {
             .replace(/不为/g, ' 不为 ')
             .replace(/(.+?)本回合未(使用|造成)过?(牌|伤害)$/mg, '$1本回合$2$3次数\n为\n0')
             .replace(/(.+?)本回合(使用|造成)过(牌|伤害)$/mg, '$1本回合$2$3次数\n大于\n0')
-            .replace(/^(.+?)本回合未对(.+?)造成过?伤害$/mg,'$1 本回合对角色造成伤害的次数 $2\n等于\n0')
+            .replace(/^(.+?)本回合未对(.+?)造成过?伤害$/mg, '$1 本回合对角色造成伤害的次数 $2\n等于\n0')
+            .replace(/本回合的?出牌阶段(使用|打出)([^卡牌]+?)的?次数$/mg, "本回合出牌阶段$1某牌的次数 $2")
+            .replace(/本回合的?出牌阶段(使用|打出)过([^卡牌]+?)$/mg, "本回合出牌阶段$1某牌的次数 $2\n大于\n0")
+            .replace(/本回合的?出牌阶段(没有|未)(使用|打出)过([^卡牌]+?)$/mg, "本回合出牌阶段$2某牌的次数 $3\n等于\n0")
+
     }
     static standardModBefore(that) {
         textareaTool().setTarget(that)
@@ -1216,6 +1299,7 @@ export class NonameCN {
             .replace(/(.+?)防止触发事件$/g, '触发事件 取消')
             .replace(/(使用|打出)(杀|闪|桃|酒|无懈可击)次数/g, "$1的$2次数")
             .replace(/(?<!不能使用|不能打出)(?<=使用|打出)(?=(杀|闪|桃|酒|无懈可击)[ ]*$)/mg, " ")
+
     }
     static standardEeffectMid(that) {
         textareaTool().setTarget(that)
@@ -1223,6 +1307,11 @@ export class NonameCN {
             .replace(/(再|各)摸/g, "摸")
             .replace(/可以获得(?=.*牌)/g, " 获得牌 ")
             .replace('的事件', "事件")
+            .replace(/^(.+?)(?<!\[)(".+?")(?!\])(.+?)$/mg, '$1$3 $2')
+    }
+    static standardEeffect(that) {
+        textareaTool().setTarget(that)
+            .replace(/(?<=获得|拥有|统计|移去)标记/g, "标记 ")
     }
     static standardFilter(that) {
         textareaTool().setTarget(that)
@@ -1993,6 +2082,15 @@ export class NonameCN {
                         `map[idt].shaReq[id] ${symbol}= `
                 })
             }
+            if (/(你令)?[此该本]牌额外结算([0-9a-z_$一二三四五六七八九十]+)次/.test(result)) {
+                result = result.replace(/\s+$/gm, "")
+                let regexp = /(你令)?[此该本]牌额外结算([0-9a-z_$一二三四五六七八九十])次/g
+                result = result.replace(regexp, function (match, ...p) {
+                    let number = p[1]
+                    if ('一二三四五六七八九十'.includes(p[1])) number = "零一二三四五六七八九十".indexOf(p[1])
+                    return `trigger.getParent("useCard",void 0,true).effectCount += ${number};`
+                })
+            }
             if (/(造成|受到)(的)?伤害(\+|-|\*|改为)/.test(result)) {
                 result = result.replace(/\s+$/gm, "")
                 let regexp = /(造成|受到)的?伤害(\+|-|\*|改为)(?=[0-9a-z_$]+)/g
@@ -2205,7 +2303,13 @@ export class NonameCN {
             '你本回合造成过伤害': "你本回合造成过伤害",
             '你本回合未使用过牌': "你本回合未使用过牌",
             '你本回合使用过牌': "你本回合使用过牌",
-            '你本回合未对触发事件的角色造成过伤害':"你本回合未对触发事件的角色造成过伤害",
+            '你本回合未对触发事件的角色造成过伤害': "你本回合未对触发事件的角色造成过伤害",
+            '你本回合出牌阶段没有打出过杀': "你本回合出牌阶段没有打出过杀",
+            '你本回合出牌阶段没有使用过杀': "你本回合出牌阶段没有使用过杀",
+            '你本回合出牌阶段没有打出过火杀': "你本回合出牌阶段没有打出过火杀",
+            '你本回合出牌阶段没有使用过火杀': "你本回合出牌阶段没有使用过火杀",
+            '你本回合出牌阶段没有打出过红杀': "你本回合出牌阶段没有打出过红杀",
+            '你本回合出牌阶段没有使用过红杀': "你本回合出牌阶段没有使用过红杀",
             '场上有男性角色': '场上有男性角色',
             '场上有其他男性角色': '场上有其他男性角色',
             '场上有女性角色': '场上有女性角色',
@@ -2237,6 +2341,13 @@ export class NonameCN {
             "你本回合非锁定技失效": "你本回合非锁定技失效",
             "你翻面": "你翻面",
             "你横置或重置": "你横置或重置",
+            "你跳过下一个准备阶段":"你跳过下一个准备阶段",
+            "你跳过下一个判定阶段":"你跳过下一个判定阶段",
+            "你跳过下一个出牌阶段":"你跳过下一个出牌阶段",
+            "你跳过下一个弃牌阶段":"你跳过下一个弃牌阶段",
+            "你跳过下一个结束阶段":"你跳过下一个结束阶段",
+            '你获得一枚标记"new_wuhun"': "你获得一枚梦魇标记(标记类)",
+            '你移去一枚标记"new_wuhun"': "你移去一枚梦魇标记(标记类)",
             "此杀的伤害+1": "此杀伤害+1(触发技专属:使用杀时|使用杀指定目标时-可将加号(+)改为减号(-)或者乘号(*))",
             "此杀的伤害改为1": "此杀伤害改为1(触发技专属:使用杀时|使用杀指定目标时)",
             "此杀需要的闪的数量+1": "此杀需要的闪的数量+1(触发技专属:使用杀时|使用杀指定目标时-可将加号(+)改为减号(-)或者乘号(*))",
@@ -2244,8 +2355,9 @@ export class NonameCN {
             "此决斗需要的杀的数量+1": "此决斗需要的杀的数量+1(触发技专属:使用决斗时|使用决斗指定目标时|成为决斗的目标时-可将加号(+)改为减号(-)或者乘号(*))",
             "此决斗需要的杀的数量改为2": "此决斗需要的杀的数量改为1(触发技专属:使用决斗时|使用决斗指定目标时|成为决斗的目标时)",
             "造成的伤害+1": "造成的伤害+1(触发技专属:伤害类-可将加号(+)改为减号(-)或者乘号(*))",
-            "造成的伤害改为1": "造成的伤害+1",
+            "造成的伤害改为1": "造成的伤害改为1",
             "令此牌对你无效": "令此牌对你无效",
+            "此牌额外结算1次": "此牌额外结算1次",
             "此牌不可被响应": "此牌不可被响应",
             "此牌不可被此牌的目标响应": "此牌不可被此牌的目标响应",
             "此牌无视此牌的目标的防具": "此牌无视此牌的目标的防具",
@@ -2255,7 +2367,7 @@ export class NonameCN {
             "目标组-1视为对目标组-0使用一张不计入次数、不影响ai的杀": "目标组-1视为对目标组-0使用不计入次数、不影响ai的杀(牌类)",
             "你使用杀无距离限制": "你使用杀无距离限制(mod类)",
             "你使用杀无次数限制": "你使用杀无次数限制(mod类)",
-            "你无法成为顺手牵羊和乐不思蜀的目标": "你无法成为顺手牵羊和乐不思蜀的目标(mod类)",
+            "你不能成为顺手牵羊和乐不思蜀的目标": "你不能成为顺手牵羊和乐不思蜀的目标(mod类)",
         },
         trigger: {
             "准备阶段": "准备阶段(阶段类)",

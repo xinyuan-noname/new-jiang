@@ -6,6 +6,227 @@ import {
     ai,
     _status
 } from "../../noname.js";
+function provideFunction() {
+    game.xjb_bossLoad = function (str, player) {
+        if (_status.timeout) game.pause()
+        if (!player) player = game.me
+        if (!str) str = "0000"
+        lib.skill.xjb_theLevel.theLevel[str].init(player)
+    }
+    game.xjb_filterData = function (Array) {
+        if (arguments.length > 1) {
+            for (var i = 0; i < arguments.length; i++) {
+                game.xjb_filterData(arguments[i])
+            }
+            return;
+        }
+        var target = lib
+        for (var i = 0; i < Array.length; i++) {
+            target = target[Array[i]]
+        }
+        var list = {}
+        for (var i in target) {
+            if (target[i] != null) list[i] = target[i]
+        }
+        target = list
+        return target
+    }
+    game.xjb_gainJP = function (str, boolean, turn = 1) {
+        switch (str) {
+            //有技能槽则获得，消耗能量
+            case "技能(1个)": {
+                var haven = lib.config.xjb_newcharacter.skill
+                var first = lib.config.xjb_list_hunbilist.skill.first
+                var second = lib.config.xjb_list_hunbilist.skill.second
+                var third = lib.config.xjb_list_hunbilist.skill.third
+                var list = first.concat(second, third)
+                var willget = list.randomGet()
+                if (game.xjb_condition(3, 1)) {
+                    game.xjb_create.alert('你获得了技能' + get.translation(willget))
+                    lib.config.xjb_newcharacter.skill.add(willget)
+                    game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
+                    game.xjb_systemEnergyChange(-20)
+                }
+                else {
+                    game.xjb_getHunbi(8, void 0, true, true)
+                    game.xjb_create.alert("请确保你有获得技能的能力！已退还8魂币")
+                }
+            }; break
+            case "称号(1个)": {
+                game.xjb_newCharacterGetTitle(1 * turn)
+            }; break
+            case "技能槽(1个)": {
+                game.xjb_newCharacterAddJnc(1 * turn)
+            }; break
+            case "体力卡(1张，3点)": {
+                game.xjb_getHpCard('xjb_newCharacter', 3, turn)
+            }; break
+            case "体力卡(1张，1点)": {
+                game.xjb_getHpCard('xjb_newCharacter', 1, turn)
+            }; break
+            case "体力值(1点)": {
+                game.xjb_newCharacterAddHp(1 * turn, boolean)
+            }; break
+            case "免费更改势力": {
+                game.xjb_newCharacterChangeGroup(1 * turn, boolean)
+            }; break
+            case "免费更改性别": {
+                game.xjb_newCharacterChangeSex(1 * turn, boolean)
+            }; break
+            case "免费更改姓名": {
+                game.xjb_newCharacterChangeName(1 * turn)
+            }; break
+            default: {
+                //替换处1
+                var num = parseInt(str, 10)
+                if (str.indexOf("打卡点数+") === 0) {
+                    let dakadianAdded = str.replace("打卡点数+", "")
+                    game.xjb_addDakadian(dakadianAdded * turn, boolean)
+                }
+                else if (Object.keys(lib.skill).includes(str)) {
+                    if (game.xjb_condition(3, 1)) {
+                        game.xjb_create.alert('你获得了技能' + get.translation(str))
+                        lib.config.xjb_newcharacter.skill.add(str)
+                        game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
+                        game.xjb_systemEnergyChange(-20)
+                    }
+                }
+                else if (num != NaN) {
+                    game.xjb_getHunbi(num, turn, boolean, false, 'Bonus')
+                }
+            }; break
+        }
+
+    }
+    game.xjb_getCurrentDate = function (boolean) {
+        var date = new Date()
+        var a = date.getFullYear(), b = date.getMonth() + 1, c = date.getDate(), d = date.getHours(), e = date.getMinutes()
+        if (boolean) {
+            var d = date.getDay()
+            return d === 0 ? 7 : d
+        }
+        return [a, b, c, d, e]
+    };
+    game.xjb_newcharacter_zeroise = function () {
+        lib.config.xjb_newcharacter.name2 = '李华'
+        lib.config.xjb_newcharacter.sex = 'male';
+        lib.config.xjb_newcharacter.group = 'qun';
+        lib.config.xjb_newcharacter.hp = 1;
+        lib.config.xjb_newcharacter.skill = [];
+        lib.config.xjb_newcharacter.intro = '';
+        lib.config.xjb_newcharacter.sink = [];
+        lib.config.xjb_newcharacter.selectedSink = "ext:新将包/xin_newCharacter.jpg"
+        game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
+    }
+    game.zeroise_xjbCount = function (target) {
+        lib.config.xjb_count[target.name1] = {
+            kill: 0,
+            thunder: 0,
+            fire: 0,
+            ice: 0,
+            loseMaxHp: 0,
+            gainMaxHp: 0,
+            HpCard: [],
+            uniqueSkill: []
+        }
+    }
+    //Hpcard创建函数，第一个值为体力牌类型，第二个值为体力牌样式高度
+    game.createHpCard = function (num, num2 = 100) {
+        if (Array.isArray(num)) {
+            let list = []
+            for (let i = 0; i < num.length; i++) {
+                list.push(game.createHpCard(num[i]))
+            }
+            return list
+        }
+        var HpCard = ui.create.div('.HpCard')
+        HpCard.number = num
+        HpCard.innerHTML = '<img src="' + lib.xjb_src + 'HpCard/' + HpCard.number + '.jpg" height=' + num2 + '>'
+        HpCard.style['position'] = 'relative'
+        var word = ui.create.div('.word', HpCard)
+        word.innerHTML = get.cnNumber(num)
+        word.style['font-size'] = '25px'
+        word.style['position'] = 'relative'
+        word.style['float'] = 'right'
+        word.style['color'] = 'red'
+        word.style['left'] = '-25px'
+        word.style['top'] = '-10px'
+        return HpCard
+    }
+    //统计体力牌张数
+    game.countHpCard = function (arr) {
+        let array = {
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0
+        }
+        arr.forEach(function (i) {
+            array[i] = array[i] + 1
+        }, arr)
+        return array
+    }
+    //技能=object(强制技恢复)
+    game.xjb_EqualizeSkillObject = function (string1, object2) {
+        lib.skill[string1] = {}
+        var list = Object.keys(object2)
+        for (var i = 0; i < list.length; i++) {
+            lib.skill[string1][list[i]] = object2[list[i]]
+        }
+        return lib.skill[string1]
+    }
+    game.xjb_choujiangStr = function (object, num) {
+        let willget = JSON.stringify(object);
+        willget = willget.replace(/\"|'/g, "");
+        if (num && num === 1) {
+            willget = willget.replace(/\{|}/g, "");
+            willget = willget.replace(/\gainMaxHp/g, "获得体力上限");
+            willget = willget.replace(/\loseMaxHp/g, "失去体力上限");
+            willget = willget.replace(/\uniqueSkill/g, "特殊技能");
+            willget = willget.replace(/\HpCard/g, "体力牌");
+            willget = willget.replace(/\,/g, "<br>");
+        } else {
+            willget = willget.replace(/\*/g, "%<br>");
+            willget = willget.replace(/\{|}/g, "<hr>");
+            willget = willget.replace(/\,|100/g, "");
+            willget = willget.replace(/\,|1?00/g, "");
+        }
+        return willget
+    }
+    //get函数
+    //新将包翻译
+    get.xjb_translation = function (target) {
+        if (Array.isArray(target)) {
+            var spare = []
+            for (var i = 0; i < target.length; i++) {
+                spare.push(get.xjb_translation(target[i]))
+            }
+            return spare
+        }
+        var translation
+        var list1 = Object.keys(lib.xjb_list_xinyuan.translate)
+        var list2 = Object.values(lib.xjb_list_xinyuan.translate)
+        for (var i = 0; i < list1.length; i++) {
+            if (list1[i] == target) translation = list2[i]
+            if (list2[i] == target) translation = list1[i]
+        }
+        if (!translation) {
+            translation = []
+            var list3 = Object.keys(lib.translate)
+            var list4 = Object.values(lib.translate)
+            for (var i = 0; i < list3.length; i++) {
+                if (list4[i] == target) translation.push(list3[i])
+                if (list3[i] == target) {
+                    translation = list4[i]
+                }
+            }
+        }
+        if (typeof target === 'number') translation = get.xjb_number(target)
+        if (Array.isArray(translation) && translation.length === 0) return target
+        return translation
+    }
+}
 function way() {
     //新将包路径来源     
     if (document.body.outerHTML) {
@@ -30,7 +251,9 @@ function way() {
 }
 function importFile() {
     let count = 0;
-    const files = ["event", "lingli", "skills", "card", "project", "rpg", "translate", "dialog", "economy", "math"];
+    const files = ["event", "lingli", "skills", "card",
+        "project", "rpg", "translate",
+        "dialog", "economy", "math"];
     function loadFiles(fileName) {
         let script = lib.init.js(lib.xjb_src + "js", fileName, () => {
             window[`XJB_LOAD_${fileName.toUpperCase()}`](_status, lib, game, ui, get, ai);
@@ -58,7 +281,7 @@ function importFile() {
             window.XJB_LOAD_title(_status, lib, game, ui, get, ai)
             count++;
         })
-        lib.init.js(lib.xjb_src + "js", "library", () => {});
+        lib.init.js(lib.xjb_src + "js", "library", () => { });
         function interval() {
             if (count >= files.length + 2) {
                 res()
@@ -276,13 +499,14 @@ function initialize() {
         dom_event: {
             chupingjisha: function () {
                 this.hide()
-                var next = game.createEvent("xjb-chupingjisha")
-                next.player = game.me
+                var next = game.createEvent("xjb-chupingjisha");
+                next.player = game.me;
                 _status.event.next.remove(next);
                 _status.event.getParent().next.push(next);
                 next.setContent(function () {
                     "step 0"
-                    let list1 = ["流失", "火焰", "雷电", "冰冻", "破甲", "神袛"], list2 = ["1次", "2次", "3次", "4次", "5次"]
+                    let list1 = ["流失", "火焰", "雷电", "冰冻", "破甲", "神袛"],
+                        list2 = ["1次", "2次", "3次", "4次", "5次"]
                     var next = player.chooseButton([
                         '请选择击杀方式',
                         [list1, 'tdnodes'],
@@ -310,14 +534,12 @@ function initialize() {
                             activity = (event.list1.includes(i) && i) || activity
                             times = (event.list2.includes(i) && i) || times
                         })
-                        let e = new Array()
-                        e.length = get.xjb_number(times)
-                        e.fill(activity)
+                        let e = new Array(parseInt(times)).fill(activity)
                         player.fc_X(...e, [game.players.length])
-                        game.xjb_systemEnergyChange(-get.xjb_number(times) * 30)
+                        game.xjb_systemEnergyChange(-parseInt(times) * 30)
                     }
                     "step 2"
-                    ui.xjb_chupingjisha.show()
+                    ui.xjb_chupingjisha.show();
                 })
                 //如果是你的出牌阶段发动此技能
                 if (_status.event.name == 'chooseToUse' && _status.event.player) {
@@ -326,7 +548,6 @@ function initialize() {
                         bool: true,
                         skill: 'xjb_updateStrategy'
                     };
-                    //这一步是让触屏击杀事件得以发动
                     game.resume();
                 }
             },
@@ -334,9 +555,10 @@ function initialize() {
     }
 }
 export function XJB_PRECONTENT() {
-    way()
-    initialize()
-    importFile()
+    provideFunction();
+    way();
+    initialize();
+    importFile();
     //折头折百花联动
     // if (lib.config.extensions.includes('枝头折百花') && lib.config.extension_枝头折百花_enable) {
     //     lib.nature && lib.nature.push && lib.nature.push('flower')

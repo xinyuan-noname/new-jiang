@@ -18,11 +18,12 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
     };
     lib.skill.xjb_3 = {
         Translate: function () {
-            lib.translate.fuSkill = "<b description=［附魔：首次使用此技能恢复体力并加一点护甲］>福技</b>"
-            lib.translate.luSkill = "<b description=［附魔：首次使用此技能摸四张牌］>禄技</b>"
-            lib.translate.shouSkill = "<b description=［附魔：首次使用此技能加两点体力上限］>寿技</b>"
-            lib.translate.suidongSkill = "<b description=［附魔：因为此技能效果获得牌后可以立即使用该牌］>随动技</b>"
-            lib.translate.qzj = "<b description=［附魔：此技能指定的目标角色当前回合失去技能］>强制技</b>"
+            lib.translate.fuSkill = "<b description=福技：首次使用此技能恢复体力并加一点护甲>福技</b>"
+            lib.translate.luSkill = "<b description=禄技：首次使用此技能摸四张牌>禄技</b>"
+            lib.translate.shouSkill = "<b description=寿技：首次使用此技能加两点体力上限>寿技</b>"
+            lib.translate.suidongSkill = "<b description=随动技：因为此技能效果获得牌后可以立即使用该牌>随动技</b>"
+            lib.translate.qzj = "<b description=强制技：技能结算后,此技能指定的目标角色当前回合失去技能>强制技</b>"
+            lib.translate.queqiaoxian = "<b description=鹊桥仙：技能结算后,可令一名珠联璧合的异性角色额外结算一次>鹊桥仙</b>"
             lib.translate.xin_qinnang2 = '青囊'
             lib.translate.xin_xuming = '续命'
             lib.translate.xjb_bingjue = '冰诀'
@@ -66,7 +67,8 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                 },
                 direct: true,
                 filter: function (event, player) {
-                    if (!event.cards) return false
+                    if (!event.cards) return false;
+                    if (!lib.config.xjb_skillTag_Character) return false;
                     for (let i = 1; i < 9; i++) {
                         let theName = event.getParent(i) && event.getParent(i).name;
                         if (Object.keys(lib.skill).includes(theName)) {
@@ -88,10 +90,10 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                 filter: function (event, player) {
                     if (!event.sourceSkill) return false
                     if (!lib.config.xjb_skillTag_Character) return false
-                    if (!lib.config.xjb_skillTag_Character.includes(player.name1)) return false
+                    if (!lib.config.xjb_skillTag_Character.includes(player.name1)
+                        && !lib.config.xjb_skillTag_Character.includes(player.name2)) return false
                     return true
                 },
-                forced: true,
                 direct: true,
                 content: function () {
                     if (!player.storage.skillTag_container) {
@@ -134,12 +136,151 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     if (!lib.skill[event.skill].qzj) return false
                     return true
                 },
-                forced: true,
                 direct: true,
                 content: function () {
                     for (let i = 0; i < trigger.targets.length; i++) {
                         trigger.targets[i].addTempSkill('skill_noskill')
                         trigger.targets[i].popup("强制技")
+                    }
+                }
+            }
+            lib.skill._xjb_queqiaoxian = {
+                trigger: {
+                    player: "useSkillAfter"
+                },
+                filter(event, player) {
+                    if (!event.skill) return false;
+                    if (event.reason === "xjb_queqiaoxian") return false;
+                    if (!lib.skill[event.skill].queqiaoxian) return false;
+                    if (!game.countPlayer(cur => !cur.sameSexAs(player.sex))) return false;
+                    const info = get.info("_xjb_queqiaoxian");
+                    const osPairs = info.getCP(player, event.skill)
+                    if (!osPairs.length) return false;
+                    if (!game.countPlayer(
+                        cur => osPairs.some(character => cur.name.endsWith(character))
+                    )) return false;
+                    if (!event.targets || event.targets.some(cur => cur.isDead())) return false;
+                    return true;
+                },
+                whoseSkill(player, skill) {
+                    const result = []
+                    if (lib.character[player.name1] && game.expandSkills(lib.character[player.name1].skills).includes(skill)) result.push(player.name1);
+                    if (lib.character[player.name2] && game.expandSkills(lib.character[player.name2].skills).includes(skill)) result.push(player.name2);
+                    return result;
+                },
+                getPefectPair(characterName = '', characterName2 = '') {
+                    const result = [];
+                    for (let one in lib.perfectPair) {
+                        if (characterName.endsWith(one)) {
+                            result.push(...lib.perfectPair[one]);
+                        }
+                        if (lib.perfectPair[one].some(pair => characterName.endsWith(pair))) {
+                            result.push(one)
+                        }
+                        if (characterName2.endsWith(one)) {
+                            result.push(...lib.perfectPair[one]);
+                        }
+                        if (lib.perfectPair[one].some(pair => characterName2.endsWith(pair))) {
+                            result.push(one)
+                        }
+                    }
+                    return result;
+                },
+                filterCharacterNotSameSex(player, characterList) {
+                    const sex = typeof player === 'string' ? lib.character[player].sex : player.sex
+                    return characterList.filter(
+                        characterName => {
+                            if (lib.character[characterName]) return sex != lib.character[characterName].sex
+                        }
+                    )
+                },
+                getCP(player, skill) {
+                    const info = get.info("_xjb_queqiaoxian");
+                    const names = typeof player === 'string' ? [player] : info.whoseSkill(player, skill);
+                    const allPairs = info.getPefectPair(...names);
+                    const osPairs = info.filterCharacterNotSameSex(player, allPairs);
+                    function removeGUICHUN(guichun1, guichun2) {
+                        if (names.some(name => name.endsWith(guichun1))) {
+                            osPairs.remove(guichun2)
+                        }
+                        if (names.some(name => name.endsWith(guichun2))) {
+                            osPairs.remove(guichun1)
+                        }
+                    }
+                    removeGUICHUN("mayunlu", 'machao');
+                    removeGUICHUN("mayunlu", 'mateng');
+                    removeGUICHUN("zhanglu", 'zhangqiying');
+                    removeGUICHUN("guanyinping", 'guanyu');
+                    removeGUICHUN("zhouyu", 'zhouyi');
+                    removeGUICHUN("wujing", "wuguotai");
+                    removeGUICHUN("fuwan", "fuhuanghou");
+                    removeGUICHUN("lvlingqi", "lvbu");
+                    return osPairs;
+                },
+                direct: true,
+                content() {
+                    "step 0"
+                    player.popup("鹊桥仙");
+                    "step 1"
+                    player.chooseTarget("鹊桥仙", `是否令为有姻缘的珠联璧合角色额外结算一次${get.translation(trigger.skill)}?`)
+                        .set("filterTarget", function (card, player, target) {
+                            const info = get.info("_xjb_queqiaoxian");
+                            const osPairs = info.getCP(player, trigger.skill)
+                            return osPairs.some(character => (`${target.name1}`).endsWith(character) || (`${target.name2}`).endsWith(character))
+                        })
+                    "step 2"
+                    if (result.bool) {
+                        result.targets[0].useSkill(trigger.skill, trigger.targets, trigger.cards)
+                            .set("reason", "xjb_queqiaoxian");
+                    }
+                }
+            }
+            lib.skill._xjb_queqiaoxian2 = {
+                trigger: {
+                    player: ["logSkill"]
+                },
+                filter(event, player) {
+                    if (!event.sourceSkill) return false;
+                    if (!lib.skill[event.sourceSkill].queqiaoxian) return false;
+                    if (!game.countPlayer(cur => !cur.sameSexAs(player.sex))) return false;
+                    const info = get.info("_xjb_queqiaoxian");
+                    const osPairs = info.getCP(player, event.sourceSkill)
+                    if (!osPairs.length) return false;
+                    if (!game.countPlayer(
+                        cur => osPairs.some(character => cur.name.endsWith(character))
+                    )) return false;
+                    const skillEvt = event.player.getHistory("useSkill", evt => evt.skill === event.sourceSkill).at(-1).event;
+                    const playerList = [];
+                    if (skillEvt.player) playerList.push(skillEvt.player)
+                    if (skillEvt.targets) playerList.push(...skillEvt.targets)
+                    if (skillEvt.source) playerList.push(skillEvt.source);
+                    if (playerList.some(cur => cur.isDead())) return false;
+                    return true;
+                },
+                direct: true,
+                async content(event, trigger, player) {
+                    player.popup("鹊桥仙");
+                    const result = await player.chooseTarget("鹊桥仙", `是否令有姻缘的珠联璧合角色额外结算一次${get.translation(trigger.sourceSkill)}?`)
+                        .set("filterTarget", function (card, player, target) {
+                            const info = get.info("_xjb_queqiaoxian");
+                            const osPairs = info.getCP(player, trigger.sourceSkill)
+                            return osPairs.some(character => (`${target.name1}`).endsWith(character) || (`${target.name2}`).endsWith(character))
+                        }).forResult();
+                    if (result.bool) {
+                        const skill = trigger.sourceSkill;
+                        const skillEvt = trigger.player.getHistory("useSkill", evt => evt.skill === trigger.sourceSkill).at(-1).event;
+                        const info = get.info(skill);
+                        const next = game.createEvent(skill);
+                        next.player = result.targets[0];
+                        next._trigger = skillEvt._trigger;
+                        next.triggername = skillEvt.triggername;
+                        next.setContent(info.content);
+                        next.skillHidden = skillEvt.skillHidden;
+                        if (info.forceOut) next.includeOut = true;
+                        if (get.itemtype(skillEvt.targets) == "players") next.targets = skillEvt.targets.slice(0);
+                        if (get.itemtype(skillEvt.cards) === "cards") next.cards = skillEvt.cards.slice(0);
+                        if ("cost_data" in skillEvt) next.cost_data = skillEvt.cost_data;
+                        next.indexedData = skillEvt.indexedData;
                     }
                 }
             }
