@@ -560,7 +560,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
 
     //寻找信息型对话框
     game.xjb_create.search = function (
-        str = "<div style=position:relative;overflow:auto;font-size:24px>输入关键词后，敲击回车以进行搜索</div><hr>",
+        str = "<div style=position:relative;overflow:auto;font-size:24px>输入关键词后，敲击回车以进行搜索,只显示前200条</div><hr>",
         func,
         liDisplay = 'block'
     ) {
@@ -571,6 +571,9 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             top: "-170px",
             overflow: ""
         })
+        /**
+         * @type {HTMLTextAreaElement}
+         */
         let textarea = dialog.addElement("textarea", void 0, lib.xjb_style.textarea1)
         /**
          * @type {HTMLUListElement}
@@ -584,49 +587,54 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         })
         textarea.onkeyup = function (e) {
             if (this.value.length) return;
-            const showList = this.index.filter(item => !this.shown.includes(item))
+            const showList = this.parentNode.querySelectorAll('.xjb_hidden');
+            let count = 0;
             for (const item of showList) {
-                let count = 0;
-                const searchIndex = () => {
-                    count++
-                    item.style.display = liDisplay;
-                }
-                if (count <= 30) searchIndex()
-                else setTimeout(searchIndex, 0)
+                count++;
+                item.classList.toggle('xjb_hidden');
+                if (count >= 200) break;
             }
+            textarea.nextElementSibling.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            })
         };
         textarea.onkeydown = function (e) {
-            if (e.keyCode !== 13) return;
+            if (!this.value.length) return;
+            if (e.key !== "Enter") return;
             e.preventDefault();
             e.stopPropagation();
-            console.log(this)
-            for (const item of this.index) {
-                let count = 0;
-                const searchIndex = () => {
-                    if (!item.innerText.includes(this.value)) {
-                        item.style.display = "none";
-                        return;
-                    }
-                    item.style.display = liDisplay
-                    this.shown.push(item)
-                }
-                if (count <= 30) searchIndex()
-                else setTimeout(searchIndex, 0)
+            /**
+             * @type {NodeList}
+             */
+            const shownLi = this.parentNode.querySelectorAll('li:not(.xjb_hidden)');
+            const hiddenLi = this.parentNode.querySelectorAll('.xjb_hidden');
+            const content = this.value
+            for (const item of hiddenLi) {
+                if (item.innerText.includes(content)) item.classList.toggle("xjb_hidden");
             }
+            for (const item of shownLi) {
+                if (!item.innerText.includes(content)) item.classList.toggle("xjb_hidden");
+            }
+            this.nextElementSibling.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            })
         }
         textarea.index = [];
-        textarea.shown = [];
         dialog.textarea = textarea;
         dialog.ul = ul;
         const observer = new IntersectionObserver(
             entries => {
+                const shownList = entries[0].target.parentNode.querySelectorAll(':not(.xjb_hidden)');
+                const theirUl = entries[0].target.parentNode
                 entries.forEach(entry => {
                     if (!entry.isIntersecting) return;
                     const target = entry.target;
                     const b = target.querySelector("b")
                     if (!b) return;
-                    if (![target.parentNode.lastElementChild, textarea.shown.at(-1)].includes(target)) return;
-                    element("div").width("100%").height("5em").father(ul);
+                    if (![target.parentNode.lastElementChild, [...shownList].at(-1)].includes(target)) return;
+                    element("div").width("100%").height("5em").father(theirUl);
                     observer.disconnect()
                 })
             },
@@ -642,7 +650,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         return dialog;
     }
     //数字调整型对话框
-    game.xjb_create.configNumberList = function (obj, func) {
+    game.xjb_create.configNumberList = function (obj = {}, func) {
         if (game.xjb_create.baned) return;
         let dialog = game.xjb_create.search("<div style=position:relative;overflow:auto;font-size:24px>拖动可改变数值数值。输入关键词后，敲击回车以进行搜索</div><hr>", func)
         let textarea = dialog.textarea;
@@ -666,59 +674,54 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
               },
           }
         */
-        if (obj) {
-            function rangeChange() {
-                changedObj[this.counterpart] = this.value;
-                this.numShower.innerHTML = changedObj[this.counterpart];
-            }
-            for (let k in obj) {
-                let li = document.createElement("li")
-                li.innerHTML = "【" + obj[k].counterpart + "】";
-                ul.appendChild(li);
-                let range = document.createElement("input");
-                range.counterpart = obj[k].counterpart;
-                range.type = 'range';
-                range.value = (obj[k].current || 0);
-                range.min = (obj[k].min || 0);
-                range.max = (obj[k].max || max);
-                range.addEventListener("change", rangeChange)
-                ui.xjb_giveStyle(range, {
-                    float: "right"
-                })
-                li.appendChild(range);
-                let span = document.createElement("span")
-                li.appendChild(span);
-                ui.xjb_giveStyle(span, {
-                    float: "right"
-                })
-                span.innerHTML = range.value;
-                range.numShower = span
-            }
-            textarea.index = Array.from(ul.children)
+        function rangeChange() {
+            changedObj[this.counterpart] = this.value;
+            this.numShower.innerHTML = changedObj[this.counterpart];
+        }
+        for (let k in obj) {
+            let li = document.createElement("li")
+            li.innerHTML = "【" + obj[k].counterpart + "】";
+            ul.appendChild(li);
+            let range = document.createElement("input");
+            range.counterpart = obj[k].counterpart;
+            range.type = 'range';
+            range.value = (obj[k].current || 0);
+            range.min = (obj[k].min || 0);
+            range.max = (obj[k].max || max);
+            range.addEventListener("change", rangeChange)
+            ui.xjb_giveStyle(range, {
+                float: "right"
+            })
+            li.appendChild(range);
+            let span = document.createElement("span")
+            li.appendChild(span);
+            ui.xjb_giveStyle(span, {
+                float: "right"
+            })
+            span.innerHTML = range.value;
+            range.numShower = span
         }
         return dialog;
     }
     //列表解锁型对话框
     game.xjb_create.configList = function (list, func) {
         if (game.xjb_create.baned) return;
-        let dialog = game.xjb_create.search("<div style=position:relative;overflow:auto;font-size:24px>点击以下项目可进行设置，解锁需要5魂币。输入关键词后，敲击回车或搜索框失去焦点以进行搜索</div><hr>", func)
+        let dialog = game.xjb_create.search("<div style=position:relative;overflow:auto;font-size:24px>点击以下项目可进行设置，解锁需要5魂币。输入关键词后，敲击回车以进行搜索,只显示前200条</div><hr>", func)
         let textarea = dialog.textarea;
         let ul = dialog.ul;
         dialog.buttons[0].isOpened = [];
         dialog.buttons[0].isClosed = [];
         if (!list) return dialog;
         for (let i in list) {
-            var li = ui.xjb_addElement({
-                target: ul,
-                tag: 'li',
-                innerHTML: list[i],
-                style: {
+            var li = element('li')
+                .innerHTML(list[i])
+                .style({
                     height: "28px",
                     fontSize: "21px",
                     width: "97%",
                     paddingTop: "7px"
-                }
-            })
+                })
+                .exit()
             let span = ui.xjb_addElement({
                 target: li,
                 tag: 'span',
@@ -745,42 +748,50 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             span.update();
             span.myName = i;
             span.myLi = li
+            textarea.index.push(li)
         };
-        ul.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function (e) {
-            e.preventDefault()
-            if (e.target.tagName !== 'SPAN') return;
-            const _this = e.target;
-            const valueActionList = [
-                () => {
-                    if (game.xjb_condition(1, 5)) {
-                        game.cost_xjb_cost(1, 5)
-                        lib.config[_this.myName] = 1
-                    } else {
-                        _this.myLi.className = "xjb_animation_shake"
-                        setTimeout(() => {
-                            _this.myLi.className = ""
-                        }, 820)
-                    }
-                },
-                () => { lib.config[_this.myName] = 2 },
-                () => { lib.config[_this.myName] = 1 },
-                () => { lib.config[_this.myName] = false },
-                () => { lib.config[_this.myName] = true }
-            ];
-            const index = [void 0, 1, 2, true, false].indexOf(lib.config[_this.myName]);
-            valueActionList[index]();
-            game.saveConfig(_this.myName, lib.config[_this.myName])
-            _this.update();
-            game.saveConfig(_this.myName, lib.config[_this.myName]);
+        textarea.index.slice(200).forEach(it => {
+            it.classList.add("xjb_hidden");
         })
-        textarea.index = Array.from(ul.children)
+        element().setTarget(ul)
+            .children(textarea.index)
+            .listen(
+                lib.config.touchscreen ? 'touchend' : 'click',
+                function (e) {
+                    e.preventDefault()
+                    if (e.target.tagName !== 'SPAN') return;
+                    const _this = e.target;
+                    const valueActionList = [
+                        () => {
+                            if (game.xjb_condition(1, 5)) {
+                                game.cost_xjb_cost(1, 5)
+                                lib.config[_this.myName] = 1
+                            } else {
+                                _this.myLi.className = "xjb_animation_shake"
+                                setTimeout(() => {
+                                    _this.myLi.className = ""
+                                }, 820)
+                            }
+                        },
+                        () => { lib.config[_this.myName] = 2 },
+                        () => { lib.config[_this.myName] = 1 },
+                        () => { lib.config[_this.myName] = false },
+                        () => { lib.config[_this.myName] = true }
+                    ];
+                    const index = [void 0, 1, 2, true, false].indexOf(lib.config[_this.myName]);
+                    valueActionList[index]();
+                    game.saveConfig(_this.myName, lib.config[_this.myName])
+                    _this.update();
+                    game.saveConfig(_this.myName, lib.config[_this.myName]);
+                }
+            )
         if (ul.querySelector("b")) textarea.index.forEach(ele => {
             dialog.observer.observe(ele)
         })
         return dialog;
     }
     //这种对话框用于展示条件
-    game.xjb_create.condition = function (obj, arr1, arr2) {
+    game.xjb_create.condition = function (obj = {}) {
         if (game.xjb_create.baned) return;
         let dialog = game.xjb_create.search()
         let textarea = dialog.textarea;
@@ -788,17 +799,17 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             .setStyle('height', '210px')
             .exit();
         var list = obj
-        if (list) {
-            for (let i in list) {
-                element("li")
-                    .appendInnerHTML(list[i])
-                    .father(ul)
-                    .setStyle('fontSize', '18px')
-                    .hook(ele => textarea.index.add(ele));
-            }
+        for (let i in list) {
+            element("li")
+                .appendInnerHTML(list[i])
+                .setStyle('fontSize', '18px')
+                .hook(it => {
+                    textarea.index.push(it);
+                })
         }
+        ul.append(...textarea.index);
         dialog.font = function (num) {
-            Array.from(textarea.index).forEach(a => {
+            textarea.index.forEach(a => {
                 ui.xjb_giveStyle(a, {
                     fontSize: (num + "px")
                 })
@@ -807,60 +818,62 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         }
         return dialog
     }
+    //
     game.xjb_create.seeDelete = function (map, seeStr = "查看", deleteStr = "删除", seeCallback = () => true, deleteCallback = () => true, func) {
         if (game.xjb_create.baned) return;
         const dialog = game.xjb_create.search(void 0, func)
         const textarea = dialog.textarea;
+        /**
+         * @type {HTMLUListElement}
+         */
         const ul = dialog.ul;
         const listenType = lib.config.touchscreen ? "touchend" : "click";
         dialog.buttons[0].result = [];
         for (const [attr, desc] of Object.entries(map)) {
-            function addLi() {
-                if (!dialog.parentNode) return;
-                const container = element('li')
-                    .setAttribute('xjb_id', attr)
-                    .father(ul)
-                    .block()
-                    .style({
-                        position: 'relative',
-                        width: "100%"
-                    })
-                    .exit()
-                const descEle = element("div")
-                    .father(container)
-                    .innerHTML(desc)
-                    .block()
-                    .style({
-                        position: 'relative',
-                    })
-                    .exit()
-                const seeButton = ui.create.xjb_button(container, seeStr);
-                element().setTarget(seeButton)
-                    .style({
-                        position: 'relative',
-                        fontSize: '1.5rem'
-                    })
-                    .exit()
-                seeButton.descEle = descEle;
-                seeButton.container = container;
-                seeButton.yesButton = dialog.buttons[0];
-                const deleteButton = ui.create.xjb_button(container, deleteStr)
-                element().setTarget(deleteButton)
-                    .father(container)
-                    .style({
-                        position: 'relative',
-                        fontSize: '1.5rem',
-                    })
-                    .exit()
-                deleteButton.descEle = descEle;
-                deleteButton.container = container;
-                deleteButton.yesButton = dialog.buttons[0];
-                textarea.index.push(container);
-                if (!desc.includes(textarea.value)) container.style.display = "none";
-            }
-            if (ul.children.length <= 30) addLi();
-            else setTimeout(addLi, 33)
+            if (!dialog.parentNode) return;
+            const container = element('li')
+                .setAttribute('xjb_id', attr)
+                .block()
+                .style({
+                    position: 'relative',
+                    width: "100%"
+                })
+                .exit()
+            const descEle = element("div")
+                .father(container)
+                .innerHTML(desc)
+                .block()
+                .style({
+                    position: 'relative',
+                })
+                .exit()
+            const seeButton = ui.create.xjb_button(container, seeStr);
+            element().setTarget(seeButton)
+                .style({
+                    position: 'relative',
+                    fontSize: '1.5rem'
+                })
+                .exit()
+            seeButton.descEle = descEle;
+            seeButton.container = container;
+            seeButton.yesButton = dialog.buttons[0];
+            const deleteButton = ui.create.xjb_button(container, deleteStr)
+            element().setTarget(deleteButton)
+                .father(container)
+                .style({
+                    position: 'relative',
+                    fontSize: '1.5rem',
+                })
+                .exit()
+            deleteButton.descEle = descEle;
+            deleteButton.container = container;
+            deleteButton.yesButton = dialog.buttons[0];
+            textarea.index.push(container);
         }
+        textarea.index.slice(200).forEach(it => {
+            it.classList.add("xjb_hidden");
+        })
+        ul.append(...textarea.index);
         dialog.addEventListener(listenType, function (e) {
             if (e.target.innerText === deleteStr || e.target.deleteExpanding) {
                 deleteCallback.apply(e.target, [e]);

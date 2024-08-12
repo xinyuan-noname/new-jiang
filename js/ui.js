@@ -19,11 +19,11 @@ class elementTool {
         this.ele = ele
         return this
     }
-    shortCut(key){
-        this.ele.tabIndex=-1;
-        this.ele.setAttribute('accesskey',key);
-        this.listen("focus",function(){
-            requestAnimationFrame(()=>{
+    shortCut(key) {
+        this.ele.tabIndex = -1;
+        this.ele.setAttribute('accesskey', key);
+        this.listen("focus", function () {
+            requestAnimationFrame(() => {
                 this.blur();
             })
         })
@@ -111,6 +111,10 @@ class elementTool {
         this.ele.appendChild(childEle);
         return this;
     }
+    children(children) {
+        this.ele.append(...children);
+        return this;
+    }
     /**
      * @returns {elementTool}
      */
@@ -190,7 +194,7 @@ class elementTool {
         return this;
     }
     /**
-     * @param {function} func 
+     * @param {function(HTMLElement)} func 
      * @returns {elementTool}
      */
     hook(func) {
@@ -282,9 +286,26 @@ class elementTool {
         return this;
     }
     /**
+    * @param {string} type 
+    * @returns {this} 
+    */
+    scrollToTop(type = 'smooth') {
+        if (typeof this.ele.scrollTo !== 'function') {
+            throw new Error('Element does not support scrollTo method.');
+        }
+
+        if (!['auto', 'instant', 'smooth'].includes(type)) {
+            console.warn('Invalid value for "behavior". Using default ("smooth").');
+            type = 'smooth';
+        }
+        this.ele.scrollTo({
+            top: 0,
+            behavior: type
+        })
+        return this;
+    }
+    /**
     * 方法用于为事件绑定一个防抖处理函数。
-    * 防抖动技术在于，如果一个函数在短时间内被频繁调用，它将被推迟到一段时间后执行。
-    * 这在诸如输入事件、窗口resize等可能频繁触发的事件处理中非常有用，可以减少不必要的计算或调用。
     * @param {string} event - 需要绑定防抖动处理的事件名称。
     * @param {Function} func - 当事件触发时需要执行的函数。
     * @param {number} wait - 防抖动等待的时间，即在触发事件后需要等待的时间，这段时间内如果再次触发事件，计时器将重新开始。

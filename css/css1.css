@@ -137,6 +137,10 @@
   bottom: 0px;
 }
 
+.xjb_hidden{
+  display:none !important;
+}
+
 /*存档*/
 .xjb_ul_storage li p span {
   padding-top: 6px;
@@ -153,6 +157,8 @@
   font-size: 18px;
   margin-left: 6%
 }
+
+
 
 /*新将包被存档*/
 #xjb_storage_theStorage {
@@ -232,10 +238,8 @@ b[description]:hover::after {
   border-radius: 4px;
   color: rgb(170, 169, 169);
   box-shadow: 0 2px 4px rgba(85, 72, 72, 0.2);
-  max-width: fit-content;
-  max-height: fit-content;
-  top:0;
-  left:40%;
+  max-width: 60%;
+  left:30%;
 }
 
 /*势力样式*/
