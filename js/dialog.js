@@ -891,13 +891,16 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             })
             promises.push(promise);
         }
-        Promise.all(promises).then((value) => {
+        Promise.all(promises.slice(0,100)).then(()=>{
+            ul.append(...textarea.index);
+            console.timeEnd("promise")
+        })
+        Promise.all(promises.slice(100)).then((value) => {
             textarea.index.slice(100).forEach(it => {
                 it.classList.add("xjb_hidden");
             })
-            ul.append(...textarea.index);
+            ul.append(...textarea.index.slice(100));
         });
-        console.timeEnd("promise")
         return dialog
     }
     game.xjb_create.range = function (str, min, max, value = 0, callback, changeValue = () => true) {
