@@ -712,6 +712,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         dialog.buttons[0].isOpened = [];
         dialog.buttons[0].isClosed = [];
         if (!list) return dialog;
+        console.time("normal")
         for (let i in list) {
             var li = element('li')
                 .innerHTML(list[i])
@@ -785,6 +786,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                     game.saveConfig(_this.myName, lib.config[_this.myName]);
                 }
             )
+        console.timeEnd("normal")
         if (ul.querySelector("b")) textarea.index.forEach(ele => {
             dialog.observer.observe(ele)
         })
@@ -829,51 +831,6 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         const ul = dialog.ul;
         const listenType = lib.config.touchscreen ? "touchend" : "click";
         dialog.buttons[0].result = [];
-        for (const [attr, desc] of Object.entries(map)) {
-            if (!dialog.parentNode) return;
-            const container = element('li')
-                .setAttribute('xjb_id', attr)
-                .block()
-                .style({
-                    position: 'relative',
-                    width: "100%"
-                })
-                .exit()
-            const descEle = element("div")
-                .father(container)
-                .innerHTML(desc)
-                .block()
-                .style({
-                    position: 'relative',
-                })
-                .exit()
-            const seeButton = ui.create.xjb_button(container, seeStr);
-            element().setTarget(seeButton)
-                .style({
-                    position: 'relative',
-                    fontSize: '1.5rem'
-                })
-                .exit()
-            seeButton.descEle = descEle;
-            seeButton.container = container;
-            seeButton.yesButton = dialog.buttons[0];
-            const deleteButton = ui.create.xjb_button(container, deleteStr)
-            element().setTarget(deleteButton)
-                .father(container)
-                .style({
-                    position: 'relative',
-                    fontSize: '1.5rem',
-                })
-                .exit()
-            deleteButton.descEle = descEle;
-            deleteButton.container = container;
-            deleteButton.yesButton = dialog.buttons[0];
-            textarea.index.push(container);
-        }
-        textarea.index.slice(100).forEach(it => {
-            it.classList.add("xjb_hidden");
-        })
-        ul.append(...textarea.index);
         dialog.addEventListener(listenType, function (e) {
             if (e.target.innerText === deleteStr || e.target.deleteExpanding) {
                 deleteCallback.apply(e.target, [e]);
@@ -883,6 +840,59 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                 seeCallback.apply(e.target, [e])
             }
         })
+        const promises = [];
+        console.time("promise")
+        for (const [attr, desc] of Object.entries(map)) {
+            const promise =new Promise(res=> {
+                const container = element('li')
+                    .setAttribute('xjb_id', attr)
+                    .block()
+                    .style({
+                        position: 'relative',
+                        width: "100%"
+                    })
+                    .exit()
+                const descEle = element("div")
+                    .father(container)
+                    .innerHTML(desc)
+                    .block()
+                    .style({
+                        position: 'relative',
+                    })
+                    .exit()
+                const seeButton = ui.create.xjb_button(container, seeStr);
+                element().setTarget(seeButton)
+                    .style({
+                        position: 'relative',
+                        fontSize: '1.5rem'
+                    })
+                    .exit()
+                seeButton.descEle = descEle;
+                seeButton.container = container;
+                seeButton.yesButton = dialog.buttons[0];
+                const deleteButton = ui.create.xjb_button(container, deleteStr)
+                element().setTarget(deleteButton)
+                    .father(container)
+                    .style({
+                        position: 'relative',
+                        fontSize: '1.5rem',
+                    })
+                    .exit()
+                deleteButton.descEle = descEle;
+                deleteButton.container = container;
+                deleteButton.yesButton = dialog.buttons[0];
+                textarea.index.push(container);
+                res()
+            })
+            promises.push(promise);
+        }
+        Promise.all(promises).then((value) => {
+            textarea.index.slice(100).forEach(it => {
+                it.classList.add("xjb_hidden");
+            })
+            ul.append(...textarea.index);
+        })
+        console.timeEnd("promise")
         return dialog
     }
 
