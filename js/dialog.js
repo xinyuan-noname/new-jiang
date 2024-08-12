@@ -842,47 +842,52 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         })
         const promises = [];
         console.time("promise")
+        function addLi(attr,desc) {
+            const container = element('li')
+                .setAttribute('xjb_id', attr)
+                .block()
+                .style({
+                    position: 'relative',
+                    width: "100%"
+                })
+                .exit()
+            const descEle = element("div")
+                .father(container)
+                .innerHTML(desc)
+                .block()
+                .style({
+                    position: 'relative',
+                })
+                .exit()
+            const seeButton = ui.create.xjb_button(container, seeStr);
+            element().setTarget(seeButton)
+                .style({
+                    position: 'relative',
+                    fontSize: '1.5rem'
+                })
+                .exit()
+            seeButton.descEle = descEle;
+            seeButton.container = container;
+            seeButton.yesButton = dialog.buttons[0];
+            const deleteButton = ui.create.xjb_button(container, deleteStr)
+            element().setTarget(deleteButton)
+                .father(container)
+                .style({
+                    position: 'relative',
+                    fontSize: '1.5rem',
+                })
+                .exit()
+            deleteButton.descEle = descEle;
+            deleteButton.container = container;
+            deleteButton.yesButton = dialog.buttons[0];
+            textarea.index.push(container);
+        }
         for (const [attr, desc] of Object.entries(map)) {
-            const promise =new Promise(res=> {
-                const container = element('li')
-                    .setAttribute('xjb_id', attr)
-                    .block()
-                    .style({
-                        position: 'relative',
-                        width: "100%"
-                    })
-                    .exit()
-                const descEle = element("div")
-                    .father(container)
-                    .innerHTML(desc)
-                    .block()
-                    .style({
-                        position: 'relative',
-                    })
-                    .exit()
-                const seeButton = ui.create.xjb_button(container, seeStr);
-                element().setTarget(seeButton)
-                    .style({
-                        position: 'relative',
-                        fontSize: '1.5rem'
-                    })
-                    .exit()
-                seeButton.descEle = descEle;
-                seeButton.container = container;
-                seeButton.yesButton = dialog.buttons[0];
-                const deleteButton = ui.create.xjb_button(container, deleteStr)
-                element().setTarget(deleteButton)
-                    .father(container)
-                    .style({
-                        position: 'relative',
-                        fontSize: '1.5rem',
-                    })
-                    .exit()
-                deleteButton.descEle = descEle;
-                deleteButton.container = container;
-                deleteButton.yesButton = dialog.buttons[0];
-                textarea.index.push(container);
-                res()
+            const promise = new Promise(res => {
+                setTimeout(()=>{
+                    addLi(attr,desc);
+                    res();
+                },0)
             })
             promises.push(promise);
         }
@@ -891,12 +896,10 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                 it.classList.add("xjb_hidden");
             })
             ul.append(...textarea.index);
-        })
+        });
         console.timeEnd("promise")
         return dialog
     }
-
-
     game.xjb_create.range = function (str, min, max, value = 0, callback, changeValue = () => true) {
         if (game.xjb_create.baned) return;
         let dialog = game.xjb_create.confirm(void 0, callback);
