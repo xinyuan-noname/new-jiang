@@ -560,7 +560,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
 
     //寻找信息型对话框
     game.xjb_create.search = function (
-        str = "<div style=position:relative;overflow:auto;font-size:24px>输入关键词后，敲击回车以进行搜索,只显示前200条</div><hr>",
+        str = "<div style=position:relative;overflow:auto;font-size:24px>输入关键词后，敲击回车以进行搜索,只显示前100条</div><hr>",
         func,
         liDisplay = 'block'
     ) {
@@ -592,7 +592,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             for (const item of showList) {
                 count++;
                 item.classList.toggle('xjb_hidden');
-                if (count >= 200) break;
+                if (count >= 100) break;
             }
             textarea.nextElementSibling.scrollTo({
                 top: 0,
@@ -706,7 +706,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
     //列表解锁型对话框
     game.xjb_create.configList = function (list, func) {
         if (game.xjb_create.baned) return;
-        let dialog = game.xjb_create.search("<div style=position:relative;overflow:auto;font-size:24px>点击以下项目可进行设置，解锁需要5魂币。输入关键词后，敲击回车以进行搜索,只显示前200条</div><hr>", func)
+        let dialog = game.xjb_create.search("<div style=position:relative;overflow:auto;font-size:24px>点击以下项目可进行设置，解锁需要5魂币。输入关键词后，敲击回车以进行搜索,只显示前100条</div><hr>", func)
         let textarea = dialog.textarea;
         let ul = dialog.ul;
         dialog.buttons[0].isOpened = [];
@@ -750,7 +750,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             span.myLi = li
             textarea.index.push(li)
         };
-        textarea.index.slice(200).forEach(it => {
+        textarea.index.slice(100).forEach(it => {
             it.classList.add("xjb_hidden");
         })
         element().setTarget(ul)
@@ -870,7 +870,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             deleteButton.yesButton = dialog.buttons[0];
             textarea.index.push(container);
         }
-        textarea.index.slice(200).forEach(it => {
+        textarea.index.slice(100).forEach(it => {
             it.classList.add("xjb_hidden");
         })
         ul.append(...textarea.index);
