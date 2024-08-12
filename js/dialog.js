@@ -712,7 +712,6 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         dialog.buttons[0].isOpened = [];
         dialog.buttons[0].isClosed = [];
         if (!list) return dialog;
-        console.time("normal")
         for (let i in list) {
             var li = element('li')
                 .innerHTML(list[i])
@@ -786,7 +785,6 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                     game.saveConfig(_this.myName, lib.config[_this.myName]);
                 }
             )
-        console.timeEnd("normal")
         if (ul.querySelector("b")) textarea.index.forEach(ele => {
             dialog.observer.observe(ele)
         })
@@ -841,7 +839,6 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             }
         })
         const promises = [];
-        console.time("promise")
         function addLi(attr,desc) {
             const container = element('li')
                 .setAttribute('xjb_id', attr)
@@ -893,7 +890,6 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         }
         Promise.all(promises.slice(0,100)).then(()=>{
             ul.append(...textarea.index);
-            console.timeEnd("promise")
         })
         Promise.all(promises.slice(100)).then((value) => {
             textarea.index.slice(100).forEach(it => {

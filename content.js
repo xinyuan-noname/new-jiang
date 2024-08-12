@@ -472,7 +472,19 @@ export function XJB_CONTENT(config, pack) {
                         //检测是否有武将解锁了该功能
                         return game.xjb_create.alert("你没有任何武将解锁了技能标签，请于 添删武将 中设置！")
                     }
-                    const queqiaoxianBan = ["yingzi", "olhuoji", "olkanpo", "cangzhuo"]
+                    const queqiaoxianBan = []
+                    function searchGroup(skillName, info, characterID) {
+                        const group = [].concat(info.group);
+                        if (group.every(skill => {
+                            const bool1 = !game.xjb_judgeSkill.Tri_logSkill(skill);
+                            const bool2 = !game.xjb_judgeSkill.enableNotView(skill);
+                            return bool1 && bool2
+                        })) return;
+                        if (xjb_skillTag_queqiaoxian == 1 && get.info("_xjb_queqiaoxian").getCP(characterID).length) {
+                            addItem(skillName, characterID, 'queqiaoxian')
+                        }
+                        return;
+                    }
                     xjb_skillTag_Character.forEach(item => {
                         if (!lib.character[item]) return;
                         if (!lib.character[item][3]) return;
@@ -481,8 +493,11 @@ export function XJB_CONTENT(config, pack) {
                             if (!lib.skill[skillName]) return;
                             //检测该技能是否存在
                             const info = get.info(skillName)
-                            if (!info.content) return;
-                            const contentStr = info.content.toString()
+                            if (!info.content) {
+                                if (!info.group) return;
+                                searchGroup(skillName, info, item);
+                            }
+                            const contentStr = info.content ? info.content.toString() : "";
                             if (xjb_skillTag_suidongSkill == 1) {
                                 addItem(skillName, item, 'suidongSkill')
                             }
@@ -496,8 +511,9 @@ export function XJB_CONTENT(config, pack) {
                                 }
                             }
                             /*下面这两行连写，会先判断是否有player.logSkill再判断是否为触发技*/
-                            else if (info.direct && !contentStr.includes("player.logSkill")) return //判断是否有技能提示
-                            else if (info.trigger) {//判断是否为触发技
+                            else if (info.direct && !contentStr.includes("logSkill")) return;
+                            else if (info.popup === false && !contentStr.includes("logSkill")) return;
+                            else if (info.trigger) {
                                 if (xjb_skillTag_fuSkill == 1) {
                                     addItem(skillName, item, 'fuSkill')
                                 }
@@ -508,8 +524,11 @@ export function XJB_CONTENT(config, pack) {
                                     addItem(skillName, item, 'shouSkill')
                                 }
                                 if (xjb_skillTag_queqiaoxian == 1 && get.info("_xjb_queqiaoxian").getCP(item).length) {
-                                    if (!info.forceDie && ["yingzi"] && queqiaoxianBan.every(ban => !skillName.endsWith(ban))) addItem(skillName, item, 'queqiaoxian')
+                                    if (!info.forceDie && queqiaoxianBan.every(ban => !skillName.endsWith(ban))) addItem(skillName, item, 'queqiaoxian')
                                 }
+                            }
+                            else if (info.group) {
+                                searchGroup(skillName, info, item)
                             }
                         })
                     })

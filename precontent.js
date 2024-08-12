@@ -7,6 +7,22 @@ import {
     _status
 } from "../../noname.js";
 function provideFunction() {
+    game.xjb_judgeSkill = {
+        Tri_logSkill: function (skill) {
+            const info = get.info(skill);
+            if (!info.trigger) return false;
+            if (!info.content) return false;
+            if (info.direct && !info.content.toString().includes("logSkill")) return false;
+            if (info.popup === false && !info.content.toString().includes("logSkill")) return false;
+            return true;
+        },
+        enableNotView: function (skill) {
+            const info = get.info(skill);
+            if (!info.enable) return false;
+            if (info.viewAs) return false;
+            return true;
+        }
+    }
     game.xjb_bossLoad = function (str, player) {
         if (_status.timeout) game.pause()
         if (!player) player = game.me

@@ -152,12 +152,11 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     if (!event.skill) return false;
                     if (event.reason === "xjb_queqiaoxian") return false;
                     if (!lib.skill[event.skill].queqiaoxian) return false;
-                    if (!game.countPlayer(cur => !cur.sameSexAs(player.sex))) return false;
                     const info = get.info("_xjb_queqiaoxian");
                     const osPairs = info.getCP(player, event.skill)
                     if (!osPairs.length) return false;
                     if (!game.countPlayer(
-                        cur => osPairs.some(character => cur.name.endsWith(character))
+                        cur => osPairs.some(character => `${cur.name1}`.endsWith(character) || `${cur.name2}`.endsWith(character))
                     )) return false;
                     if (!event.targets || event.targets.some(cur => cur.isDead())) return false;
                     return true;
@@ -186,8 +185,16 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     }
                     return result;
                 },
-                filterCharacterNotSameSex(player, characterList) {
-                    const sex = typeof player === 'string' ? lib.character[player].sex : player.sex
+                filterCharacterNotSameSex(player, characterList, names = []) {
+                    let sex
+                    const name1 = names[0], name2 = names[1]
+                    if (typeof player === 'string') sex = lib.character[player].sex;
+                    else if (!player.name2) sex = player.sex;
+                    else if (names.length === 1) sex = lib.character[name1].sex;
+                    else if (names.length === 2) {
+                        if (lib.character[name2].sex === lib.character[name1].sex) sex = player.sex;
+                        else sex = "double";
+                    }
                     return characterList.filter(
                         characterName => {
                             if (lib.character[characterName]) return sex != lib.character[characterName].sex
@@ -198,7 +205,7 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     const info = get.info("_xjb_queqiaoxian");
                     const names = typeof player === 'string' ? [player] : info.whoseSkill(player, skill);
                     const allPairs = info.getPefectPair(...names);
-                    const osPairs = info.filterCharacterNotSameSex(player, allPairs);
+                    const osPairs = info.filterCharacterNotSameSex(player, allPairs, names);
                     function removeGUICHUN(guichun1, guichun2) {
                         if (names.some(name => name.endsWith(guichun1))) {
                             osPairs.remove(guichun2)
@@ -242,18 +249,22 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                 filter(event, player) {
                     if (!event.sourceSkill) return false;
                     if (!lib.skill[event.sourceSkill].queqiaoxian) return false;
-                    if (!game.countPlayer(cur => !cur.sameSexAs(player.sex))) return false;
+                    if (!lib.skill[event.skill].content) return false;
                     const info = get.info("_xjb_queqiaoxian");
-                    const osPairs = info.getCP(player, event.sourceSkill)
+                    const osPairs = info.getCP(player, event.sourceSkill);
                     if (!osPairs.length) return false;
                     if (!game.countPlayer(
-                        cur => osPairs.some(character => cur.name.endsWith(character))
+                        cur => osPairs.some(character => `${cur.name1}`.endsWith(character) || `${cur.name2}`.endsWith(character))
                     )) return false;
-                    const skillEvt = event.player.getHistory("useSkill", evt => evt.skill === event.sourceSkill).at(-1).event;
+                    const skillEvt = lib.skill[event.skill].direct ?
+                        event.getParent(event.skill) :
+                        event.player.getHistory("useSkill", evt => evt.skill === event.skill).at(-1).event;
+                    if (skillEvt.reason === "xjb_queqiaoxian") return false;
                     const playerList = [];
                     if (skillEvt.player) playerList.push(skillEvt.player)
                     if (skillEvt.targets) playerList.push(...skillEvt.targets)
-                    if (skillEvt.source) playerList.push(skillEvt.source);
+                    if (skillEvt._trigger.source) playerList.push(skillEvt._trigger.source);
+                    if (skillEvt._trigger.targets) playerList.push(...skillEvt._trigger.targets);
                     if (playerList.some(cur => cur.isDead())) return false;
                     return true;
                 },
@@ -267,10 +278,17 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                             return osPairs.some(character => (`${target.name1}`).endsWith(character) || (`${target.name2}`).endsWith(character))
                         }).forResult();
                     if (result.bool) {
-                        const skill = trigger.sourceSkill;
-                        const skillEvt = trigger.player.getHistory("useSkill", evt => evt.skill === trigger.sourceSkill).at(-1).event;
+                        const skill = trigger.skill;
                         const info = get.info(skill);
+                        const skillEvt = info.direct ?
+                            trigger.getParent(trigger.skill) : trigger.player.getHistory("useSkill", evt => evt.skill === trigger.skill).at(-1).event;
                         const next = game.createEvent(skill);
+                        if (typeof info.usable == "number") {
+                            result.targets[0].addSkill("counttrigger");
+                            if (!result.targets[0].storage.counttrigger) result.targets[0].storage.counttrigger = {};
+                            if (!result.targets[0].storage.counttrigger[skill]) result.targets[0].storage.counttrigger[skill] = 1;
+                            else result.targets[0].storage.counttrigger[skill]++;
+                        }
                         next.player = result.targets[0];
                         next._trigger = skillEvt._trigger;
                         next.triggername = skillEvt.triggername;
@@ -281,6 +299,7 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                         if (get.itemtype(skillEvt.cards) === "cards") next.cards = skillEvt.cards.slice(0);
                         if ("cost_data" in skillEvt) next.cost_data = skillEvt.cost_data;
                         next.indexedData = skillEvt.indexedData;
+                        next.reason = 'xjb_queqiaoxian'
                     }
                 }
             }
