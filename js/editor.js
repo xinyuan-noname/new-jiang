@@ -66,24 +66,29 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             '当你使用杀后', '当你使用决斗后', '当你使用桃后', '当你使用\u5357\u86ee\u5165\u4fb5后', '当你使用万箭齐发后'
         ],
     };
-    window.XJB_PUNC = [" || ", " && ", " + ", " - ", " += ", " -= ", "++", "--", "!", " >= ", " <= ", " == ", " === "]
+    window.XJB_PUNC = [" || ", " && ", " + ", " - ", " * ", " / ", " % ",
+        " += ", " -= ", "++", "--", "!", " >= ", " <= ", " == ", " === ",
+        "(", ")"]
     lib.xjb_class = {
         player: ['_status.currentPhase', 'target', 'game.me',
-            'player', 'trigger.player', 'trigger.source', 'trigger.target'
+            'player', 'trigger.player', 'trigger.source', 'trigger.target',
+            ...new Array(10).fill('targets').map((_, i) => _ + "[" + i + "]"),
+            ...new Array(10).fill('result.targets').map((_, i) => _ + "[" + i + "]")
         ],
         players: ['game.players', 'result.targets', 'targets'],
         game: ['game'],
         get: ['get'],
-        event: ['event', 'trigger', '_status.event'],
+        event: ['event', 'trigger', '_status.event', "evt", "judgeEvent", "chooseEvent"],
         suit: ['"red"', '"black"', '"club"', '"spade"', '"heart"', '"diamond"', '"none"'],
         nature: ['"ice"', '"fire"', '"thunder"'],
+        Math: ["Math"],
         cardName: (() => {
             const cardNameList = [].concat(...lib.config.cards.map(name => lib.cardPack[name]));
             return cardNameList.map(card => `"${card}"`);
         })(),
         number: ['1', '2', '3', '4', '5', '6',
             '7', '8', '9', '10', '11', '12', '13'],
-        gain: ['"gain2"', '"draw"'],
+        gain: ['"gain2"', '"draw"', '"giveAuto"', "'gain2'", "'draw'", "'giveAuto'"],
         logicConj: [" > ", " < ", " >= ", " <= ", " == ", ">", "<", ">=", "<=", "=="],
     }
     get.xjb_en = (str) => NonameCN.getEn(str);
@@ -129,15 +134,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             const playerCN = NonameCN.playerCN;
             const JOINED_PLAYAERCN = playerCN.join("|");
             let player = NonameCN.getVirtualPlayer();
-            let eventModel = {
-                ..._status.event,
-                num: 1,
-                targetprompt: '1',
-                getParent: () => true,
-                filterTarget: () => true,
-                "set": () => true,
-                cancel: () => true
-            }
+            let vGame = NonameCN.getVirtualGame();
+            let eventModel = NonameCN.getVirtualEvent();
             eventModel.trigger = undefined;
             let backArr = ui.create.xjb_back()
             let back = backArr[0]
@@ -198,7 +196,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             back.trigger = [];
             back.phaseUse = [];
             back.choose = [];
-
             back.skillEditorStart = function () {
                 const cache = back.skill.primarySkillCache;
                 back.skill = {
@@ -263,7 +260,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     back.ele[itemName].value = '';
                 };
             }
-
             //缓存部分
             back.cachePrimarySkill = function () {
                 if (!back.skill.subSkillEditing) {
@@ -389,8 +385,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     }
                 });
             }
-
-
             back.modTest = function () {
                 back.ele.content.submit(true);
                 back.skill.mod = {
@@ -485,7 +479,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     return [`type:${NonameCN.getEn(p[1])}`, `targetEnabled_false`]
                 })
                 addMod(/^\s*(你|player)\s*不能成为\s*锦囊牌的?\s*(目标|target)\s*$/, "type:trick-delay", "targetEnabled_false");
-                
+
                 //
                 addMod(/^\s*(你|player)\s*使用的?\s*卡?牌(无|没有)(次数|数量|距离)限制\s*$/, void 0, void 0, (match, ...p) => {
                     return [`all`, `${p[2] == '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`]
@@ -709,7 +703,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         }
                         if (d.includes(":intoFunctionWait")) {
                             d = d.replace(":intoFunctionWait", "");
-                            d = d.split(matchNotObjColon);
+                            d = d.includes(';') ? d.split(";") : d.split(matchNotObjColon);
                             list.push(d[0])
                             after.push(d.slice(1))
                             return
@@ -717,7 +711,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         //如果中含有intoFunction,则将其分割,并放置于参数位置
                         if (d.includes(":intoFunction")) {
                             d = d.replace(":intoFunction", "");
-                            d = d.split(matchNotObjColon);
+                            d = d.includes(';') ? d.split(";") : d.split(matchNotObjColon);
                             list.push(...d);
                             return
                         }
@@ -731,60 +725,73 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     let str0 = '', str = '', str1 = '', str2 = '',
                         notice = [], bool = true, index,
                         players
-                    //捕捉关键词
-                    i.forEach(a => {
-                        if (!game.xjb_judgeType(a)) return;
-                        if (game.xjb_judgeType(a) === 'players') players = a
-                    });
-                    //组装函数前语句
-                    i.forEach((a, b) => {
-                        if (!bool) return false
-                        function WAW(body) {
-                            if (body[a]) {
-                                str += ('.' + a)
-                                if (typeof body[a] === 'function') {
-                                    bool = false;
-                                    index = b + 1
-                                    str2 = '()'
-                                }
+                    function watchAndWork(body, a, b) {
+                        if (body[a]) {
+                            str += ('.' + a)
+                            if (typeof body[a] === 'function') {
+                                bool = false;
+                                str2 = '()'
+                                index = b + 1
                             }
-                            else if (a.includes(':') && a.at(-1) != ',') {
-                                let arrA = a.split(matchNotObjColon);
-                                let arrB = [];
-                                arrA = arrA.filter(each => {
-                                    if (each.startsWith("//!?")) {
-                                        arrB.push(each.replace("//!?", ""))
-                                        return false;
-                                    }
-                                    return true;
-                                })
-                                let verbA = arrA.shift()
-                                if (body[verbA]) {
-                                    str += '.' + verbA;
-                                    str += '(';
-                                    str += arrA.join(',');
-                                    str += ')';
-                                    if (arrB.length) {
-                                        str += '.'
-                                        str += arrB.join('.')
-                                    }
-                                } else {
-                                    str += a;
-                                }
-                            }
-                            else str += a
                         }
+                        else if (a.includes(';')) {
+                            str += NonameCN.disposeWithQuo(body, a)
+                        }
+                        else if (a.includes(':') && a.at(-1) != ',') {
+                            str += NonameCN.disposeWithQuo(body, a, matchNotObjColon)
+                        }
+                        else str += a
+                    }
+                    //组装函数前语句
+                    for (let b = 0; b < i.length; b++) {
+                        //这个bool来控制循环的进行与否
+                        if (!bool) break;
+                        const a = i[b];
+                        const WAW = (body) => (watchAndWork(body, a, b))
                         notice.push(game.xjb_judgeType(a))
+                        if (game.xjb_judgeType(a) === 'players') players = a
                         if (["const ", "let ", "var "].includes(a)) notice.push("variable")
-                        if (notice.includes('game')) WAW(game)
+                        if (notice.includes('game')) WAW(vGame)
                         else if (notice.includes('get')) WAW(get)
+                        else if (notice.includes('players')) { WAW(player) }
                         else if (notice.includes('player')) { WAW(player) }
                         else if (notice.includes('event')) WAW(eventModel)
-                        else if (notice.includes('event')) WAW(eventModel)
+                        else if (notice.includes('Math')) WAW(Math)
                         else if (notice.includes('variable')) WAW({})
                         else if (notice.includes('array')) WAW([])
-                        else WAW(player);
-                    })
+                        else WAW({});
+                    }
+                    if (notice.includes("Math") && index) {
+                        const replacer = [];
+                        const cache = [];
+                        const toReplaced = i.slice(index);
+                        for (const word of toReplaced) {
+                            const watcher = game.xjb_judgeType(cache.join(''));
+                            //console.log(watcher, replacer, cache)
+                            if (['player', 'game'].includes(watcher)) {
+                                if (watcher === 'player' && player[word]
+                                    || watcher === 'game' && game[word]) {
+                                    replacer.push(replacer.pop() + "." + word)
+                                    continue;
+                                }
+                                else if (word.includes(";")) {
+                                    replacer.push(replacer.pop() + NonameCN.disposeWithQuo(player, word))
+                                    continue;
+                                }
+                                else if (word.includes(":") && word.at(-1) !== ",") {
+                                    replacer.push(replacer.pop() + NonameCN.disposeWithQuo(player, word, matchNotObjColon))
+                                    continue;
+                                }
+                            }
+                            replacer.push(word)
+                            cache.push(word)
+                            if (XJB_PUNC.includes(word)) {
+                                cache.length = 0;
+                                continue;
+                            }
+                        }
+                        i.splice(index, Infinity, ...replacer);
+                    }
                     //填写参数
                     if (index) {
                         let toOrder = i.splice(index)
@@ -1038,7 +1045,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     const content = this.value;
                     const subStr = content.slice(start, end).replace('\t', '');
                     if (this.selectionEnd == this.selectionStart) {
-                        list = Object.keys(NonameCN.giveSentence[type]).filter(item => item.startsWith(subStr));
+                        list = [...Object.keys(NonameCN.giveSentence[type]), ...Object.keys(NonameCN.giveSentence['unshown_' + type])].filter(item => item.startsWith(subStr));
                     }
                     if (!list.length) {
                         this.selectionStart = start;
@@ -1552,12 +1559,12 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 that.value = suitSymbolToCN(that.value)
                 that.changeWord(/该回合/g, "本回合")
                 //处理一些特殊属性
-                that.changeWord(/([火雷冰])杀/g,'$1属性杀')
-                that.changeWord(/([红黑])杀/g,'$1色杀')
-                that.changeWord(/([火雷冰]属性)/g,' $1 ')
-                that.changeWord(/([红黑]色)/g,' $1 ')
-                that.changeWord(/(红桃|方片|梅花|黑桃|无花色)/g,' $1 ')
-                that.changeWord(/(武器牌|防具牌|\+1马牌|\-1马牌|宝物牌)/g,' $1 ')
+                that.changeWord(/([火雷冰])杀/g, '$1属性杀')
+                that.changeWord(/([红黑])杀/g, '$1色杀')
+                that.changeWord(/([火雷冰]属性)/g, ' $1 ')
+                that.changeWord(/([红黑]色)/g, ' $1 ')
+                that.changeWord(/(红桃|方片|梅花|黑桃|无花色)/g, ' $1 ')
+                that.changeWord(/(武器牌|防具牌|\+1马牌|\-1马牌|宝物牌)/g, ' $1 ')
                 //
                 that.changeWord(/(?<!\n)(并且|或者)/g, '\n$1')
                 that.changeWord(/(并且|或者)(?!\n)/g, '$1\n')
@@ -1729,7 +1736,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 NonameCN.standardEffectBefore(that)
                 NonameCN.underlieVariable(that)
                 //处理player相关字符
-                that.changeWord(new RegExp(`由(${JOINED_PLAYAERCN})造成的`, 'g'), `$1}`);
+                that.changeWord(new RegExp(`由(${JOINED_PLAYAERCN})造成的`, 'g'), `$1`);
                 that.changeWord(new RegExp(`对(${JOINED_PLAYAERCN})造成伤害的牌`, 'g'), "造成伤害的牌");
                 that.changeWord(new RegExp(`(${JOINED_PLAYAERCN})的`, 'g'), '$1');
                 ["体力值", "体力上限", "手牌数"].forEach(i => {
@@ -1800,10 +1807,11 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     that.changeWord("-" + get.cnNumber(i), "-" + i);
                 }
                 that.value = suitSymbolToCN(that.value);
-                
                 update('其他', function (disposing, disposed, previous) {
                     if (previous.match(/其他角色计算(与|和)/)) return previous;
                     if (previous.match(/计算(与|和)其他角色的?距离/)) return previous;
+                    if (/其他(.+?)势力角色/.test(previous)) return previous;
+                    if (/其他[男女双]性角色/.test(previous)) return previous;
                     return disposed;
                 })
                 parameter("火属性", "冰属性", "雷属性",
@@ -1812,6 +1820,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 parameter("至多", "至少")
                 parameter('梅花', '方片', '无花色', '黑桃', '红桃', '红色', '黑色', '无色', function (disposing, disposed, previous) {
                     if (previous.includes(`牌堆中${disposing}牌`)) return previous;
+                    if (previous.includes(`设置${disposing}作为`)) return previous;
                     return disposed;
                 });
                 parameter('魏势力', '蜀势力', '吴势力', '群势力', '晋势力', '神势力');
@@ -1820,11 +1829,11 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     if (line.includes("令为") || line.includes("变量") || !group.length) return;
                     if (/其他角色计算(和|与)你的?距离/.test(line)) return;
                     if (/添单[ ]*你/.test(line)) return;
-                    if (new RegExp(`^无视${JOINED_PLAYAERCN}防具的牌$`).test(line)) return;
+                    if (new RegExp(`^无视(${JOINED_PLAYAERCN})防具的牌`).test(line)) return;
                     let restWords = clearWordsGroup(line, playerCN);
                     return `${group.shift()} ${restWords} ${group.join(" ")}`
                 })
-                that.changeWord(new RegExp(`(${JOINED_PLAYAERCN})`, 'g'), '$1 ');
+                that.changeWord(new RegExp(`(${JOINED_PLAYAERCN})`, 'g'), ' $1 ');
                 NonameCN.standardEeffect(that)
                 NonameCN.standardEvent(that);
                 NonameCN.deleteBlank(that);
@@ -1896,7 +1905,11 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .replaceOrder(/(本|此|该)技能id/g, back.getID)
                 .clearThenOrder("整理", back.ele.content.arrange)
                 .replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", back.ele.content.adjustTab)
+                .replaceThenOrder('新选择如果', "如果\n选择结果布尔\n那么\n分支开始\n\n分支结束", back.ele.content.adjustTab)
                 .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", back.ele.content.adjustTab)
+                .replaceOrder('新目标过滤', '(card,player,target)=>{}')
+                .replaceOrder('新卡牌过滤', '(card)=>{}')
+                .replaceOrder(/新小括号?/g, '(  )')
                 .debounce('keyup', back.ele.content.submit, 200)
                 .listen('keydown', deleteModule)
                 .listen('selectionStartChange', adjustSelection)
@@ -2031,6 +2044,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     if (i.includes("一点")) {
                         a.remove("一点")
                         back.skill.getIndex = true
+                    }
+                    if (i.includes("roundStart")) {
+                        a.remove('roundStart');
+                        tri_global.push("roundStart");
                     }
                     if (i.includes('player')) {
                         a.remove('player')
@@ -2220,7 +2237,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             }
             filterTargetFree.arrange = function () {
                 const that = filterTargetFree
-                that.changeWord(/所选角色/g, '目标')
+                that.changeWord(/(你|目标)/g, "$1 ");
                 NonameCN.standardBoolExpBefore(that)
                 NonameCN.underlieVariable(that)
                 new Array('你', '目标').forEach(i => {
@@ -2282,11 +2299,9 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 that.changeWord(/所选角色/g, '目标')
                 NonameCN.standardBoolExpBefore(that)
                 NonameCN.underlieVariable(that)
-                new Array('你', '目标').forEach(i => {
-                    that.changeWord(new RegExp(i, 'g'), i + ' ')
-                })
-                that.changeWord(/二/g, '两')
-                that.changeWord(/(?<=[0-9一二三四五六七八九])(?=到.+?张)/g, '张')
+                that.changeWord(/(你|目标)/g, "$1 ");
+                that.changeWord(/二/g, '两');
+                that.changeWord(/(?<=[0-9一二三四五六七八九])(?=到.+?张)/g, '张');
                 for (let i = 1; i <= 10; i++) {
                     that.changeWord(new RegExp(`(${i}张)`, 'mg'), " $1 ");
                     that.changeWord(new RegExp(`(${get.cnNumber(i)}张)`, 'mg'), " $1 ");
@@ -2700,7 +2715,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                                 })
                                     .appendPrompt('标记外观', back.skill.marktext ? back.skill.marktext : void 0, '这里写标记外观文字,只能写一个字!',)
                                     .appendPrompt('标记名字', back.skill.markName ? back.skill.markName : void 0, '这里写标记的名字',)
-                                    .appendPrompt('标记内容', back.skill.markContent ? back.skill.markContent : void 0, '这里写点开标记后显示的内容', 4);
+                                    .appendPrompt('标记内容', back.skill.markContent ? back.skill.markContent : void 0, '这里写点开标记后显示的内容,你可以用#表示标记数量', 4);
                             }; break;
                         }
                     }

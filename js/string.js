@@ -27,15 +27,6 @@ export const JavascriptGlobalVariable = [
 ]
 /**
  * 
- * 该函数使用正则表达式替换字符串中多余的逗号和其他标点符号
- * 具体来说，它修复了以下几种情况：
- * 1. 逗号和右括号之间的多余逗号
- * 2. 左括号和逗号之间的多余逗号
- * 3. 字符串中多余的逗号
- * 4. 字符串中多余的分号
- * 5. 逗号和大括号之间的多余逗号
- * 6. 大括号和逗号之间的多余逗号
- * 
  * @param {string} str - 需要修正的字符串
  * @returns {string}
  */
@@ -46,6 +37,7 @@ export function correctPunctuation(str) {
         .replace(/;;+/g, ';')
         .replace(/\,\}/g, '}')
         .replace(/\{\,/g, '{')
+        .replace(/(?<!\.)\.{2}(?!\.)/,'.')
 }
 /**
  * 生成一个随机的36进制字符串。
@@ -162,7 +154,7 @@ export function adjustTab(str, basic = 0, start = '{', end = '}') {
     let tabLevel = basic;
     let arr2 = arr1.map(line => {
         const times = line.match(/^\t+/) ? line.match(/^\t+/)[0].length : 0;
-        if (!line.includes(start) && (line.endsWith(end) || line.endsWith(end + ','))) tabLevel--;
+        if (!line.includes(start) && [end,`${end},`,`${end})`].some(item=>item.endsWith(line))) tabLevel--;
         const deltaValue = times - tabLevel;
         let result = line;
         if (deltaValue > 0) result = line.slice(deltaValue);

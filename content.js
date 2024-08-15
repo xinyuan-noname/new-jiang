@@ -243,7 +243,7 @@ export function XJB_CONTENT(config, pack) {
                     "HunbiExpectation": "魂币期望:" + (hun(game.xjb_hunbiExpectation())),
                     "floatRate": "浮流率:" + (game.xjb_inflationRate() * 100).toFixed(2) + "%"
                 }
-                let target = game.xjb_create.condition(condition).font(30)
+                game.xjb_create.condition(condition).font(30)
             }
         }
         lib.extensionMenu.extension_新将包.hunbi_tozero = {

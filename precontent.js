@@ -6,6 +6,10 @@ import {
     ai,
     _status
 } from "../../noname.js";
+import {
+    xjb_library
+} from "./js/library.js";
+window.xjb_library = xjb_library;
 function provideFunction() {
     game.xjb_judgeSkill = {
         Tri_logSkill: function (skill) {
@@ -297,7 +301,6 @@ function importFile() {
             window.XJB_LOAD_title(_status, lib, game, ui, get, ai)
             count++;
         })
-        lib.init.js(lib.xjb_src + "js", "library", () => { });
         function interval() {
             if (count >= files.length + 2) {
                 res()
@@ -310,6 +313,7 @@ function importFile() {
             window.XJB_LOAD_FINAL(_status, lib, game, ui, get, ai)
         })
     })
+    //引入api
     game.xjb_loadAPI = function (suc = () => void 0, fail = () => void 0) {
         if (window.xjb_xyAPI) {
             game.xjb_create.alert('工具已引入,无需重新引入!');

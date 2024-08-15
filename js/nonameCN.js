@@ -369,26 +369,28 @@ function getMapAboutCard() {
     }
     return map
 };
-function getMapOfSkip(){
+function getMapOfSkip() {
     const map = {}
-    for(const [cn,en] of Object.entries(phaseList)){
-        if(cn==='回合')continue;
-        map['跳过下一个'+cn]=`skip:"${en}"`
+    for (const [cn, en] of Object.entries(phaseList)) {
+        if (cn === '回合') continue;
+        map['跳过下一个' + cn] = `skip:"${en}"`
     }
     return map
 }
 export class NonameCN {
     static playerCN = ["你", "玩家",
         "当前回合角色",
-        "所选角色", "所选的角色",
+        ...new Array(10).fill('所选角色').map((item, index) => '第' + get.cnNumber(index) + '个' + item),
+        "所选角色",
         "所有角色",
         "伤害来源", "受伤角色",
-        "此牌的目标",
+        "此牌的目标", "此牌的所有目标",
         "触发事件的角色", "触发事件的来源", "触发事件的目标",
         ...new Array(10).fill('目标组-').map((item, index) => item + index),
         "目标"
     ]
     static basicList = {
+        "数学": "Math",
         //
         '触发': 'trigger',
         '触发事件': 'trigger',
@@ -414,49 +416,20 @@ export class NonameCN {
         '受伤点数': 'trigger.num',
         '伤害点数': 'trigger.num',
         '造成伤害的牌': 'trigger.cards',
-        '此牌对应的所有实体牌': 'trigger.cards',
-        '此牌对应的实体牌': 'trigger.cards',
         '造成伤害的属性': 'trigger.nature',
         '伤害属性': 'trigger.nature',
+        //
+        '触发事件的点数': "trigger.num",
+        '触发事件点数': "trigger.num",
+        '此牌对应的所有实体牌': 'trigger.cards',
+        '此牌对应的实体牌': 'trigger.cards',
         "判定牌": "trigger.result.card",
         '当前回合序号': `trigger.getParent("phase",void 0,true).num`,
         //
         '获取': 'get',
-        //弃牌堆中
-        '弃牌堆中普通锦囊牌': 'discardPile:card=>get.type(card)==="trick":intoFunction',
-        '弃牌堆中延时锦囊牌': 'discardPile:card=>get.type(card)==="delay":intoFunction',
-        '弃牌堆中基本牌': 'discardPile:card=>get.type(card)==="basic":intoFunction',
-        '弃牌堆中装备牌': 'discardPile:card=>get.type(card)==="equip":intoFunction',
-        '弃牌堆中宝物牌': 'discardPile:card=>get.subtype(card,false)=="equip5":intoFunction',
-        '弃牌堆中防具牌': 'discardPile:card=>get.subtype(card,false)=="equip2":intoFunction',
-        '弃牌堆中武器牌': 'discardPile:card=>get.subtype(card,false)=="equip1":intoFunction',
-        '弃牌堆中+1马牌': 'discardPile:card=>get.subtype(card,false)=="equip3":intoFunction',
-        '弃牌堆中-1马牌': 'discardPile:card=>get.subtype(card,false)=="equip4":intoFunction',
-        '弃牌堆中防御马牌': 'discardPile:card=>get.subtype(card,false)=="equip3":intoFunction',
-        '弃牌堆中进攻马牌': 'discardPile:card=>get.subtype(card,false)=="equip4":intoFunction',
-        '弃牌堆中伤害锦囊牌': 'discardPile:card=>get.type2(card,false)=="trick"&&get.tag(card,"damage"):intoFunction',
-        '弃牌堆中牌颜色为红色': 'discardPile:card=>get.color(card,false)=="red":intoFunction',
-        '弃牌堆中牌颜色为黑色': 'discardPile:card=>get.color(card,false)=="black":intoFunction',
-        //牌堆中
-        '牌堆中普通锦囊牌': 'cardPile2:card=>get.type(card)==="trick":intoFunction',
-        '牌堆中延时锦囊牌': 'cardPile2:card=>get.type(card)==="delay":intoFunction',
-        '牌堆中基本牌': 'cardPile2:card=>get.type(card)==="basic":intoFunction',
-        '牌堆中装备牌': 'cardPile2:card=>get.type(card)==="equip":intoFunction',
-        '牌堆中宝物牌': 'cardPile2:card=>get.subtype(card,false)=="equip5":intoFunction',
-        '牌堆中防具牌': 'cardPile2:card=>get.subtype(card,false)=="equip2":intoFunction',
-        '牌堆中武器牌': 'cardPile2:card=>get.subtype(card,false)=="equip1":intoFunction',
-        '牌堆中+1马牌': 'cardPile2:card=>get.subtype(card,false)=="equip3":intoFunction',
-        '牌堆中-1马牌': 'cardPile2:card=>get.subtype(card,false)=="equip4":intoFunction',
-        '牌堆中防御马牌': 'cardPile2:card=>get.subtype(card,false)=="equip3":intoFunction',
-        '牌堆中进攻马牌': 'cardPile2:card=>get.subtype(card,false)=="equip4":intoFunction',
-        '牌堆中伤害锦囊牌': 'cardPile2:card=>get.type2(card,false)=="trick"&&get.tag(card,"damage"):intoFunction',
-        '牌堆中牌颜色为红色': 'cardPile2:card=>get.color(card,false)=="red":intoFunction',
-        '牌堆中牌颜色为黑色': 'cardPile2:card=>get.color(card,false)=="black":intoFunction',
         //
         '游戏': 'game',
         '轮数': 'roundNumber',
-        //
-
         //颜色和花色
         '红色': '"red"',
         '黑色': '"black"',
@@ -491,6 +464,8 @@ export class NonameCN {
         'Q': '12',
         'K': '13',
         //
+
+        //
         '有概率': 'Math.random()<=',
         //废除事件
         '废除一个武器栏': 'disableEquip:"equip1":intoFunction',
@@ -507,29 +482,6 @@ export class NonameCN {
         '废除防御马栏': 'disableEquip:"equip3":intoFunction',
         '废除进攻马栏': 'disableEquip:"equip4":intoFunction',
         '废除宝物栏': 'disableEquip:"equip5":intoFunction',
-        //选择式事件-废除和恢复         
-        '选择牌': 'chooseCard:"he":intoFunction',
-        '选择手牌': 'chooseCard',
-        '废除装备区内一个装备栏': 'chooseToDisable',
-        '选择废除装备区内一个装备栏': 'chooseToDisable',
-        '废除一个装备栏': 'chooseToDisable',
-        '选择废除一个装备栏': 'chooseToDisable',
-        '恢复装备区内一个装备栏': 'chooseToEnable',
-        '选择恢复装备区内一个装备栏': 'chooseToEnable',
-        '选择恢复一个装备栏': 'chooseToEnable',
-        '恢复一个装备栏': 'chooseToEnable',
-        //选择式事件-牌类
-        '选择弃置牌': 'chooseToDiscard:"he":intoFunction',
-        '选择弃置手牌': 'chooseToDiscard:"h":intoFunction',
-        '选择弃牌': 'chooseToDiscard:"he":intoFunction',
-        '选择弃手牌': 'chooseToDiscard:"h":intoFunction',
-        '选择角色牌': 'choosePlayerCard:"he":intoFunction',
-        '选择角色手牌': 'choosePlayerCard',
-        '卜算': 'chooseToGuanxing',
-        '选择角色': 'chooseTarget',
-        '选择目标': 'chooseTarget',
-        //
-
         '任意张': '[1,Infinity]',
         '任意名': '[1,Infinity]',
         //
@@ -538,7 +490,7 @@ export class NonameCN {
         '至少': 'atLeast',
         '必须选': 'true',
         //关键字、运算符中文  
-        '返回': 'return',
+        '返回': 'return ',
         '变量': 'var ',
         '常量': 'const ',
         '块级变量': 'let ',
@@ -578,8 +530,13 @@ export class NonameCN {
         '加': ' + ',
         '减': ' - ',
         '乘': ' * ',
-        '除': ' / ',
+        '乘以': ' * ',
+        '除以': ' / ',
         '取模': ' % ',
+        '加等': " += ",
+        '减等': " -= ",
+        '除等': " /= ",
+        '乘等': " *= ",
         //数学
         '随机数': 'Math.random()',
         '圆周率': 'Math.PI',
@@ -627,10 +584,8 @@ export class NonameCN {
         "instanceof": " instanceof ",
         //注释
         '注释': '//',
-        //
         "父元素": "parentNode",
         "子元素": "children",
-        //
         "牌堆": "ui.cardPile",
         "弃牌堆": "ui.discardPile",
         "处理区": "ui.ordering",
@@ -667,6 +622,7 @@ export class NonameCN {
             "不计入次数": 'false',
             '不影响ai': `"noai"`,
             '摸牌式': '"draw"',
+            '给牌式': '"giveAuto"',
             '从牌堆底': '"bottom"',
             '牌堆底': '"bottom"',
         },
@@ -675,22 +631,99 @@ export class NonameCN {
             "不可响应牌的角色": `trigger.getParent("useCard",void 0,true).directHit`,
             "无视此牌的目标防具的牌": `trigger.target.storage.qinggang2`,
             '此牌的这些目标': `trigger.getParent("useCard",void 0,true).targets`,
-            "阶段列表": `trigger.getParent("phase",void 0,true).phaseList`
+            "阶段列表": `trigger.getParent("phase",void 0,true).phaseList`,
         },
         array_method: {
             "包含": 'includes',
             "添单": "add",
             "添多": "addArray",
-            "剪接": "splice"
+            "剪接": "splice",
+            "连接": "concat",
+            "移除": "remove",
+            "随机获取": "randomGets",
+            "。包含": '.includes',
+            "。添单": ".add",
+            "。添多": ".addArray",
+            "。剪接": ".splice",
+            "。连接": ".concat",
+            "。移除": ".remove",
+            "。随机获取": ".randomGets",
         },
-        card: {
-            ...getMapAboutCard(),
+        get_method: {
+            "牌堆顶牌组": "cards",
+            "牌堆底牌组": "bottomCards",
+            "牌堆顶牌组(放回)": "cards:ture:intoFunctionWait",
+            "牌堆底牌组(放回)": "bottomCards:ture:intoFunctionWait",
+            "技能使用次数": "skillCount",
+            //弃牌堆中
+            '弃牌堆中普通锦囊牌': 'discardPile:card=>get.type(card)==="trick"',
+            '弃牌堆中延时锦囊牌': 'discardPile:card=>get.type(card)==="delay"',
+            '弃牌堆中基本牌': 'discardPile:card=>get.type(card)==="basic"',
+            '弃牌堆中装备牌': 'discardPile:card=>get.type(card)==="equip"',
+            '弃牌堆中宝物牌': 'discardPile:card=>get.subtype(card)=="equip5"',
+            '弃牌堆中防具牌': 'discardPile:card=>get.subtype(card)=="equip2"',
+            '弃牌堆中武器牌': 'discardPile:card=>get.subtype(card)=="equip1"',
+            '弃牌堆中+1马牌': 'discardPile:card=>get.subtype(card)=="equip3"',
+            '弃牌堆中-1马牌': 'discardPile:card=>get.subtype(card)=="equip4"',
+            '弃牌堆中防御马牌': 'discardPile:card=>get.subtype(card)=="equip3"',
+            '弃牌堆中进攻马牌': 'discardPile:card=>get.subtype(card)=="equip4"',
+            '弃牌堆中伤害锦囊牌': 'discardPile:card=>get.type2(card)=="trick"&&get.tag(card,"damage")',
+            '弃牌堆中牌颜色为红色': 'discardPile:card=>get.color(card)=="red"',
+            '弃牌堆中牌颜色为黑色': 'discardPile:card=>get.color(card)=="black"',
+            //牌堆中
+            '牌堆中普通锦囊牌': 'cardPile2:card=>get.type(card)==="trick"',
+            '牌堆中延时锦囊牌': 'cardPile2:card=>get.type(card)==="delay"',
+            '牌堆中基本牌': 'cardPile2:card=>get.type(card)==="basic"',
+            '牌堆中装备牌': 'cardPile2:card=>get.type(card)==="equip"',
+            '牌堆中宝物牌': 'cardPile2:card=>get.subtype(card)=="equip5"',
+            '牌堆中防具牌': 'cardPile2:card=>get.subtype(card)=="equip2"',
+            '牌堆中武器牌': 'cardPile2:card=>get.subtype(card)=="equip1"',
+            '牌堆中+1马牌': 'cardPile2:card=>get.subtype(card)=="equip3"',
+            '牌堆中-1马牌': 'cardPile2:card=>get.subtype(card)=="equip4"',
+            '牌堆中防御马牌': 'cardPile2:card=>get.subtype(card)=="equip3"',
+            '牌堆中进攻马牌': 'cardPile2:card=>get.subtype(card)=="equip4"',
+            '牌堆中伤害锦囊牌': 'cardPile2:card=>get.type2(card)=="trick"&&get.tag(card,"damage")',
+            '牌堆中牌颜色为红色': 'cardPile2:card=>get.color(card)=="red"',
+            '牌堆中牌颜色为黑色': 'cardPile2:card=>get.color(card)=="black"',
+            //标签
             "有伤害标签": `tag:"damage":intoFunctionWait`,
             "无伤害标签": `tag:"damage":intoFunctionWait:denyPrefix`,
             "有多角色标签": `tag:"multitarget":intoFunctionWait`,
             "无多角色标签": `tag:"multitarget":intoFunctionWait:denyPrefix`,
             "有多目标标签": `tag:"multitarget":intoFunctionWait`,
             "无多目标标签": `tag:"multitarget":intoFunctionWait:denyPrefix`,
+        },
+        math_method: {
+            "最大值": "max",
+            "最小值": "min",
+            "绝对值": "abs",
+            "正弦": "sin",
+            "余弦": "cos",
+            "保留整数": "trunc",
+            "四舍五入": "round",
+            "向下取整": "floor",
+            "向上取整": "ceil"
+        },
+        card: {
+            ...getMapAboutCard(),
+        },
+        result: {
+            "选择结果布尔": "result.bool",
+            "选择结果卡牌": "result.card",
+            "选择结果牌组": "result.cards",
+            "选择结果按钮": "result.links",
+            "选择结果目标组": "result.targets",
+            "选择结果牌数": "result.cards.length",
+            "选择结果目标数": "result.targets.length",
+            "选择结果按钮数": "result.button.length",
+            "选择结果牌名": "result.name",
+            "选择结果点数": "result.number",
+            "选择结果颜色": "result.color",
+            "选择结果花色": "result.suit",
+            "判定牌名": "result.name",
+            "判定点数": "result.number",
+            "判定颜色": "result.color",
+            "判定花色": "result.suit",
         },
         player: {
             ...playerList,
@@ -707,8 +740,6 @@ export class NonameCN {
             'id': 'name',
         },
         player_method: {
-            "选择使用手牌": `chooseToUse`,
-            "选择使用牌": `chooseToUse`,
             "攻击范围内有": "inRange",
             '执行一个额外的回合': 'insertPhase',
             "摸牌或回复体力值": "chooseDrawRecover",
@@ -728,6 +759,8 @@ export class NonameCN {
             '存活': 'isAlive',
             //牌类
             '摸': 'draw',
+            '给牌': "give",
+            '给出牌': "give",
             '展示牌': "showCards",
             '随机获得牌': 'randomGain',
             '随机弃置手牌': 'randomDiscard',
@@ -737,6 +770,9 @@ export class NonameCN {
             '将手牌摸至': 'drawTo',
             '手牌补至': 'drawTo',
             '手牌摸至': 'drawTo',
+            //
+            '更新状态': "update",
+            //
             '有手牌': 'hasCard',
             '没有手牌': "hasCard:denyPrefix",
             //宗族类
@@ -766,6 +802,7 @@ export class NonameCN {
             '体力值为全场最少或之一': 'isMinHp',
             '手牌数为全场最少或之一': 'isMinHandcard',
             //标记类
+            "标记数量": "countMark",
             '统计标记': "countMark",
             '获得标记': 'addMark',
             '增加标记': 'addMark',
@@ -780,6 +817,34 @@ export class NonameCN {
             '获得技能': 'addSkillLog',
             '拥有技能': 'hasSkill',
             '有技能': 'hasSkill',
+            "临时获得技能": "addTempSkill",
+        },
+        player_choose: {
+            '选择按钮': "chooseButton",
+            "选择使用手牌": `chooseToUse`,
+            "选择使用牌": `chooseToUse`,
+            '选择牌': 'chooseCard:"he":intoFunction',
+            '选择手牌': 'chooseCard',
+            '废除装备区内一个装备栏': 'chooseToDisable',
+            '选择废除装备区内一个装备栏': 'chooseToDisable',
+            '废除一个装备栏': 'chooseToDisable',
+            '选择废除一个装备栏': 'chooseToDisable',
+            '恢复装备区内一个装备栏': 'chooseToEnable',
+            '选择恢复装备区内一个装备栏': 'chooseToEnable',
+            '选择恢复一个装备栏': 'chooseToEnable',
+            '恢复一个装备栏': 'chooseToEnable',
+            '选择弃置牌': 'chooseToDiscard:"he":intoFunction',
+            '选择弃置手牌': 'chooseToDiscard:"h":intoFunction',
+            '选择弃牌': 'chooseToDiscard:"he":intoFunction',
+            '选择弃手牌': 'chooseToDiscard:"h":intoFunction',
+            '选择角色牌': 'choosePlayerCard:"he":intoFunction',
+            '选择角色手牌': 'choosePlayerCard',
+            '卜算': 'chooseToGuanxing',
+            '选择角色': 'chooseTarget',
+            '选择目标': 'chooseTarget',
+            '判定': "judge",
+            '选择牌和角色': "chooseCardTarget",
+            '选择角色和牌': "chooseCardTarget",
         },
         player_withArg: {
             ...getMapOfHasCard(),
@@ -790,6 +855,10 @@ export class NonameCN {
             ...getMapOfSkip(),
             "本回合被破甲": `addTempSkill:"qinggang2"`,
             "本回合非锁定技失效": `addTempSkill:"fengyin"`,
+
+            //
+            "播放判定生效动画": "tryJudgeAnimagte:true",
+            "播放判定失效动画": "tryJudgeAnimagte:false",
             //
             "攻击范围": "getAttackRange:",
             //标记类
@@ -820,12 +889,20 @@ export class NonameCN {
             '弃置角色牌': 'discardPlayerCard:"he":intoFunction',
             '获得角色手牌': 'gainPlayerCard:"h":intoFunction',
             '弃置角色手牌': 'discardPlayerCard:"h":intoFunction',
-            '装备区有牌': `hasCard:void 0:"e"`,
-            '判定区有牌': `hasCard:void 0:"j"`,
-            '手牌区有牌': `hasCard:void 0:"h"`,
+            //
             '有牌': 'hasCard:void 0:"he"',
             '场上有牌': `hasCard:void 0:"ej"`,
             '区域内有牌': 'hasCard:void 0:"hej"',
+            '装备区有牌': `hasCard:void 0:"e"`,
+            '判定区有牌': `hasCard:void 0:"j"`,
+            '手牌区有牌': `hasCard:void 0:"h"`,
+            '没有牌': 'hasCard:void 0:"he":denyPrefix',
+            '场上没有牌': `hasCard:void 0:"ej":denyPrefix`,
+            '区域内没有牌': 'hasCard:void 0:"hej":denyPrefix',
+            '装备区没有牌': `hasCard:void 0:"e":denyPrefix`,
+            '判定区没有牌': `hasCard:void 0:"j":denyPrefix`,
+            '手牌区没有牌': `hasCard:void 0:"h":denyPrefix`,
+            //
             "手牌上限": "getHandcardLimit:",
             '手牌数': 'countCards:"h"',
             '牌数': 'countCards:"he"',
@@ -871,6 +948,35 @@ export class NonameCN {
             '数值调为0': "changeToZero",
             '数改为0': "changeToZero",
             '数调为0': "changeToZero",
+            "设置": "set"
+        },
+        event_withArg: {
+            ...getMapOfgetParent(),
+            "设置提示标题": `set:"prompt":intoFunction`,
+            "设置提示内容": `set:"prompt2":intoFunction`,
+            //
+            "设置角色限制条件": `set:"filterTarget":intoFunction`,
+            "设置角色选择数量": `set:"selectTarget":intoFunction`,
+            //
+            "设置卡牌选择数量": `set:"selectCard":intoFunction`,
+            "设置卡牌限制条件": `set:"filterCard":intoFunction`,
+            //判定类
+            "设置回调函数": `set:"callback":intoFunction`,
+            "设置判定收益": `set:"judge":intoFunction`,
+            "设置红桃作为判定唯一正收益": `set;"judge";card=>get.suit(card)==="heart"?1:-2`,
+            "设置黑桃作为判定唯一正收益": `set;"judge";card=>get.suit(card)==="spade"?1:-2`,
+            "设置梅花作为判定唯一正收益": `set;"judge";card=>get.suit(card)==="club"?1:-2`,
+            "设置方片作为判定唯一正收益": `set;"judge";card=>get.suit(card)==="diamond"?1:-2`,
+            "设置红色作为判定唯一正收益": `set;"judge;card=>get.color(card)==="red"?1:-2`,
+            "设置黑色作为判定唯一正收益": `set;"judge";card=>get.color(card)==="black"?1:-2`,
+            "设置红桃作为判定唯一负收益": `set;"judge";card=>get.suit(card)==="heart"?-2:2`,
+            "设置黑桃作为判定唯一负收益": `set;"judge";card=>get.suit(card)==="spade"?-2:2`,
+            "设置梅花作为判定唯一负收益": `set;"judge";card=>get.suit(card)==="club"?-2:2`,
+            "设置方片作为判定唯一负收益": `set;"judge";card=>get.suit(card)==="diamond"?-2:2`,
+            "设置红色作为判定唯一负收益": `set;"judge;card=>get.color(card)==="red"?-2:2`,
+            "设置黑色作为判定唯一负收益": `set;"judge";card=>get.color(card)==="black"?-2:2`,
+            "设置判定生效结果": `set:"judge2":intoFunction`,
+            "设置判定生效结果与收益相反": `set;"judge2";result=>result.bool===false?true:false`
         },
         game_method: {
             '创卡': 'createCard',
@@ -881,10 +987,14 @@ export class NonameCN {
             '继续': 'resume',
             '局终': 'over',
             '重启': 'reload',
+            '移至处理区': "cardsGotoOrdering",
+            '卡牌移至处理区': "cardsGotoOrdering",
+            '同时失去牌': "loseAsync",
         },
         game_withArg: {
             '胜利': 'over:true',
             '失败': 'over:false',
+            "统计场上势力数": "countGroup:",
             "统计场上男性数量": `countPlayer:cur=>cur.hasSex("male")`,
             "统计场上女性数量": `countPlayer:cur=>cur.hasSex("female")`,
             "统计场上其他男性数量": `countPlayer:cur=>cur.hasSex("male")&&cur!=player`,
@@ -906,8 +1016,9 @@ export class NonameCN {
             "统计场上其他西势力角色数量": `countPlayer:cur=>cur.group!="western"&&cur!=player`,
             "统计场上其他键势力角色数量": `countPlayer:cur=>cur.group!="key"&&cur!=player`,
         },
-        event_withArg: {
-            ...getMapOfgetParent()
+        lib_filter: {
+            '非我过滤': "lib.filter.notMe",
+            '唯我过滤': "lib.filter.isMe",
         },
         trigger_type: {
             '你': 'player',
@@ -921,15 +1032,18 @@ export class NonameCN {
             ...getMapOfTrigger(),
             ...getMapOfTri_Target(),
             ...getMapOfTri_Use(),
+            //
+            "每轮开始时": "roundStart",
             //phase类
-            "回合开始后②": "phaseBeforeStart",
-            "回合开始后④": "phaseBeforeEnd",
-            "回合开始后⑦": "phaseBeginStart",
-            "回合开始后⑨": "phaseBegin",
+            "回合开始后2": "phaseBeforeStart",
+            "回合开始后4": "phaseBeforeEnd",
+            "回合开始后7": "phaseBeginStart",
+            "回合开始后9": "phaseBegin",
             "准备阶段": "phaseZhunbeiBegin",
             "准备阶段开始时": "phaseZhunbeiBegin",
             "结束阶段": "phaseJieshuBegin",
             "结束阶段开始时": "phaseJieshuBegin",
+            "摸牌阶段2": "phaseDrawBegin2",
             //伤害
             "受到伤害后": "damageEnd",
             '造成伤害': 'damageSource',
@@ -1004,6 +1118,9 @@ export class NonameCN {
             '本回合出牌阶段使用某牌的次数': 'packed_playerCode_getUsedCardTimes',
             '本回合出牌阶段打出某牌的次数': 'packed_playerCode_getRespondedCardTimes',
         },
+        packed_gameCode: {
+            '同时获得牌': "packed_gameCode_gainAsync"
+        },
         filter_only: {
             "不发动": "return false;",
             "发动": "return true;"
@@ -1011,6 +1128,10 @@ export class NonameCN {
         math: {
             ...getMapOfRandomNum()
         },
+        variableRemember: {
+            "判定事件": "judgeEvent",
+            "选择事件": "chooseEvent"
+        }
     }
     static packedCodeRePlaceMap = {
         'packed_playerCode_sufferForAnother'(str) {
@@ -1070,6 +1191,48 @@ export class NonameCN {
                 return result;
             })
         },
+        'loseAsync'(str) {
+            let match = /(.+)\.loseAsync(\(.*\))/g;
+            return str.replace(match, function (match, ...p) {
+                if (p[1].startsWith('{')) return match;
+                const args = p[1].replace(/[\(\)]/g, '').split(",").filter(arg => arg.length)
+                const players = args.filter(arg => game.xjb_judgeType(arg) === 'player')
+                const cardsArray = args.remove(...players)
+                const playerCardsPair = []
+                for (let i = 0; i < players.length; i++) {
+                    playerCardsPair.push(`[${players[i]},${cardsArray[i]}]`)
+                }
+                let result = '';
+                result += `game.loseAsync({\n`
+                if (playerCardsPair.length) result += `lose_list: [${playerCardsPair}] \n`
+                result += `})\n`
+                result += `.setContent("chooseToCompareLose")`
+                return result;
+            })
+        },
+        'packed_gameCode_gainAsync'(str) {
+            let match = /(.+)\.packed_gameCode_gainAsync(\(.*\))/g;
+            return str.replace(match, function (match, ...p) {
+                if (p[1].startsWith('{')) return match;
+                const args = p[1].replace(/[\(\)]/g, '').split(",").filter(arg => arg.length)
+                const animate = args.find(arg => ['"draw"', '"gain2"'].includes(arg))
+                const players = args.filter(arg => game.xjb_judgeType(arg) === 'player')
+                const player = players[0]
+                const cardsArray = args.remove(animate, ...players)
+                const playerCardsPair = []
+                for (let i = 0; i < players.length; i++) {
+                    playerCardsPair.push(`[${players[i]},${cardsArray[i]}]`)
+                }
+                let result = '';
+                result += `game.loseAsync({\n`
+                if (player) result += `player: ${player},\n`
+                if (animate) result += `animate: ${animate},\n`
+                if (playerCardsPair.length) result += `gain_list: [${playerCardsPair}]\n`
+                result += `})\n`
+                result += `.setContent("gaincardMultiple")`
+                return result;
+            })
+        },
         'packed_playerCode_getUsedCardTimes'(str) {
             let match = /(.+)\.packed_playerCode_getUsedCardTimes(\(.*\))/g;
             return str.replace(match, function (match, ...p) {
@@ -1082,14 +1245,14 @@ export class NonameCN {
                 const name = args.find(item => Object.values(NonameCN.groupedList.cardName).includes(item))
                 const nature = args.find(item => Object.values(NonameCN.groupedList.nature).includes(item))
                 let result = '';
-                result += `${player}.getHistory("useCard",evt=>evt.isPhaseUsing()`
-                if (name) result += `\n && \nget.name(evt.card)===${name}`
-                if (color) result += `\n && \nget.color(evt.card)===${color}`
-                if (suit) result += `\n && \nget.suit(evt.card)===${suit}`
-                if (type) result += `\n && \nget.type(evt.card)===${type}`
-                if (args.includes('锦囊牌')) result += `\n && \nget.type2(evt.card)==="trick"`
-                if (subtype) result += `\n && \nget.subtype(evt.card)===${subtype}`
-                if (nature) result += `\n && \nget.nature(evt.card)===${nature}`
+                result += `${player}.getHistory("useCard", evt => evt.isPhaseUsing()`
+                if (name) result += `\n && \nget.name(evt.card) === ${name}`
+                if (color) result += `\n && \nget.color(evt.card) === ${color}`
+                if (suit) result += `\n && \nget.suit(evt.card) === ${suit}`
+                if (type) result += `\n && \nget.type(evt.card) === ${type}`
+                if (args.includes('锦囊牌')) result += `\n && \nget.type2(evt.card) === "trick"`
+                if (subtype) result += `\n && \nget.subtype(evt.card) === ${subtype}`
+                if (nature) result += `\n && \nget.nature(evt.card) === ${nature}`
                 result += `)`
                 return result;
             })
@@ -1106,14 +1269,14 @@ export class NonameCN {
                 const name = args.find(item => Object.values(NonameCN.groupedList.cardName).includes(item))
                 const nature = args.find(item => Object.values(NonameCN.groupedList.nature).includes(item))
                 let result = '';
-                result += `${player}.getHistory("respond",evt=>evt.isPhaseUsing()`
-                if (name) result += `\n && \nget.name(evt.card)===${name}`
-                if (color) result += `\n && \nget.color(evt.card)===${color}`
-                if (suit) result += `\n && \nget.suit(evt.card)===${suit}`
-                if (type) result += `\n && \nget.type(evt.card)===${type}`
-                if (args.includes('锦囊牌')) result += `\n && \nget.type2(evt.card)==="trick"`
-                if (subtype) result += `\n && \nget.subtype(evt.card)===${subtype}`
-                if (nature) result += `\n && \nget.nature(evt.card)===${nature}`
+                result += `${player}.getHistory("respond", evt => evt.isPhaseUsing()`
+                if (name) result += `\n && \nget.name(evt.card) === ${name}`
+                if (color) result += `\n && \nget.color(evt.card) === ${color}`
+                if (suit) result += `\n && \nget.suit(evt.card) === ${suit}`
+                if (type) result += `\n && \nget.type(evt.card) === ${type}`
+                if (args.includes('锦囊牌')) result += `\n && \nget.type2(evt.card) === "trick"`
+                if (subtype) result += `\n && \nget.subtype(evt.card) === ${subtype}`
+                if (nature) result += `\n && \nget.nature(evt.card) === ${nature}`
                 result += `)`
                 return result;
             })
@@ -1138,10 +1301,12 @@ export class NonameCN {
             if (['filter_only'].includes(k)) continue;
             list = Object.assign(list, this.groupedList[k]);
         }
-        list["获取名为" + back.getSourceID() + "的父事件的名字"] = `getParent:"${back.getSourceID()}"://!?name`
+        list["获取名为" + back.getSourceID() + "的父事件的名字"] = `getParent: "${back.getSourceID()}"://!?name`
         list["获取名为" + back.getID() + "的父事件的名字"] = `getParent:"${back.getID()}"://!?name`
         list["此牌"] = NonameCN.analyzeThisCard(game.xjb_back.skill.trigger)
         list["这些牌"] = NonameCN.analyzeTheseCard(game.xjb_back.skill.trigger)
+        list["设置提示标题跟随技能"] = `set:"prompt":get.prompt("${back.getID()}")`
+        list["设置提示内容跟随技能"] = `set:"prompt2":get.prompt2("${back.getID()}")`
         return list
     }
     static get FilterList() {
@@ -1191,10 +1356,27 @@ export class NonameCN {
         Object.values(this.groupedList.packed_playerCode).forEach(method => player[method] = () => { })
         return player;
     }
+    static getVirtualGame() {
+        const vGame = new game.constructor()
+        Object.values(this.groupedList.packed_gameCode).forEach(method => vGame[method] = () => { })
+        return vGame;
+    }
+    static getVirtualEvent() {
+        return {
+            ..._status.event,
+            num: 1,
+            targetprompt: '1',
+            getParent: () => true,
+            filterTarget: () => true,
+            "set": () => true,
+            cancel: () => true
+        }
+    }
     /**
      * @param that 一个对象，其changeWord方法被调用来执行文本替换。
      */
     static deleteBlank(that) {
+        const JOINED_PLAYAERCN = this.playerCN.join("|")
         //处理空白字符
         textareaTool().setTarget(that)
             .replace(/^[ ]+/mg, "")
@@ -1208,14 +1390,18 @@ export class NonameCN {
             .replace(/(?<=代为) (?=使用 |打出 |使用或打出 )/g, "")
             .replace(/体力值 (回复|恢复)至 /g, "体力值回复至 ")
             .replace(/(体力值|手牌数) 为全场最少/g, "$1为全场最少")
-            .replace(new RegExp(`(?<=${this.playerCN.join('|')})[ ]+(?=防具的牌)`, 'g'), "")
+            .replace(/有多目标 标签/g, "有多目标标签")
+            .replace(new RegExp(`无视[ ]+(${JOINED_PLAYAERCN})[ ]+防具的牌`, 'g'), "无视$1防具的牌")
     }
     static underlieVariable(that) {
         textareaTool().setTarget(that)
             .replace(/(变量|常量|块变)/g, "$1 ")
             .replace(/令为/g, " 令为 ")
             .replace(/(?<=\w+)为/g, " 为 ")
-            .replace(/(?<!名|令|成|视)为(?!全场最少或之一)/g, '为 ')
+            .replace(/(?<!名|令|成|视)为(?!全场最少或之一)(?!判定唯一[正负]收益)/g, '为 ')
+            .replace(/令为\s*(.+?)且(向下取整|向上取整|四舍五入)$/mg, "令为 数学 $2 $1")
+            .replace(/令为\s*(.+?)且至多为(.+?)$/mg, "令为 数学 最小值 $1 $2")
+            .replace(/令为\s*(.+?)且至少为(.+?)$/mg, "令为 数学 最大值 $1 $2")
     }
     static standardBoolExpBefore(that) {
         const JOINED_PLAYAERCN = this.playerCN.join("|")
@@ -1255,7 +1441,12 @@ export class NonameCN {
             .replace(/本回合的?出牌阶段(使用|打出)([^卡牌]+?)的?次数$/mg, "本回合出牌阶段$1某牌的次数 $2")
             .replace(/本回合的?出牌阶段(使用|打出)过([^卡牌]+?)$/mg, "本回合出牌阶段$1某牌的次数 $2\n大于\n0")
             .replace(/本回合的?出牌阶段(没有|未)(使用|打出)过([^卡牌]+?)$/mg, "本回合出牌阶段$2某牌的次数 $3\n等于\n0")
-
+            .replace(/的一半/g, ' 除以 2')
+            .replace(/的三分之一/g, ' 除以 3')
+            .replace(/的四分之一/g, ' 除以 4')
+            .replace(/的八分之一/g, ' 除以 8')
+            .replace(/获取技能(.+?)的?使用次数/g, '获取 技能使用次数 $1')
+            .replace(/(?<!游戏 统计)场上势力数/g, '游戏 统计场上势力数')
     }
     static standardModBefore(that) {
         textareaTool().setTarget(that)
@@ -1273,7 +1464,7 @@ export class NonameCN {
             .replace(/然后/g, '\n')
     }
     static standardEffectBefore(that) {
-        const JOINED_PLAYAERCN = this.playerCN.join("|")
+
         textareaTool().setTarget(that)
             .replace(/额外执行一个/g, "执行一个额外的")
             .replace(/(.+?)执行(一个)?额外的?(准备|出牌|弃牌|结束)阶段/g, (match, ...p) => {
@@ -1282,9 +1473,7 @@ export class NonameCN {
             .replace(/可以(失去.+?点体力|受到.+?点伤害|摸.+?张牌)/g, function (match, ...p) {
                 return match.replace("可以", "")
             })
-            .replace(/(.+?)对([\u4e00-\u9fa5]+?)造成(.*?)点伤害/g, function (match, ...p) {
-                return `${p[1]}受到由${p[0]}造成的${p[2]}点伤害`
-            })
+            .replace(/(.+?)对([\u4e00-\u9fa5]+?)造成(.*?)点(火属性|雷属性|冰属性)?伤害/g, '$2 受到伤害 $1 $3点 $4')
             .replace(/(.+?)\s*(可以)?获得(你|伤害来源|当前回合角色)(.*?)张(手牌|牌)/g, function (match, ...p) {
                 return match.replace("可以", "").replace("获得", "获得角色")
             })
@@ -1299,7 +1488,8 @@ export class NonameCN {
             .replace(/(.+?)防止触发事件$/g, '触发事件 取消')
             .replace(/(使用|打出)(杀|闪|桃|酒|无懈可击)次数/g, "$1的$2次数")
             .replace(/(?<!不能使用|不能打出)(?<=使用|打出)(?=(杀|闪|桃|酒|无懈可击)[ ]*$)/mg, " ")
-
+            .replace(/(.+?)展示牌堆顶的?(.+?张)牌(\(放回\))?$/g, "event.topCards = 获取 牌堆顶牌组$3 $2\n$1 展示牌 event.topCards")
+            .replace(/(.+?)展示牌堆底的?(.+?张)牌(\(放回\))?$/g, "event.bottomCards = 获取 牌堆底牌组$3 $2\n $1 展示牌 event.bottomCards")
     }
     static standardEeffectMid(that) {
         textareaTool().setTarget(that)
@@ -1308,6 +1498,7 @@ export class NonameCN {
             .replace(/可以获得(?=.*牌)/g, " 获得牌 ")
             .replace('的事件', "事件")
             .replace(/^(.+?)(?<!\[)(".+?")(?!\])(.+?)$/mg, '$1$3 $2')
+            .replace(/(选择|判定)事件(?![ ])/g, '$1事件 ')
     }
     static standardEeffect(that) {
         textareaTool().setTarget(that)
@@ -1351,7 +1542,7 @@ export class NonameCN {
     }
     //处理模拟代码块
     static replace(undisposed) {
-        let list = Object.values(this.groupedList.packed_playerCode).filter(str => undisposed.includes(str));
+        let list = Object.keys(this.packedCodeRePlaceMap).filter(str => undisposed.includes(str));
         for (let k of list) {
             undisposed = this.packedCodeRePlaceMap[k](undisposed);
         }
@@ -1596,7 +1787,7 @@ export class NonameCN {
             result += `${i}:true,\n`;
         })
         if (type.includes("locked-false")) {
-            result = result.replaceAll('locked-false:true', "locked:flase")
+            result = result.replaceAll('locked-false:true', "locked:false")
             result = result.replaceAll('locked:true,\n', "")
         }
         if (uniqueList.some(tag => tag.includes("animation-"))) {
@@ -1966,17 +2157,16 @@ export class NonameCN {
             } else if (i.includes('result.targets') && !bool) {
                 a = 'if(result.bool) ' + i
             } else {
-                let k = i.replace(' ', '');
-                if (k.indexOf('if(result.bool){') === 0) bool = true;
+                if (i.startsWith('if(result.bool){')) bool = true;
             }
-            if (i.indexOf('chooseTarget') > 0) {
+            if (i.includes('chooseTarget')) {
                 if (a.indexOf('other') > 0) {
                     a = a.replace(/,?other/, '')
                     a += '\n.set("filterTarget",function(card,player,target){return player!=target})'
                 }
                 if (!back.stepIgnore) {
                     a += `\n.set("prompt",get.prompt("${back.skill.id}"))`
-                    a += `\n.set("prompt2",(lib.translate["${back.skill.id}_info"]||''))`
+                    a += `\n.set("prompt2",get.prompt2("${back.skill.id}"))`
                 }
             }
             if (i.includes('atLeast')) {
@@ -1990,7 +2180,7 @@ export class NonameCN {
                 a += '.gaintag.add( "' + back.skill.id + '")';
             }
             if ([/\.chooseToUse/, /\.useCard\(\{/].some(regexp => regexp.test(i))) {
-                a = a.replace(/(.*?)(?<!\[)([0-9]|\b[a-zA-Z]\b)(?!\[)(.*)/, 'new Array($2).fill().forEach(()=>$1$3)')
+                a = a.replace(/(.*?)(?<!\[)([0-9]|\b[a-zA-Z]\b)(?!\])(?!\=\>)(?!\.)(.*)/, 'new Array($2).fill().forEach(()=>$1$3)')
             }
             if (i === 'if(' && IF === false) {
                 result += i;
@@ -2002,6 +2192,7 @@ export class NonameCN {
             }
             else if (IF === true) {
                 if ([' || ', ' && '].includes(i)) result += '\n'
+                if (i === 'result.bool') bool = true;
                 result += i;
             }
             else if (i === "{") {
@@ -2017,13 +2208,11 @@ export class NonameCN {
                 });
             }
             else if (branch > 0) {
-                //将分支中的if(result.bool语句取出来,置于代码块后面)
-                if (a.includes("if(result.bool) ")) afterBranch.push(addBranchStence)
-                else result += `${a}\n`
+                result += `${a}\n`
             }
             else result += a + "\n"
             //如果遇见了chooseTarget,则自动增加步数
-            if (!back.stepIgnore && i.indexOf('chooseTarget') > 0) {
+            if (!back.stepIgnore && i.includes('chooseTarget') && !/^(var|let|const) /.test(i)) {
                 step++;
                 if (!branch) addStepForChoose()
                 else afterBranch.push(addStepForChoose)
@@ -2238,10 +2427,39 @@ export class NonameCN {
         }
         throw new Error(errorMessage);
     }
+    static disposeWithQuo(body, toDispose = '', matchNotObjColon = /(?<!\{[ \w"']+):(?![ \w"']+\})/) {
+        let arrA = toDispose.includes(';') ? toDispose.split(';') : toDispose.split(matchNotObjColon);
+        let arrB = [];
+        let result = ''
+        arrA = arrA.filter(each => {
+            if (each.startsWith("//!?")) {
+                arrB.push(each.replace("//!?", ""))
+                return false;
+            }
+            return true;
+        })
+        let verbA = arrA.shift()
+        if (body[verbA]) {
+            result += '.' + verbA;
+            result += '(';
+            result += arrA.join(',');
+            result += ')';
+            if (arrB.length) {
+                result += '.'
+                result += arrB.join('.')
+            }
+        } else {
+            result += toDispose;
+        }
+        return result;
+    }
     static giveSentence = {
         filter: {
-            '此牌是你使用的': '此牌是你使用的(触发技专属-)',
-            '本事件是你造成的': '本事件是你造成的(触发技专属-)',
+            '此牌是你使用的': '此牌是你使用的(触发技-)',
+            '本事件是你造成的': '本事件是你造成的(触发技-)',
+            '触发事件的角色不是你': '触发事件的角色不是你(触发技-)',
+            '触发事件的目标不是你': '触发事件的目标不是你(触发技-)',
+            '触发事件的来源不是你': '触发事件的来源不是你(触发技-)',
             '此牌是红色': '此牌为红色(颜色)',
             '此牌是黑色': '此牌为黑色(颜色)',
             '此牌为梅花': "此牌为梅花(花色)",
@@ -2280,6 +2498,7 @@ export class NonameCN {
             '你的牌数大于3': "你的牌数大于3",
             '你的场上的牌数大于3': "你的场上的牌数大于3",
             '你的区域内的牌数大于3': "你的牌数大于3",
+            '场上势力数大于2': "场上势力数大于2",
             '你体力值为全场最少或之一': "你体力值为全场最少或之一",
             '你手牌数为全场最少或之一': "你手牌数为全场最少或之一",
             '你有牌': "你有牌",
@@ -2338,23 +2557,27 @@ export class NonameCN {
             "你失去一点体力": "你失去一点体力(体力类)",
             "你获得一点护甲": "你获得一点护甲(体力类-护甲)",
             "你可以摸两张牌或回复一点体力值": "你可以摸两张牌或回复一点体力值(牌类-体力类)",
+            "你展示牌堆顶的五张牌": "你展示牌堆顶的五张牌",
+            "你展示牌堆底的五张牌": "你展示牌堆底的五张牌",
+            "你展示牌堆顶的五张牌(放回)": "你展示牌堆顶的五张(放回)",
+            "你展示牌堆底的五张牌(放回)": "你展示牌堆底的五张(放回)",
             "你本回合非锁定技失效": "你本回合非锁定技失效",
             "你翻面": "你翻面",
             "你横置或重置": "你横置或重置",
-            "你跳过下一个准备阶段":"你跳过下一个准备阶段",
-            "你跳过下一个判定阶段":"你跳过下一个判定阶段",
-            "你跳过下一个出牌阶段":"你跳过下一个出牌阶段",
-            "你跳过下一个弃牌阶段":"你跳过下一个弃牌阶段",
-            "你跳过下一个结束阶段":"你跳过下一个结束阶段",
-            '你获得一枚标记"new_wuhun"': "你获得一枚梦魇标记(标记类)",
-            '你移去一枚标记"new_wuhun"': "你移去一枚梦魇标记(标记类)",
-            "此杀的伤害+1": "此杀伤害+1(触发技专属:使用杀时|使用杀指定目标时-可将加号(+)改为减号(-)或者乘号(*))",
-            "此杀的伤害改为1": "此杀伤害改为1(触发技专属:使用杀时|使用杀指定目标时)",
-            "此杀需要的闪的数量+1": "此杀需要的闪的数量+1(触发技专属:使用杀时|使用杀指定目标时-可将加号(+)改为减号(-)或者乘号(*))",
-            "此杀需要的闪的数量改为2": "此杀需要的闪的数量改为1(触发技专属:使用杀时|使用杀指定目标时)",
-            "此决斗需要的杀的数量+1": "此决斗需要的杀的数量+1(触发技专属:使用决斗时|使用决斗指定目标时|成为决斗的目标时-可将加号(+)改为减号(-)或者乘号(*))",
-            "此决斗需要的杀的数量改为2": "此决斗需要的杀的数量改为1(触发技专属:使用决斗时|使用决斗指定目标时|成为决斗的目标时)",
-            "造成的伤害+1": "造成的伤害+1(触发技专属:伤害类-可将加号(+)改为减号(-)或者乘号(*))",
+            "你跳过下一个准备阶段": "你跳过下一个准备阶段(阶段类)",
+            "你跳过下一个判定阶段": "你跳过下一个判定阶段(阶段类)",
+            "你跳过下一个出牌阶段": "你跳过下一个出牌阶段(阶段类)",
+            "你跳过下一个弃牌阶段": "你跳过下一个弃牌阶段(阶段类)",
+            "你跳过下一个结束阶段": "你跳过下一个结束阶段(阶段类)",
+            '你获得一枚"new_wuhun"标记': "你获得一枚梦魇标记(标记类)",
+            '你移去一枚"new_wuhun"标记': "你移去一枚梦魇标记(标记类)",
+            "此杀的伤害+1": "此杀伤害+1(触发技:使用杀时|使用杀指定目标时-可将加号(+)改为减号(-)或者乘号(*))",
+            "此杀的伤害改为1": "此杀伤害改为1(触发技:使用杀时|使用杀指定目标时)",
+            "此杀需要的闪的数量+1": "此杀需要的闪的数量+1(触发技:使用杀时|使用杀指定目标时-可将加号(+)改为减号(-)或者乘号(*))",
+            "此杀需要的闪的数量改为2": "此杀需要的闪的数量改为1(触发技:使用杀时|使用杀指定目标时)",
+            "此决斗需要的杀的数量+1": "此决斗需要的杀的数量+1(触发技:使用决斗时|使用决斗指定目标时|成为决斗的目标时-可将加号(+)改为减号(-)或者乘号(*))",
+            "此决斗需要的杀的数量改为2": "此决斗需要的杀的数量改为1(触发技:使用决斗时|使用决斗指定目标时|成为决斗的目标时)",
+            "造成的伤害+1": "造成的伤害+1(触发技:伤害类-可将加号(+)改为减号(-)或者乘号(*))",
             "造成的伤害改为1": "造成的伤害改为1",
             "令此牌对你无效": "令此牌对你无效",
             "此牌额外结算1次": "此牌额外结算1次",
@@ -2365,17 +2588,22 @@ export class NonameCN {
             "你视为对你使用一张不可被无懈可击响应的无中生有": "你视为对你使用一张不可被无懈可击响应的无中生有(牌类)",
             "目标组-1视为对目标组-0使用一张不可被无懈可击响应、不影响ai的决斗": "目标组-1视为对目标组-0使用一张不可被无懈可击响应、不影响ai的决斗(牌类)",
             "目标组-1视为对目标组-0使用一张不计入次数、不影响ai的杀": "目标组-1视为对目标组-0使用不计入次数、不影响ai的杀(牌类)",
+            '第一个所选角色摸一张牌': "第一个所选角色摸一张牌(选择目标后写该语句)",
+            '触发事件的角色摸一张牌': "触发事件的角色摸一张牌(触发技)",
+            '触发事件的目标摸一张牌': "触发事件的目标摸一张牌(触发技)",
             "你使用杀无距离限制": "你使用杀无距离限制(mod类)",
             "你使用杀无次数限制": "你使用杀无次数限制(mod类)",
             "你不能成为顺手牵羊和乐不思蜀的目标": "你不能成为顺手牵羊和乐不思蜀的目标(mod类)",
         },
         trigger: {
+            "每轮开始时": "每轮开始时",
             "准备阶段": "准备阶段(阶段类)",
             "出牌阶段开始时": "出牌阶段开始时(阶段类)",
             "结束阶段": "结束阶段(阶段类)",
             "判定阶段": "判定阶段(阶段类)",
             "弃牌阶段": "弃牌阶段(阶段类)",
             "摸牌阶段": "摸牌阶段(阶段类)",
+            "摸牌阶段2": "摸牌阶段(时机同【英姿】，阶段类)",
             '你使用牌指定目标时': "你使用牌指定目标时(使用牌类)",
             '你使用牌指定目标后': "你使用牌指定目标后(使用牌类)",
             '你成为牌的目标时': "你成为牌的目标时(使用牌类)",
@@ -2393,10 +2621,39 @@ export class NonameCN {
             '你进入濒死状态时': '你进入濒死状态时(濒死类)',
             '你脱离濒死状态时': "你脱离濒死状态时(濒死类)",
             "你杀死一名角色后": "你杀死一名角色后",
-        }
+            "一名角色准备阶段": "一名角色准备阶段(阶段类)",
+            "一名角色出牌阶段开始时": "一名角色出牌阶段开始时(阶段类)",
+            "一名角色结束阶段": "一名角色结束阶段(阶段类)",
+            "一名角色判定阶段": "一名角色判定阶段(阶段类)",
+            "一名角色弃牌阶段": "一名角色弃牌阶段(阶段类)",
+            "一名角色摸牌阶段": "一名角色摸牌阶段(阶段类)",
+        },
+        unshown_filter: {},
+        unshown_content: {
+            '"step 1"': 0,
+            "'step 1'": 0,
+            "变量选择事件令为": 0,
+            "选择事件设置角色限制条件 非我过滤": 0,
+            "选择事件设置角色限制条件 唯我过滤": 0,
+        },
+        unshown_trigger: {}
     }
 }
 for (const [item, explanation] of Object.entries(NonameCN.giveSentence.trigger)) {
     if (!item.startsWith("你")) continue;
     NonameCN.giveSentence.trigger["一名角色" + item.substring(1)] = "一名角色" + explanation.substring(1)
+}
+{
+    const varSentence = {
+        "变量x令为你体力值的一半且向上取整": "变量x令为你体力值的一半且向上取整",
+        "变量x令为你体力值的一半且向下取整": "变量x令为你体力值的一半且向下取整",
+        "变量x令为你体力值的一半且四舍五入": "变量x令为你体力值的一半且四舍五入",
+        "变量y令为你体力上限且至多为5": "变量y令为你体力上限且至多为5",
+        "变量z令为你手牌数且至少为1": "变量z令为你手牌数且至少为1",
+        "变量X令为场上势力数": "变量X令为场上势力数"
+    }
+    for (const [item, explanation] of Object.entries(varSentence)) {
+        NonameCN.giveSentence.filter[item] = explanation;
+        NonameCN.giveSentence.content[item] = explanation;
+    }
 }
