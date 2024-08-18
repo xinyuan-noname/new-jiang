@@ -78,7 +78,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
         players: ['game.players', 'result.targets', 'targets'],
         game: ['game'],
         get: ['get'],
-        event: ['event', 'trigger', '_status.event', "evt", "judgeEvent", "chooseEvent"],
+        event: ['event', 'trigger', 'trigger.parent', 'event.parent' , '_status.event', "evt", "judgeEvent", "chooseEvent"],
         suit: ['"red"', '"black"', '"club"', '"spade"', '"heart"', '"diamond"', '"none"'],
         nature: ['"ice"', '"fire"', '"thunder"'],
         Math: ["Math"],
@@ -89,6 +89,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
         number: ['1', '2', '3', '4', '5', '6',
             '7', '8', '9', '10', '11', '12', '13'],
         gain: ['"gain2"', '"draw"', '"giveAuto"', "'gain2'", "'draw'", "'giveAuto'"],
+        card: ["trigger.card", 'card'],
         logicConj: [" > ", " < ", " >= ", " <= ", " == ", ">", "<", ">=", "<=", "=="],
     }
     get.xjb_en = (str) => NonameCN.getEn(str);
@@ -107,12 +108,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
         }
     }
     get.xjb_MapNum = function (value, input) {
-        if (value === 'createCard' || value === 'createCard2') {
-            if (input === 'cardName') return 1
-            if (input === 'suit') return 2
-            if (input === 'number') return 3
-            if (input === 'nature') return 4
-        }
         if (value === 'gain') {
             if (input === 'gain') return 1
             return 2
@@ -124,7 +119,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
     }
     get.xjb_fAgruments = function (value) {
         let list = []
-        if (["createCard", 'createCard2'].includes(value)) list = ['cardName', 'suit', 'number', 'nature']
         if (["addToExpansion", 'gain'].includes(value)) list = ['gain']
         return list
     }
@@ -133,10 +127,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             const DEFAULT_EVENT = lib.config.touchscreen ? 'touchend' : 'click';
             const playerCN = NonameCN.playerCN;
             const JOINED_PLAYAERCN = playerCN.join("|");
+            let vCardObject = NonameCN.getVirtualCard();
             let player = NonameCN.getVirtualPlayer();
             let vGame = NonameCN.getVirtualGame();
             let eventModel = NonameCN.getVirtualEvent();
-            eventModel.trigger = undefined;
             let backArr = ui.create.xjb_back()
             let back = backArr[0]
             let close = backArr[1]
@@ -747,19 +741,20 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         //这个bool来控制循环的进行与否
                         if (!bool) break;
                         const a = i[b];
-                        const WAW = (body) => (watchAndWork(body, a, b))
-                        notice.push(game.xjb_judgeType(a))
-                        if (game.xjb_judgeType(a) === 'players') players = a
-                        if (["const ", "let ", "var "].includes(a)) notice.push("variable")
+                        const WAW = (body) => (watchAndWork(body, a, b));
                         if (notice.includes('game')) WAW(vGame)
                         else if (notice.includes('get')) WAW(get)
                         else if (notice.includes('players')) { WAW(player) }
                         else if (notice.includes('player')) { WAW(player) }
                         else if (notice.includes('event')) WAW(eventModel)
                         else if (notice.includes('Math')) WAW(Math)
+                        else if (notice.includes('card')) WAW(vCardObject)
                         else if (notice.includes('variable')) WAW({})
                         else if (notice.includes('array')) WAW([])
                         else WAW({});
+                        notice.push(game.xjb_judgeType(a))
+                        if (game.xjb_judgeType(a) === 'players') players = a
+                        if (["const ", "let ", "var "].includes(a)) notice.push("variable")
                     }
                     if (notice.includes("Math") && index) {
                         const replacer = [];
@@ -1562,15 +1557,14 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 that.changeWord(/([火雷冰])杀/g, '$1属性杀')
                 that.changeWord(/([红黑])杀/g, '$1色杀')
                 that.changeWord(/([火雷冰]属性)/g, ' $1 ')
-                that.changeWord(/([红黑]色)/g, ' $1 ')
-                that.changeWord(/(红桃|方片|梅花|黑桃|无花色)/g, ' $1 ')
+                that.changeWord(/(?<!有)([红黑]色)/g, ' $1 ')
+                that.changeWord(/(?<!有)(红桃|方片|梅花|黑桃|无花色)/g, ' $1 ')
                 that.changeWord(/(武器牌|防具牌|\+1马牌|\-1马牌|宝物牌)/g, ' $1 ')
-                //
                 that.changeWord(/(?<!\n)(并且|或者)/g, '\n$1')
                 that.changeWord(/(并且|或者)(?!\n)/g, '$1\n')
                 NonameCN.standardFilter(that);
                 NonameCN.deleteBlank(that);
-                that.adjustTab()
+                that.adjustTab();
             }
             back.ele.filter.submit = function (e) {
                 const _this = this
@@ -1613,7 +1607,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 that.changeWord(/\t/g, '')
                 that.value = adjustTab(that.value, 0, '分支开始', '分支结束')
             }
-
             listenAttributeChange(filterFree, 'selectionStart').start();
             textareaTool().setTarget(filterFree)
                 .clearOrder()
@@ -1814,21 +1807,23 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     if (/其他[男女双]性角色/.test(previous)) return previous;
                     return disposed;
                 })
-                parameter("火属性", "冰属性", "雷属性",
-                    "任意张", "任意名",
-                    "从牌堆底");
+
                 parameter("至多", "至少")
                 parameter('梅花', '方片', '无花色', '黑桃', '红桃', '红色', '黑色', '无色', function (disposing, disposed, previous) {
                     if (previous.includes(`牌堆中${disposing}牌`)) return previous;
                     if (previous.includes(`设置${disposing}作为`)) return previous;
                     return disposed;
                 });
+                parameter("A点", "J点", "Q点", "K点");
+                parameter("火属性", "冰属性", "雷属性");
+                parameter("任意张", "任意名", "从牌堆底");
                 parameter('魏势力', '蜀势力', '吴势力', '群势力', '晋势力', '神势力');
                 that.value = eachLine(contentFree.value, line => {
                     let group = findWordsGroup(line, playerCN);
                     if (line.includes("令为") || line.includes("变量") || !group.length) return;
                     if (/其他角色计算(和|与)你的?距离/.test(line)) return;
                     if (/添单[ ]*你/.test(line)) return;
+                    if (/移除 你/.test(line)) return;
                     if (new RegExp(`^无视(${JOINED_PLAYAERCN})防具的牌`).test(line)) return;
                     let restWords = clearWordsGroup(line, playerCN);
                     return `${group.shift()} ${restWords} ${group.join(" ")}`
@@ -1909,7 +1904,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", back.ele.content.adjustTab)
                 .replaceOrder('新目标过滤', '(card,player,target)=>{}')
                 .replaceOrder('新卡牌过滤', '(card)=>{}')
-                .replaceOrder(/新小括号?/g, '(  )')
                 .debounce('keyup', back.ele.content.submit, 200)
                 .listen('keydown', deleteModule)
                 .listen('selectionStartChange', adjustSelection)
@@ -2359,7 +2353,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", back.ele.filterTarget.adjustTab)
                 .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", back.ele.filterTarget.adjustTab)
                 .debounce('keyup', back.ele.filterTarget.submit, 200)
-                .listen('keydown', tabChange("trigger"))
+                .listen('keydown', tabChange("filterTarget"))
                 .style({
                     marginTop: '10px',
                     marginLeft: '10px',
@@ -2388,6 +2382,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .replaceOrder(/(本|此|该)技能id/g, back.getID)
                 .replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", back.ele.filterCard.adjustTab)
                 .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", back.ele.filterCard.adjustTab)
+                .listen('keydown', tabChange("filterCard"))
                 .debounce('keyup', back.ele.filterCard.submit, 200)
                 .style({
                     marginTop: '10px',
@@ -2632,7 +2627,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                                     if (back.skill.group.includes(skillName)) continue;
                                     map[skillName] = `${skillName}(${skillName})`
                                 }
-                                for (let skillName in lib.skill) {
+                                for (let skillName of lib.xjb_skillsStore) {
                                     if (!lib.translate[skillName]) continue;
                                     if (!lib.translate[skillName + "_info"]) continue;
                                     if (back.skill.group.includes(skillName)) continue;
@@ -2684,6 +2679,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                                             const id = this.container.dataset.xjb_id
                                             this.descEle.innerHTML += `<span>${lib.translate[id + '_info']}</span>`
                                             this.innerText = "收起"
+                                            this.seeExpanding = true;
                                         } else if (this.innerText === "收起") {
                                             /**
                                              * @type {HTMLElement}
@@ -2693,7 +2689,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                                             span && span.remove();
                                             this.innerText = '查看'
                                         }
-
                                     },
                                     function () {
                                         const id = this.container.dataset.xjb_id

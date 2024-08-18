@@ -37,7 +37,7 @@ export function correctPunctuation(str) {
         .replace(/;;+/g, ';')
         .replace(/\,\}/g, '}')
         .replace(/\{\,/g, '{')
-        .replace(/(?<!\.)\.{2}(?!\.)/,'.')
+        .replace(/(?<!\.)\.{2}(?!\.)/, '.')
 }
 /**
  * 生成一个随机的36进制字符串。
@@ -71,7 +71,7 @@ export function getLineRangeOfInput(element) {
     const content = element.value
     if (content.slice(start, end).includes('\n')) return [0, 0];
     let last = 0;
-    for (let index of getStrAllIndex(content,'\n')) {
+    for (let index of getStrAllIndex(content, '\n')) {
         if (index >= start) return [last, index]
         last = index + 1;
     }
@@ -153,8 +153,9 @@ export function adjustTab(str, basic = 0, start = '{', end = '}') {
     const arr1 = str.split('\n');
     let tabLevel = basic;
     let arr2 = arr1.map(line => {
+        if (!line.length) return line;
         const times = line.match(/^\t+/) ? line.match(/^\t+/)[0].length : 0;
-        if (!line.includes(start) && [end,`${end},`,`${end})`].some(item=>item.endsWith(line))) tabLevel--;
+        if (!line.includes(start) && [end, `${end},`, `${end})`].some(item => line.endsWith(item))) tabLevel--;
         const deltaValue = times - tabLevel;
         let result = line;
         if (deltaValue > 0) result = line.slice(deltaValue);

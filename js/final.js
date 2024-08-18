@@ -509,12 +509,20 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                 })
             }
         },
+        skillsStore(){
+            const array = []
+            for (let k in lib.character) {
+                let skills = []
+                if (lib.character[k]) skills = lib.character[k][3]
+                array.push(...skills)
+            }
+            lib.xjb_skillsStore = array;
+        },
         choujiang: function () {
             {
                 if (!get.xjb_number) return false
                 if (!lib.config.xjb_hun) return false
             }
-            var Array = [];
             lib.config.xjb_list_hunbilist.choujiang = {
                 "1": {
                     "称号(1个)": "4*100",
@@ -549,14 +557,9 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                     "技能(1个)": "4*100"
                 }
             }
-            for (let k in lib.character) {
-                let skills = []
-                if (lib.character[k]) skills = lib.character[k][3]
-                Array = Array.concat(skills)
-            }
-            let list = [Array.randomGet(), Array.randomGet(), Array.randomGet(), Array.randomGet(), Array.randomGet()]
+            let list = lib.xjb_skillsStore.randomGets(5);
             for (let i = 0; i < list.length; i++) {
-                lib.config.xjb_list_hunbilist.choujiang["4"][list[i]] = "19*100"
+                lib.config.xjb_list_hunbilist.choujiang["4"][list[i]] = "19*100";
             }
             game.xjb_update_choujiang('1')
             game.xjb_update_choujiang('2')

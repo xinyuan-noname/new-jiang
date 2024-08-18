@@ -137,8 +137,8 @@
   bottom: 0px;
 }
 
-.xjb_hidden{
-  display:none !important;
+.xjb_hidden {
+  display: none !important;
 }
 
 /*存档*/
@@ -225,6 +225,12 @@
   display: block
 }
 
+.xjb-dialog-prompt {
+  position: relative;
+  overflow: auto;
+  font-size: 24px
+}
+
 /*概念注释*/
 b[description]:hover::after {
   content: attr(description);
@@ -239,7 +245,7 @@ b[description]:hover::after {
   color: rgb(170, 169, 169);
   box-shadow: 0 2px 4px rgba(85, 72, 72, 0.2);
   max-width: 60%;
-  left:30%;
+  left: 30%;
 }
 
 /*势力样式*/

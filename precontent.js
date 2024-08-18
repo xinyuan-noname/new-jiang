@@ -273,7 +273,7 @@ function importFile() {
     let count = 0;
     const files = ["event", "lingli", "skills", "card",
         "project", "rpg", "translate",
-        "dialog", "economy", "math"];
+        "dialog", "economy", "math", "raise"];
     function loadFiles(fileName) {
         let script = lib.init.js(lib.xjb_src + "js", fileName, () => {
             window[`XJB_LOAD_${fileName.toUpperCase()}`](_status, lib, game, ui, get, ai);
@@ -416,14 +416,9 @@ function initialize() {
     //设置增加到牌堆的卡牌
     if (!lib.config.xjb_cardAddToPile) lib.config.xjb_cardAddToPile = {}
     //设置列表
-    lib.config.xjb_list_hunbilist = {
-        skill: {
-            first: ["xjb_juanqu", "xjb_lunhui"],
-            second: ["xjb_leijue", "xjb_bingjue"],
-            third: ["xjb_pomie", "xjb_huojue"],
-        },
-        choujiang: {
-        },
+    lib.xjb_hunList = lib.config.xjb_list_hunbilist = {
+        skill: {},
+        choujiang: {},
     }
     //选项    
     lib.xjb_list_xinyuan = {

@@ -626,64 +626,32 @@ export function XJB_CONTENT(config, pack) {
                             })
                         }
                         obj.changeSkill2 = function () {
-                            var list = lib.config.xjb_newcharacter.skill
-                            if (list.length < 1) return game.xjb_create.alert('你没有技能！')
-                            let dialog = game.xjb_create.prompt(Longstr(list), "", function () {
-                                var num = this.result
-                                var skill = list[num]
-                                if (list.includes(skill)) {
-                                    normalStr(skill).nextConfirm('是否回收此技能并获得5魂币？', function () {
-                                        lib.config.xjb_newcharacter.skill.remove(skill)
-                                        game.xjb_systemEnergyChange(skill.length)
-                                        game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter);
-                                        game.saveConfig('xjb_hunbi', lib.config.xjb_hunbi + 5);
-                                        game.xjb_create.alert('你已删除该技能，重启即生效！' + "<br>当前魂币值为" + lib.config.xjb_hunbi).nextConfirm("是否继续查看？", function () {
-                                            obj.changeSkill2();
-                                        });
-                                    }, function () {
-                                        game.xjb_create.confirm("是否继续查看？", function () {
-                                            obj.changeSkill2()
-                                        })
-                                    })
-                                }
-                                else game.xjb_create.alert("你的输入有误!")
-                            }).Mysize()
-                            dialog.input.numberListButton(list.length)
+                            // var list = lib.config.xjb_newcharacter.skill
+                            // if (list.length < 1) return game.xjb_create.alert('你没有技能！')
+                            // let dialog = game.xjb_create.prompt(Longstr(list), "", function () {
+                            //     var num = this.result
+                            //     var skill = list[num]
+                            //     if (list.includes(skill)) {
+                            //         normalStr(skill).nextConfirm('是否回收此技能并获得5魂币？', function () {
+                            //             lib.config.xjb_newcharacter.skill.remove(skill)
+                            //             game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter);
+                            //             game.saveConfig('xjb_hunbi', lib.config.xjb_hunbi + 5);
+                            //             game.xjb_create.alert('你已删除该技能，重启即生效！' + "<br>当前魂币值为" + lib.config.xjb_hunbi).nextConfirm("是否继续查看？", function () {
+                            //                 obj.changeSkill2();
+                            //             });
+                            //         }, function () {
+                            //             game.xjb_create.confirm("是否继续查看？", function () {
+                            //                 obj.changeSkill2()
+                            //             })
+                            //         })
+                            //     }
+                            //     else game.xjb_create.alert("你的输入有误!")
+                            // }).Mysize()
+                            // dialog.input.numberListButton(list.length)
+                            game.xjb_raiseCharRemoveUpdateSkillsDia();
                         }
                         obj.changeSkill3 = function () {
-                            var haven = lib.config.xjb_newcharacter.skill, SkillList = lib.config.xjb_list_hunbilist.skill
-                            var first = SkillList.first, second = SkillList["second"], third = SkillList["third"]
-                            var list = first.concat(second, third)
-                            list.remove(haven)
-                            let dialog = game.xjb_create.prompt(Longstr(list), "", function () {
-                                var num = this.result
-                                var willget = list[num]
-                                if (list.includes(willget)) {
-                                    var myAlert = normalStr(willget)
-                                    if (haven.length < lib.config.xjb_jnc) {
-                                        if (first.includes(willget)) var cost = 15
-                                        if (second.includes(willget)) var cost = 25
-                                        if (third.includes(willget)) var cost = 50
-                                        if (lib.config.xjb_hunbi >= cost) {
-                                            myAlert.nextConfirm('你已达成获得该技能的条件，是否花费' + cost + '个魂币，获得此技能？', function () {
-                                                game.cost_xjb_cost(1, cost)
-                                                game.xjb_systemEnergyChange(-cost - 3)
-                                                lib.config.xjb_newcharacter.skill.add(willget)
-                                                game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                                                game.xjb_create.alert('你已获得该技能，重启即生效！').nextConfirm("是否继续查看？", function () {
-                                                    obj.changeSkill3()
-                                                })
-                                            }, function () {
-                                                game.xjb_create.confirm("是否继续查看？", function () {
-                                                    obj.changeSkill3()
-                                                })
-                                            })
-                                        }
-                                    }
-                                }
-                                else game.xjb_create.alert("你的输入有误!")
-                            }).Mysize()
-                            dialog.input.numberListButton(list.length)
+                            game.xjb_addHunSkillsDia();
                         }
                         if (!lib.config.xjb_jnc) lib.config.xjb_jnc = 0
                         obj["changeSkill" + abcde]()

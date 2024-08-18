@@ -167,6 +167,10 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                 }
             })
         }
+        button.activate = function () {
+            element().setTarget(this)
+                .clickAndTouch()
+        }
         return button
     };
     if (!game.xjb_create) game.xjb_create = {}
@@ -560,9 +564,8 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
 
     //寻找信息型对话框
     game.xjb_create.search = function (
-        str = "<div style=position:relative;overflow:auto;font-size:24px>输入关键词后，敲击回车以进行搜索,只显示前100条</div><hr>",
-        func,
-        liDisplay = 'block'
+        str = "<div class=xjb-dialog-prompt>输入关键词后，敲击回车以进行搜索,只显示前100条</div><hr>",
+        func
     ) {
         if (game.xjb_create.baned) return;
         let dialog = game.xjb_create.alert(str, func)
@@ -575,6 +578,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
          * @type {HTMLTextAreaElement}
          */
         let textarea = dialog.addElement("textarea", void 0, lib.xjb_style.textarea1)
+        textarea.placeholder = "输入关键词后，敲击回车以进行搜索,只显示前100条"
         /**
          * @type {HTMLUListElement}
          */
@@ -819,9 +823,9 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         return dialog
     }
     //
-    game.xjb_create.seeDelete = function (map, seeStr = "查看", deleteStr = "删除", seeCallback = () => true, deleteCallback = () => true, func) {
+    game.xjb_create.seeDelete = function (map, seeStr = "查看", deleteStr = "删除", seeCallback = () => true, deleteCallback = () => true, func, prompt) {
         if (game.xjb_create.baned) return;
-        const dialog = game.xjb_create.search(void 0, func)
+        const dialog = game.xjb_create.search(prompt, func)
         const textarea = dialog.textarea;
         /**
          * @type {HTMLUListElement}
@@ -832,14 +836,14 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         dialog.addEventListener(listenType, function (e) {
             if (e.target.innerText === deleteStr || e.target.deleteExpanding) {
                 deleteCallback.apply(e.target, [e]);
-                e.target.parentNode.remove();
+                if (!e.target.notAllowRemove) e.target.parentNode.remove();
             }
             if (e.target.innerText === seeStr || e.target.seeExpanding) {
                 seeCallback.apply(e.target, [e])
             }
         })
         const promises = [];
-        function addLi(attr,desc) {
+        function addLi(attr, desc) {
             const container = element('li')
                 .setAttribute('xjb_id', attr)
                 .block()
@@ -863,6 +867,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                     fontSize: '1.5rem'
                 })
                 .exit()
+            seeButton.dialog = dialog;
             seeButton.descEle = descEle;
             seeButton.container = container;
             seeButton.yesButton = dialog.buttons[0];
@@ -874,6 +879,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                     fontSize: '1.5rem',
                 })
                 .exit()
+            deleteButton.dialog = dialog;
             deleteButton.descEle = descEle;
             deleteButton.container = container;
             deleteButton.yesButton = dialog.buttons[0];
@@ -881,14 +887,14 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         }
         for (const [attr, desc] of Object.entries(map)) {
             const promise = new Promise(res => {
-                setTimeout(()=>{
-                    addLi(attr,desc);
+                setTimeout(() => {
+                    addLi(attr, desc);
                     res();
-                },0)
+                }, 0)
             })
             promises.push(promise);
         }
-        Promise.all(promises.slice(0,100)).then(()=>{
+        Promise.all(promises.slice(0, 100)).then(() => {
             ul.append(...textarea.index);
         })
         Promise.all(promises.slice(100)).then((value) => {
@@ -899,6 +905,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         });
         return dialog
     }
+
     game.xjb_create.range = function (str, min, max, value = 0, callback, changeValue = () => true) {
         if (game.xjb_create.baned) return;
         let dialog = game.xjb_create.confirm(void 0, callback);

@@ -1,5 +1,4 @@
 import {
-    touchE,
     element
 } from './ui.js'
 window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
@@ -26,7 +25,6 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
             lib.translate.queqiaoxian = "<b description=鹊桥仙：技能结算后,可令一名珠联璧合的异性角色额外结算一次>鹊桥仙</b>"
             lib.translate.xin_qinnang2 = '青囊'
             lib.translate.xin_xuming = '续命'
-            lib.translate.xjb_bingjue = '冰诀'
             lib.translate._xjb_huobi = "货币"
             lib.translate.xin_qinnang2_info = '出牌阶段限一次，你可对一名角色使用任意张【桃】，你以此法你每使用一张【桃】，你和其各摸一张牌。'
             lib.translate.lunaticMasochist = "疼痛敏感"
@@ -304,6 +302,186 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                 }
             }
         },
+        raiseSkill: function () {
+            const xjb_bingjue = SkillCreater(
+                "xjb_bingjue", {
+                mod: {
+                    cardUsable: function (card, player, num) {
+                        if (card.name === 'sha' && card.nature === 'ice') return Infinity;
+                    },
+                },
+                enable: "phaseUse",
+                filterCard: {
+                    suit: "club",
+                },
+                selectCard: -1,
+                filter: function (event, player) {
+                    return player.hasCard({ suit: "club" }, 'h');
+                },
+                delay: false,
+                usable: 1,
+                content: function () {
+                    const cardsGain = []
+                    for (var i = 0; i < cards.length; i++) {
+                        cardsGain.push(game.createCard2('sha', 'club', 1, 'ice'));
+                    }
+                    player.gain(cardsGain, "gain2")
+                },
+                translate: "冰诀",
+                description: "出牌阶段限一次，你可弃置所有梅花手牌，然后获得等量张冰【杀♣️A】。你使用冰【杀】无次数限制。",
+            })
+            const xjb_hanhua = SkillCreater(
+                "xjb_hanhua", {
+                trigger: {
+                    target: ["useCardToTargeted"],
+                },
+                filter: function (event, player, triggername) {
+                    if (!(get.nature(event.card) != "ice"
+                        || get.name(event.card) != "sha")) return false;
+                    if (event.name === 'useCardToTargeted' && !["club"].includes(get.suit(event.card))) return false;
+                    return true;
+                },
+                content: function () {
+                    "step 0"
+                    trigger.cards[0].fix();
+                    trigger.cards[0].remove();
+                    trigger.cards[0].destroyed = true;
+                    game.log(trigger.cards[0], "已销毁");
+                    var card = game.createCard2("sha", "club", 1, "ice");
+                    player.gain(card, 'gain2')
+                    "step 1"
+                    trigger.getParent("useCard", void 0, true).targets.length = 0;
+                    trigger.getParent("useCard", void 0, true).all_excluded = true;
+                },
+                ai: {
+                    effect: {
+                        target(card) {
+                            if (get.suit(card) === "club") return "zeroplayertarget"
+                        }
+                    }
+                },
+                translate: "寒花",
+                description: "当你成为梅花牌的目标后，你可以将此牌变为冰【杀♣A】并获得之，然后你取消此牌的所有目标。"
+            })
+            const xjb_jinghua = SkillCreater(
+                "xjb_jinghua", {
+                enable: "phaseUse",
+                filterCard: function (card) {
+                    return get.suit(card) !== "club";
+                },
+                filter: function (event, player) {
+                    return player.hasCard(card => get.suit(card) !== 'club', 'he');
+                },
+                position: "he",
+                lose: false,
+                discard: false,
+                delay: false,
+                usable: 3,
+                content: function () {
+                    var card = cards[0]
+                    var cardx = game.createCard2(card.name, 'club', card.number, card.nature);
+                    player.gain(cardx)
+                },
+                translate: "镜花",
+                description: "出牌阶段限三次，你可以选择一张非梅花牌并复制之（花色改为♣）。",
+            })
+            const xjb_bingdi = SkillCreater(
+                'xjb_bingdi', {
+                trigger: {
+                    player: ["useCard"],
+                },
+                forced: true,
+                filter: function (event, player, triggername) {
+                    if (!(get.suit(event.card) == "club")) return false;
+                    return true;
+                },
+                content: function () {
+                    "step 0"
+                    trigger.getParent("useCard", void 0, true).effectCount += 1;
+                },
+                translate: "并蒂",
+                description: "锁定技，当你使用梅花牌时，你可令此牌额外结算一次。"
+            })
+            const xjb_wei_fengtian = SkillCreater(
+                "xjb_wei_fengtian", {
+                enable: "phaseUse",
+                zhuSkill: true,
+                groupSkill: "wei",
+                filter: function (event, player, triggername) {
+                    if (player.group != "wei") return false;
+                    if (!player.hasZhuSkill("xjb_wei_fengtian")) return false;
+                    if (!player.hasCard({ suit: "diamond" }, "he")) return false;
+                    return true;
+                },
+                filterTarget: function (card, player, target) {
+                    if (!(target.group != "wei")) return false;
+                    return true;
+                },
+                filterCard: function (card) {
+                    if (!(get.suit(card) == "diamond")) return false;
+                    return true;
+                },
+                usable: 1,
+                position: "he",
+                selectTarget: -1,
+                async content(event, trigger, player) {
+                    const next = event.target.chooseControl();
+                    next.set("choiceList", [
+                        `交给${get.translation(player)}一张牌`,
+                        `${get.translation(player)}本回合对你使用【杀】无距离和次数限制`
+                    ])
+                    {
+                        let choice = 1
+                        const target = event.target;
+                        const att = get.attitude(target, player);
+                        if (att < 0 && target.hasCard("du")) choice = 0
+                        else if (att >= 0) choice = 0
+                        else if (!player.inRange(target) && !target.hasCard("shan")) choice = 0
+                        else if (player.countCards("h") >= target.hp + target.countCards("shan") + 2) choice = 0;
+                        next.set("choice", choice)
+                    }
+                    if (!event.target.hasCard(void 0, "he")) {
+                        next.controls.remove('选项一')
+                        next.choiceList[0] = `<span style=opacity:0.5>${next.choiceList[0]}</span>`
+                        next.choice = 1;
+                    }
+                    const { control } = await next.forResult();
+                    console.log(control)
+                    if (control === "选项一") {
+                        const { cards } = await event.target.chooseCard(true, 'he', `选择一张牌交给${get.translation(player)}`)
+                            .set("ai", get.attitude(player, event.target) > 0 ? get.unuseful2 : get.unuseful3).forResult();
+                        event.target.give(cards, player, false)
+                    }
+                    if (control === "选项二") {
+                        event.target.addTempSkill('xjb_wei_fengtian_tao')
+                    }
+                },
+                mod: {
+                    cardUsableTarget: function (card, player, target) {
+                        if (target.hasSkill("xjb_wei_fengtian_tao")) return true;
+                    },
+                    targetInRange: function (card, player, target, now) {
+                        if (target.hasSkill("xjb_wei_fengtian_tao")) {
+                            if (get.name(card, player) === "sha") return true;
+                        }
+                    },
+                },
+                subSkill: {
+                    "tao": {
+                        mark: true,
+                        marktext: "讨",
+                        intro: {
+                            name: "不臣",
+                            content: "设使国家无有孤，不知当几人称帝，几人称王！",
+                        },
+                        sub: true,
+                        sourceSkill: "xxx",
+                    },
+                },
+                translate: "奉天",
+                description: "主公技，魏势力技，你可以弃置一张♦牌，令所有非魏势力选择一项：1.交给你一张牌；2.你本回合对其使用【杀】无距离和次数限制。"
+            })
+        },
         soulSkill: function () {
             lib.skill.xjb_redSkill = {
                 init: function (player, skill) {
@@ -387,35 +565,6 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
             }
             lib.translate.xjb_juanqu = "恩赐"
             lib.translate.xjb_juanqu_info = "每轮限一次，若你为神势力，你可以令一名角色摸十张牌并将势力改为神势力。"
-            /*以上是恩赐代码*/
-            //以下是冰诀
-            lib.skill.xjb_bingjue = {
-                mod: {
-                    cardUsable: function (card, player, num) {
-                        if (card.name === 'sha' && card.nature === 'ice') return Infinity;
-                    },
-                },
-                enable: "phaseUse",
-                filterCard: {
-                    suit: "club",
-                },
-                selectCard: -1,
-                filter: function (card, player, target) {
-                    return player.countCards('h') > 0;
-                },
-                discard: false,
-                lose: false,
-                delay: false,
-                usable: 1,
-                content: function () {
-                    for (var i = 0; i < cards.length; i++) {
-                        cards[i].storage.vanish = true
-                        player.gain(game.createCard2('sha', 'club', 1, 'ice'))
-                    }
-                    player.lose(cards)
-                },
-            }
-            lib.translate.xjb_bingjue_info = '出牌阶段限一次，你可弃置所有梅花手牌，然后获得等量张冰【杀♣️A】。你使用冰【杀】无次数限制。'
             lib.skill.xjb_huojue = {
                 trigger: {
                     global: ["logSkill", "useSkillAfter"],

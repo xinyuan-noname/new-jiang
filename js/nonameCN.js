@@ -133,6 +133,7 @@ function getMapOfGroup(bool = true) {
     const map = {};
     for (let k of idList) {
         map[lib.translate[k] + ""] = `${bool ? '"' : ""}${k}${bool ? '"' : ""}`;
+        map[lib.translate[k] + "势力"] = `${bool ? '"' : ""}${k}${bool ? '"' : ""}`;
     }
     return map;
 }
@@ -345,6 +346,9 @@ function getMapAboutCard() {
         usedTimes: (attribute, cn) => {
             map[cn + '的出牌阶段使用次数'] = "getStat://!?card://!?" + attribute
         },
+        hasCard: (attributeValue, attributeKey, cn) => {
+            map['有' + cn] = `hasCard:{${attributeKey}:"${attributeValue}"}:"he"`
+        }
     }
     cardNameList.forEach(i => {
         const cardTranslate = lib.translate[i];
@@ -357,11 +361,14 @@ function getMapAboutCard() {
         const suit = i, suitTranslate = lib.translate[i + '2'] + "牌"
         CardMission.cardPile(suit, 'suit', suitTranslate)
         CardMission.discardPile(suit, 'suit', suitTranslate)
+        CardMission.hasCard(suit, 'suit', suitTranslate)
     })
     Object.keys(lib.color).forEach(i => {
         const color = i, colorTranslate = lib.translate[i] + "牌"
-        CardMission.cardPile(color, 'color', colorTranslate)
-        CardMission.discardPile(color, 'color', colorTranslate)
+        const args = [color, 'color', colorTranslate]
+        CardMission.cardPile(...args)
+        CardMission.discardPile(...args)
+        CardMission.hasCard(...args)
     })
     for (let i = 1; i < 14; i++) {
         map["牌堆中牌点数为" + get.strNumber(i)] = `cardPile2: card => get.number(card, false) === "${i}":intoFunction`
@@ -377,6 +384,13 @@ function getMapOfSkip() {
     }
     return map
 }
+function getMapOfOneOfTriCards() {
+    const map = {}
+    for (let i = 0; i < 10; i++) {
+        map['触发事件的牌组-' + i] = `trigger.cards[${i}]`
+    }
+    return map
+}
 export class NonameCN {
     static playerCN = ["你", "玩家",
         "当前回合角色",
@@ -387,15 +401,10 @@ export class NonameCN {
         "此牌的目标", "此牌的所有目标",
         "触发事件的角色", "触发事件的来源", "触发事件的目标",
         ...new Array(10).fill('目标组-').map((item, index) => item + index),
-        "目标"
+        "目标组", "目标"
     ]
     static basicList = {
         "数学": "Math",
-        //
-        '触发': 'trigger',
-        '触发事件': 'trigger',
-        '触发的事件': 'trigger',
-        '事件': 'event',
         //get
         '名字': "name",
         '牌名': 'name',
@@ -404,11 +413,15 @@ export class NonameCN {
         '卡牌组': "cards",
         '花色': 'suit',
         '颜色': 'color',
+        '属性': "nature",
         '类别': 'type',
         '副类别': 'subtype',
         '拼音': 'pinyin',
         '韵母': 'yunmu',
         '韵脚': 'yunjiao',
+        //
+        '势力': "group",
+        //
         '来源': 'source',
         //伤害事件
         '受伤点数': 'trigger.num',
@@ -449,7 +462,10 @@ export class NonameCN {
         '坐骑栏': '"equip6"',
         '宝物栏': '"equip5"',
         //数字
-        'A': '1',
+        'A点': '1',
+        'J点': '11',
+        'Q点': '12',
+        'K点': '13',
         '一': '1',
         '二': '2',
         '三': '3',
@@ -460,9 +476,6 @@ export class NonameCN {
         '八': '8',
         '九': '9',
         '十': '10',
-        'J': '11',
-        'Q': '12',
-        'K': '13',
         //
 
         //
@@ -589,6 +602,9 @@ export class NonameCN {
         "牌堆": "ui.cardPile",
         "弃牌堆": "ui.discardPile",
         "处理区": "ui.ordering",
+        "目前选择卡牌的张数": "ui.selected.cards.length",
+        "目前选择目标的个数": "ui.selected.targets.length",
+        "目前选择按钮的个数": "ui.selected.buttons.length",
     }
     static freeQuotation = {
         cardName: getMapOfCard(false),
@@ -630,7 +646,8 @@ export class NonameCN {
             "无效的角色": `trigger.getParent("useCard",void 0,true).excluded`,
             "不可响应牌的角色": `trigger.getParent("useCard",void 0,true).directHit`,
             "无视此牌的目标防具的牌": `trigger.target.storage.qinggang2`,
-            '此牌的这些目标': `trigger.getParent("useCard",void 0,true).targets`,
+            '此牌的目标组': `trigger.getParent("useCard",void 0,true).targets`,
+            '此牌的已触发的目标组': `trigger.getParent("useCard",void 0,true).triggeredTargets2`,
             "阶段列表": `trigger.getParent("phase",void 0,true).phaseList`,
         },
         array_method: {
@@ -641,6 +658,7 @@ export class NonameCN {
             "连接": "concat",
             "移除": "remove",
             "随机获取": "randomGets",
+            "长度": "length",
             "。包含": '.includes',
             "。添单": ".add",
             "。添多": ".addArray",
@@ -648,6 +666,7 @@ export class NonameCN {
             "。连接": ".concat",
             "。移除": ".remove",
             "。随机获取": ".randomGets",
+            "。长度": "length",
         },
         get_method: {
             "牌堆顶牌组": "cards",
@@ -693,6 +712,9 @@ export class NonameCN {
             "有多目标标签": `tag:"multitarget":intoFunctionWait`,
             "无多目标标签": `tag:"multitarget":intoFunctionWait:denyPrefix`,
         },
+        math: {
+            ...getMapOfRandomNum()
+        },
         math_method: {
             "最大值": "max",
             "最小值": "min",
@@ -706,6 +728,15 @@ export class NonameCN {
         },
         card: {
             ...getMapAboutCard(),
+            ...getMapOfOneOfTriCards()
+        },
+        card_attr: {
+            "点数": "number"
+        },
+        card_method: {
+            "移除": "remove",
+            "修正": "fix",
+            "已销毁": "destroyed"
         },
         result: {
             "选择结果布尔": "result.bool",
@@ -720,6 +751,7 @@ export class NonameCN {
             "选择结果点数": "result.number",
             "选择结果颜色": "result.color",
             "选择结果花色": "result.suit",
+            "选择结果选项编号":"result.choice",
             "判定牌名": "result.name",
             "判定点数": "result.number",
             "判定颜色": "result.color",
@@ -770,6 +802,7 @@ export class NonameCN {
             '将手牌摸至': 'drawTo',
             '手牌补至': 'drawTo',
             '手牌摸至': 'drawTo',
+            '丢弃至弃牌堆': "loseToDiscardpile",
             //
             '更新状态': "update",
             //
@@ -820,6 +853,9 @@ export class NonameCN {
             "临时获得技能": "addTempSkill",
         },
         player_choose: {
+            '选择选项':"chooseControl",
+            '选择带取消的选项':`chooseControl:"cancel2"`,
+            //
             '选择按钮': "chooseButton",
             "选择使用手牌": `chooseToUse`,
             "选择使用牌": `chooseToUse`,
@@ -935,7 +971,19 @@ export class NonameCN {
             '此牌的所有目标': 'trigger.targets',
             '目标组': "targets"
         },
-        event: eventList,
+        event: {
+            '触发': 'trigger',
+            '触发事件': 'trigger',
+            '触发的事件': 'trigger',
+            "触发事件的父事件": "trigger.parent",
+            "触发的父事件": "trigger.parent",
+            '事件': 'event',
+        },
+        event_var: {
+            "判定事件": "judgeEvent",
+            "选择事件": "chooseEvent"
+        },
+        event_name: eventList,
         event_method: {
             '取消': 'cancel',
             '重复': 'redo',
@@ -954,6 +1002,9 @@ export class NonameCN {
             ...getMapOfgetParent(),
             "设置提示标题": `set:"prompt":intoFunction`,
             "设置提示内容": `set:"prompt2":intoFunction`,
+            //
+            "设置选项列表":`set:"choiceList":intoFunction`,
+            "设置选项组":`set:"controls":intoFunction`,
             //
             "设置角色限制条件": `set:"filterTarget":intoFunction`,
             "设置角色选择数量": `set:"selectTarget":intoFunction`,
@@ -977,48 +1028,6 @@ export class NonameCN {
             "设置黑色作为判定唯一负收益": `set;"judge";card=>get.color(card)==="black"?-2:2`,
             "设置判定生效结果": `set:"judge2":intoFunction`,
             "设置判定生效结果与收益相反": `set;"judge2";result=>result.bool===false?true:false`
-        },
-        game_method: {
-            '创卡': 'createCard',
-            '造卡': 'createCard',
-            '印卡': 'createCard',
-            '更新轮数': 'updateRoundNumber',
-            '暂停': 'pause',
-            '继续': 'resume',
-            '局终': 'over',
-            '重启': 'reload',
-            '移至处理区': "cardsGotoOrdering",
-            '卡牌移至处理区': "cardsGotoOrdering",
-            '同时失去牌': "loseAsync",
-        },
-        game_withArg: {
-            '胜利': 'over:true',
-            '失败': 'over:false',
-            "统计场上势力数": "countGroup:",
-            "统计场上男性数量": `countPlayer:cur=>cur.hasSex("male")`,
-            "统计场上女性数量": `countPlayer:cur=>cur.hasSex("female")`,
-            "统计场上其他男性数量": `countPlayer:cur=>cur.hasSex("male")&&cur!=player`,
-            "统计场上其他女性数量": `countPlayer:cur=>cur.hasSex("female")&&cur!=player`,
-            "统计场上魏势力角色数量": `countPlayer:cur=>cur.group!="wei"`,
-            "统计场上蜀势力角色数量": `countPlayer:cur=>cur.group!="shu"`,
-            "统计场上吴势力角色数量": `countPlayer:cur=>cur.group!="wu"`,
-            "统计场上群势力角色数量": `countPlayer:cur=>cur.group!="qun"`,
-            "统计场上晋势力角色数量": `countPlayer:cur=>cur.group!="jin"`,
-            "统计场上神势力角色数量": `countPlayer:cur=>cur.group!="shen"`,
-            "统计场上西势力角色数量": `countPlayer:cur=>cur.group!="western"`,
-            "统计场上键势力角色数量": `countPlayer:cur=>cur.group!="key"`,
-            "统计场上其他魏势力角色数量": `countPlayer:cur=>cur.group!="wei"&&cur!=player`,
-            "统计场上其他蜀势力角色数量": `countPlayer:cur=>cur.group!="shu"&&cur!=player`,
-            "统计场上其他吴势力角色数量": `countPlayer:cur=>cur.group!="wu"&&cur!=player`,
-            "统计场上其他群势力角色数量": `countPlayer:cur=>cur.group!="qun"&&cur!=player`,
-            "统计场上其他晋势力角色数量": `countPlayer:cur=>cur.group!="jin"&&cur!=player`,
-            "统计场上其他神势力角色数量": `countPlayer:cur=>cur.group!="shen"&&cur!=player`,
-            "统计场上其他西势力角色数量": `countPlayer:cur=>cur.group!="western"&&cur!=player`,
-            "统计场上其他键势力角色数量": `countPlayer:cur=>cur.group!="key"&&cur!=player`,
-        },
-        lib_filter: {
-            '非我过滤': "lib.filter.notMe",
-            '唯我过滤': "lib.filter.isMe",
         },
         trigger_type: {
             '你': 'player',
@@ -1073,6 +1082,49 @@ export class NonameCN {
             '需要使用闪时': 'chooseToUseBefore:shan',
             '需要打出杀时': 'chooseToRespondBefore:sha',
         },
+        game_method: {
+            '创卡': 'createCard',
+            '造卡': 'createCard',
+            '印卡': 'createCard',
+            '更新轮数': 'updateRoundNumber',
+            '暂停': 'pause',
+            '继续': 'resume',
+            '局终': 'over',
+            '重启': 'reload',
+            '移至处理区': "cardsGotoOrdering",
+            '卡牌移至处理区': "cardsGotoOrdering",
+            '同时失去牌': "loseAsync",
+            '日志': "log"
+        },
+        game_withArg: {
+            '胜利': 'over:true',
+            '失败': 'over:false',
+            "统计场上势力数": "countGroup:",
+            "统计场上男性数量": `countPlayer:cur=>cur.hasSex("male")`,
+            "统计场上女性数量": `countPlayer:cur=>cur.hasSex("female")`,
+            "统计场上其他男性数量": `countPlayer:cur=>cur.hasSex("male")&&cur!=player`,
+            "统计场上其他女性数量": `countPlayer:cur=>cur.hasSex("female")&&cur!=player`,
+            "统计场上魏势力角色数量": `countPlayer:cur=>cur.group!="wei"`,
+            "统计场上蜀势力角色数量": `countPlayer:cur=>cur.group!="shu"`,
+            "统计场上吴势力角色数量": `countPlayer:cur=>cur.group!="wu"`,
+            "统计场上群势力角色数量": `countPlayer:cur=>cur.group!="qun"`,
+            "统计场上晋势力角色数量": `countPlayer:cur=>cur.group!="jin"`,
+            "统计场上神势力角色数量": `countPlayer:cur=>cur.group!="shen"`,
+            "统计场上西势力角色数量": `countPlayer:cur=>cur.group!="western"`,
+            "统计场上键势力角色数量": `countPlayer:cur=>cur.group!="key"`,
+            "统计场上其他魏势力角色数量": `countPlayer:cur=>cur.group!="wei"&&cur!=player`,
+            "统计场上其他蜀势力角色数量": `countPlayer:cur=>cur.group!="shu"&&cur!=player`,
+            "统计场上其他吴势力角色数量": `countPlayer:cur=>cur.group!="wu"&&cur!=player`,
+            "统计场上其他群势力角色数量": `countPlayer:cur=>cur.group!="qun"&&cur!=player`,
+            "统计场上其他晋势力角色数量": `countPlayer:cur=>cur.group!="jin"&&cur!=player`,
+            "统计场上其他神势力角色数量": `countPlayer:cur=>cur.group!="shen"&&cur!=player`,
+            "统计场上其他西势力角色数量": `countPlayer:cur=>cur.group!="western"&&cur!=player`,
+            "统计场上其他键势力角色数量": `countPlayer:cur=>cur.group!="key"&&cur!=player`,
+        },
+        lib_filter: {
+            '非我过滤': "lib.filter.notMe",
+            '唯我过滤': "lib.filter.isMe",
+        },
         step: {
             ...getMapOfStep()
         },
@@ -1110,6 +1162,10 @@ export class NonameCN {
             "双性": '"double"',
             "未知性": `"unknow"`
         },
+        filter_only: {
+            "不发动": "return false;",
+            "发动": "return true;"
+        },
         packed_playerCode: {
             '令角色代为打出': 'packed_playerCode_sufferForAnother',
             '令角色代为使用': 'packed_playerCode_sufferForAnother',
@@ -1121,17 +1177,6 @@ export class NonameCN {
         packed_gameCode: {
             '同时获得牌': "packed_gameCode_gainAsync"
         },
-        filter_only: {
-            "不发动": "return false;",
-            "发动": "return true;"
-        },
-        math: {
-            ...getMapOfRandomNum()
-        },
-        variableRemember: {
-            "判定事件": "judgeEvent",
-            "选择事件": "chooseEvent"
-        }
     }
     static packedCodeRePlaceMap = {
         'packed_playerCode_sufferForAnother'(str) {
@@ -1288,7 +1333,7 @@ export class NonameCN {
     }
     static get TriList() {
         let list = Object.assign({},
-            this.groupedList.event,
+            this.groupedList.event_name,
             this.groupedList.triggerList,
             this.groupedList.trigger_type
         );
@@ -1369,8 +1414,14 @@ export class NonameCN {
             getParent: () => true,
             filterTarget: () => true,
             "set": () => true,
-            cancel: () => true
+            cancel: () => true,
+            trigger: () => true,
         }
+    }
+    static getVirtualCard() {
+        const vCardObj = game.createCard();
+        vCardObj.destroyed = true;
+        return vCardObj;
     }
     /**
      * @param that 一个对象，其changeWord方法被调用来执行文本替换。
@@ -1383,9 +1434,12 @@ export class NonameCN {
             .replace(/[ ]+/g, " ")
             .replace(/[ ]+$/mg, "")
             .replace(/\s+$/g, '')
+            .replace(/\n[ ]*\n/g, '\n')
         //method类
         //event类
         textareaTool().setTarget(that)
+            .replace("此牌的目标 组", "此牌的目标组")
+            .replace("此牌的已触发的 目标组", "此牌的已触发的目标组")
             .replace("受到 伤害 ", "受到伤害 ")
             .replace(/(?<=代为) (?=使用 |打出 |使用或打出 )/g, "")
             .replace(/体力值 (回复|恢复)至 /g, "体力值回复至 ")
@@ -1420,6 +1474,9 @@ export class NonameCN {
             .replace(/此牌(不?[是为])你使用的/g, '使用此牌的角色 $1 你')
             .replace(/此牌(为|是)其他角色使用的/g, '使用此牌的角色 不为 你')
             .replace(/(.+?)是此牌的目标/g, "此牌的目标包含 $1")
+            .replace(/^(.+?)(不?[为是])([冰火雷])杀$/mg, (match, ...p) => {
+                return `获取 属性 ${p[0]}\n ${p[1]} \n ${p[2]}属性 \n ${p[1].includes("不") ? "或者" : "并且"} \n 获取 牌名 ${p[0]} \n ${p[1]} \n 杀`
+            })
             .replace(/(.+?)(颜色)?(不?[为是])(黑|红|无)色$/mg, '获取 颜色 $1 \n $3 \n $4色')
             .replace(/(.+?)(花色)?(不?[为是])(梅花|黑桃|方片|红桃)$/mg, '获取 花色 $1 \n $3 \n $4')
             .replace(/(.+?)(类别)?(不?[为是])(非延时锦囊牌|延时锦囊牌|普通锦囊牌|基本牌|装备牌)$/g, '获取 类别 $1 \n $3 \n $4')
@@ -1464,7 +1521,6 @@ export class NonameCN {
             .replace(/然后/g, '\n')
     }
     static standardEffectBefore(that) {
-
         textareaTool().setTarget(that)
             .replace(/额外执行一个/g, "执行一个额外的")
             .replace(/(.+?)执行(一个)?额外的?(准备|出牌|弃牌|结束)阶段/g, (match, ...p) => {
@@ -1482,6 +1538,7 @@ export class NonameCN {
             .replace(/(你使用)?此牌(不可|无法)被(闪避|响应)/g, "不可响应牌的角色 添多 此牌的所有目标")
             .replace(/(你使用)?此牌(不可|无法)被(.+?)(闪避|响应)/g, "不可响应牌的角色 添单 $2")
             .replace(/(你使用)?此牌无视(.+?)的?防具/g, "$2 本回合被破甲\n无视$2防具的牌 添单 此牌")
+            .replace(/^此牌取消(.+?)为目标$/mg, '此牌的目标组 移除 $1\n此牌的已触发的目标组 移除 $1')
             .replace(/你?令?此牌对(你)无效/g, "无效的角色 添单 $1")
             .replace(/^(.+?)视为对(.+?)使用(.+?)张(不可被无懈可击响应)?[的、]?(不计入次数)?[的、]?(不影响ai)?的?(.+?)$/mg, '$1 视为使用$7 $2 $3张 $4 $5 $6')
             .replace(/(?<=弃置区域内)(?=所有牌)/g, '的')
@@ -1490,6 +1547,7 @@ export class NonameCN {
             .replace(/(?<!不能使用|不能打出)(?<=使用|打出)(?=(杀|闪|桃|酒|无懈可击)[ ]*$)/mg, " ")
             .replace(/(.+?)展示牌堆顶的?(.+?张)牌(\(放回\))?$/g, "event.topCards = 获取 牌堆顶牌组$3 $2\n$1 展示牌 event.topCards")
             .replace(/(.+?)展示牌堆底的?(.+?张)牌(\(放回\))?$/g, "event.bottomCards = 获取 牌堆底牌组$3 $2\n $1 展示牌 event.bottomCards")
+            .replace(/^销毁(此牌|卡牌)/mg, '$1 修正\n$1 移除\n$1 已销毁 令为 真\n游戏 日志 $1 "已销毁"')
     }
     static standardEeffectMid(that) {
         textareaTool().setTarget(that)
@@ -1507,11 +1565,11 @@ export class NonameCN {
     static standardFilter(that) {
         textareaTool().setTarget(that)
             //"(获取) 类别(...) ?"
-            .replace(/(?<=获取)(.+?)的?(类别|副类别|颜色|花色|点数|id)/g, ` $2 $1`)
+            .replace(/^(?<=获取)(.+?)的?(类别|副类别|颜色|花色|点数|id)$/mg, ` $2 $1`)
             //"你(...) 获取手牌区(...)牌"
-            .replace(/(获取)(.+?)\s*的?(手牌区|装备区|判定区)[内中]?的?牌/g, '$2 $1$3牌')
+            .replace(/(获取)(.+?)\s*的?(手牌区|装备区|判定区)[内中]?的?牌$/mg, '$2 $1$3牌')
             //"你(...) 获取区域内牌 基本牌(..)"
-            .replace(/(获取)(.+?)\s*的?(区域)[内中]的牌/g, '$2 $1$3内牌')
+            .replace(/(获取)(.+?)\s*的?(区域)[内中]的牌$/mg, '$2 $1$3内牌')
     }
     static standardEvent(that) {
         //处理事件描述
@@ -1776,7 +1834,7 @@ export class NonameCN {
             else if (i === 'groupSkill') {
                 const group = findPrefix(uniqueList, "group").map(k => k.slice(6))
                 if (group.length > 0) {
-                    result += `groupSkill:"${group[0]}"\n`;
+                    result += `groupSkill:"${group[0]}",\n`;
                     return;
                 }
             }
@@ -2470,6 +2528,7 @@ export class NonameCN {
             '此牌是普通锦囊牌': '此牌是普通锦囊牌(类别)',
             '此牌是基本牌': '此牌是基本牌(类别)',
             '此牌是装备牌': '此牌是装备牌(类别)',
+            '此牌是火杀': "此牌是火杀(属性+牌名)",
             '此牌是杀': '此牌是杀(牌名)',
             '此牌是闪': '此牌是闪(牌名)',
             '此牌是桃': '此牌是桃(牌名)',
@@ -2571,17 +2630,18 @@ export class NonameCN {
             "你跳过下一个结束阶段": "你跳过下一个结束阶段(阶段类)",
             '你获得一枚"new_wuhun"标记': "你获得一枚梦魇标记(标记类)",
             '你移去一枚"new_wuhun"标记': "你移去一枚梦魇标记(标记类)",
-            "此杀的伤害+1": "此杀伤害+1(触发技:使用杀时|使用杀指定目标时-可将加号(+)改为减号(-)或者乘号(*))",
+            "此杀的伤害+1": "此杀伤害+1(触发技:使用杀时|使用杀指定目标时)",
             "此杀的伤害改为1": "此杀伤害改为1(触发技:使用杀时|使用杀指定目标时)",
-            "此杀需要的闪的数量+1": "此杀需要的闪的数量+1(触发技:使用杀时|使用杀指定目标时-可将加号(+)改为减号(-)或者乘号(*))",
+            "此杀需要的闪的数量+1": "此杀需要的闪的数量+1(触发技:使用杀时|使用杀指定目标时)",
             "此杀需要的闪的数量改为2": "此杀需要的闪的数量改为1(触发技:使用杀时|使用杀指定目标时)",
-            "此决斗需要的杀的数量+1": "此决斗需要的杀的数量+1(触发技:使用决斗时|使用决斗指定目标时|成为决斗的目标时-可将加号(+)改为减号(-)或者乘号(*))",
+            "此决斗需要的杀的数量+1": "此决斗需要的杀的数量+1(触发技:使用决斗时|使用决斗指定目标时|成为决斗的目标时)",
             "此决斗需要的杀的数量改为2": "此决斗需要的杀的数量改为1(触发技:使用决斗时|使用决斗指定目标时|成为决斗的目标时)",
-            "造成的伤害+1": "造成的伤害+1(触发技:伤害类-可将加号(+)改为减号(-)或者乘号(*))",
+            "造成的伤害+1": "造成的伤害+1(触发技:伤害类)",
             "造成的伤害改为1": "造成的伤害改为1",
             "令此牌对你无效": "令此牌对你无效",
             "此牌额外结算1次": "此牌额外结算1次",
             "此牌不可被响应": "此牌不可被响应",
+            "此牌取消你为目标": "此牌取消你为目标",
             "此牌不可被此牌的目标响应": "此牌不可被此牌的目标响应",
             "此牌无视此牌的目标的防具": "此牌无视此牌的目标的防具",
             "你视为对你使用一张无中生有": "你视为对你使用一张无中生有(牌类)",
@@ -2628,6 +2688,8 @@ export class NonameCN {
             "一名角色弃牌阶段": "一名角色弃牌阶段(阶段类)",
             "一名角色摸牌阶段": "一名角色摸牌阶段(阶段类)",
         },
+        filterTarget: {},
+        filterCard: {},
         unshown_filter: {},
         unshown_content: {
             '"step 1"': 0,
@@ -2635,13 +2697,22 @@ export class NonameCN {
             "变量选择事件令为": 0,
             "选择事件设置角色限制条件 非我过滤": 0,
             "选择事件设置角色限制条件 唯我过滤": 0,
+            "选择事件设置选项列表":0,
+            '变量卡牌令为触发事件的牌组-0': 0,
+            '销毁卡牌': 0,
         },
-        unshown_trigger: {}
+        unshown_trigger: {},
+        unshown_filterTarget: {},
+        unshown_filterCard: {},
     }
 }
 for (const [item, explanation] of Object.entries(NonameCN.giveSentence.trigger)) {
     if (!item.startsWith("你")) continue;
     NonameCN.giveSentence.trigger["一名角色" + item.substring(1)] = "一名角色" + explanation.substring(1)
+}
+for (const [item, _] of Object.entries(NonameCN.giveSentence.filter)) {
+    if (!item.startsWith("此牌")) continue;
+    NonameCN.giveSentence.filterCard["卡牌" + item.substring(2)] = 0;
 }
 {
     const varSentence = {

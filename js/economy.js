@@ -67,7 +67,7 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
     }
     if (lib.config.xjb_hun) game.xjb_currencyRate = new CurrencyRate();
     game.xjb_getHunbi = function (value = 1, num = 1, freeE, silent = false, log) {
-        if (!lib.config.xjb_hunbi) lib.config.xjb_hunbi = 0
+        if (!lib.config.xjb_hunbi) lib.config.xjb_hunbi = 0;
         lib.config.xjb_hunbi += Math.round(num * value);
         game.saveConfig('xjb_hunbi', lib.config.xjb_hunbi);
         if (!silent) game.xjb_create.alert('你获得了' + num * value + '魂币！')
@@ -78,8 +78,7 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
             game.xjb_systemEnergyChange(-consumeEnergy)
         }
         if (log || !log) {
-            let logString = `你因为${log ? log : 'unknown'}获得了${num * value}个魂币.
-`;
+            let logString = `你因为${log ? log : 'unknown'}获得了${num * value}个魂币\n`;
             game.xjb_writeHunbiLog(logString);
         }
     }
@@ -170,17 +169,17 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         var Uhave
         switch (num1) {
             case 1: case 'hunbi': Uhave = lib.config.xjb_hunbi; break;
-            case 2: Uhave = lib.config.xjb_hundaka2; break;
-            case 3: Uhave = lib.config.xjb_jnc - lib.config.xjb_newcharacter.skill.length;; break;
+            case 2: case 'daka': Uhave = lib.config.xjb_hundaka2; break;
+            case 3: case 'jnc': Uhave = lib.config.xjb_jnc - lib.config.xjb_newcharacter.skill.length;; break;
         }
         if (!Uhave) return false
         if (Uhave >= num2) return true
         return false
     }
-    game.cost_xjb_cost = function (num1, num2, log) {
+    game.cost_xjb_cost = function (type, num2, log) {
         num2 = Math.abs(num2)
-        if (num1 == 1 || num1 == "B") game.xjb_costHunbi(num2, log)
-        else if (num1 === 2 || num1 == "D") lib.config.xjb_hundaka2 -= num2
+        if (type == 1 || type == "B") game.xjb_costHunbi(num2, log)
+        else if (type === 2 || type == "D") lib.config.xjb_hundaka2 -= num2
         game.saveConfig('xjb_hundaka2', lib.config.xjb_hundaka2);
         return true;
     }
@@ -190,24 +189,30 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         game.saveConfig('xjb_hunbi', lib.config.xjb_hunbi);
         game.xjb_systemEnergyChange(number * game.xjb_currencyRate.thirdRate);
         if (log || !log) {
-            let logString = `你因为${log ? log : 'unknown'}失去了${number}个魂币.
-`;
+            let logString = `你因为${log ? log : 'unknown'}失去了${number}个魂币\n`;
             game.xjb_writeHunbiLog(logString);
         }
     }
-    //
-    game.xjb_howMuchIsIt = function (value, min) {
+    //计算乘以浮流率后的价格
+    game.xjb_howMuchIsIt = function (value, min, max) {
         let price = Math.round(value * game.xjb_inflationRate());
         if (price < min) price = min;
+        if (price > max) price = max;
         return price
     }
     game.xjb_purchaseIt = function (name, num = 1,) {
         const price = (game.xjb_goods[name] && game.xjb_goods[name].getPrice()) || 3
         if (!game.xjb_condition(1, price * num)) return false;
-        game.cost_xjb_cost(1, price * num, `购买${game.xjb_goods[name].translate}`);
+        game.xjb_costHunbi(price * num, `购买${game.xjb_goods[name].translate}`);
         game.xjb_getIt(name, num);
         return true;
     }
+    /**
+     * 
+     * @param {string} name 
+     * @param {number} num 
+     * -能量花费,默认花费30,如果是商品,则按照商品能量花费扣减
+     */
     game.xjb_getIt = function (name, num = 1) {
         if (!lib.config.xjb_objects[name]) lib.config.xjb_objects[name] = 0
         lib.config.xjb_objects[name] += num
