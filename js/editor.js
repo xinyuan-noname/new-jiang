@@ -78,7 +78,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
         players: ['game.players', 'result.targets', 'targets'],
         game: ['game'],
         get: ['get'],
-        event: ['event', 'trigger', 'trigger.parent', 'event.parent' , '_status.event', "evt", "judgeEvent", "chooseEvent"],
+        event: ['event', 'trigger', 'trigger.parent', 'event.parent', '_status.event', "evt", "judgeEvent", "chooseEvent"],
         suit: ['"red"', '"black"', '"club"', '"spade"', '"heart"', '"diamond"', '"none"'],
         nature: ['"ice"', '"fire"', '"thunder"'],
         Math: ["Math"],
@@ -136,104 +136,18 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             let close = backArr[1]
             back.close = close
             back.ele = {}
-            back.skill = {
-                mode: 'self',
-                id: 'xxx',
-                kind: '',
-                type: [],
-                filter: [],
-                /*
-                jianxiong-gain:用来确保获得的为实体牌而且处于处理区 
-                viewAs:用来确保技能类别为视为类技能  
-                moreViewAs:表示视为类技能不止一个
-                */
-                boolList: [],
-                /*
-                group-*:用来设置势力技
-                mainVice-remove1:用来设置移去阴阳鱼
-                */
-                uniqueList: [],
-                filter_card: [],
-                filter_suit: [],
-                filter_color: [],
-                variable_filter: new Map(),
-                variable_content: new Map(),
-                filterTarget: [],
-                selectTarget: '',
-                filterCard: [],
-                selectCard: '',
-                content: [],
-                contentAsync: false,
-                trigger: {
-                    player: [],
-                    source: [],
-                    global: [],
-                    target: []
-                },
-                respond: [],
-                viewAsCondition: [],
-                viewAs: [],
-                subSkill: {},
-                group: [],
-                uniqueTrigger: [],
-                tri_filterCard: [],
-                primarySkillCache: {
-                    skill: {},
-                    ele: {}
-                },
-                marktext: "",
-                markName: "",
-                markContent: ""
-            }
+            back.skill = get.copy(NonameCN.backSkillMap);
             back.pageNum = 0;
             back.pages = [];
             back.trigger = [];
             back.phaseUse = [];
             back.choose = [];
+            back.cnSentence = new Map();
             back.skillEditorStart = function () {
                 const cache = back.skill.primarySkillCache;
-                back.skill = {
-                    mode: 'self',
-                    id: 'xxx',
-                    kind: '',
-                    type: [],
-                    filter: [],
-                    boolList: [],
-                    uniqueList: [],
-                    filter_card: [],
-                    filter_suit: [],
-                    filter_color: [],
-                    variable_filter: new Map(),
-                    variable_content: new Map(),
-                    filterTarget: [],
-                    selectTarget: '',
-                    filterCard: [],
-                    selectCard: '',
-                    content: [],
-                    contentAsync: false,
-                    trigger: {
-                        player: [],
-                        source: [],
-                        global: [],
-                        target: []
-                    },
-                    respond: [],
-                    viewAsCondition: [],
-                    viewAs: [],
-                    subSkill: {},
-                    group: [],
-                    uniqueTrigger: [],
-                    tri_filterCard: [],
-                    primarySkillCache: {
-                        skill: {},
-                        ele: {}
-                    },
-                    marktext: "",
-                    markName: "",
-                    markContent: ""
-                }
+                back.skill = get.copy(NonameCN.backSkillMap);
                 back.skill.primarySkillCache = { ...cache };
-                back.organize()
+                back.organize();
             }
             back.getID = function () {
                 return back.skill.subSkillEditing ? back.skill.primarySkillCache.skill.id + '_' + back.skill.id : back.skill.id
@@ -349,7 +263,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 delete back.skill.subSkill;
                 back.organize()
             }
-
             //获取变量,在两者已提交后
             back.allVariable = function () {
                 back.skill.variable_content.clear();
@@ -520,7 +433,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             back.aiArrange = function () {
                 return true;
             }
-
+            back.isContentAsync = function () {
+                if (back.skill.contentAsync) return;
+                if (back.skill.content.some(line => /\bawait\b/.test(line))) back.skill.contentAsync = true
+            }
             //调整显示
             back.updateDisplay = function () {
                 for (const kindButton of back.ele.kinds) {
@@ -605,6 +521,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 back.groupTest();
                 back.aiTest();
                 back.subSkillTest();
+                back.isContentAsync();
                 //dom部分
                 //更新显示状态
                 back.updateDisplay();
@@ -657,14 +574,17 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 if (back.adjust) {
                     str = str.replace(/else\s*\n\s*{/g, "else{");
                     /*匹配满足特定条件的点（.）字符，其前面必须是一个等号（=）或者行首，并且后面跟着一个小写字母。
-                    其用于匹配
-                    */
+                    其用于匹配*/
                     str = str.replace(/(?<=(\=|^)\s*)\.(?=[a-z])/img, "player.");
                     str = str.replace(/([/][*])(.|\n)*([*][/])/g, "");
                 }
                 str = str.replace(/\.undefined/g, "");
                 str = correctPunctuation(str)
                 str = deleteRepeat(str, /if\(.+?\)/g);
+                //
+                for (const [number, content] of back.cnSentence.entries()) {
+                    str = str.replaceAll(number, `"${content}"`);
+                }
                 //tab处理
                 str = adjustTab(str, back.skill.mode === 'self' ? 1 : 0);
                 back.target.value = str;
@@ -742,6 +662,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         if (!bool) break;
                         const a = i[b];
                         const WAW = (body) => (watchAndWork(body, a, b));
+                        const type = game.xjb_judgeType(a)
+                        if (type && notice.length) notice.push(type)
                         if (notice.includes('game')) WAW(vGame)
                         else if (notice.includes('get')) WAW(get)
                         else if (notice.includes('players')) { WAW(player) }
@@ -750,10 +672,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         else if (notice.includes('Math')) WAW(Math)
                         else if (notice.includes('card')) WAW(vCardObject)
                         else if (notice.includes('variable')) WAW({})
-                        else if (notice.includes('array')) WAW([])
-                        else WAW({});
-                        notice.push(game.xjb_judgeType(a))
-                        if (game.xjb_judgeType(a) === 'players') players = a
+                        else if (notice.includes('array')) WAW(new Array(1).fill())
+                        else WAW(new Array(1).fill());
+                        if (type && !notice.length) notice.push(type)
+                        if (type === 'players') players = a
                         if (["const ", "let ", "var "].includes(a)) notice.push("variable")
                     }
                     if (notice.includes("Math") && index) {
@@ -831,7 +753,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                             str2 = str2.replace(/\)(?=[^\)]*$)/, string);
                         })
                     }
-                    if (notice.includes('players')) {
+                    if (notice.includes('players') && !notice.includes("variable")) {
                         str0 = players + '.forEach(i=>{';
                         str = str.replace(new RegExp(players, 'g'), 'i');
                         str2 = str2.replace(new RegExp(players, 'g'), 'i');
@@ -1279,6 +1201,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     "clanSkill": "宗族技",
                     "groupSkill": "势力技",
                     "mark": "标记持显",
+                    "multiline": "多指示线",
                     'round': "每轮一次",
                     "direct": "直接发动",
                     "sunbenSkill": "昂扬技",
@@ -1618,6 +1541,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .replaceOrder(/(本|此|该)技能id/g, back.getID)
                 .replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", back.ele.filter.adjustTab)
                 .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", back.ele.filter.adjustTab)
+                .replaceOrder("新三元式", "  ?  :  ")
                 .debounce('keyup', back.ele.filter.submit, 200)
                 .listen('keydown', deleteModule)
                 .listen('selectionStartChange', adjustSelection)
@@ -1819,14 +1743,16 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 parameter("任意张", "任意名", "从牌堆底");
                 parameter('魏势力', '蜀势力', '吴势力', '群势力', '晋势力', '神势力');
                 that.value = eachLine(contentFree.value, line => {
+                    const startsWithAwait = /^\s*等待 /.test(line)
+                    if (startsWithAwait) line = line.slice(3)
                     let group = findWordsGroup(line, playerCN);
-                    if (line.includes("令为") || line.includes("变量") || !group.length) return;
+                    if (/(变量|常量|块变|令为)/.test(line) || !group.length) return;
                     if (/其他角色计算(和|与)你的?距离/.test(line)) return;
                     if (/添单[ ]*你/.test(line)) return;
                     if (/移除 你/.test(line)) return;
                     if (new RegExp(`^无视(${JOINED_PLAYAERCN})防具的牌`).test(line)) return;
                     let restWords = clearWordsGroup(line, playerCN);
-                    return `${group.shift()} ${restWords} ${group.join(" ")}`
+                    return `${startsWithAwait ? "等待 " : ""}${group.shift()} ${restWords} ${group.join(" ")}`
                 })
                 that.changeWord(new RegExp(`(${JOINED_PLAYAERCN})`, 'g'), ' $1 ');
                 NonameCN.standardEeffect(that)
@@ -1904,6 +1830,11 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", back.ele.content.adjustTab)
                 .replaceOrder('新目标过滤', '(card,player,target)=>{}')
                 .replaceOrder('新卡牌过滤', '(card)=>{}')
+                .replaceOrder(/\bdo-while\b/g, "do{\n\n}while(  )")
+                .replaceOrder(/\bwhile-\b/g, "while(  ){\n}")
+                .replaceOrder(/\bfor-in\b/g, "for( 常量 k in  ){\n\n}")
+                .replaceOrder(/\bfor-of\b/g, "for( 常量 k of  ){\n\n}")
+                .replaceOrder(/\bfor-;;/g, "for( 块变 i 令为 0 ; i< ; i++ ){\n\n}")
                 .debounce('keyup', back.ele.content.submit, 200)
                 .listen('keydown', deleteModule)
                 .listen('selectionStartChange', adjustSelection)
@@ -2568,7 +2499,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         "切换为原技能",
                         "添加技能组",
                         "查看及删除技能组",
-                        "增添标记"
+                        "增添标记",
+                        "长中文提示语句"
                     ],
                     true,
                     function () {
@@ -2712,6 +2644,18 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                                     .appendPrompt('标记名字', back.skill.markName ? back.skill.markName : void 0, '这里写标记的名字',)
                                     .appendPrompt('标记内容', back.skill.markContent ? back.skill.markContent : void 0, '这里写点开标记后显示的内容,你可以用#表示标记数量', 4);
                             }; break;
+                            case 6: {
+                                game.xjb_create.multiprompt(function () {
+                                    /**
+                                     * @type {Map}
+                                     */
+                                    const cnSentence = back.cnSentence;
+                                    cnSentence.set(this.resultList[0], this.resultList[1])
+                                    back.organize();
+                                })
+                                    .appendPrompt('语句编号', '%#&', '%#&',)
+                                    .appendPrompt('语句内容', void 0, '语句编号请以%#&打头,这里输入内容', 4)
+                            }
                         }
                     }
                 )

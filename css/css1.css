@@ -122,6 +122,17 @@
   animation: xjb_tran var(--xjbTimeLong) infinite linear;
 }
 
+.avatar.xjb_tranEndless {
+  --xjbTimeLong: 0.5s
+}
+
+#arena.xjb_tranEndless {
+  --xjbTimeLong: 4s
+}
+
+
+
+
 /*左浮动*/
 .xjb_floatRight {
   float: right;
@@ -137,9 +148,66 @@
   bottom: 0px;
 }
 
+/*隐藏*/
 .xjb_hidden {
   display: none !important;
 }
+
+
+
+/*抽奖*/
+.xjb-choujiang-listContainer> :nth-child(1) {
+  color: red;
+}
+
+.xjb-choujiang-listContainer> :nth-child(2) {
+  color: orange;
+}
+
+.xjb-choujiang-listContainer> :nth-child(3) {
+  color: blue;
+}
+
+.xjb-choujiang-listContainer> :nth-child(4) {
+  color: pink;
+}
+
+.xjb_choujiang {
+  position: relative;
+  font-size: 24px;
+  border: 1px solid #4A766E;
+  border-radius: 5em;
+  float: left;
+  margin-bottom: 14px;
+}
+
+div#myChouJiang_XJB_CONTENT {
+  font-size: 30px;
+  color: #D9D919;
+  margin-left: 56%;
+  margin-top: 100px;
+  width: 240px;
+  text-align: center;
+}
+
+button#myChouJiang_XJB_BUTTON {
+  margin-left: 60%;
+  border-radius: 5em;
+  position: relative;
+  color: red;
+  border: 1px solid green;
+  font-size: 24px;
+  margin-top: 200px;
+  width: 175px;
+  height: 80px;
+}
+
+div#myChouJiang_XJB_TXT {
+  font-size: 20px;
+  right: 410px;
+  top: 10px;
+}
+
 
 /*存档*/
 .xjb_ul_storage li p span {
@@ -157,8 +225,6 @@
   font-size: 18px;
   margin-left: 6%
 }
-
-
 
 /*新将包被存档*/
 #xjb_storage_theStorage {
@@ -187,6 +253,9 @@
   overflow: auto
 }
 
+
+
+
 /*新将包诗文*/
 .xjbHeadline {
   font-size: 36px;
@@ -204,12 +273,62 @@
   position: relative;
 }
 
+
+
+
 /*拼音注释*/
 [xjb_pinyin]:hover::after {
   content: attr(xjb_pinyin);
   background: gold;
 }
 
+/*概念注释*/
+b[description]:hover::after {
+  content: attr(description);
+  background: rgb(0, 0, 0, 0.7);
+  display: block;
+  position: absolute;
+  width: 500px;
+  font-size: 0.9em;
+  text-shadow: 1px 1px 2px rgba(185, 162, 162, 0.3);
+  z-index: 10;
+  border-radius: 4px;
+  color: rgb(170, 169, 169);
+  box-shadow: 0 2px 4px rgba(85, 72, 72, 0.2);
+  max-width: 60%;
+  left: 30%;
+}
+
+
+
+/*背景*/
+div.xjb-interact-back {
+  width: 800px;
+  height: 400px;
+  z-index: 8;
+  border-radius: 3em;
+  background-image: linear-gradient(to bottom right, #f0acf7, #7093DB, #f7f0ac);
+  border: 3px solid black;
+}
+
+div.xjb-interact-foot {
+  position: absolute;
+  font-size: 20px;
+  font-family: "楷体";
+  width: 100%;
+  color: #D9D919;
+  text-align: center;
+  margin-top: 370px;
+  margin-left: -40px;
+}
+
+img.xjb-interact-close {
+  float: left;
+  width: 40px;
+}
+
+
+/*对话框*/
 .xjb_dialogBase {
   background-color: #71291d;
   list-style: none;
@@ -231,22 +350,7 @@
   font-size: 24px
 }
 
-/*概念注释*/
-b[description]:hover::after {
-  content: attr(description);
-  background: rgb(0, 0, 0, 0.7);
-  display: block;
-  position: absolute;
-  width: 500px;
-  font-size: 0.9em;
-  text-shadow: 1px 1px 2px rgba(185, 162, 162, 0.3);
-  z-index: 10;
-  border-radius: 4px;
-  color: rgb(170, 169, 169);
-  box-shadow: 0 2px 4px rgba(85, 72, 72, 0.2);
-  max-width: 60%;
-  left: 30%;
-}
+
 
 /*势力样式*/
 /*魂势力*/
@@ -294,10 +398,6 @@ span[data-nature='xjb_hun'] {
 .xjb_hunTitle:visited,
 .xjb_hunTitle:active {
   color: inherit;
-}
-
-.player {
-  --xjbTimeLong: 0.5s
 }
 
 .player>.xjb_gathering {

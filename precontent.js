@@ -272,10 +272,11 @@ function way() {
 function importFile() {
     let count = 0;
     const files = ["event", "lingli", "skills", "card",
-        "project", "rpg", "translate",
+        "project", "rpg", "translate","character",
         "dialog", "economy", "math", "raise"];
     function loadFiles(fileName) {
         let script = lib.init.js(lib.xjb_src + "js", fileName, () => {
+            console.log(fileName.toUpperCase())
             window[`XJB_LOAD_${fileName.toUpperCase()}`](_status, lib, game, ui, get, ai);
             count++;
         }, (err) => { game.print(err) });

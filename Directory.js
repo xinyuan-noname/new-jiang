@@ -11,9 +11,6 @@ window["xjb_xyAPI_Directory_新将包"]={
         "qimendunjia.png",
         "README.md",
         "skillCard.png",
-        "soul_chanter.jpg",
-        "soul_Fuaipaiyi.jpg",
-        "soul_timer.jpg",
         "xin_baiyin.png",
         "xin_chitu.png",
         "xin_fellow.jpg",
@@ -80,8 +77,10 @@ window["xjb_xyAPI_Directory_新将包"]={
         "π.png"
     ],
     "js": [
+        "bossSkill.js",
         "canvas.js",
         "card.js",
+        "character.js",
         "dialog.js",
         "economy.js",
         "editor.js",
@@ -92,12 +91,14 @@ window["xjb_xyAPI_Directory_新将包"]={
         "math.js",
         "nonameCN.js",
         "project.js",
+        "raise.js",
         "rpg.js",
         "skills.js",
         "string.js",
         "title.js",
         "translate.js",
         "ui.js",
+        "xjbSkill.js",
         "Xskill.js"
     ],
     "json": [
@@ -135,6 +136,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "redSpace.jpg"
     ],
     "sink": [],
+    "skin": [],
     "title": [
         "xjb_boss1.png",
         "xjb_damageZero.png",
@@ -154,26 +156,24 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_lijingtuzhi.png",
         "xjb_xiugengxuzi.png"
     ],
-    "sink/Red": [
-        "小红.png",
-        "小红1.png",
-        "小红2.png",
-        "小红3.png",
-        "红-白.png",
-        "红-祸.png",
-        "红-鬼.png",
-        "红1.png",
-        "红2.png",
-        "红3.png"
-    ],
     "sink/xin_newCharacter": [],
-    "sink/xjb_xuemo": [
+    "skin/image": [],
+    "sink/xin_newCharacter/normal": [
+        "xin_newCharacter.jpg"
+    ],
+    "skin/image/xjb_chanter": [
+        "normal.jpg"
+    ],
+    "skin/image/xjb_Fuaipaiyi": [
+        "normal.jpg"
+    ],
+    "skin/image/xjb_timer": [
+        "normal.jpg"
+    ],
+    "skin/image/xjb_xuemo": [
         "xuemo1.jpg",
         "xuemo2.jpg",
         "xuemo3.jpg",
         "xuemo4.jpg"
-    ],
-    "sink/xin_newCharacter/normal": [
-        "xin_newCharacter.jpg"
     ]
-} 
+}

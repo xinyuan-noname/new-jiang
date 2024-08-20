@@ -399,10 +399,60 @@ export class NonameCN {
         "所有角色",
         "伤害来源", "受伤角色",
         "此牌的目标", "此牌的所有目标",
-        "触发事件的角色", "触发事件的来源", "触发事件的目标",
+        "触发事件的角色", "触发事件的来源", "触发事件的目标", "触发事件的目标组",
+        "事件的目标组",
         ...new Array(10).fill('目标组-').map((item, index) => item + index),
         "目标组", "目标"
     ]
+    static backSkillMap = {
+        mode: 'self',
+        id: 'xxx',
+        kind: '',
+        type: [],
+        filter: [],
+        /*
+        jianxiong-gain:用来确保获得的为实体牌而且处于处理区 
+        viewAs:用来确保技能类别为视为类技能  
+        moreViewAs:表示视为类技能不止一个
+        */
+        boolList: [],
+        /*
+        group-*:用来设置势力技
+        mainVice-remove1:用来设置移去阴阳鱼
+        */
+        uniqueList: [],
+        filter_card: [],
+        filter_suit: [],
+        filter_color: [],
+        variable_filter: new Map(),
+        variable_content: new Map(),
+        filterTarget: [],
+        selectTarget: '',
+        filterCard: [],
+        selectCard: '',
+        content: [],
+        contentAsync: false,
+        trigger: {
+            player: [],
+            source: [],
+            global: [],
+            target: []
+        },
+        respond: [],
+        viewAsCondition: [],
+        viewAs: [],
+        subSkill: {},
+        group: [],
+        uniqueTrigger: [],
+        tri_filterCard: [],
+        primarySkillCache: {
+            skill: {},
+            ele: {}
+        },
+        marktext: "",
+        markName: "",
+        markContent: "",
+    }
     static basicList = {
         "数学": "Math",
         //get
@@ -508,6 +558,8 @@ export class NonameCN {
         '常量': 'const ',
         '块级变量': 'let ',
         '块变': 'let ',
+        "等待": "await ",
+        //
         '令为': ' = ',
         '自增': '++',
         '自减': '--',
@@ -553,7 +605,17 @@ export class NonameCN {
         //数学
         '随机数': 'Math.random()',
         '圆周率': 'Math.PI',
-        //           
+        //      
+        "；": ";",
+        "：": ":",
+        "【": "[",
+        "】": "]",
+        "【】": "[]",
+        "‘": "'",
+        "’": "'",
+        "”": "\"",
+        "“": "\"",
+        //
         '+': ' + ',
         '-': ' - ',
         '*': ' * ',
@@ -595,6 +657,8 @@ export class NonameCN {
         "yield": 'yield ',
         "void": 'void ',
         "instanceof": " instanceof ",
+        "of": " of ",
+        "in": " in ",
         //注释
         '注释': '//',
         "父元素": "parentNode",
@@ -657,16 +721,9 @@ export class NonameCN {
             "剪接": "splice",
             "连接": "concat",
             "移除": "remove",
+            "除组": "removeArray",
             "随机获取": "randomGets",
             "长度": "length",
-            "。包含": '.includes',
-            "。添单": ".add",
-            "。添多": ".addArray",
-            "。剪接": ".splice",
-            "。连接": ".concat",
-            "。移除": ".remove",
-            "。随机获取": ".randomGets",
-            "。长度": "length",
         },
         get_method: {
             "牌堆顶牌组": "cards",
@@ -726,6 +783,10 @@ export class NonameCN {
             "向下取整": "floor",
             "向上取整": "ceil"
         },
+        cards: {
+            "触发事件的牌组": "trigger.cards",
+            "事件的牌组": "event.cards"
+        },
         card: {
             ...getMapAboutCard(),
             ...getMapOfOneOfTriCards()
@@ -751,7 +812,7 @@ export class NonameCN {
             "选择结果点数": "result.number",
             "选择结果颜色": "result.color",
             "选择结果花色": "result.suit",
-            "选择结果选项编号":"result.choice",
+            "选择结果选项编号": "result.choice",
             "判定牌名": "result.name",
             "判定点数": "result.number",
             "判定颜色": "result.color",
@@ -853,10 +914,14 @@ export class NonameCN {
             "临时获得技能": "addTempSkill",
         },
         player_choose: {
-            '选择选项':"chooseControl",
-            '选择带取消的选项':`chooseControl:"cancel2"`,
+            '选择选项': "chooseControl",
+            '选择带取消的选项': `chooseControl:"cancel2"`,
+            //
+            '选择确认': "chooseBool",
             //
             '选择按钮': "chooseButton",
+            '选择卡牌按钮': "chooseCardButton",
+            //
             "选择使用手牌": `chooseToUse`,
             "选择使用牌": `chooseToUse`,
             '选择牌': 'chooseCard:"he":intoFunction',
@@ -969,7 +1034,9 @@ export class NonameCN {
             '所选角色': 'result.targets',
             '所有角色': 'game.players',
             '此牌的所有目标': 'trigger.targets',
-            '目标组': "targets"
+            '触发事件的目标组': "trigger.targets",
+            '目标组': "targets",
+            '事件的目标组': "event.targets"
         },
         event: {
             '触发': 'trigger',
@@ -996,15 +1063,21 @@ export class NonameCN {
             '数值调为0': "changeToZero",
             '数改为0': "changeToZero",
             '数调为0': "changeToZero",
-            "设置": "set"
+            "设置": "set",
+            "获取事件结果": "forResult"
         },
-        event_withArg: {
-            ...getMapOfgetParent(),
+        event_set: {
+            //
+            "设置ai": `set:"ai":intoFunction`,
+            "设置Ai": `set:"ai":intoFunction`,
+            "设置AI": `set:"ai":intoFunction`,
+            //
             "设置提示标题": `set:"prompt":intoFunction`,
             "设置提示内容": `set:"prompt2":intoFunction`,
+            "设置提示事件提示": `set:"evtprompt":intoFunction`,
             //
-            "设置选项列表":`set:"choiceList":intoFunction`,
-            "设置选项组":`set:"controls":intoFunction`,
+            "设置选项列表": `set:"choiceList":intoFunction`,
+            "设置选项组": `set:"controls":intoFunction`,
             //
             "设置角色限制条件": `set:"filterTarget":intoFunction`,
             "设置角色选择数量": `set:"selectTarget":intoFunction`,
@@ -1028,6 +1101,9 @@ export class NonameCN {
             "设置黑色作为判定唯一负收益": `set;"judge";card=>get.color(card)==="black"?-2:2`,
             "设置判定生效结果": `set:"judge2":intoFunction`,
             "设置判定生效结果与收益相反": `set;"judge2";result=>result.bool===false?true:false`
+        },
+        event_withArg: {
+            ...getMapOfgetParent(),
         },
         trigger_type: {
             '你': 'player',
@@ -1416,6 +1492,7 @@ export class NonameCN {
             "set": () => true,
             cancel: () => true,
             trigger: () => true,
+            forResult: () => true,
         }
     }
     static getVirtualCard() {
@@ -1452,6 +1529,7 @@ export class NonameCN {
             .replace(/(变量|常量|块变)/g, "$1 ")
             .replace(/令为/g, " 令为 ")
             .replace(/(?<=\w+)为/g, " 为 ")
+            .replace(/(势力)为/g, "$1 为")
             .replace(/(?<!名|令|成|视)为(?!全场最少或之一)(?!判定唯一[正负]收益)/g, '为 ')
             .replace(/令为\s*(.+?)且(向下取整|向上取整|四舍五入)$/mg, "令为 数学 $2 $1")
             .replace(/令为\s*(.+?)且至多为(.+?)$/mg, "令为 数学 最小值 $1 $2")
@@ -2621,6 +2699,7 @@ export class NonameCN {
             "你展示牌堆顶的五张牌(放回)": "你展示牌堆顶的五张(放回)",
             "你展示牌堆底的五张牌(放回)": "你展示牌堆底的五张(放回)",
             "你本回合非锁定技失效": "你本回合非锁定技失效",
+            "你临时获得技能 'dangxian'":"你临时获得技能'dangxian'",
             "你翻面": "你翻面",
             "你横置或重置": "你横置或重置",
             "你跳过下一个准备阶段": "你跳过下一个准备阶段(阶段类)",
@@ -2692,14 +2771,16 @@ export class NonameCN {
         filterCard: {},
         unshown_filter: {},
         unshown_content: {
-            '"step 1"': 0,
-            "'step 1'": 0,
             "变量选择事件令为": 0,
             "选择事件设置角色限制条件 非我过滤": 0,
             "选择事件设置角色限制条件 唯我过滤": 0,
-            "选择事件设置选项列表":0,
+            "选择事件设置选项列表": 0,
             '变量卡牌令为触发事件的牌组-0': 0,
             '销毁卡牌': 0,
+            '游戏 移至处理区': 0,
+            '"step 1"': 0,
+            "'step 1'": 0,
+            '%#&': 0,
         },
         unshown_trigger: {},
         unshown_filterTarget: {},

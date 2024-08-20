@@ -1,3 +1,4 @@
+import { element } from "./ui.js"
 window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
     /*file*/
     game.xjb_transferFile = function (BLOB, fileWay, silent) {
@@ -47,6 +48,22 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
     game.xjb_checkCharacterDaomo = function (id, type) {
         if (!lib.config.xjb_count[id]) lib.config.xjb_count[id] = {}
         if (!lib.config.xjb_count[id].daomo[type]) lib.config.xjb_count[id].daomo[type] = { number: 0 };
+    }
+    game.updateRed = function () {
+        var list = lib.config["xjb_redSkill"].list, keys = Object.keys(lib.skill)
+        for (let i = 0; i < list.length; i++) {
+            var str = list[i]
+            if (!keys.includes(str.slice(13))) {
+                lib.config["xjb_redSkill"].list.remove(str)
+                i--
+            }
+            else {
+                game.xjb_EqualizeSkillObject(list[i], lib.skill[str.slice(13)])
+                lib.skill[str].audio = false
+                lib.translate[list[i]] = lib.config["xjb_redSkill"].translate[list[i]]
+                lib.translate[list[i] + "_info"] = lib.config["xjb_redSkill"].translate[list[i] + "_info"]
+            }
+        }
     }
     lib.skill.xjb_6 = {
         "xjb_storage": function () {
@@ -293,120 +310,6 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
             }
             lib.translate._xjb_bianshen = "魂将"
         },
-        xjbCharacterPack: function () {
-            lib.config.all.characters.push("XJB");
-            lib.characterPack['XJB'] = lib.config.all.characters['XJB']
-            if (!lib.config.characters.includes("XJB")) lib.config.characters.push("XJB");
-            lib.translate["XJB_character_config"] = "新将包";
-            lib.characterPack["XJB"] = {}
-            lib.translate.XJB = "新将包"
-            let character = {
-                "xin_fellow": ["male", "shen", 5, [], ["unseen"]],
-                "xjb_daqiao": ["female", "wu", 3, ["xjb_liuli", "xjb_guose"], []],
-                "xjb_sunce": ["male", "wu", "3/3", ["xin_taoni", "xin_jiang", "xin_yingyi"], []],
-                "xjb_guojia": ["male", "wei", 3, ["xjb_qizuo", "xin_zaozhong"], []],
-                "xjbhan_caocao": ["male", "han", 4, ["xin_zhibang", "xin_chuhui"], []],
-                "xjbhan_xunyu": ["male", "han", 3, ["xin_bingjie", "xin_liuxiang"], []],
-                "xjb_pangtong": ["male", "shu", 3, ["xin_niepan", "xin_lianhuan"], []],
-                "xjb_caocao": ["male", "wei", 4, ["xjb_jianxiong", "xin_fengtian"], []],
-                "xjb_zhouyu": ["male", "wu", 4, ["xin_shiyin", "xin_yingfa"], []],
-                "xjb_liushan": ["male", "shu", 5, ["xjb_fangquan", "xjb_xiangle"], []],
-                "xjb_dianwei": ["male", "wei", 5, ["xin_huzhu", "xin_xiongli"], []],
-                "xjb_ganning": ["male", "wu", 4, ["xin_yexi", "xin_ziruo"], []],
-                "xjb_zhugeliang": ["male", "shu", 3, ["xin_jincui", "xin_chushi"], []],
-                "xjb_jin_simayi": ["male", "jin", 4, ["xin_huanshi", "xin_zhabing"], []],
-                "xjb_yingzheng": ["male", "shen", 3, ["xin_tianming", "xin_zulong", "xin_longpan"], []],
-                "xjb_fazheng": ["male", "shu", 3, ["xin_enyuan", "xin_qisuan", "xjb_fuyi"], []],
-                "xjb_jiaxu": ["male", "qun", 3, ["xin_whlw2", "xin_whlw1", "xin_chongmou"], ["ext:新将包/xjb_jiaxu.jpg", "xjb_jiaxu.jpg"]],
-            }
-            for (let k in character) {
-                character[k][4].push("ext:新将包/" + k + ".jpg", k + ".jpg")
-                lib.character[k] = character[k];
-                lib.characterPack['XJB'][k] = character[k]
-            }
-        },
-        CharacterPack: function () {
-            lib.config.all.characters.push("xjb_soul");
-            lib.characterPack['xjb_soul'] = lib.config.all.characters['xjb_soul']
-            if (!lib.config.characters.includes("xjb_soul")) lib.config.characters.push("xjb_soul");
-            lib.translate["xjb_soul_character_config"] = "soul";
-            lib.characterPack["xjb_soul"] = {}
-            lib.translate.xjb_soul = "soul"
-            if (get.mode() == "boss") {
-                lib.characterPack.xjb_soul.xjb_SoulBoss_zhankuang =
-                    lib.character.xjb_SoulBoss_zhankuang =
-                    ["none", "xjb_hun", 6, ["xin_htzjq2", "xin_fengtian", "xindangxian", "xinkuanggu"], ['boss', 'bossallowed', "ext:新将包/image/god.jpg"]]
-                lib.characterPack.xjb_soul.xjb_SoulBoss_xuanfeng =
-                    lib.character.xjb_SoulBoss_xuanfeng =
-                    ["none", "xjb_hun", 5, ["rexuanfeng", "liefeng", "xin_yingfa", "xjb_fengzhu"], ['boss', 'bossallowed', "ext:新将包/image/god.jpg"]]
-            }
-            //芙爱派依
-            const FuaipaiyiSkill = ['xjb_lingpiao']
-            const FuaipaiyiElse = ['ext:新将包/soul_Fuaipaiyi.jpg']
-            lib.character.xjb_Fuaipaiyi = ["female", "xjb_hun", 3, FuaipaiyiSkill, FuaipaiyiElse]
-            lib.characterPack["xjb_soul"].xjb_Fuaipaiyi = lib.character.xjb_Fuaipaiyi
-            //琪盎特儿
-            const chanterSkill = ["xjb_soul_chanter"]
-            const chanterElse = ['ext:新将包/soul_chanter.jpg']
-            lib.character.xjb_chanter = ["female", "xjb_hun", 3, chanterSkill, chanterElse]
-            lib.characterPack["xjb_soul"].xjb_chanter = lib.character.xjb_chanter
-            //布劳德
-            const xuemoSkill = ["xin_xueqi", "xjb_soul_fuhua"]
-            const xuemoElse = [`ext:新将包/sink/xjb_xuemo/xuemo${[1, 2, 3].randomGet()}.jpg`]
-            lib.character.xjb_xuemo = ["female", "xjb_hun", 2, xuemoSkill, xuemoElse]
-            lib.characterPack["xjb_soul"].xjb_xuemo = lib.character.xjb_xuemo;
-            //泰穆尔
-            const timerSkill = ["xjb_minglou", "xjb_guifan"]
-            const timerElse = ['ext:新将包/soul_timer.jpg']
-            lib.character.xjb_timer = ["male", "xjb_hun", 3, timerSkill, timerElse]
-            lib.characterPack["xjb_soul"].xjb_timer = lib.character.xjb_timer
-            //凯瑞科瑞特
-            game.updateRed = function () {
-                var list = lib.config["xjb_redSkill"].list, keys = Object.keys(lib.skill)
-                for (let i = 0; i < list.length; i++) {
-                    var str = list[i]
-                    if (!keys.includes(str.slice(13))) {
-                        lib.config["xjb_redSkill"].list.remove(str)
-                        i--
-                    }
-                    else {
-                        game.xjb_EqualizeSkillObject(list[i], lib.skill[str.slice(13)])
-                        lib.skill[str].audio = false
-                        lib.translate[list[i]] = lib.config["xjb_redSkill"].translate[list[i]]
-                        lib.translate[list[i] + "_info"] = lib.config["xjb_redSkill"].translate[list[i] + "_info"]
-                    }
-                }
-            }
-            game.updateRed()
-            if (!lib.character.xjb_newCharacter) {
-                let intro = lib.config.xjb_newcharacter.intro
-                let sink = [lib.config.xjb_newcharacter.selectedSink], sex = lib.config.xjb_newcharacter.sex, group = lib.config.xjb_newcharacter.group, hp = lib.config.xjb_newcharacter.hp, skill = [...lib.config.xjb_newcharacter.skill]
-                if (lib.config.xjb_newCharacter_isZhu == 1) sink.add("zhu")
-                if (lib.config.xjb_newCharacter_hide == 1) sink.add("hiddenSkill")
-                function xin_newCharacter() {
-                    lib.characterIntro.xjb_newCharacter = intro
-                    return [sex, group, hp, skill, sink];
-                }
-                lib.character.xjb_newCharacter = xin_newCharacter();
-                lib.characterPack["xjb_soul"].xjb_newCharacter = lib.character.xjb_newCharacter;
-            }
-        },
-        Sort: function () {
-            lib.characterSort["xjb_soul"] = {
-                "xjb_yangcheng": ["xjb_newCharacter"],
-                "xjb_hunshi": Object.keys(lib.characterPack["xjb_soul"]).filter(i => lib.translate[i].indexOf("魂使") >= 0),
-                "xjb_lingsu": ["xjb_chanter", "xjb_Fuaipaiyi", "xjb_xuemo"]
-            }
-            lib.characterSort['XJB'] = {
-                'xjb_fengyun': ["xjb_zhangliang_liuhou", "xjb_yingzheng"],
-                'xjb_chidan': ["xjb_ganning", "xjb_dianwei"],
-                'xjb_tiandu': ["xjb_sunce", "xjb_zhouyu", "xjb_pangtong", "xjb_guojia", "xjb_fazheng"],
-                'xjb_zaiwu': ["xjbhan_caocao", "xjbhan_xunyu", "xjb_caocao"],
-                'xjb_jincui': ["xjb_zhugeliang", "xjb_liushan"],
-                'xjb_guijin': ["xjb_jin_simayi"],
-                'xjb_huahao': ["xjb_daqiao"],
-            }
-        },
         group: function () {
             lib.group.push('han');
             lib.translate['han'] = '汉';
@@ -415,13 +318,6 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
             lib.translate['xjb_hun'] = '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="22">'
             //
             lib.groupnature.xjb_hun = "xjb_hun"
-        },
-        Intro: function () {
-            lib.characterIntro.xjb_caocao = "操携樵沛诸夏侯曹氏，同汝颖荀之所进退，奋起于兖州之地。济天子，假天子之威，御天下之士。修政事，广屯田，缮水利。征伐四方，十战九胜，可抵其锋者，唯孙刘二者。以其功高，自比于周公，置魏国，修行宫，立太子，分香卖履，薄葬于高陵。观其平生则多杀戮，忿急至于过者亦多也。然其兴兴之政也广及率土三二，亦一世之雄也。";
-            lib.characterIntro.xjb_yingzheng = "秦始皇，赵氏嬴姓，名政，是我国的第一位皇帝。\
-他年少继位，\
-奋六世之余烈，振长策而御宇内，吞二周而亡诸侯，履至尊而制六合，执敲扑而鞭笞天下，威震四海。\
-";
         },
     }
     lib.skill.xjb_7 = {
@@ -459,6 +355,16 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                     return;
                 }
                 ui.xjb_giveStyle(ele, { visibility: "visible" })
+            }
+            /**
+             * 
+             * @param {HTMLElement} ele 
+             */
+            ui.xjb_hideElement = function (ele) {
+                if (!ele.classList.contains("xjb_hidden")) ele.classList.add("xjb_hidden")
+            }
+            ui.xjb_showElement = function (ele) {
+                if (ele.classList.contains("xjb_hidden")) ele.classList.remove("xjb_hidden")
             }
             ui.xjb_addElement = function ({ target, tag, innerHTML,
                 style, className, addclass,
@@ -771,19 +677,16 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
             //背景
             ui.create.xjb_back = function (str) {
                 if (game.xjb_back && game.xjb_back.remove) {
-                    game.xjb_back.remove()//若已有game.xjb_back则移除   
+                    game.xjb_back.remove()
                 }
                 //创建back
-                var back = ui.xjb_addElement({
-                    target: ui.window,
-                    tag: 'div',
-                    className: 'interact_back',
-                    hideFun: true,
-                    ignorePosition: true,
-                    style: lib.xjb_style.back
-                })
-                back.classList.add('xjbToCenter')
-                game.xjb_back = back//将back设置为game.xjb_back
+                const back = element('div')
+                    .father(ui.window)
+                    .addClass('interact_back')
+                    .addClass('xjbToCenter')
+                    .addClass('xjb-interact-back')
+                    .exit()
+                game.xjb_back = back
                 //点击close关闭back
                 function closeIt() {
                     let modeActionList = {
@@ -794,27 +697,21 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                     if (func) func();
                 }
                 //创建close
-                var close = ui.xjb_addElement({
-                    target: back,
-                    tag: 'img',
-                    className: 'close',
-                    ctEvent: closeIt,
-                    src: lib.xjb_src + 'image/xjb_close.png',
-                    style: {
-                        float: "left",
-                        'width': '40px'
-                    }
-                });
+                const close = element('img')
+                    .father(back)
+                    .src(lib.xjb_src + 'image/xjb_close.png')
+                    .addClass('close')
+                    .addClass('xjb-interact-close')
+                    .listen(lib.config.touchscreen ? 'touchend' : 'click', closeIt)
+                    .exit()
                 close.closeBack = closeIt;
                 close.dataset.closeMode = 'close';
                 if (str) {
-                    var foot = ui.xjb_addElement({
-                        target: back,
-                        tag: 'div',
-                        innerHTML: "-|" + str + "|-",
-                        display: 'inline-block',
-                        style: lib.xjb_style.foot
-                    });
+                    const foot = element("div")
+                        .father(back)
+                        .innerHTML("-|" + str + "|-")
+                        .addClass("xjb-interact-foot")
+                        .exit()
                     return [back, close, foot]
                 }
                 //

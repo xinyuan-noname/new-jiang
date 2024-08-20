@@ -70,8 +70,7 @@ window.XJB_LOAD_TRANSLATE = function (_status, lib, game, ui, get, ai) {
         "xjb_fuyi_info": "每轮开始时，你可以使用一张【逐鹿天下】。<br>一名角色每回合指定有装备的角色为唯一目标时，其可以交给你至少一张手牌(若为你则改为弃置)，其令此牌多指定等量个目标。",
         "xjb_sicuan": "倒置",
         "xjb_sicuan_info": "每轮限一次，你可令一名角色的两种事件颠倒进行",
-        "xin_yingfa": "英发",
-        "xin_yingfa_info": "出牌阶段限一次，你可以失去一点体力，令一名角色失去一种类型的所有牌，你随机获得其中一张牌。",
+        
         "_xjb_remnantArea": "<font color=gold>残区</font>",
         "_xjb_remnantArea_info": "",
         "_UseHpCard": "<font color=gold>体力牌</font>",
@@ -100,33 +99,8 @@ window.XJB_LOAD_TRANSLATE = function (_status, lib, game, ui, get, ai) {
         xjb_SoulBoss_zhankuang: "战狂魂使",
         xjb_SoulBoss_xuanfeng: "旋风魂使",
     }
-    let xjbChracter = {
-        "xin_fellow": "秦兵",
-        "xjb_daqiao": "大乔",
-        "xjb_sunce": "孙策",
-        "xjb_guojia": "郭嘉",
-        "xjbhan_caocao": "曹操",
-        "xjbhan_xunyu": "荀彧",
-        "xjb_pangtong": "庞统",
-        "xjb_caocao": "曹操",
-        "xjb_zhouyu": "周瑜",
-        "xjb_liushan": "刘禅",
-        "xjb_dianwei": "典韦",
-        "xjb_ganning": "甘宁",
-        "xjb_zhugeliang": "诸葛亮",
-        "xjb_jin_simayi": "司马懿",
-        "xjb_yingzheng": "嬴政",
-        "xjb_fazheng": "法正",
-        "xjb_jiaxu": "贾诩",
-    }
+    
     let characterSort = {
-        xjb_chidan: '赤胆忠心',
-        xjb_fengyun: '风云荟萃',
-        xjb_zaiwu: '天命在吾',
-        xjb_tiandu: '天妒英才',
-        xjb_jincui: '鞠躬尽瘁',
-        xjb_guijin: '三分归晋',
-        xjb_huahao: '花好月圆',
         xjb_yangcheng: "养成武将",
         xjb_hunshi: "魂使集团",
         xjb_lingsu: "灵力复苏",
@@ -135,7 +109,6 @@ window.XJB_LOAD_TRANSLATE = function (_status, lib, game, ui, get, ai) {
         ...lib.translate,
         ...skill,
         ...soulCharacter,
-        ...xjbChracter,
         ...characterSort
     }
 }

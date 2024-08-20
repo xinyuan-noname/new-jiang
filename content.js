@@ -313,8 +313,12 @@ export function XJB_CONTENT(config, pack) {
                 var thelist = ui.create.xjb_back("抽奖花费:养成、技能奖池:8魂币，魂币奖池:1打卡点。点击奖品表即可刷新。")
                 var back = thelist[0]
                 //设置抽奖种类
-                var xjb_list = ui.create.div('.xjb_choujiang', back)
-                ui.xjb_giveStyle(xjb_list, { width: "125px" })
+                var xjb_list = ui.create.div('.jb_choujiangx', back)
+                xjb_list.classList.add('xjb-choujiang-listContainer')
+                ui.xjb_giveStyle(xjb_list, {
+                    width: "125px",
+                    margin: '50px 0'
+                })
                 //onclick函数生成
                 var myFunc = function (num) {
                     return function () {
@@ -327,46 +331,36 @@ export function XJB_CONTENT(config, pack) {
                 }
                 //设置每个抽奖按钮的内容
                 var constructor = function (i) {
-                    var inner = ["养成奖池", "魂币奖池", "免费奖池", "技能奖池"], style = [
-                        { "margin-top": "50px", color: "red" },
-                        { "margin-top": "100px", color: "orange" },
-                        { "margin-top": "150px", color: "blue" },
-                        { "margin-top": "200px", color: "pink" }
-                    ]
+                    var inner = ["养成奖池", "魂币奖池", "免费奖池", "技能奖池"]
                     var choujiang = ui.create.div('.xjb_choujiang', xjb_list)
                     choujiang.innerHTML = inner[i]
-                    ui.xjb_giveStyle(choujiang, lib.xjb_style.cj_box)
-                    ui.xjb_giveStyle(choujiang, style[i])
                     choujiang.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', myFunc(i + 1))
                     return choujiang
                 }
                 //显示当前奖品
                 var content = ui.create.div(".choujiang_content", back)
                 content.innerHTML = '奖品'
-                content.id = "myChouJiang_XJB_CONTENT"
-                ui.xjb_giveStyle(content, { 'font-size': "30px", 'color': "#D9D919", "margin-left": "56%", "margin-top": "100px", "width": "240px", "text-align": "center" })
+                content.id = "myChouJiang_XJB_CONTENT";
                 //抽奖按键
                 var btn = document.createElement("BUTTON")
                 btn.id = "myChouJiang_XJB_BUTTON"
-                btn.innerHTML = '点击抽奖'
-                ui.xjb_giveStyle(btn, { "margin-left": "60%", 'border-radius': "5em", position: "relative", color: "red", border: "1px solid green", 'font-size': "24px", "margin-top": "200px", width: "175px", height: "80px" })
+                btn.innerHTML = '点击抽奖';
                 back.appendChild(btn);
                 //创建奖品列表
                 var text = ui.create.div(".choujiang_text", back)
                 text.id = "myChouJiang_XJB_TXT"
-                var xx = lib.config.cjb_cj_type, xjb_txtself = document.getElementById('myChouJiang_XJB_TXT')
+                var xx = lib.config.cjb_cj_type;
                 text.innerHTML = game.xjb_choujiangStr(lib.config.xjb_list_hunbilist.choujiang[xx])
-                ui.xjb_giveStyle(text, { 'font-size': "20px", right: "410px", top: "10px" })
                 text.onclick = function () {
                     if (btn.disabled) return;
-                    this.style.color = ["red", "blue", "yellow", "pink", "white"].randomGet()
+                    this.style.color = ["red", "blue", "yellow", "pink", "white","orange"].randomGet()
                     var bool = this.innerHTML.search(/技能/) >= 0
                     game.xjb_systemEnergyChange(-1)
                     if (!bool) return
-                    lib.skill.xjb_final.choujiang()
-                    this.innerHTML = game.xjb_choujiangStr(lib.config.xjb_list_hunbilist.choujiang["4"])
-                    game.xjb_jiangchiUpDate()
-                    game.xjb_systemEnergyChange(-1)
+                    lib.skill.xjb_final.choujiang();
+                    this.innerHTML = game.xjb_choujiangStr(lib.config.xjb_list_hunbilist.choujiang["4"]);
+                    game.xjb_jiangchiUpDate();
+                    game.xjb_systemEnergyChange(-1);
                 }
                 //抽奖事件
                 btn.onclick = function () {
@@ -407,9 +401,7 @@ export function XJB_CONTENT(config, pack) {
                 //设置奖池表
                 for (var i = 0; i < 4; i++) {
                     let clk = constructor(i)
-                    if ((i == 3) && layout != 1) {
-                        ui.xjb_giveStyle(clk, { display: 'none' })
-                    }
+                    if ((i == 3) && layout != 1) ui.xjb_hideElement(clk);
                 }
             }
         }
@@ -586,17 +578,6 @@ export function XJB_CONTENT(config, pack) {
                     }
                     function changeSkill(abcde) {
                         var obj = {}
-                        function Longstr(list) {
-                            var word = '请按以下规则输入:<br>'
-                            for (var i = 0; i < list.length; i++) {
-                                word = word + '查看技能〖' + get.translation(list[i]) + '〗，请输入' + i + '<br>'
-                            }
-                            return word
-                        }
-                        function normalStr(skill) {
-                            var str = '〖' + get.translation(skill) + '〗：' + lib.translate[skill + '_info']
-                            return game.xjb_create.alert(str)
-                        }
                         obj.changeSkill1 = function () {
                             let num = lib.config.xjb_jnc;
                             let max = 0;
@@ -626,28 +607,6 @@ export function XJB_CONTENT(config, pack) {
                             })
                         }
                         obj.changeSkill2 = function () {
-                            // var list = lib.config.xjb_newcharacter.skill
-                            // if (list.length < 1) return game.xjb_create.alert('你没有技能！')
-                            // let dialog = game.xjb_create.prompt(Longstr(list), "", function () {
-                            //     var num = this.result
-                            //     var skill = list[num]
-                            //     if (list.includes(skill)) {
-                            //         normalStr(skill).nextConfirm('是否回收此技能并获得5魂币？', function () {
-                            //             lib.config.xjb_newcharacter.skill.remove(skill)
-                            //             game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter);
-                            //             game.saveConfig('xjb_hunbi', lib.config.xjb_hunbi + 5);
-                            //             game.xjb_create.alert('你已删除该技能，重启即生效！' + "<br>当前魂币值为" + lib.config.xjb_hunbi).nextConfirm("是否继续查看？", function () {
-                            //                 obj.changeSkill2();
-                            //             });
-                            //         }, function () {
-                            //             game.xjb_create.confirm("是否继续查看？", function () {
-                            //                 obj.changeSkill2()
-                            //             })
-                            //         })
-                            //     }
-                            //     else game.xjb_create.alert("你的输入有误!")
-                            // }).Mysize()
-                            // dialog.input.numberListButton(list.length)
                             game.xjb_raiseCharRemoveUpdateSkillsDia();
                         }
                         obj.changeSkill3 = function () {
@@ -720,7 +679,7 @@ export function XJB_CONTENT(config, pack) {
                         )
                     }
                     var object = {
-                        other: o => 1,
+                        other: _ => 1,
                         name2: function () {
                             game.xjb_gainJP("免费更改姓名")
                         },
