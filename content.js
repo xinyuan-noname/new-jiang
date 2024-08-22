@@ -159,23 +159,9 @@ export function XJB_CONTENT(config, pack) {
         clear: true,
         onclick: function () {
             const strategyList = {
-                xjb_lingli_Allallow: '全员灵力策略',
-                xjb_skillsNumberLimitation: '技能数限制策略',
-                xjb_maxHpLimitation: '体力上限限制策略',
-                // xjb_perfectPair: "<b description=增加:"
-                //     + "刘宏-何太后;"
-                //     + "刘辩-唐姬;"
-                //     + "刘协-[董贵人,曹节,曹宪,曹华];"
-                //     + "曹操-丁夫人"
-                //     + "曹丕-郭照"
-                //     + "曹叡-明元郭皇后"
-                //     + "刘备-[糜夫人,吴苋];"
-                //     + "孙权-[潘淑]"
-                //     + "孙亮-全惠解"
-                //     + "孙皓-[张媱,张嫙];"
-                //     + "何晏-曹金玉;"
-                //     + "赵昂-王异;"
-                //     +">扩展珠联璧合策略</b>",
+                xjb_lingli_Allallow: '<b description="开启后，场上角色均可以使用灵力系统">全员灵力策略</b>',
+                xjb_skillsNumberLimitation: '<b description="开启后，技能数超过6的角色须将一张技能转化为技能牌">技能数限制策略</b>',
+                xjb_maxHpLimitation: '<b description="开启后，体力上限超过15的角色在其回合开始时,选择失去x点体力或体力上限（x为其此时体力上限的1/15且向上取整）。体力无限的角色将体力调整至15。">体力上限限制策略',
             };
             const restList = {
                 xjb_yangcheng: '养成武将策略',
@@ -235,7 +221,6 @@ export function XJB_CONTENT(config, pack) {
                     }
                     return hunbi
                 }
-                let dataBase = game.xjb_currencyRate
                 let condition = {
                     "hunbi": "魂币:" + (hun(lib.config.xjb_hunbi)),
                     "dakadian": "打卡点:" + (hun(lib.config.xjb_hundaka2)),
@@ -849,11 +834,6 @@ export function XJB_CONTENT(config, pack) {
         onclick: function () {
             game.xjb_skillEditor()
         }
-    }
-    lib.xjb_dataGet = function () {
-        return Object.keys(lib.config).filter(function (a) {
-            return a.indexOf("xjb_") > -1
-        })
     }
     lib.extensionMenu.extension_新将包.hun_zeroise = {
         name: '<div>重置魂币系统数据！</div>',

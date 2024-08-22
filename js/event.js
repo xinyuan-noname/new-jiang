@@ -50,11 +50,11 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 const player = this;
                 player.skills.length = 0;
                 player.hiddenSkills.length = 0;
-                
+
             },
             "xjb_recordTalentCard": function (num, skillName) {
                 const player = this;
-                const storage =player.storage
+                const storage = player.storage
                 if (!storage.xjb_unique_talent) storage.xjb_unique_talent = [];
                 let records = storage.xjb_unique_talent
                 records.push([game.roundNumber + num, skillName])
@@ -242,24 +242,6 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 }
                 player.noskill = {}
             },
-            changeS: function (num) {
-                var player = this
-                if (!player.hasSkill('skill_off')) {
-                    if (num && num == 1) player.addSkill('skill_off')
-                    else player.addTempSkill('skill_off')
-                    return
-                }
-                player.removeSkill('skill_off')
-            },
-            "changeS2": function (boolean, num) {
-                var player = this
-                if (boolean && boolean == true) {
-                    if (num && num == 1) player.addSkill('skill_off')
-                    else player.addTempSkill('skill_off')
-                    return
-                }
-                player.removeSkill('skill_off')
-            },
             "xjb_addSkill": function (str, trigger, func1, func2, Array, Array1) {
                 lib.skill[str] = {
                     trigger: trigger,
@@ -357,47 +339,6 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                     else player.gain(get.cards(num - hlen), "draw")
                 }
             },
-            "$giveHpCard": function (num, target) {
-                var theCard = game.createHpCard(num, 150)
-                var player = this
-                ui.xjb_giveStyle(theCard, {
-                    position: "absolute",
-                    left: (player.offsetLeft + 23) + "px",
-                    top: (player.offsetTop + 23) + "px",
-                    "z-index": "5",
-                })
-                ui.arena.appendChild(theCard)
-                setTimeout(function () {
-                    ui.xjb_giveStyle(theCard, {
-                        left: (target.offsetLeft + 23) + "px",
-                        top: (target.offsetTop + 23) + "px"
-                    })
-                    setTimeout(() => { theCard.remove() }, 500)
-
-                }, 300)
-            },
-            giveHpCard: function (target, num) {
-                if (!target) target = _status.event.player
-                if (!lib.config.xjb_count[target.name1].HpCard) lib.config.xjb_count[target.name1].HpCard = []
-                var player = this
-                if (!num) num = player.maxHp
-
-                var count = player.maxHp
-                var num1 = Math.min(num * 5, player.maxHp)
-                player.loseMaxHp(num1)
-                if (player.maxHp % 5 != 0) {
-                    var x = player.maxHp % 5
-                    lib.config.xjb_count[target.name1].HpCard.push(x)
-                    player.$giveHpCard(x, target)
-                    count -= player.maxHp % 5
-                }
-                var times = count / 5
-                for (var i = 0; i < times; i++) {
-                    lib.config.xjb_count[target.name1].HpCard.push(5)
-                    player.$giveHpCard(5, target)
-                }
-                game.saveConfig('xjb_count', lib.config.xjb_count);
-            },
             "giveHpCard2": function (target) {
                 if (!target) target = _status.event.player
                 let num = 1
@@ -405,10 +346,10 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 var player = this
                 player.xjb_cardDeath()
                 player.loseMaxHp(num)
-                lib.config.xjb_count[target.name1].HpCard.push(num)
+                lib.config.xjb_count[target.name].HpCard.push(num)
                 player.$giveHpCard(num, target)
                 game.saveConfig('xjb_count', lib.config.xjb_count);
-                return lib.config.xjb_count[target.name1].HpCard
+                return lib.config.xjb_count[target.name].HpCard
             },
         },
     }
@@ -577,67 +518,38 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
         "xjb_buildBridge": {
             player: function (target) {
                 if (!lib.config.xjb_count[this.name1]) return;
+                if (!lib.config.xjb_count[this.name1].daomo) {
+                    lib.config.xjb_count[this.name1].daomo = {}
+                };
                 let next = game.createEvent('xjb_buildBridge')
                 next.player = this
                 next.target = target
                 next.setContent('xjb_buildBridge');
                 return next
             },
-            content: function () {
+            content: function (event) {
                 "step 0"
                 if (player != game.me) player.storage.xjb_daomoMax = 5;
                 var list = [], maxNum = player.storage.xjb_daomoMax || 1;
-                if (!lib.config.xjb_count[event.player.name1].daomo) {
-                    lib.config.xjb_count[event.player.name1].daomo = {}
-                };
-                let dataSource = lib.config.xjb_count[event.player.name1].daomo;
+                let dataSource = lib.config.xjb_count[player.name1].daomo;
                 function add(str, str2) {
                     if (dataSource[str] && dataSource[str].number >= maxNum) {
-                        list.push(`${str2 + xjbLogo[str](80)}`)
+                        list.push([str, `${str2 + xjbLogo[str](80)}`])
                     }
                 };
-                xjb_lingli.daomo.type.forEach(i => {
+                xjb_lingli.daomo.type.forEach((i) => {
                     add(i, get.xjb_daomoInformation(i).translation)
                 });
-                function wordswords() {
-                    return "请选择一个导魔介质，放置" + (player.storage.xjb_daomoMax || 1) +
-                        "对在你和" + get.translation(event.target)
-                        + "间"
-                };
-                player.addSkill("xjb_ui_dialog_append");
-                let next = event.player.chooseButton([
-                    wordswords(),
-                    [list, "tdnodes"],
-                    "调整放置的导魔介质"
-                ], [0, 1]);
-                next.set('filterButton', function (button) {
-                    let logoList = {
-                        "金乌": "sun",
-                        "龙女": "dragon",
-                        "杜鹃": "blood",
-                        "雪女": "tear",
-                        "桃妖": "taoyao",
-                        "血魔": "xuemo",
-                        "百花": "flower",
-                    }
-                    let logo = logoList[button.innerText]
-                    return lib.config.xjb_count[player.name1].daomo[logo].number >= (player.storage.xjb_daomoMax || 1)
-                });
-                let div = document.createElement("div"), range = document.createElement("input")
+                let div = document.createElement("div"),
+                    range = document.createElement("input")
                 range.type = 'range'
                 range.value = (player.storage.xjb_daomoMax || 1);
                 range.min = 1;
                 range.max = 5;
                 range.onchange = function () {
                     player.storage.xjb_daomoMax = (-(-this.value))
-                    this.parentNode.parentNode.firstChild.innerText = wordswords()
+                    this.parentNode.parentNode.querySelector('.xjb-daomo-length').innerText = (player.storage.xjb_daomoMax || 1);
                     ui.selected.buttons.forEach(i => {
-                        i.click()
-                        i.dispatchEvent(new TouchEvent("touchend", {
-                            bubbles: true,
-                            cancelable: true,
-                            composed: true
-                        }))
                         i.click()
                         i.dispatchEvent(new TouchEvent("touchend", {
                             bubbles: true,
@@ -648,18 +560,21 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                     game.check()
                 }
                 div.appendChild(range)
-                next.appendC = [div, '']
+                const dialog = ui.create.dialog(
+                    `请选择一个导魔介质，放置<span class=xjb-daomo-length>${(player.storage.xjb_daomoMax || 1)}</span>对在你和${get.translation(event.target)}间`,
+                    [list, "tdnodes"],
+                    "调整放置的导魔介质",
+                    div,
+                    ''
+                )
+                const next = player.chooseButton(dialog, [0, 1]);
+                next.set('filterButton', function (button) {
+                    let logo = button.link
+                    return lib.config.xjb_count[player.name].daomo[logo].number >= (player.storage.xjb_daomoMax || 1)
+                });
                 "step 1"
                 if (result.links && result.links.length) {
-                    let logo = {
-                        "金乌": "sun",
-                        "龙女": "dragon",
-                        "杜鹃": "blood",
-                        "雪女": "tear",
-                        "桃妖": "taoyao",
-                        "血魔": "xuemo",
-                        "百花": "flower",
-                    }[result.links[0].slice(0, 2)]
+                    let logo = result.links[0];
                     game.xjb_getDaomo(player, logo, -player.storage.xjb_daomoMax)
                     player.addMark("_xjb_daomo_" + logo, player.storage.xjb_daomoMax)
                     target.addMark("_xjb_daomo_" + logo, player.storage.xjb_daomoMax)
@@ -913,39 +828,6 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 if (event.num > 0) event.goto(0)
             },
         },
-        useHpCard: {
-            player: function (num, source, bool = true) {
-                let next = game.createEvent('useHpCard')
-                let player, name
-                next.num = num
-                next.player = player = this
-                if (!source) next.source = source = player
-                next.name = name = source.name1
-                next.usable = bool
-                if (!lib.config.xjb_count[name].HpCard) lib.config.xjb_count[name].HpCard = []
-                if (!lib.config.xjb_count[name].HpCard.length) {
-                    return
-                }
-                var x = lib.config.xjb_count[name].HpCard.indexOf(num)
-                if (x < 0) {
-                    return
-                }
-                next.index = x
-                next.setContent('useHpCard');
-                return next
-            },
-            content: function () {
-                "step 0"
-                if (event.usable === true) {
-                    event.player.maxHp += (event.num)
-                    event.player.changeHp(event.num)
-                }
-
-                lib.config.xjb_count[event.name].HpCard.splice(event.index, 1)
-                game.log(event.player, get.translation(event.player.name1) + '使用了体力牌：' + event.num)
-                game.saveConfig('xjb_count', lib.config.xjb_count);
-            },
-        },
         "xjb_bianshen": {
             player: function () {
                 let next = game.createEvent('xjb_bianshen');
@@ -982,46 +864,6 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 event.player.useCard(game.createCard('xjb_qimendunjia'), event.player)
                 game.xjb_systemEnergyChange(-50)
                 game.cost_xjb_cost(1, event.cost)
-            },
-        },
-        usechenSkill: {
-            player: function () {
-                let next = game.createEvent('usechenSkill');
-                next.player = this;
-                for (var i = 0; i < arguments.length; i++) {
-                    if (get.itemtype(arguments[i]) === 'player') {
-                        next.source = arguments[i]
-                    }
-                    else if (typeof arguments[i] === 'string') {
-                        next.logSkill = arguments[i]
-                    }
-                    else if (arguments[i] instanceof Array) {
-                        next.skills = arguments[i]
-                    }
-                }
-                if (!next.skills) {
-                    next.skills = [];
-                    var skills = next.player.getSkills();
-                    for (var i = 0; i < skills.length; i++) {
-                        if (lib.skill[skills[i]].chenSkill) {
-                            next.skills.add(skills[i])
-                        }
-                    }
-                }
-                next.setContent('usechenSkill');
-                return next;
-            },
-            content: function () {
-                "step 0"
-                var list = event.skills
-                if (event.skills && event.skills.length > 0) {
-                    for (var i = 0; i < list.length; i++) {
-                        event.player.addMark('_xin_junzhu');
-                        event.player.useSkill(list[i])
-                    }
-                }
-                "step 1"
-                if (event.player.countMark("_xin_junzhu")) event.player.removeMark("_xin_junzhu")
             },
         },
         chooseLoseHpMaxHp: {

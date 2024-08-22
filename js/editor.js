@@ -1172,6 +1172,29 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             }
             //
             let typeSeter = newElement('div', '技能标签:', subBack).style1()
+            for (const innerHTML of ['首页', '限定', '锁定', '标签', '主动', '国战', '其他', '少用']) {
+                element("div")
+                    .father(typeSeter)
+                    .innerHTML(innerHTML)
+                    .style({
+                        border: "2px solid white",
+                        color: "yellow",
+                        "border-radius": "200px",
+                        fontSize: "22px",
+                        position: "relative",
+                        marginLeft: "5px"
+                    })
+            }
+            element().setTarget(typeSeter)
+                .listen(DEFAULT_EVENT, e => {
+                    const target = e.target;
+                    let list = Array.from(typeFree.children);
+                    const index = ['首页', '限定', '锁定', '标签', '主动', '国战', '其他', '少用'].indexOf(target.innerText)
+                    list.splice(index * 6, 6).forEach(ele => ui.xjb_showElement(ele))
+                    list.forEach(ele => ui.xjb_hideElement(ele))
+                    return;
+
+                })
             let typeFree = element()
                 .clone(buttonContainer)
                 .father(subBack)
@@ -1192,16 +1215,19 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     "persevereSkill": "持恒技",
                     "charlotte": "Charlotte技",
                     "locked-false": "非锁定技",
-                    "zhenfa": "阵法技",
-                    "mainSkill": "主将技",
-                    "viceSkill": "副将技",
-                    "preHidden": "预亮",
                     "zhuanhuanji": "转换技",
                     "hiddenSkill": "隐匿技",
                     "clanSkill": "宗族技",
                     "groupSkill": "势力技",
-                    "mark": "标记持显",
                     "multiline": "多指示线",
+                    "lose-false": "不失去牌",
+                    "discard-false": "不弃置牌",
+                    "delay-false": "无延迟",
+                    "zhenfa": "阵法技",
+                    "mainSkill": "主将技",
+                    "viceSkill": "副将技",
+                    "preHidden": "预亮",
+                    "mark": "标记持显",
                     'round': "每轮一次",
                     "direct": "直接发动",
                     "sunbenSkill": "昂扬技",
@@ -1217,9 +1243,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     ui.xjb_giveStyle(it, {
                         fontSize: '1em'
                     });
-                    if (k >= 6) ui.xjb_giveStyle(it, {
-                        display: 'none'
-                    });
+                    if (k >= 6) ui.xjb_hideElement(it)
                     it.type = en;
                 });
             }
@@ -1229,15 +1253,15 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 if (e.target.innerText.includes('>>>')) {
                     const a = list.indexOf(e.target) + 1;
                     let b = Math.min((a + 5), (list.length - 1));
-                    list.splice(a, (b - a + 1)).forEach(ele => ele.style.display = "inline-block")
-                    list.forEach(ele => ele.style.display = "none")
+                    list.splice(a, (b - a + 1)).forEach(ele => ui.xjb_showElement(ele))
+                    list.forEach(ele => ui.xjb_hideElement(ele))
                     return;
                 }
                 if (e.target.innerText.includes('<<<')) {
                     const a = list.indexOf(e.target) - 1;
                     let b = Math.max(0, (a - 5));
-                    list.splice(b, (a - b + 1)).forEach(ele => ele.style.display = "inline-block")
-                    list.forEach(ele => ele.style.display = "none")
+                    list.splice(b, (a - b + 1)).forEach(ele => ui.xjb_showElement(ele))
+                    list.forEach(ele => ui.xjb_hideElement(ele))
                     return;
                 }
                 if (back.skill.type.includes(e.target.type)) {
@@ -1263,16 +1287,16 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 if (e.target.innerText.includes('>>>')) {
                     const a = list.indexOf(e.target) + 1;
                     let b = Math.min((a + 5), (list.length - 1));
-                    list.splice(a, (b - a + 1)).forEach(ele => ele.style.display = "inline-block")
-                    list.forEach(ele => ele.style.display = "none");
+                    list.splice(a, (b - a + 1)).forEach(ele => ui.xjb_showElement(ele))
+                    list.forEach(ele => ui.xjb_hideElement(ele));
                     groupFree.groupsPageNum++;
                     return;
                 }
                 if (e.target.innerText.includes('<<<')) {
                     const a = list.indexOf(e.target) - 1;
                     let b = Math.max(0, (a - 5));
-                    list.splice(b, (a - b + 1)).forEach(ele => ele.style.display = "inline-block")
-                    list.forEach(ele => ele.style.display = "none");
+                    list.splice(b, (a - b + 1)).forEach(ele => ui.xjb_showElement(ele))
+                    list.forEach(ele => ui.xjb_hideElement(ele));
                     groupFree.groupsPageNum--;
                     return;
                 }
@@ -1340,7 +1364,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         element().setTarget(it)
                             .setStyle('fontSize', '1em')
                             .hook(ele => {
-                                if (k >= 6) element().setTarget(ele).setStyle("display", "none");
+                                if (k >= 6) ui.xjb_hideElement(ele)
                             }).
                             setAttribute('data-attr', en);
                         if (back.skill.uniqueList.includes(en)) it.style.backgroundColor = "red";
@@ -1362,7 +1386,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     /**
                      * @type {HTMLElement}
                      */
-                    let target = Array.from(groupFree.children).filter(k => k.style.display != "none").at(-1);
+                    let target = Array.from(groupFree.querySelectorAll(':not(.xjb_hidden)')).at(-1);
+                    console.log(target)
                     if (target && target.innerText.includes('>>>')) {
                         target.click();
                         target.dispatchEvent(touchE);
@@ -2398,9 +2423,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                             .setStyle("fontSize", "1em")
                             .hook(ele => {
                                 ele[domEleAttr] = en
-                                if (k >= 6) ui.xjb_giveStyle(it, {
-                                    display: 'none'
-                                });
+                                if (k >= 6) ui.xjb_hideElement(ele)
                             })
                     });
                     listener(domEle, e => {
@@ -2409,15 +2432,16 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         if (e.target.innerText.includes('>>>')) {
                             const a = list.indexOf(e.target) + 1;
                             let b = Math.min((a + 5), (list.length - 1));
-                            list.splice(a, (b - a + 1)).forEach(ele => ele.style.display = "block")
-                            list.forEach(ele => ele.style.display = "none")
+                            const toShow = list.splice(a, (b - a + 1))
+                            toShow.forEach(ele => ui.xjb_showElement(ele))
+                            list.forEach(ele => ui.xjb_hideElement(ele))
                             return;
                         }
                         if (e.target.innerText.includes('<<<')) {
                             const a = list.indexOf(e.target) - 1;
                             let b = Math.max(0, (a - 5));
-                            list.splice(b, (a - b + 1)).forEach(ele => ele.style.display = "block")
-                            list.forEach(ele => ele.style.display = "none")
+                            list.splice(b, (a - b + 1)).forEach(ele => ui.xjb_showElement(ele))
+                            list.forEach(ele => ui.xjb_hideElement(ele))
                             return;
                         }
                         if (backAttr.includes(e.target[domEleAttr])) backAttr.remove(e.target[domEleAttr]);

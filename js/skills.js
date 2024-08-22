@@ -1041,10 +1041,10 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                         player.hp = 15;
                         player.update();
                     }
-                    player.useSkill('benghuai');
+                    var x = Math.ceil(player.maxHp / 15)
+                    player.chooseLoseHpMaxHp([x, x], '选择一项执行！');
                 },
                 translate: '体力上限限制',
-                description: '回合开始前,若当前回合角色体力上限大于15,其"崩坏(benghuai)"一次。'
             });
         },
         rpg: function () {
@@ -1495,42 +1495,7 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     },
                     "_priority": 0,
                 },
-                "_UseHpCard": {
-                    trigger: {
-                        global: "gameStart",
-                    },
-                    filter: function (event, player) {
-                        if (!lib.config.xjb_hun) return false
-                        var name = player.name1
-                        if (!lib.config.xjb_count[name]) return false
-                        if (!lib.config.xjb_count[name].HpCard || !lib.config.xjb_count[name].HpCard.length) return false
-                        if (!(player === game.me || player.isUnderControl())) return false
-                        return true
-                    },
-                    forced: true,
-                    content: function () {
-                        "step 0"
-                        var name = player.name1
-                        var list = game.countHpCard(lib.config.xjb_count[name].HpCard)
-                        var hpCard = new Array(1, 2, 3, 4, 5).map(function (i) {
-                            return (i + game.createHpCard(i).innerHTML)
-                        })
-                        var next = player.chooseButton(['请选择你使用的体力牌', [hpCard.slice(0, 3), "tdnodes"], [hpCard.slice(3), "tdnodes"]], [1, Infinity])
-                        next.filterButton = function (button) {
-                            var player = _status.event.player
-                            return lib.config.xjb_count[player.name1].HpCard.includes(
-                                get.xjb_number(button.link[0])
-                            )
-                        }
-                        "step 1"
-                        if (result.bool) {
-                            result.links.forEach(function (i) {
-                                player.useHpCard(get.xjb_number(i[0]))
-                            })
-                        }
-                    },
-                    "_priority": 0,
-                },
+
                 "xjb_lingpiao": {
                     trigger: {
                         global: ["xjb_addlingliBefore"],
@@ -1622,7 +1587,8 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                         'step 1'
                         player.removeSkill(event.name)
                         player.addSkill('xjb_soul_yiying')
-                        var src = lib.xjb_src + "sink/xjb_xuemo/"
+                        var src = lib.xjb_src + "skin/image/xjb_xuemo/"
+                        
                         ui.xjb_giveStyle(player.node.avatar, {
                             "background-image": "url('" + src + "xuemo4.jpg')"
                         });

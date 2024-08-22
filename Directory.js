@@ -13,40 +13,18 @@ window["xjb_xyAPI_Directory_新将包"]={
         "skillCard.png",
         "xin_baiyin.png",
         "xin_chitu.png",
-        "xin_fellow.jpg",
         "xin_hutou.png",
         "xin_newCharacter.jpg",
         "xin_qinglong.png",
         "xin_qinnangshu.png",
         "xin_qixing.png",
-        "xjbhan_caocao.jpg",
-        "xjbhan_xunyu.jpg",
-        "xjb_caocao.jpg",
-        "xjb_daqiao.jpg",
-        "xjb_dianwei.jpg",
-        "xjb_fazheng.jpg",
-        "xjb_ganning.jpg",
-        "xjb_guanyu.jpg",
-        "xjb_guojia.jpg",
-        "xjb_huatuo.jpg",
         "xjb_Infinity.png",
-        "xjb_jiaxu.jpg",
         "xjb_jingu.png",
-        "xjb_jin_simayi.jpg",
-        "xjb_liushan.jpg",
-        "xjb_machao.jpg",
-        "xjb_pangtong.jpg",
         "xjb_seizeHpCard.png",
         "xjb_shenshapo.png",
-        "xjb_sunce.jpg",
         "xjb_tianming_huobi1.png",
         "xjb_tianming_huobi2.png",
-        "xjb_xyAPI.js",
-        "xjb_yingzheng.jpg",
-        "xjb_zhangliang_liuhou.jpg",
-        "xjb_zhihuan.png",
-        "xjb_zhouyu.jpg",
-        "xjb_zhugeliang.jpg"
+        "xjb_zhihuan.png"
     ],
     "audio": [
         "fire1.mp3"
@@ -86,6 +64,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "editor.js",
         "event.js",
         "final.js",
+        "hpCard.js",
         "library.js",
         "lingli.js",
         "math.js",
@@ -156,24 +135,45 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_lijingtuzhi.png",
         "xjb_xiugengxuzi.png"
     ],
+    "image/character_soul": [
+        "xjb_bat.jpg",
+        "xjb_chanter.jpg",
+        "xjb_Fuaipaiyi.jpg",
+        "xjb_timer.jpg"
+    ],
+    "image/character_xjb": [
+        "xin_fellow.jpg",
+        "xjbhan_caocao.jpg",
+        "xjbhan_xunyu.jpg",
+        "xjb_caocao.jpg",
+        "xjb_daqiao.jpg",
+        "xjb_dianwei.jpg",
+        "xjb_fazheng.jpg",
+        "xjb_ganning.jpg",
+        "xjb_guanyu.jpg",
+        "xjb_guojia.jpg",
+        "xjb_huatuo.jpg",
+        "xjb_jiaxu.jpg",
+        "xjb_jin_simayi.jpg",
+        "xjb_liushan.jpg",
+        "xjb_machao.jpg",
+        "xjb_pangtong.jpg",
+        "xjb_sunce.jpg",
+        "xjb_yingzheng.jpg",
+        "xjb_zhouyu.jpg",
+        "xjb_zhugeliang.jpg"
+    ],
     "sink/xin_newCharacter": [],
     "skin/image": [],
     "sink/xin_newCharacter/normal": [
         "xin_newCharacter.jpg"
     ],
-    "skin/image/xjb_chanter": [
-        "normal.jpg"
-    ],
-    "skin/image/xjb_Fuaipaiyi": [
-        "normal.jpg"
-    ],
-    "skin/image/xjb_timer": [
-        "normal.jpg"
-    ],
+    "skin/image/xjb_chanter": [],
+    "skin/image/xjb_Fuaipaiyi": [],
+    "skin/image/xjb_timer": [],
     "skin/image/xjb_xuemo": [
         "xuemo1.jpg",
         "xuemo2.jpg",
-        "xuemo3.jpg",
-        "xuemo4.jpg"
+        "xuemo3.jpg"
     ]
 }

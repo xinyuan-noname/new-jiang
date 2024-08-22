@@ -92,9 +92,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 if (typeof player != 'string') player = player.name1
                 if (!lib.config.xjb_count[player]) lib.config.xjb_count[player]
                 if (!lib.config.xjb_count[player].HpCard) lib.config.xjb_count[player].HpCard = []
-                let list = new Array()
-                list.length = num
-                list.fill(value)
+                let list = new Array(num).fill(value)
                 lib.config.xjb_count[player].HpCard.push(...list)
                 game.saveConfig('xjb_count', lib.config.xjb_count);
                 var dialog = ui.create.dialog(get.translation(player) + '获得了体力卡', game.createHpCard(value))

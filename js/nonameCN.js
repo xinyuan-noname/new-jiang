@@ -911,6 +911,7 @@ export class NonameCN {
             '获得技能': 'addSkillLog',
             '拥有技能': 'hasSkill',
             '有技能': 'hasSkill',
+            //
             "临时获得技能": "addTempSkill",
         },
         player_choose: {
@@ -954,9 +955,11 @@ export class NonameCN {
             ...getMapOfChangeGroup(),
             ...getMapOfUSeVcard(),
             ...getMapOfSkip(),
+            //
             "本回合被破甲": `addTempSkill:"qinggang2"`,
             "本回合非锁定技失效": `addTempSkill:"fengyin"`,
-
+            "获得技能直到出牌阶段结束": `addTempSkill;{player:"phaseUseEnd"};intoFunctionWait`,
+            "获得技能直到下一轮开始时": `addTempSkill;"roundStart";intoFunctionWait`,
             //
             "播放判定生效动画": "tryJudgeAnimagte:true",
             "播放判定失效动画": "tryJudgeAnimagte:false",
@@ -990,6 +993,7 @@ export class NonameCN {
             '弃置角色牌': 'discardPlayerCard:"he":intoFunction',
             '获得角色手牌': 'gainPlayerCard:"h":intoFunction',
             '弃置角色手牌': 'discardPlayerCard:"h":intoFunction',
+            '隐式给牌':"give:false:intoFunctionWait",
             //
             '有牌': 'hasCard:void 0:"he"',
             '场上有牌': `hasCard:void 0:"ej"`,
@@ -1023,6 +1027,8 @@ export class NonameCN {
             '获取区域内牌': 'getCards:"hej"',
             '获取牌': 'getCards:"he"',
             '获取手牌': 'getCards:"h"',
+            //
+
             //历史类
             '获取本回合指定其他角色为目标的使用牌事件': "getHistory:'useCard':function(evt){return evt.targets.filter(current=>target!=player)}",
             '获取本回合指定其他角色为目标的打出牌事件': "getHistory:'respond':function(evt){return evt.targets.filter(current=>target!=player)}",
@@ -1129,6 +1135,8 @@ export class NonameCN {
             "结束阶段": "phaseJieshuBegin",
             "结束阶段开始时": "phaseJieshuBegin",
             "摸牌阶段2": "phaseDrawBegin2",
+            "阶段改变时":"phaseChange",
+            "阶段更改时":"phaseChange",
             //伤害
             "受到伤害后": "damageEnd",
             '造成伤害': 'damageSource',
@@ -1920,6 +1928,10 @@ export class NonameCN {
                 result += `${i}:1,\n`
                 return;
             }
+            else if (["lose-false", "discard-false", "delay-false"].includes(i)) {
+                result += `${i.replace('-false','')}:false,\n`
+                return;
+            }
             result += `${i}:true,\n`;
         })
         if (type.includes("locked-false")) {
@@ -2699,7 +2711,7 @@ export class NonameCN {
             "你展示牌堆顶的五张牌(放回)": "你展示牌堆顶的五张(放回)",
             "你展示牌堆底的五张牌(放回)": "你展示牌堆底的五张(放回)",
             "你本回合非锁定技失效": "你本回合非锁定技失效",
-            "你临时获得技能 'dangxian'":"你临时获得技能'dangxian'",
+            "你临时获得技能 'dangxian'": "你临时获得技能'dangxian'",
             "你翻面": "你翻面",
             "你横置或重置": "你横置或重置",
             "你跳过下一个准备阶段": "你跳过下一个准备阶段(阶段类)",
@@ -2733,6 +2745,7 @@ export class NonameCN {
             "你使用杀无距离限制": "你使用杀无距离限制(mod类)",
             "你使用杀无次数限制": "你使用杀无次数限制(mod类)",
             "你不能成为顺手牵羊和乐不思蜀的目标": "你不能成为顺手牵羊和乐不思蜀的目标(mod类)",
+            "变量牌组令为你获取手牌": "变量牌组令为你获取手牌",
         },
         trigger: {
             "每轮开始时": "每轮开始时",

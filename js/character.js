@@ -2,10 +2,10 @@ import {
     xjbSkill,
     xjbTranslate
 } from "./xjbSkill.js";
-import{
+import {
     bossSkill,
     bossTranslate
-}from "./bossSkill.js"
+} from "./bossSkill.js"
 window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
     game.import("character", () => {
         const result = {
@@ -211,7 +211,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
             pinyins: {},
         };
         for (const id in result.character) {
-            result.character[id].trashBin.push('ext:新将包/' + id + ".jpg")
+            result.character[id].trashBin.push('ext:新将包/image/character_xjb/' + id + ".jpg")
         }
         lib.config.all.characters.push("XJB");
         return result;
@@ -298,6 +298,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
             characterSort: {
                 xjb_soul: {
                     "xjb_yangcheng": ["xjb_newCharacter"],
+                    "xjb_timeTravel": ["xjb_timer"],
                     "xjb_lingsu": ["xjb_chanter", "xjb_Fuaipaiyi", "xjb_xuemo"],
                     "xjb_hunshi": ["xjb_SoulBoss_zhankuang", "xjb_SoulBoss_xuanfeng"]
                 },
@@ -324,7 +325,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                 ...bossSkill
             },
             translate: {
-                "xjb_soul": "soul",
+                xjb_soul: "soul",
 
                 xjb_Fuaipaiyi: "芙艾派依",
                 xjb_xuemo: "布劳德",
@@ -336,15 +337,21 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                 xjb_SoulBoss_zhankuang: "战狂魂使",
                 xjb_SoulBoss_xuanfeng: "旋风魂使",
 
+                xjb_timeTravel: "时间旅者",
+                xjb_yangcheng: "养成武将",
+                xjb_hunshi: "魂使集团",
+                xjb_lingsu: "灵力复苏",
+
                 ...bossTranslate
             },
             pinyins: {},
         };
         for (const id in result.character) {
-            result.character[id].trashBin.push('ext:新将包/skin/image/' + id + "/normal.jpg")
+            result.character[id].trashBin.push('ext:新将包/image/character_soul/' + id + ".jpg")
             if (get.mode() != "boss" && id.startsWith("xjb_SoulBoss")) result.character[id].isUnseen = true;
         }
         lib.config.all.characters.push("xjb_soul");
+        lib.config.characters.push('xjb_soul')
         return result;
     })
 }

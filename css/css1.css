@@ -211,6 +211,7 @@ div#myChouJiang_XJB_TXT {
 
 /*存档*/
 .xjb_ul_storage li p span {
+
   padding-top: 6px;
   float: left;
   width: 41px;
@@ -255,6 +256,42 @@ div#myChouJiang_XJB_TXT {
 
 
 
+.xjb-HpCard {
+  position: relative;
+}
+
+.xjb-HpCard::after {
+  content: attr(number);
+  position: absolute;
+  color: red;
+  right: 0;
+}
+
+.xjb-hpCard-container {
+  perspective: 1000px;
+  height: 100%;
+  width: 100%;
+  z-index: 5;
+}
+
+.xjb-hpCard-doubleFace {
+  transition: 1s;
+  transform-style: preserve-3d;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+
+.xjb-hpCard-doubleFace>div {
+  backface-visibility: hidden;
+  position: absolute;
+}
+
+.xjb-hpCard-back {
+  transform: rotateY(180deg);
+}
 
 /*新将包诗文*/
 .xjbHeadline {

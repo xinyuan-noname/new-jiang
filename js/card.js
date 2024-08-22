@@ -1,8 +1,8 @@
 window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
     function CardObjectCreater(name, card) {
         lib.card[name] = { ...card };
-        lib.card[name].translate = undefined;
-        lib.card[name].description = undefined;
+        delete lib.card[name].translate;
+        delete lib.card[name].description;
         lib.translate[name] = card.translate;
         lib.translate[name + "_info"] = card.description;
         return lib.translate[name]
@@ -312,7 +312,7 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                     player.$skill(event.num + '', 'legend', 'wood');
                     "step 2"
                     target.xjb_recordTalentCard(event.num, 'skill_noskill')
-                     "step 3"
+                    "step 3"
                     target.addSkill("skill_noskill")
                     target.turnOver()
                 },
@@ -348,7 +348,7 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                 fullskin: true,
                 image: "ext:新将包/xjb_zhihuan.png",
                 translate: '置换卡',
-                description: '出牌阶段，你对一名角色使用此牌，其弃置至少一张牌，然后你摸等量张牌。<br><b description=[当卡牌点数大于4时，使用牌结算后就不能再次获得此牌]>最大回收点数:4</b>'
+                description: '出牌阶段，你对一名角色使用此牌，其弃置至少一张牌，然后你摸等量张牌。<br>最大回收点数:4'
             });
             const xjb_lingliCheck = CardObjectCreater(
                 "xjb_lingliCheck", {
@@ -421,7 +421,7 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                 },
                 fullskin: true,
                 translate: '神杀破',
-                description: '出牌阶段指定三名角色:1.视为对目标使用一张神杀;<br>2.出牌阶段使用过【杀】的次数清零<br><b description=[当卡牌点数大于1时，使用牌结算后就不能再次获得此牌]>最大回收点数:1点</b>'
+                description: '出牌阶段指定三名角色:1.视为对目标使用一张神杀;<br>2.出牌阶段使用过【杀】的次数清零<br>最大回收点数:1点'
             })
             const xjb_seizeHpCard = CardObjectCreater(
                 "xjb_seizeHpCard", {
@@ -443,12 +443,16 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                     }
                     "step 2"
                     var num = cards[0].number + 1
-                    if (cards[0].number < 2) player.gain(game.createCard(cards[0].name, cards[0].suit, num))
+                    if (cards[0].number < 2) {
+                        const card = game.createCard(cards[0].name, cards[0].suit, num)
+                        player.gain(card);
+                        card.storage.xjb_allowed = true;
+                    }
 
                 },
                 image: "ext:新将包/xjb_seizeHpCard.png",
                 translate: '体力抓取',
-                description: '出牌阶段对一名手牌数大于你的其他角色使用:你与其的拼点，若你赢，你获得其一张体力牌<br><b description=[当卡牌点数大于1时，使用牌结算后就不能再次获得此牌]>最大回收点数:1</b>',
+                description: '出牌阶段对一名手牌数小于你的其他角色使用:你与其的拼点，若你赢，你获得其一张体力牌<br>最大回收点数:1',
                 ai: {
                     order: 6,
                     basic: {

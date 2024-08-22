@@ -9,8 +9,22 @@ import {
 import {
     xjb_library
 } from "./js/library.js";
-window.xjb_library = xjb_library;
+import {
+    LOAD_HPCARD
+} from "./js/hpCard.js";
 function provideFunction() {
+    lib.xjb_dataGet = function () {
+        return Object.keys(lib.config).filter(function (a) {
+            return a.includes("xjb_");
+        })
+    }
+    game.xjb_setEvent = function (name, { player, content }) {
+        lib.element.player[name] = get.copy(player)
+        lib.element.content[name] = get.copy(content)
+    }
+    game.xjb_addPlayerMethod = function (name, method) {
+        lib.element.player[name] = get.copy(method)
+    }
     game.xjb_judgeSkill = {
         Tri_logSkill: function (skill) {
             const info = get.info(skill);
@@ -55,12 +69,8 @@ function provideFunction() {
         switch (str) {
             //有技能槽则获得，消耗能量
             case "技能(1个)": {
-                var haven = lib.config.xjb_newcharacter.skill
-                var first = lib.config.xjb_list_hunbilist.skill.first
-                var second = lib.config.xjb_list_hunbilist.skill.second
-                var third = lib.config.xjb_list_hunbilist.skill.third
-                var list = first.concat(second, third)
-                var willget = list.randomGet()
+                var list = get.xjb_allHunSkills();
+                var willget = list.randomGet();
                 if (game.xjb_condition(3, 1)) {
                     game.xjb_create.alert('你获得了技能' + get.translation(willget))
                     lib.config.xjb_newcharacter.skill.add(willget)
@@ -87,10 +97,10 @@ function provideFunction() {
             case "体力值(1点)": {
                 game.xjb_newCharacterAddHp(1 * turn, boolean)
             }; break
-            case "免费更改势力": {
+            case "免费更改势力": case "择木卡一张": {
                 game.xjb_newCharacterChangeGroup(1 * turn, boolean)
             }; break
-            case "免费更改性别": {
+            case "免费更改性别": case "性转卡一张": {
                 game.xjb_newCharacterChangeSex(1 * turn, boolean)
             }; break
             case "免费更改姓名": {
@@ -150,43 +160,8 @@ function provideFunction() {
             uniqueSkill: []
         }
     }
-    //Hpcard创建函数，第一个值为体力牌类型，第二个值为体力牌样式高度
-    game.createHpCard = function (num, num2 = 100) {
-        if (Array.isArray(num)) {
-            let list = []
-            for (let i = 0; i < num.length; i++) {
-                list.push(game.createHpCard(num[i]))
-            }
-            return list
-        }
-        var HpCard = ui.create.div('.HpCard')
-        HpCard.number = num
-        HpCard.innerHTML = '<img src="' + lib.xjb_src + 'HpCard/' + HpCard.number + '.jpg" height=' + num2 + '>'
-        HpCard.style['position'] = 'relative'
-        var word = ui.create.div('.word', HpCard)
-        word.innerHTML = get.cnNumber(num)
-        word.style['font-size'] = '25px'
-        word.style['position'] = 'relative'
-        word.style['float'] = 'right'
-        word.style['color'] = 'red'
-        word.style['left'] = '-25px'
-        word.style['top'] = '-10px'
-        return HpCard
-    }
-    //统计体力牌张数
-    game.countHpCard = function (arr) {
-        let array = {
-            1: 0,
-            2: 0,
-            3: 0,
-            4: 0,
-            5: 0
-        }
-        arr.forEach(function (i) {
-            array[i] = array[i] + 1
-        }, arr)
-        return array
-    }
+
+
     //技能=object(强制技恢复)
     game.xjb_EqualizeSkillObject = function (string1, object2) {
         lib.skill[string1] = {}
@@ -272,11 +247,10 @@ function way() {
 function importFile() {
     let count = 0;
     const files = ["event", "lingli", "skills", "card",
-        "project", "rpg", "translate","character",
+        "project", "rpg", "translate", "character",
         "dialog", "economy", "math", "raise"];
     function loadFiles(fileName) {
         let script = lib.init.js(lib.xjb_src + "js", fileName, () => {
-            console.log(fileName.toUpperCase())
             window[`XJB_LOAD_${fileName.toUpperCase()}`](_status, lib, game, ui, get, ai);
             count++;
         }, (err) => { game.print(err) });
@@ -574,6 +548,8 @@ export function XJB_PRECONTENT() {
     provideFunction();
     way();
     initialize();
+    window.xjb_library = xjb_library;
+    LOAD_HPCARD(lib, game, ui, get, ai, _status)
     importFile();
     //折头折百花联动
     // if (lib.config.extensions.includes('枝头折百花') && lib.config.extension_枝头折百花_enable) {
