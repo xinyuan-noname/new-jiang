@@ -1,11 +1,15 @@
 import {
     xjbSkill,
     xjbTranslate
-} from "./xjbSkill.js";
+} from "./skill/xjbSkill.js";
 import {
     bossSkill,
     bossTranslate
-} from "./bossSkill.js"
+} from "./skill/bossSkill.js"
+import {
+    soulSkill,
+    soulTranslate
+} from "./skill/soulSkill.js"
 window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
     game.import("character", () => {
         const result = {
@@ -122,7 +126,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     sex: "male",
                     group: "shu",
                     hp: 3,
-                    skills: ["xin_enyuan", "xin_qisuan", "xjb_fuyi"],
+                    skills: ["xin_enyuan", "xjb_fuyi"],
                     trashBin: []
                 },
                 "xjb_jiaxu": {
@@ -246,7 +250,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     sex: "female",
                     group: "xjb_hun",
                     hp: 2,
-                    skills: ["xin_xueqi", "xjb_soul_fuhua"],
+                    skills: ["xjb_soul_xueqi", "xjb_soul_fuhong", "xjb_soul_hongxi", "xjb_soul_fuhua"],
                     get trashBin() {
                         return [`ext:新将包/skin/image/xjb_xuemo/xuemo${[1, 2, 3].randomGet()}.jpg`]
                     }
@@ -322,7 +326,8 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
             characterReplace: {},
             card: {},
             skill: {
-                ...bossSkill
+                ...soulSkill,
+                ...bossSkill,
             },
             translate: {
                 xjb_soul: "soul",
@@ -342,6 +347,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                 xjb_hunshi: "魂使集团",
                 xjb_lingsu: "灵力复苏",
 
+                ...soulTranslate,
                 ...bossTranslate
             },
             pinyins: {},

@@ -102,7 +102,6 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 let MaxHpOk = () => {
                     return this.maxHp >= 30 && eventLine.includes("gainMaxHp")
                 }
-                //game.print(CardOk(), MaxHpOk())
                 while (CardOk() || MaxHpOk()) {
                     eventLine = xjb_lingli.event.match(num)
                 }
@@ -347,7 +346,7 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 player.xjb_cardDeath()
                 player.loseMaxHp(num)
                 lib.config.xjb_count[target.name].HpCard.push(num)
-                player.$giveHpCard(num, target)
+                player.$xjb_giveHpCard(num, target)
                 game.saveConfig('xjb_count', lib.config.xjb_count);
                 return lib.config.xjb_count[target.name].HpCard
             },
@@ -527,7 +526,7 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 next.setContent('xjb_buildBridge');
                 return next
             },
-            content: function (event) {
+            content: function () {
                 "step 0"
                 if (player != game.me) player.storage.xjb_daomoMax = 5;
                 var list = [], maxNum = player.storage.xjb_daomoMax || 1;
@@ -577,9 +576,9 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                     let logo = result.links[0];
                     game.xjb_getDaomo(player, logo, -player.storage.xjb_daomoMax)
                     player.addMark("_xjb_daomo_" + logo, player.storage.xjb_daomoMax)
-                    target.addMark("_xjb_daomo_" + logo, player.storage.xjb_daomoMax)
+                    event.target.addMark("_xjb_daomo_" + logo, player.storage.xjb_daomoMax)
                     player.xjb_switchlingli()
-                    target.xjb_switchlingli()
+                    event.target.xjb_switchlingli()
                 }
             },
         },
@@ -600,7 +599,10 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 if (xjb_lingli.daomo.find(event.player).length < 1) event.finish()
                 event.list = xjb_lingli.daomo.list(event.player)
                 "step 2"
-                if (!event.list.length) return event.goto(3)
+                if (!event.list.length) {
+                    event.goto(4)
+                }
+                "step 3"
                 let now = event.list.shift()
                 let targets = game.players.filter((current, index) => {
                     if (current == event.player) return false
@@ -621,15 +623,13 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                         next.type = now
                         next.setContent(function () {
                             let verb = xjb_lingli.daomo.event_mark[event.type]
-                            if (target[verb]) target[verb]()
-                            target.xjb_addlingli()
+                            if (event.target[verb]) event.target[verb]()
+                            event.target.xjb_addlingli()
                         });
-
-
                     })
                 }
-                if (event.num > 0) event.redo()
-                "step 3"
+                if (event.num > 0) event.goto(2)
+                "step 4"
                 if (event.num > 0) event.goto(1)
             },
         },

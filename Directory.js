@@ -24,6 +24,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_shenshapo.png",
         "xjb_tianming_huobi1.png",
         "xjb_tianming_huobi2.png",
+        "xjb_xyAPI.js",
         "xjb_zhihuan.png"
     ],
     "audio": [
@@ -55,7 +56,6 @@ window["xjb_xyAPI_Directory_新将包"]={
         "π.png"
     ],
     "js": [
-        "bossSkill.js",
         "canvas.js",
         "card.js",
         "character.js",
@@ -77,7 +77,6 @@ window["xjb_xyAPI_Directory_新将包"]={
         "title.js",
         "translate.js",
         "ui.js",
-        "xjbSkill.js",
         "Xskill.js"
     ],
     "json": [
@@ -162,6 +161,11 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_yingzheng.jpg",
         "xjb_zhouyu.jpg",
         "xjb_zhugeliang.jpg"
+    ],
+    "js/skill": [
+        "bossSkill.js",
+        "soulSkill.js",
+        "xjbSkill.js"
     ],
     "sink/xin_newCharacter": [],
     "skin/image": [],

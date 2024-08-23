@@ -448,3 +448,7 @@ span[data-nature='xjb_hun'] {
   background-position: center;
   animation: xjb_tranB 1s infinite linear;
 }
+
+.player>.avatar.xjb-becomeBat {
+  background-image: url(../image/character_soul/xjb_bat.jpg) !important;
+}

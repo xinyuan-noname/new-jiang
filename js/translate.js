@@ -81,12 +81,8 @@ window.XJB_LOAD_TRANSLATE = function (_status, lib, game, ui, get, ai) {
         "xjb_guifan_info": "出牌阶段，你可以读档。",
         "xjb_minglou": "铭镂",
         "xjb_minglou_info": "出牌阶段，你可以存档。",
-        "xjb_soul_fuhua": "蝠化",
-        "xjb_soul_fuhua_info": "人形状态技：<br>当你濒死时，你体力回复至1点并进入一轮蝙蝠状态。",
-        "xin_xueqi": "血契",
-        "xin_xueqi_info": "当你对一名角色造成伤害时，你可以与该角色交换体力牌。若此做，你指定一名角色进入<b description=[进入该空间后，灵力会全部转化为魔力，角色在其回合内使用牌混乱。]>血色空间</b>。",
-        "xjb_soul_yiying": "移影",
-        "xjb_soul_yiying_info": "蝙蝠状态技:<br>你可以在需要时，视为使用或打出一张【闪】。",
+        
+        
         "xjb_soul_chanter": "吟咏",
         "xjb_soul_chanter_info": "出牌阶段限一次，你可以弃置一张卡牌并进入<b description=[进入该空间后，灵力最大可以达到100Ch，在该区域内的的伤害会被魔力吸收，作用到角色上负收益翻倍。]>聚灵区</b>，然后你进行一次<b description=[打开技能编辑器，令系统在线编写并生成一个锁定技，你该技能对应的技能牌置于阵法区]>吟咏</b>。",
     }

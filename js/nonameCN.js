@@ -907,8 +907,14 @@ export class NonameCN {
             //
             '失去所有技能': "clearSkills",
             '清除技能': "clearSkills",
-            '添加技能': 'addSkillLog',
-            '获得技能': 'addSkillLog',
+            '添加技能': 'addSkill',
+            '获得技能': 'addSkill',
+            '移除技能': "removeSkill",
+            '失去技能': "removeSkill",
+            '添加技能并录入日志': 'addSkillLog',
+            '获得技能并录入日志': 'addSkillLog',
+            '移除技能并录入日志': "removeSkillLog",
+            '失去技能并录入日志': "removeSkillLog",
             '拥有技能': 'hasSkill',
             '有技能': 'hasSkill',
             //
@@ -993,7 +999,7 @@ export class NonameCN {
             '弃置角色牌': 'discardPlayerCard:"he":intoFunction',
             '获得角色手牌': 'gainPlayerCard:"h":intoFunction',
             '弃置角色手牌': 'discardPlayerCard:"h":intoFunction',
-            '隐式给牌':"give:false:intoFunctionWait",
+            '隐式给牌': "give:false:intoFunctionWait",
             //
             '有牌': 'hasCard:void 0:"he"',
             '场上有牌': `hasCard:void 0:"ej"`,
@@ -1135,8 +1141,8 @@ export class NonameCN {
             "结束阶段": "phaseJieshuBegin",
             "结束阶段开始时": "phaseJieshuBegin",
             "摸牌阶段2": "phaseDrawBegin2",
-            "阶段改变时":"phaseChange",
-            "阶段更改时":"phaseChange",
+            "阶段改变时": "phaseChange",
+            "阶段更改时": "phaseChange",
             //伤害
             "受到伤害后": "damageEnd",
             '造成伤害': 'damageSource',
@@ -1929,7 +1935,7 @@ export class NonameCN {
                 return;
             }
             else if (["lose-false", "discard-false", "delay-false"].includes(i)) {
-                result += `${i.replace('-false','')}:false,\n`
+                result += `${i.replace('-false', '')}:false,\n`
                 return;
             }
             result += `${i}:true,\n`;
@@ -2436,6 +2442,9 @@ export class NonameCN {
                     return `trigger.num ${symbol}= `
                 })
             }
+        }
+        if (/^[此该本]技能发动次数[减-]\d+$/m.test(result)) {
+            result = result.replace(/^[此该本]技能发动次数[减-]/mg, `player.storage.counttrigger["${id}"]-=`)
         }
         if (!result.endsWith("\n")) result += "\n"
         return result;

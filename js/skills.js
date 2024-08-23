@@ -30,33 +30,6 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
             lib.translate.lunaticMasochist = "疼痛敏感"
             lib.translate.lunaticMasochist_info = "你弃牌、失去体力、恢复体力、失去体力上限、恢复体力上限、装备装备牌均视为受到伤害。"
         },
-        dynamicTranslate: function () {
-            //谋圣动态描述
-            lib.dynamicTranslate["xin_mousheng"] = function (player) {
-                return '锁定技，你亮出拼点牌时，你拼点牌点数+' + Math.min(game.roundNumber, 12)
-            }
-            //激昂动态描述
-            lib.dynamicTranslate["xin_jiang"] = function (player) {
-                var num = 0
-                for (var i = 0; i < game.players.length; i++) {
-                    if (game.players[i].isLinked()) num++
-                }
-                if ((player.hasZhuSkill('xin_yingyi') && get.mode() == 'identity') || get.mode() != 'identity') {
-                    for (var i = 0; i < game.players.length; i++) {
-                        if (game.players[i].group === 'wu') num++
-                    }
-                }
-                if (num > 3) num = 3
-                return lib.translate.xin_jiang_info.replace("X", num + "").replace(/[(].+[)]/i, "")
-            }
-            //国色动态描述
-            lib.dynamicTranslate["xjb_guose"] = function () {
-                var num = game.countPlayer(function (current) {
-                    return current.countCards('ej');
-                });
-                return lib.translate.xjb_guose_info.replace("X", num + "").replace(/[(].+[)]/i, "")
-            }
-        },
         skillTag: function () {
             //随动技附魔
             lib.skill._xjb_suidongSkill = {
@@ -1194,8 +1167,6 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     game.players.forEach(function (current) {
                         //灵力设置
                         player.storage.xjb_daomoMax = 1
-                        //角色原画设置
-                        current.storage.xjb_PreImage = window.getComputedStyle(current.node.avatar).backgroundImage;
                         //建X_skill区，[0]代表执行项目，[1]代表角色数目，[2]代表执行次数，[3]代表禁止武将，[4]代表限制条件，[5]修改其他五区，[6]控制[5]区(套娃)        
                         current.storage._skill_xin_X = [1, 1, 1, [], [], [], []]
                         current.storage.xjb_card_allow = {}
@@ -1543,137 +1514,8 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     },
                     "_priority": 0,
                 },
-                "xjb_minglou": {
-                    enable: "phaseUse",
-                    content: function () {
-                        player.xjb_saveStorage()
-                    },
-                    ai: {
-                        order: 9,
-                        save: true,
-                        result: {
-                            player: function (player) {
-                                let targetMother = get.xjb_storage(player, 1)
-                                if (!targetMother) return 10;
-                                let target = targetMother.character
-                                let score = 0
-                                score += (player.hp - target.hp) * 2;
-                                score += (player.hujia - target.hujia) * 2;
-                                score += (player.maxHp - target.maxHp)
-                                score += ((!player.isLinked()) - (!target.isLinked))
-                                score += ((!player.isTurnedOver()) - (!target.isTurnOvered)) * 5
-                                function countCards() {
-                                    return target.h.length + target.e.length + target.j.length + target.s.length + target.x.length
-                                }
-                                score += (player.countCards('hejsx') - countCards())
-                                player.popup('存档收益' + (score > 0 ? '+' : '') + score)
-                                return score;
-                            },
-                        },
-                    },
-                },
-                "xjb_soul_fuhua": {
-                    enable: "chooseToUse",
-                    filter: function (event, player) {
-                        if (lib.config.xjb_count[player.name1].kind != "血族") return false
-                        if (event.type === 'dying') {
-                            if (player != event.dying) return false;
-                            return true;
-                        }
-                    },
-                    content: function () {
-                        'step 0'
-                        player.recover(1 - player.hp);
-                        'step 1'
-                        player.removeSkill(event.name)
-                        player.addSkill('xjb_soul_yiying')
-                        var src = lib.xjb_src + "skin/image/xjb_xuemo/"
-                        
-                        ui.xjb_giveStyle(player.node.avatar, {
-                            "background-image": "url('" + src + "xuemo4.jpg')"
-                        });
-                        'step 2'
-                        lib.skill._unique_talent_xjb.load.push(function () {
-                            game.players.forEach(current => {
-                                current.removeSkill('xjb_soul_yiying')
-                            })
-                        })
-                    },
-                    ai: {
-                        save: true,
-                    },
-                },
-                "xin_xueqi": {
-                    trigger: {
-                        source: "damageBefore",
-                    },
-                    check: function (event, player) {
-                        if (get.attitude(player, event.player) > 0) return false;
-                        if (player.hp >= event.player.hp) return false
-                        return true
-                    },
-                    content: function () {
-                        'step 0'
-                        //交换体力牌
-                        player.fc_X(103, true, {
-                            onlyme: [trigger.player]
-                        })
-                        'step 1'
-                        player.chooseTarget(1, '你选择一名其他角色进入血色空间').set("filterTarget", function (card, player, target) {
-                            return player != target
-                        }).set('ai', function (target) {
-                            return -get.attitude(player, target);
-                        })
-                        'step 2'
-                        if (result.bool) result.targets.forEach(target => {
-                            //进入血色空间
-                            target.addTempSkill('xjb_P_blood', { player: "phaseAfter" })
-                        })
-                    },
-                    "_priority": 0,
-                },
-                "xjb_soul_yiying": {
-                    onremove: function (player) {
-                        if (player.storage.xjb_PreImage) {
-                            ui.xjb_giveStyle(player.node.avatar, {
-                                "background-image": player.storage.xjb_PreImage
-                            })
-                        }
-                        player.addSkill('xjb_soul_fuhua')
-                    },
-                    enable: ["chooseToUse", "chooseToRespond"],
-                    viewAs: {
-                        name: "shan",
-                        isCard: true,
-                    },
-                    filterCard: card => false,
-                    selectCard: -1,
-                    mark: false,
-                    prompt: "视为使用或打出一张【闪】",
-                    onuse: function (event, player) {
-                        let next = game.createEvent('xjb_soul_yiying')
-                        next.player = player
-                        next.setContent(function () {
-                            'step 0'
-                            player.chooseTarget(1).set("filterTarget", function (card, player, target) {
-                                return player != target
-                            })
-                            'step 1'
-                            if (result.bool) game.swapSeat(player, result.targets[0]);
-                        })
-                    },
-                    ai: {
-                        order: 3,
-                        basic: {
-                            useful: [7, 5.1, 2],
-                            value: [7, 5.1, 2],
-                        },
-                        result: {
-                            player: 1,
-                        },
-                    },
-                    "_priority": 0,
-                },
+
+
                 "xjb_soul_chanter": {
                     enable: "phaseUse",
                     usable: 1,

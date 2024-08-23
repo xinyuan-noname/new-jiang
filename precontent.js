@@ -540,7 +540,7 @@ function initialize() {
                     };
                     game.resume();
                 }
-            },
+            }
         }
     }
 }

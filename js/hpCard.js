@@ -1,4 +1,59 @@
 export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
+    lib.skill._xjb_UseHpCard = {
+        trigger: {
+            global: "gameStart"
+        },
+        filter: function (event, player) {
+            if (!lib.config.xjb_hun) return false
+            var name = player.name
+            if (!lib.config.xjb_count[name]) return false
+            if (!lib.config.xjb_count[name].HpCard || !lib.config.xjb_count[name].HpCard.length) return false
+            if (!(player === game.me || player.isUnderControl())) return false
+            return true
+        },
+        direct: true,
+        forced: true,
+        content: function () {
+            "step 0"
+            var name = player.name1
+            var list = game.xjb_countHpCard(lib.config.xjb_count[name].HpCard)
+            var hpCard = new Array(1, 2, 3, 4, 5).map(function (i) {
+                return [i, game.xjb_createHpCard(i).outerHTML, get.cnNumber(i)]
+            })
+            var next = player.chooseButton(
+                [
+                    '请选择你使用的体力牌',
+                    [hpCard, "tdnodes"]
+                ],
+                [1, Infinity]
+            )
+            next.filterButton = function (button) {
+                var player = _status.event.player
+                return lib.config.xjb_count[player.name].HpCard.includes(
+                    parseInt(button.link)
+                )
+            }
+            "step 1"
+            if (result.bool) {
+                result.links.forEach(function (i) {
+                    player.xjb_useHpCard(i)
+                })
+            }
+        }
+    }
+    lib.skill._xjb_changeHpCard = {
+        trigger: {
+            player: ["gainMaxHpAfter", "loseMaxHpAfter"],
+        },
+        direct: true,
+        charlotte: true,
+        content: function () {
+            "step 0"
+            player.xjb_adjustHpCard()
+        },
+        mark:true,
+    }
+
     //Hpcard创建函数，第一个值为体力牌类型，第二个值为体力牌样式高度
     game.xjb_createHpCard = function (num, num2 = 100) {
         if (Array.isArray(num)) {
@@ -43,49 +98,6 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
         return game.xjb_countHpCard(lib.config.xjb_count[name].HpCard)
     }
 
-    lib.skill._xjb_UseHpCard = {
-        trigger: {
-            global: "gameStart",
-        },
-        filter: function (event, player) {
-            if (!lib.config.xjb_hun) return false
-            var name = player.name1
-            if (!lib.config.xjb_count[name]) return false
-            if (!lib.config.xjb_count[name].HpCard || !lib.config.xjb_count[name].HpCard.length) return false
-            if (!(player === game.me || player.isUnderControl())) return false
-            return true
-        },
-        direct: true,
-        forced: true,
-        content: function () {
-            "step 0"
-            var name = player.name1
-            var list = game.xjb_countHpCard(lib.config.xjb_count[name].HpCard)
-            var hpCard = new Array(1, 2, 3, 4, 5).map(function (i) {
-                return [i, game.xjb_createHpCard(i).outerHTML, get.cnNumber(i)]
-            })
-            var next = player.chooseButton(
-                [
-                    '请选择你使用的体力牌',
-                    [hpCard, "tdnodes"]
-                ],
-                [1, Infinity]
-            )
-            next.filterButton = function (button) {
-                var player = _status.event.player
-                return lib.config.xjb_count[player.name].HpCard.includes(
-                    parseInt(button.link)
-                )
-            }
-            "step 1"
-            if (result.bool) {
-                result.links.forEach(function (i) {
-                    player.xjb_useHpCard(i)
-                })
-            }
-        }
-    }
-
 
     {
         const map = new Map();
@@ -95,8 +107,17 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
         map.set(5, { obv: 5, rev: 4 });
         lib.xjb_cacheHpCardData = map;
     }
+    {
+        const map = new Map()
+        map.set(2, [[1, 1]])
+        map.set(3, [[1, 1, 1], [1, 2]])
+        map.set(4, [[1, 1, 1, 1], [1, 1, 2], [1, 3], [2, 2]])
+        map.set(5, [[1, 1, 1, 1, 1], [1, 1, 1, 2], [1, 2, 2], [1, 1, 3], [2, 3], [1, 4]])
+        lib.xjb_splitHpCardMap = map;
+    }
 
     game.xjb_genHpCardData = function (value) {
+        if (typeof value != "number") value = parseInt(value);
         /**
          * @type {Map}
          */
@@ -133,6 +154,29 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
             }
         }
         return player.xjb_HpCardArea;
+    })
+    game.xjb_addPlayerMethod("xjb_getLoseHpMap", function () {
+        const player = this;
+        let has = player.hp;
+        const hasHpList = player.xjb_HpCardArea.slice(0).reverse().reduce((acc, hpCard) => {
+            if (has >= hpCard.obv) {
+                has -= hpCard.obv;
+                acc.push(hpCard.obv);
+                return acc;
+            } else {
+                acc.push(has);
+                has = 0;
+                return acc;
+            }
+        }, []);
+        return hasHpList.reverse();
+    })
+    game.xjb_addPlayerMethod("xjb_getAccLoseHpMap", function (...indexes) {
+        const player = this;
+        const lose = player.xjb_getLoseHpMap().filter((_, index) => {
+            return indexes.includes(index)
+        }).reduce((acc, now) => acc + now, 0)
+        return lose;
     })
 
     //给出体力牌
@@ -258,7 +302,7 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
             next.setContent('xjb_turnOverHpCard');
             return next
         },
-        content(event) {
+        content() {
             'step 0'
             const list = player.xjb_HpCardArea;
             const hpCardObj = list[event.index];
@@ -267,31 +311,145 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
             event.obv = obv;
             event.rev = rev;
             'step 1'
-            let has = player.hp;
-            const hasHpList = player.xjb_HpCardArea.reduce((acc, hpCard) => {
-                if (has >= hpCard.obv) {
-                    has -= hpCard.obv;
-                    acc.push(hpCard.obv);
-                    return acc;
-                } else {
-                    acc.push(has);
-                    has = 0;
-                    return acc;
-                }
-            }, []);
-            hasHpList.reverse()
-            player.hp -= hasHpList[event.index];
-            'step 2'
             player.xjb_HpCardArea[event.index] = { rev: event.obv, obv: event.rev };
-            'step 3'
+            'step 2'
             player.maxHp -= event.obv;
             player.maxHp += event.rev;
-            player.hp += event.rev;
             player.$xjb_turnOverHpCard(event.obv, event.rev)
             game.delay()
-            'step 4'
+            'step 3'
             player.update();
-            game.log(player,'将一张',event.obv,'点的体力牌','翻面，','成为',event.rev,'点的体力牌')
+            game.log(player, '将一张', event.obv, '点的体力牌', '翻面，', '成为', event.rev, '点的体力牌')
+        }
+    })
+
+    //交换体力牌
+    game.xjb_setEvent("xjb_swapHpCard", {
+        player(target, num = 1) {
+            const player = this;
+            if (!target) return;
+            if (!player.xjb_HpCardArea) player.xjb_adjustHpCard()
+            if (!target.xjb_HpCardArea) target.xjb_adjustHpCard()
+            num = parseInt(num)
+            num = isNaN(num) ? 0 : num
+            const next = game.createEvent('xjb_swapHpCard');
+            next.player = player;
+            next.target = target;
+            next.num = num;
+            next.setContent('xjb_swapHpCard');
+            return next
+        },
+        content() {
+            'step 0'
+            event.area1 = player.xjb_HpCardArea;
+            event.area2 = event.target.xjb_HpCardArea;
+            'step 1'
+            if (event.area2.length > event.num) {
+                const area = event.target.xjb_HpCardArea.map((content, index) => {
+                    return [index, game.xjb_createHpCard(content.obv).outerHTML]
+                });
+                player.chooseButton(true, event.num,
+                    [
+                        `你选择${event.num}张从${get.translation(event.target)}交换获得的体力牌`,
+                        [area, 'tdnodes']
+                    ]
+                )
+            } else {
+                event.index2 = new Array(event.num).fill().map((_, index) => index);
+                event.goto(3)
+            }
+            'step 2'
+            event.index2 = result.links
+            'step 3'
+            if (event.area1.length > event.num) {
+                const area = player.xjb_HpCardArea.map((content, index) => {
+                    return [index, game.xjb_createHpCard(content.obv).outerHTML]
+                });
+                player.chooseButton(true, event.num,
+                    [
+                        `你选择${event.num}张给出的体力牌`,
+                        [area, 'tdnodes']
+                    ]
+                )
+            } else {
+                event.index1 = new Array(event.num).fill().map((_, index) => index);
+                event.goto(5)
+            }
+            'step 4'
+            event.index1 = result.links;
+            'step 5'
+            const list1 = event.area1.filter((_, index) => {
+                return event.index1.includes(index)
+            })
+            const list2 = event.area2.filter((_, index) => {
+                return event.index2.includes(index)
+            })
+            const allSide1 = list1.reduce((acc, hpCard) => {
+                return acc + hpCard.obv
+            }, 0)
+            const allSide2 = list2.reduce((acc, hpCard) => {
+                return acc + hpCard.obv
+            }, 0)
+            const loseHp1 = player.xjb_getAccLoseHpMap(...event.index1)
+            const loseHp2 = event.target.xjb_getAccLoseHpMap(...event.index2)
+            player.maxHp -= allSide1
+            player.hp -= loseHp1
+            player.maxHp += allSide2
+            player.hp += loseHp2
+            player.xjb_HpCardArea.remove(...list1);
+            player.xjb_HpCardArea.add(...list2)
+            event.target.maxHp -= allSide2;
+            event.target.hp -= loseHp2;
+            event.target.maxHp += allSide1;
+            event.target.hp += loseHp1;
+            event.target.xjb_HpCardArea.remove(...list2)
+            event.target.xjb_HpCardArea.add(...list1)
+            player.$xjb_giveHpCard(list1[0].obv, event.target)
+            event.target.$xjb_giveHpCard(list2[0].obv, player)
+            game.delay();
+            console.log(player.xjb_HpCardArea, target.xjb_HpCardArea)
+            'step 6'
+            player.update();
+            event.target.update();
+        }
+    })
+
+    game.xjb_setEvent("xjb_splitHpCard", {
+        player(index, forced) {
+            const player = this;
+            if (!player.xjb_HpCardArea) player.xjb_adjustHpCard()
+            const list = player.xjb_HpCardArea;
+            const next = game.createEvent('xjb_splitHpCard');
+            next.player = player;
+            next.index = list[index] ? index : 0;
+            next.setContent('xjb_splitHpCard');
+            return next
+        },
+        content() {
+            'step 0'
+            event.toSplit = player.xjb_HpCardArea[event.index];
+            if (event.toSplit.obv === 1) event.finish()
+            'step 1'
+            const list = lib.xjb_splitHpCardMap.get(event.toSplit.obv).map(item => {
+                const type = item.join('-')
+                return [[[type, item.map(num => game.xjb_createHpCard(num).outerHTML).join("<span> </span>")]], 'tdnodes']
+            }).reduce((acc, val) => {
+                acc.push(`<font color=red>${val[0][0][0]}</font>`)
+                acc.push(val)
+                return acc;
+            }, [])
+            const next = player.chooseButton([
+                '请选择一种分割方案',
+                ...list
+            ])
+            if (forced) next.set("forced", true)
+            'step 2'
+            if (result.bool) {
+                player.xjb_HpCardArea.remove(event.toSplit);
+                result.links[0].split("-").forEach(item => {
+                    player.xjb_HpCardArea.push(game.xjb_genHpCardData(item))
+                })
+            }
         }
     })
 }
