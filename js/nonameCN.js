@@ -465,6 +465,7 @@ export class NonameCN {
         '颜色': 'color',
         '属性': "nature",
         '类别': 'type',
+        '广义类别': 'type2',
         '副类别': 'subtype',
         '拼音': 'pinyin',
         '韵母': 'yunmu',
@@ -474,10 +475,10 @@ export class NonameCN {
         //
         '来源': 'source',
         //伤害事件
-        '受伤点数': 'trigger.num',
         '受到伤害点数': 'trigger.num',
         '受伤点数': 'trigger.num',
         '伤害点数': 'trigger.num',
+        '伤害值': 'trigger.num',
         '造成伤害的牌': 'trigger.cards',
         '造成伤害的属性': 'trigger.nature',
         '伤害属性': 'trigger.nature',
@@ -526,8 +527,6 @@ export class NonameCN {
         '八': '8',
         '九': '9',
         '十': '10',
-        //
-
         //
         '有概率': 'Math.random()<=',
         //废除事件
@@ -813,10 +812,11 @@ export class NonameCN {
             "选择结果颜色": "result.color",
             "选择结果花色": "result.suit",
             "选择结果选项编号": "result.choice",
-            "判定牌名": "result.name",
-            "判定点数": "result.number",
-            "判定颜色": "result.color",
-            "判定花色": "result.suit",
+            '判定结果卡牌': "result.card",
+            "判定结果牌名": "result.name",
+            "判定结果点数": "result.number",
+            "判定结果颜色": "result.color",
+            "判定结果花色": "result.suit",
         },
         player: {
             ...playerList,
@@ -951,6 +951,8 @@ export class NonameCN {
             '选择角色': 'chooseTarget',
             '选择目标': 'chooseTarget',
             '判定': "judge",
+            '进行判定': "judge",
+            '进行一次判定': "judge",
             '选择牌和角色': "chooseCardTarget",
             '选择角色和牌': "chooseCardTarget",
         },
@@ -964,8 +966,9 @@ export class NonameCN {
             //
             "本回合被破甲": `addTempSkill:"qinggang2"`,
             "本回合非锁定技失效": `addTempSkill:"fengyin"`,
-            "获得技能直到出牌阶段结束": `addTempSkill;{player:"phaseUseEnd"};intoFunctionWait`,
-            "获得技能直到下一轮开始时": `addTempSkill;"roundStart";intoFunctionWait`,
+            "获得技能直到下个出牌阶段结束": `addTempSkill;{player:"phaseUseEnd"}:intoFunctionWait`,
+            "获得技能直到下个回合结束": `addTempSkill;{player:"phaseEnd"}:intoFunctionWait`,
+            "获得技能直到下一轮开始时": `addTempSkill;"roundStart":intoFunctionWait`,
             //
             "播放判定生效动画": "tryJudgeAnimagte:true",
             "播放判定失效动画": "tryJudgeAnimagte:false",
@@ -1096,6 +1099,8 @@ export class NonameCN {
             //
             "设置卡牌选择数量": `set:"selectCard":intoFunction`,
             "设置卡牌限制条件": `set:"filterCard":intoFunction`,
+            //
+            "设置为强制发动":`set:"forced":true`,
             //判定类
             "设置回调函数": `set:"callback":intoFunction`,
             "设置判定收益": `set:"judge":intoFunction`,
@@ -1228,6 +1233,9 @@ export class NonameCN {
         type: {
             ...getMapOfType(),
             "非延时锦囊牌": `"trick"`,
+        },
+        type2: {
+            "锦囊牌": `"trick"`
         },
         subtype: {
             "武器牌": `"equip1"`,
@@ -1507,6 +1515,9 @@ export class NonameCN {
             cancel: () => true,
             trigger: () => true,
             forResult: () => true,
+            goto: () => true,
+            redo: () => true,
+            finish: () => true
         }
     }
     static getVirtualCard() {
@@ -1532,6 +1543,7 @@ export class NonameCN {
             .replace("此牌的目标 组", "此牌的目标组")
             .replace("此牌的已触发的 目标组", "此牌的已触发的目标组")
             .replace("受到 伤害 ", "受到伤害 ")
+            .replace(/^选择结果 目标 ([数组])$/mg, '选择结果目标$1')
             .replace(/(?<=代为) (?=使用 |打出 |使用或打出 )/g, "")
             .replace(/体力值 (回复|恢复)至 /g, "体力值回复至 ")
             .replace(/(体力值|手牌数) 为全场最少/g, "$1为全场最少")
@@ -1571,7 +1583,19 @@ export class NonameCN {
             })
             .replace(/(.+?)(颜色)?(不?[为是])(黑|红|无)色$/mg, '获取 颜色 $1 \n $3 \n $4色')
             .replace(/(.+?)(花色)?(不?[为是])(梅花|黑桃|方片|红桃)$/mg, '获取 花色 $1 \n $3 \n $4')
-            .replace(/(.+?)(类别)?(不?[为是])(非延时锦囊牌|延时锦囊牌|普通锦囊牌|基本牌|装备牌)$/g, '获取 类别 $1 \n $3 \n $4')
+            .replace(/(.+?)(类别)?(不?[为是])(非延时锦囊牌|延时锦囊牌|普通锦囊牌|基本牌|装备牌)$/mg, '获取 类别 $1 \n $3 \n $4')
+            .replace(/(.+?)(类别)?(不?[为是])(锦囊牌|基本牌|装备牌)$/mg, '获取 广义类别 $1 \n $3 \n $4')
+            .replace(/(?<=点数不?[为是])(A|J|Q|K)$/g, function (match, ...p) {
+                const map = {
+                    A: 1,
+                    J: 11,
+                    Q: 12,
+                    K: 13
+                }
+                console.log(p[0], map[p[0]])
+                return `${map[p[0]]}`
+            })
+            .replace(/(.+?)点数(不?)(为|是|大于|小于|等于)(10|11|12|13|[1-9])$/mg, '获取 点数 $1\n $2$3 \n $4')
             .replace(/(.+?)(牌名)?(不?[为是])(杀|闪|桃|酒|无懈可击|决斗)$/mg, '获取 牌名 $1 \n $3 \n $4')
             .replace(/(.+?)(副类别)?(不?[为是])(武器牌|防具牌|\+1马牌|-1马牌|进攻马牌|防御马牌)$/mg, '获取 副类别 $1 \n $3 \n $4')
             .replace(/(.+?)在(.+?)的?攻击范围内$/mg, "$2 攻击范围内有 $1")
@@ -1615,6 +1639,7 @@ export class NonameCN {
     static standardEffectBefore(that) {
         textareaTool().setTarget(that)
             .replace(/额外执行一个/g, "执行一个额外的")
+            .replace(/获得此牌$/mg, "获得牌 此牌")
             .replace(/(.+?)执行(一个)?额外的?(准备|出牌|弃牌|结束)阶段/g, (match, ...p) => {
                 return `阶段列表 剪接 当前回合序号 0 "${this.getEn(p[2] + '阶段')}|${that.getID()}"`
             })
@@ -2634,6 +2659,8 @@ export class NonameCN {
             '此牌是酒': '此牌是酒(牌名)',
             '此牌是无懈可击': '此牌是无懈可击(牌名)',
             '此牌是决斗': '此牌是决斗(牌名)',
+            '此牌点数为A': '此牌点数为A(点数)',
+            '此牌点数不小于10': '此牌点数不小于10(点数)',
             '此牌为武器牌': "此牌为武器牌(副类别)",
             '此牌为防具牌': "此牌为防具牌(副类别)",
             '此牌为+1马牌': "此牌为+1牌马(副类别)",
@@ -2730,6 +2757,7 @@ export class NonameCN {
             "你跳过下一个结束阶段": "你跳过下一个结束阶段(阶段类)",
             '你获得一枚"new_wuhun"标记': "你获得一枚梦魇标记(标记类)",
             '你移去一枚"new_wuhun"标记': "你移去一枚梦魇标记(标记类)",
+            '你获得技能"yiji"直到下个回合结束': '你获得技能"yiji"直到下个回合结束',
             "此杀的伤害+1": "此杀伤害+1(触发技:使用杀时|使用杀指定目标时)",
             "此杀的伤害改为1": "此杀伤害改为1(触发技:使用杀时|使用杀指定目标时)",
             "此杀需要的闪的数量+1": "此杀需要的闪的数量+1(触发技:使用杀时|使用杀指定目标时)",
@@ -2800,6 +2828,7 @@ export class NonameCN {
             '变量卡牌令为触发事件的牌组-0': 0,
             '销毁卡牌': 0,
             '游戏 移至处理区': 0,
+            '本技能发动次数-1': 0,
             '"step 1"': 0,
             "'step 1'": 0,
             '%#&': 0,

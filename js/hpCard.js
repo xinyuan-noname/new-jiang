@@ -51,7 +51,7 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
             "step 0"
             player.xjb_adjustHpCard()
         },
-        mark:true,
+        mark: true,
     }
 
     //Hpcard创建函数，第一个值为体力牌类型，第二个值为体力牌样式高度
@@ -102,7 +102,6 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
     {
         const map = new Map();
         map.set(1, { obv: 1, rev: 2 });
-        map.set(2, { obv: 2, rev: 1 });
         map.set(3, { obv: 3, rev: 4 });
         map.set(5, { obv: 5, rev: 4 });
         lib.xjb_cacheHpCardData = map;
@@ -123,6 +122,7 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
          */
         const map = lib.xjb_cacheHpCardData;
         map.set(4, [{ obv: 4, rev: 3 }, { obv: 4, rev: 5 }].randomGet())
+        map.set(2, [{ obv: 2, rev: 3 }, { obv: 2, rev: 1 }].randomGet())
         return map.get(value)
     }
     game.xjb_addPlayerMethod('xjb_adjustHpCard', function () {
@@ -284,9 +284,9 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
         player.node.avatar.append(container)
         container.append(card)
         card.append(obvCard, revCard)
-        requestAnimationFrame(() => {
+        setTimeout(() => {
             card.style.transform = 'rotateY(180deg)'
-        })
+        }, 50)
         setTimeout(() => {
             container.remove()
         }, 1100)

@@ -1172,7 +1172,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             }
             //
             let typeSeter = newElement('div', '技能标签:', subBack).style1()
-            for (const innerHTML of ['首页', '限定', '锁定', '标签', '主动', '国战', '其他', '少用']) {
+            const TAG_TYPE_LIST = ['首页', '限定', '防封', '标签', '主动', '国战', '其他', '少用']
+            for (const innerHTML of TAG_TYPE_LIST) {
                 element("div")
                     .father(typeSeter)
                     .innerHTML(innerHTML)
@@ -1189,7 +1190,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .listen(DEFAULT_EVENT, e => {
                     const target = e.target;
                     let list = Array.from(typeFree.children);
-                    const index = ['首页', '限定', '锁定', '标签', '主动', '国战', '其他', '少用'].indexOf(target.innerText)
+                    const index = TAG_TYPE_LIST.indexOf(target.innerText)
                     list.splice(index * 6, 6).forEach(ele => ui.xjb_showElement(ele))
                     list.forEach(ele => ui.xjb_hideElement(ele))
                     return;
@@ -1776,6 +1777,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     if (/添单[ ]*你/.test(line)) return;
                     if (/移除 你/.test(line)) return;
                     if (new RegExp(`^无视(${JOINED_PLAYAERCN})防具的牌`).test(line)) return;
+                    if(/^选择结果目标[数组]/.test(line)) return;
                     let restWords = clearWordsGroup(line, playerCN);
                     return `${startsWithAwait ? "等待 " : ""}${group.shift()} ${restWords} ${group.join(" ")}`
                 })

@@ -1435,7 +1435,6 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     },
                     "_priority": 0,
                 },
-
                 "xjb_sicuan": {
                     audio: "ext:新将包:false",
                     enable: "phaseUse",
@@ -1466,7 +1465,6 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     },
                     "_priority": 0,
                 },
-
                 "xjb_lingpiao": {
                     trigger: {
                         global: ["xjb_addlingliBefore"],
@@ -1514,8 +1512,6 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                     },
                     "_priority": 0,
                 },
-
-
                 "xjb_soul_chanter": {
                     enable: "phaseUse",
                     usable: 1,
