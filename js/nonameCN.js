@@ -291,6 +291,7 @@ function getMapOfUSeVcard() {
     const map = {}
     for (const [cn, en] of Object.entries(getMapOfCard())) {
         map[`视为使用${cn}`] = `useCard:{name:${en},isCard:true}:intoFunction`
+        map[`选择对角色使用${cn}`] = `chooseUseTarget:{name:${en},isCard:true}:intoFunction`
     }
     return map
 }
@@ -308,6 +309,8 @@ function getMapOfActionHistory() {
     const map = {
         "本回合的出牌阶段使用牌次数": `getHistory:"useCard":evt=>evt.isPhaseUsing()`,
         "本回合的出牌阶段打出牌次数": `getHistory:"respond":evt=>evt.isPhaseUsing()`,
+        '本回合造成伤害点数': `getHistory:"sourceDamage"://!?reduce((acc,cur)=>acc+cur.num,0)`,
+        '本回合造成的伤害点数': `getHistory:"sourceDamage"://!?reduce((acc,cur)=>acc+cur.num,0)`
     }
     for (const [cn, en] of list) {
         map[`本回合${cn}次数`] = `getHistory:"${en}"://!?length`;
@@ -440,6 +443,7 @@ export class NonameCN {
         },
         respond: [],
         viewAsCondition: [],
+        viewAsFrequency: [],
         viewAs: [],
         subSkill: {},
         group: [],
@@ -929,10 +933,12 @@ export class NonameCN {
             '选择按钮': "chooseButton",
             '选择卡牌按钮': "chooseCardButton",
             //
+            "选择对角色使用牌": "chooseUseTarget",
             "选择使用手牌": `chooseToUse`,
             "选择使用牌": `chooseToUse`,
             '选择牌': 'chooseCard:"he":intoFunction',
             '选择手牌': 'chooseCard',
+            //
             '废除装备区内一个装备栏': 'chooseToDisable',
             '选择废除装备区内一个装备栏': 'chooseToDisable',
             '废除一个装备栏': 'chooseToDisable',
@@ -1100,7 +1106,7 @@ export class NonameCN {
             "设置卡牌选择数量": `set:"selectCard":intoFunction`,
             "设置卡牌限制条件": `set:"filterCard":intoFunction`,
             //
-            "设置为强制发动":`set:"forced":true`,
+            "设置为强制发动": `set:"forced":true`,
             //判定类
             "设置回调函数": `set:"callback":intoFunction`,
             "设置判定收益": `set:"judge":intoFunction`,
@@ -1276,6 +1282,15 @@ export class NonameCN {
             '同时获得牌': "packed_gameCode_gainAsync"
         },
     }
+    static viewAsFrequencyList = [
+        "frequency-phase-cardName",
+        "frequency-round-cardName",
+        "frequency-game-cardName"
+    ]
+    static viewAsFrequencyMap = {
+        'frequency-phase-cardName': '{global:"phaseAfter"}',
+        'frequency-round-cardName': '{global:"roundStart"}'
+    }
     static packedCodeRePlaceMap = {
         'packed_playerCode_sufferForAnother'(str) {
             let match = /(.+)\.packed_playerCode_sufferForAnother(\(.*\))/g;
@@ -1440,26 +1455,31 @@ export class NonameCN {
     static get ContentList() {
         const back = game.xjb_back
         let list = Object.assign({}, this.basicList);
+        const id = back.getID()
         for (let k in this.groupedList) {
             if (['filter_only'].includes(k)) continue;
             list = Object.assign(list, this.groupedList[k]);
         }
         list["获取名为" + back.getSourceID() + "的父事件的名字"] = `getParent: "${back.getSourceID()}"://!?name`
-        list["获取名为" + back.getID() + "的父事件的名字"] = `getParent:"${back.getID()}"://!?name`
+        list["获取名为" + id + "的父事件的名字"] = `getParent:"${id}"://!?name`
         list["此牌"] = NonameCN.analyzeThisCard(game.xjb_back.skill.trigger)
         list["这些牌"] = NonameCN.analyzeTheseCard(game.xjb_back.skill.trigger)
-        list["设置提示标题跟随技能"] = `set:"prompt":get.prompt("${back.getID()}")`
-        list["设置提示内容跟随技能"] = `set:"prompt2":get.prompt2("${back.getID()}")`
+        list["设置提示标题跟随技能"] = `set:"prompt":get.prompt("${id}")`
+        list["设置提示内容跟随技能"] = `set:"prompt2":get.prompt2("${id}")`
+        for (const [phaseCn, phaseEn] of Object.entries(phaseList)) {
+            list[`${phaseCn}|${id}`] = `"${phaseEn}|${id}"`
+        }
         return list
     }
     static get FilterList() {
         const back = game.xjb_back
         let list = Object.assign({}, this.basicList);
+        const id = back.getID()
         for (let k in this.groupedList) {
             list = Object.assign(list, this.groupedList[k]);
         }
         list["获取名为" + back.getSourceID() + "的父事件的名字"] = `getParent:"${back.getSourceID()}"://!?name`
-        list["获取名为" + back.getID() + "的父事件的名字"] = `getParent:"${back.getID()}"://!?name`
+        list["获取名为" + id + "的父事件的名字"] = `getParent:"${id}"://!?name`
         list["此牌"] = NonameCN.analyzeThisCard(back.skill.trigger, true);
         list["这些牌"] = NonameCN.analyzeTheseCard(back.skill.trigger, true);
         return list;
@@ -1540,6 +1560,7 @@ export class NonameCN {
         //method类
         //event类
         textareaTool().setTarget(that)
+            .replace(/(?<=(选择对角色使用|视为使用))[ ]/g, '')
             .replace("此牌的目标 组", "此牌的目标组")
             .replace("此牌的已触发的 目标组", "此牌的已触发的目标组")
             .replace("受到 伤害 ", "受到伤害 ")
@@ -1592,7 +1613,6 @@ export class NonameCN {
                     Q: 12,
                     K: 13
                 }
-                console.log(p[0], map[p[0]])
                 return `${map[p[0]]}`
             })
             .replace(/(.+?)点数(不?)(为|是|大于|小于|等于)(10|11|12|13|[1-9])$/mg, '获取 点数 $1\n $2$3 \n $4')
@@ -1640,8 +1660,8 @@ export class NonameCN {
         textareaTool().setTarget(that)
             .replace(/额外执行一个/g, "执行一个额外的")
             .replace(/获得此牌$/mg, "获得牌 此牌")
-            .replace(/(.+?)执行(一个)?额外的?(准备|出牌|弃牌|结束)阶段/g, (match, ...p) => {
-                return `阶段列表 剪接 当前回合序号 0 "${this.getEn(p[2] + '阶段')}|${that.getID()}"`
+            .replace(/(.+?)执行(一个)?额外的?(准备|出牌|摸牌|弃牌|结束)阶段/g, (match, ...p) => {
+                return `阶段列表 剪接 当前回合序号 0 ${(p[2] + '阶段')}|${that.getID()}`
             })
             .replace(/可以(失去.+?点体力|受到.+?点伤害|摸.+?张牌)/g, function (match, ...p) {
                 return match.replace("可以", "")
@@ -1737,6 +1757,56 @@ export class NonameCN {
             const trigger = List[0]
             if (trigger.startsWith("judge")) return event ? `[event.result.card]` : `[trigger.result.card]`
             return event ? `event.cards` : `trigger.cards`
+        }
+    }
+    static analyzeViewAsData(back, i = 0) {
+        const { viewAs, viewAsCondition, id, viewAsFrequency } = back.skill;
+        const condition = viewAsCondition[i]
+        let asCard = viewAs[i]
+        if (!condition || !asCard) return {};
+        let asCardType;
+        let asNature;
+        let costName = condition.startsWith("cardName-") && condition.slice(9)
+        let costNature, costColor, costSuit;
+        let position = get.type(costName) == "type" ? "'hes'" : "'hs'"
+        let needCard = true;
+        let preEve;
+        let selectCard;
+        let conditionBool;
+        if (asCard.startsWith('cardType-')) {
+            asCardType = asCard.slice(9);
+        }
+        if (asCard.startsWith("nature-")) {
+            let list = asCard.slice(7).split(":")
+            asNature = list[0];
+            asCard = list[1];
+        }
+        if (costName && costName.startsWith("nature-")) {
+            let list = costName.slice(7).split(":")
+            costNature = list[0];
+            costName = list[1];
+        }
+        if (condition.startsWith("color-pos-")) {
+            let list = condition.slice(10).split(":");
+            position = list[0]
+            costColor = list[1];
+        }
+        if (condition.startsWith("suit-pos-")) {
+            let list = condition.slice(9).split(":");
+            position = list[0]
+            costSuit = list[1];
+        }
+        if (condition.startsWith("preEve-link-")) {
+            conditionBool = condition.slice(12);
+            preEve = "link"
+            selectCard = '-1'
+            needCard = false
+        }
+        return {
+            asCard, asCardType, asNature,
+            costName, costNature, costColor, costSuit, position, needCard,
+            preEve, selectCard, conditionBool, condition,
+            viewAsFrequency, id
         }
     }
     static GenerateOpening(back) {
@@ -1930,6 +2000,7 @@ export class NonameCN {
     }
     static GenerateTag(back) {
         const { marktext, markName, markContent,
+            prompt, prompt2,
             type, kind, filterTarget, filterCard,
             uniqueList } = back.skill
         let result = ''
@@ -1941,6 +2012,12 @@ export class NonameCN {
             result += `name:"${markName}",\n`
             result += `content:"${markContent}",\n`
             result += '},\n';
+        }
+        if (prompt) {
+            result += `prompt:"${prompt}",\n`
+        }
+        if (prompt2) {
+            result += `prompt2:"${prompt2}",\n`
         }
         //遍历技能类别
         type.forEach(i => {
@@ -1984,7 +2061,7 @@ export class NonameCN {
         result += `},\n`
         return result;
     }
-    static GenerateFilter(back) {
+    static GenerateFilter(back, asCardType) {
         const { id, type, uniqueList, trigger, filter,
             filter_card, filter_suit, filter_color,
             uniqueTrigger,
@@ -2028,6 +2105,9 @@ export class NonameCN {
             back.skill.tri_filterCard.forEach(resp => {
                 result += `if(!event.filterCard({name:"${resp}",isCard:true},player,event)) return false;\n`
             })
+        }
+        if (asCardType) {
+            result += `if(!get.info("${id}").buttonRequire(player,event)) return false;\n`
         }
         const filterCardDispose = (filterCardType, standard) => {
             const filterTypeList = back.skill["filter_" + filterCardType].map(x => {
@@ -2140,6 +2220,31 @@ export class NonameCN {
         if (!back.returnIgnore) result += 'return true;\n';
         result += '},\n';
         return result
+    }
+    static GenerateButtonRequire(back, i = 0) {
+        const {
+            asCardType,
+            costName, costNature, costColor, costSuit,
+            position, needCard,
+            preEve, conditionBool, id, viewAsFrequency
+        } = this.analyzeViewAsData(back, i)
+        let result = '';
+        result += `buttonRequire:function(player,event){\n`
+        result += `const hasCardCanUse = lib.inpile.some(cardName=>{\n`
+        result += `if(get.type(cardName${asCardType === "tirck2" ? ',"trick"' : ""}) !== "${asCardType.replaceAll(/\d/g, '')}") return false;\n`
+        result += `if(!event.filterCard({name:cardName},player,event)) return false;\n`;
+        if (viewAsFrequency.some(condition => {
+            return NonameCN.viewAsFrequencyList.includes(condition);
+        })) {
+            result += `if(player.storage["${id}_used"]\n`
+            result += ` && player.storage["${id}_used"].includes(cardName)) return false;\n`;
+        }
+        result += `return true;\n`;
+        result += `})\n`;
+        result += `if(!hasCardCanUse) return false;\n`;
+        result += this.GenerateViewAsFilter({ costName, costNature, costColor, costSuit, needCard, preEve, conditionBool, position })
+        result += `},\n`
+        return result;
     }
     static GenerateFilterCard(back) {
         let result = '';
@@ -2474,71 +2579,106 @@ export class NonameCN {
         if (!result.endsWith("\n")) result += "\n"
         return result;
     }
-    static GenerateViewAs(back, i = 0) {
-        const { viewAs, viewAsCondition } = back.skill;
-        const that = this;
+    static GenerateBackup({ id, needCard, costName, costNature, costColor, costSuit, preEve, selectCard, viewAsFrequency }) {
         let result = '';
-        const condition = viewAsCondition[i]
-        let asCard = viewAs[i]
-        let asNature;
-        let costName = condition.startsWith("cardName-") && condition.slice(9)
-        let costNature, costColor, costSuit;
-        let position = get.type(costName) == "type" ? "'hes'" : "'hs'"
-        let needCard = true, preEve
-        let selectCard;
-        let conditionBool;
-        if (asCard.startsWith("nature-")) {
-            let list = asCard.slice(7).split(":")
-            asNature = list[0];
-            asCard = list[1];
-        }
-        if (costName && costName.startsWith("nature-")) {
-            let list = costName.slice(7).split(":")
-            costNature = list[0];
-            costName = list[1];
-        }
-        if (condition.startsWith("color-pos-")) {
-            let list = condition.slice(10).split(":");
-            position = list[0]
-            costColor = list[1];
-        }
-        if (condition.startsWith("suit-pos-")) {
-            let list = condition.slice(9).split(":");
-            position = list[0]
-            costSuit = list[1];
-        }
-        if (condition.startsWith("preEve-link-")) {
-            conditionBool = condition.slice(12);
-            preEve = "link"
-            needCard = false
-        }
-        result += "viewAs:";
-        result += that.getStrFormVcard({
-            'costName': asCard,
-            'costNature': asNature
-        });
-        result += ",\n";
         result += "filterCard:";
-        if (needCard) result += that.getStrFormVcard({ costName, costNature, costColor, costSuit })
+        if (needCard) result += this.getStrFormVcard({ costName, costNature, costColor, costSuit })
         else result += `()=>false`
         result += `,\n`
-        result += "viewAsFilter:function(player){\n"
-        result += that.getStrFormConst({ costName, costNature, costColor, costSuit });
-        if (needCard) result += `if(!player.countCards("${position}",{${costName ? "name," : ""}${costNature ? "nature," : ""}${costColor ? "color," : ""}${costSuit ? "suit," : ""}})) return false;\n`
-        if (preEve) {
-            if (preEve === "link") result += `if(player.isLinked()!==${conditionBool}) return false;\n`
-        }
-        result += "},\n"
-        if (preEve) {
+        if (preEve || viewAsFrequency.length) {
+            const frequencyCardName = viewAsFrequency.find(condition => {
+                return NonameCN.viewAsFrequencyList.includes(condition);
+            })
             result += `precontent:function(){\n`
             if (preEve === "link") result += `player.link()\n`
+            if (frequencyCardName) {
+                if (frequencyCardName in NonameCN.viewAsFrequencyMap) {
+                    result += `player.storage["${id}_used"]\n`
+                    result += ` && player.when(${NonameCN.viewAsFrequencyMap[frequencyCardName]}).then(()=>{\n`;
+                    result += `delete player.storage["${id}_used"];\n`
+                    result += `})\n`
+                }
+                result += `player.markAuto("${id}_used",event.result.card.name);\n`
+            }
             result += `},\n`
+        };
+        if (selectCard) result += `selectCard:${selectCard},\n`;
+        return result;
+    }
+    static GenerateViewAsFilter({ costName, costNature, costColor, costSuit, needCard, preEve, conditionBool, position }) {
+        let result = ''
+        result += this.getStrFormConst({ costName, costNature, costColor, costSuit });
+        if (needCard) result += `if(!player.countCards("${position.replaceAll("'", "")}",{${costName ? "name," : ""}${costNature ? "nature," : ""}${costColor ? "color," : ""}${costSuit ? "suit," : ""}})) return false;\n`
+        if (preEve) {
+            if (preEve === "link") result += `if(player.isLinked() === ${conditionBool}) return false;\n`
         }
-        if (selectCard) result += `selectCard:${selectCard},\n`
-        if (position === 'hes') result += "position:'hes',\n"
-        else if (position === 'hs') result += "position:'hs',\n"
-        if (asCard === "tao") {
-            if (i === 0) back.skill.ai.push("save:true,");
+        result += `return true;\n`
+        return result;
+    }
+    static GenerateViewAs(back, i = 0) {
+        const { id } = back.skill;
+        const that = this;
+        let result = '';
+        const {
+            asCard, asCardType, asNature,
+            costName, costNature, costColor, costSuit,
+            position, needCard,
+            preEve, selectCard, conditionBool, viewAsFrequency
+        } = that.analyzeViewAsData(back, i)
+        if (!asCardType || !asCardType.length) {
+            result += "viewAs:";
+            result += that.getStrFormVcard({
+                'costName': asCard,
+                'costNature': asNature
+            });
+            result += ",\n";
+            result += "viewAsFilter:function(player){\n"
+            result += that.GenerateViewAsFilter({ costName, costNature, costColor, costSuit, needCard, preEve, conditionBool, position })
+            result += "},\n"
+            result += that.GenerateBackup({ id, needCard, costName, costNature, costColor, costSuit, preEve, selectCard, viewAsFrequency })
+            if (asCard === "tao") {
+                if (i === 0) back.skill.ai.push("save:true,");
+            }
+        } else {
+            result += `chooseButton:{\n`
+            result += `dialog:function(event,player){\n`
+            result += `const list = [];\n`
+            if (asCardType === 'basic') {
+                result += `if(event.filterCard({name:"sha"},player,event)){\n`
+                result += `list.push(["基本","","sha"])\n`
+                result += `for(const nature of lib.inpile_nature){\n`
+                result += `if(event.filterCard({name:"sha",nature},player,event)) list.push(["基本","","sha",nature])\n`
+                result += `}\n`
+                result += `}\n`
+            }
+            result += `for(const i of lib.inpile){\n`
+            if (asCardType === 'basic') result += `if(i === "sha") continue;\n`
+            result += `if(get.type(i${asCardType == 'trick2' ? ',"trick"' : ""}) !== "${asCardType.replace(/\d/, '')}") continue;\n`
+            result += `if(!event.filterCard({name:i},player,event)) continue;\n`
+            if (asCardType === 'delay') result += `if(!game.countPlayer(cur=>player.canUse({name:i},cur))) continue;\n`
+            if (viewAsFrequency.some(condition => {
+                return NonameCN.viewAsFrequencyList.includes(condition);
+            })) {
+                result += `if(player.storage["${id}_used"]\n`
+                result += ` && player.storage["${id}_used"].includes(i)) continue;\n`
+            }
+            result += `list.push([${asCardType === "basic" ? '"基本"' : '"锦囊"'},"",i]);\n`
+            result += `}\n`
+            result += `return ui.create.dialog(get.translation("${id}"),[list,'vcard']);\n`
+            result += `},\n`
+            result += `backup:function(links,player){\n`
+            result += `return {\n`
+            result += this.GenerateBackup({ id, needCard, costName, costNature, costColor, costSuit, preEve, selectCard, viewAsFrequency })
+            result += `viewAs:{\n`
+            result += `name:links[0][2],\n`
+            if (asCardType === 'basic') result += `nature:links[0][3],\n`
+            result += `},\n`
+            result += `}\n`
+            result += `},\n`
+            result += `prompt:function(links,player){\n`
+            result += `return "视为使用一张【"+get.translation(links[0][2])+"】"\n`
+            result += `},\n`
+            result += `},\n`
         }
         return result;
     }
@@ -2736,28 +2876,36 @@ export class NonameCN {
             "你随机弃置一张牌": "你随机弃置一张牌(牌类)",
             "你移动场上一张牌": "你移动场上一张牌(牌类)",
             '你选择使用一张牌': "你选择使用一张牌(牌类)",
+            "你展示牌堆顶的五张牌": "你展示牌堆顶的五张牌(牌类)",
+            "你展示牌堆底的五张牌": "你展示牌堆底的五张牌(牌类)",
+            "你展示牌堆顶的五张牌(放回)": "你展示牌堆顶的五张(放回)(牌类)",
+            "你展示牌堆底的五张牌(放回)": "你展示牌堆底的五张(放回)(牌类)",
+            "你选择对一名角色使用一张杀": "你选择对一名角色使用一张杀(牌类)",
             "你增加一点体力上限": "你增加一点体力上限(体力类)",
             "你回复一点体力值": "你回复一点体力值(体力类)",
             "你将体力值回复至三点": "你将体力值回复至三点(体力类)",
             "你失去一点体力": "你失去一点体力(体力类)",
             "你获得一点护甲": "你获得一点护甲(体力类-护甲)",
             "你可以摸两张牌或回复一点体力值": "你可以摸两张牌或回复一点体力值(牌类-体力类)",
-            "你展示牌堆顶的五张牌": "你展示牌堆顶的五张牌",
-            "你展示牌堆底的五张牌": "你展示牌堆底的五张牌",
-            "你展示牌堆顶的五张牌(放回)": "你展示牌堆顶的五张(放回)",
-            "你展示牌堆底的五张牌(放回)": "你展示牌堆底的五张(放回)",
-            "你本回合非锁定技失效": "你本回合非锁定技失效",
-            "你临时获得技能 'dangxian'": "你临时获得技能'dangxian'",
+            "你本回合非锁定技失效": "你本回合非锁定技失效(技能类)",
+            "你临时获得技能 'dangxian'": "你临时获得技能当先(技能类)",
+            '你获得技能"yiji"直到下个回合结束': '你获得技能遗计("yiji")直到下个回合结束(技能类)',
             "你翻面": "你翻面",
             "你横置或重置": "你横置或重置",
+            "你执行一个额外的准备阶段": "你执行一个额外的准备阶段(阶段类)",
+            "你执行一个额外的判定阶段": "你执行一个额外的判定阶段(阶段类)",
+            "你执行一个额外的摸牌阶段": "你执行一个额外的摸牌阶段(阶段类)",
+            "你执行一个额外的出牌阶段": "你执行一个额外的出牌阶段(阶段类)",
+            "你执行一个额外的弃牌阶段": "你执行一个额外的弃牌阶段(阶段类)",
+            "你执行一个额外的结束阶段": "你执行一个额外的结束阶段(阶段类)",
             "你跳过下一个准备阶段": "你跳过下一个准备阶段(阶段类)",
             "你跳过下一个判定阶段": "你跳过下一个判定阶段(阶段类)",
+            "你跳过下一个摸牌阶段": "你跳过下一个判定阶段(阶段类)",
             "你跳过下一个出牌阶段": "你跳过下一个出牌阶段(阶段类)",
             "你跳过下一个弃牌阶段": "你跳过下一个弃牌阶段(阶段类)",
             "你跳过下一个结束阶段": "你跳过下一个结束阶段(阶段类)",
             '你获得一枚"new_wuhun"标记': "你获得一枚梦魇标记(标记类)",
             '你移去一枚"new_wuhun"标记': "你移去一枚梦魇标记(标记类)",
-            '你获得技能"yiji"直到下个回合结束': '你获得技能"yiji"直到下个回合结束',
             "此杀的伤害+1": "此杀伤害+1(触发技:使用杀时|使用杀指定目标时)",
             "此杀的伤害改为1": "此杀伤害改为1(触发技:使用杀时|使用杀指定目标时)",
             "此杀需要的闪的数量+1": "此杀需要的闪的数量+1(触发技:使用杀时|使用杀指定目标时)",

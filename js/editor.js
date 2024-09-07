@@ -530,6 +530,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 back.prepare();
                 /*初始化:最终输出的文字*/
                 let strParts = [];
+                const { asCardType } = NonameCN.analyzeViewAsData(back);
                 //根据所选的编辑器类型确定开头
                 strParts.push(NonameCN.GenerateOpening(back));
                 strParts.push(NonameCN.GenerateInit(back));
@@ -538,7 +539,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 strParts.push(NonameCN.GenerateTag(back));
                 strParts.push(NonameCN.GenerateGetIndex(back));
                 //filter部分
-                const filter = NonameCN.GenerateFilter(back)
+                const filter = NonameCN.GenerateFilter(back, asCardType)
                 strParts.push(filter);
                 strParts.push(NonameCN.GenerateEnable(back))
                 //content部分
@@ -547,6 +548,9 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 }
                 else if (back.skill.viewAs.length && back.skill.viewAsCondition.length) {
                     strParts.push(NonameCN.GenerateViewAs(back, 0));
+                    if (asCardType) {
+                        strParts.push(NonameCN.GenerateButtonRequire(back))
+                    }
                 }
                 if (back.aiArrange() && back.skill.ai.length) {
                     strParts.push(NonameCN.GenerateAi(back));
@@ -684,7 +688,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         const toReplaced = i.slice(index);
                         for (const word of toReplaced) {
                             const watcher = game.xjb_judgeType(cache.join(''));
-                            //console.log(watcher, replacer, cache)
                             if (['player', 'game'].includes(watcher)) {
                                 if (watcher === 'player' && player[word]
                                     || watcher === 'game' && game[word]) {
@@ -1191,10 +1194,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     const target = e.target;
                     let list = Array.from(typeFree.children);
                     const index = TAG_TYPE_LIST.indexOf(target.innerText)
+                    if (index === -1) return;
                     list.splice(index * 6, 6).forEach(ele => ui.xjb_showElement(ele))
                     list.forEach(ele => ui.xjb_hideElement(ele))
                     return;
-
                 })
             let typeFree = element()
                 .clone(buttonContainer)
@@ -1208,30 +1211,37 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     "frequent": "自动发动",
                     'usable': '每回合一次',
                     'multitarget': "多角色",
+                    //
                     "limited": "限定技",
                     "juexingji": "觉醒技",
                     "dutySkill": "使命技",
                     "skillAnimation": "技能动画",
+                    //
                     "locked": "锁定技",
                     "persevereSkill": "持恒技",
                     "charlotte": "Charlotte技",
                     "locked-false": "非锁定技",
+                    //
                     "zhuanhuanji": "转换技",
                     "hiddenSkill": "隐匿技",
                     "clanSkill": "宗族技",
                     "groupSkill": "势力技",
+                    //
                     "multiline": "多指示线",
                     "lose-false": "不失去牌",
                     "discard-false": "不弃置牌",
                     "delay-false": "无延迟",
+                    //
                     "zhenfa": "阵法技",
                     "mainSkill": "主将技",
                     "viceSkill": "副将技",
                     "preHidden": "预亮",
+                    //
                     "mark": "标记持显",
                     'round': "每轮一次",
                     "direct": "直接发动",
                     "sunbenSkill": "昂扬技",
+                    //
                     "chargeSkill": "蓄力技",
                     "chargingSkill": "蓄能技",
                 }
@@ -1388,7 +1398,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                      * @type {HTMLElement}
                      */
                     let target = Array.from(groupFree.querySelectorAll(':not(.xjb_hidden)')).at(-1);
-                    console.log(target)
                     if (target && target.innerText.includes('>>>')) {
                         target.click();
                         target.dispatchEvent(touchE);
@@ -1777,7 +1786,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     if (/添单[ ]*你/.test(line)) return;
                     if (/移除 你/.test(line)) return;
                     if (new RegExp(`^无视(${JOINED_PLAYAERCN})防具的牌`).test(line)) return;
-                    if(/^选择结果目标[数组]/.test(line)) return;
+                    if (/^选择结果目标[数组]/.test(line)) return;
                     let restWords = clearWordsGroup(line, playerCN);
                     return `${startsWithAwait ? "等待 " : ""}${group.shift()} ${restWords} ${group.join(" ")}`
                 })
@@ -2368,12 +2377,16 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .setStyle({
                     "height": "1em"
                 })
+            const cardTypeFree = element()
+                .clone(buttonContainer)
+                .flexRow()
+                .setStyle("align-items", "center")
+                .exit();
             const cardNameFree = element()
                 .clone(buttonContainer)
                 .flexRow()
                 .setStyle("align-items", "center")
                 .exit();
-            cardNameFree.colorList = ["red", "orange", "yellow", "green", "pink", "#add8e6"]
             let costSeter = newElement('div', '视为的花费')
                 .style1()
                 .setStyle({
@@ -2389,21 +2402,27 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             const costFree3 = element()
                 .clone(costFree1)
                 .exit();
+            let frequencySeter = newElement('div', '视为限制')
+                .style1()
+                .setStyle({
+                    "height": "1em"
+                })
+            const frequencyFree = element()
+                .clone(buttonContainer)
+                .flexRow()
+                .exit();
             const choosePage = element('div')
                 .father(subBack5)
-                .child(chooseSeter)
-                .child(cardNameFree)
-                .child(costSeter)
-                .child(costFree1)
-                .child(costFree2)
-                .child(costFree3)
+                .children([chooseSeter, cardNameFree, cardTypeFree])
+                .children([costSeter, costFree1, costFree2, costFree3])
+                .children([frequencySeter, frequencyFree])
                 .flexColumn()
                 .setStyle("just-content", "space-evenly")
                 .height("100%")
                 .width("100%")
                 .exit()
             {
-                const colorList = cardNameFree.colorList;
+                const colorList = ["red", "orange", "yellow", "green", "pink", "#add8e6"];
                 /**
                  * @param {HTMLElement} domEle 
                  * @param {object} mapList 
@@ -2447,6 +2466,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                             return;
                         }
                         if (backAttr.includes(e.target[domEleAttr])) backAttr.remove(e.target[domEleAttr]);
+                        else if (domEleAttr === "frequency") {
+                            backAttr.remove(...NonameCN.viewAsFrequencyList)
+                            backAttr.push(e.target[domEleAttr]);
+                        }
                         else if (backAttr.length < colorList.length) backAttr.push(e.target[domEleAttr]);
                         let arr = Array.from(domEle.children)
                         for (let collection of extra) {
@@ -2461,6 +2484,19 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         });
                         back.organize();
                     });
+                    return {
+                        append(key, value, attr) {
+                            let it;
+                            it = ui.create.xjb_button(domEle, value);
+                            element().setTarget(it)
+                                .block()
+                                .setStyle("fontSize", "1em")
+                                .hook(ele => {
+                                    ele[attr] = key
+                                    if ([...domEle.children].length >= 6) ui.xjb_hideElement(ele)
+                                })
+                        }
+                    }
                 }
                 if (cardNameFree) {
                     const mapList = {
@@ -2472,7 +2508,16 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     ...lib.cardPack.guozhan].forEach(k => {
                         if (lib.translate[k] && get.type(k) != "equip") mapList[k] = lib.translate[k]
                     })
-                    setDom(cardNameFree, mapList, back.skill.viewAs, "cardName", [])
+                    setDom(cardNameFree, mapList, back.skill.viewAs, "viewAs", cardTypeFree.children)
+                };
+                if (cardTypeFree) {
+                    const mapList = {
+                        'cardType-basic': '基本',
+                        'cardType-trick': '普通锦囊',
+                        'cardType-delay': '延时锦囊',
+                        'cardType-trick2': '锦囊',
+                    };
+                    setDom(cardTypeFree, mapList, back.skill.viewAs, "viewAs", cardNameFree.children)
                 };
                 if (costFree1) {
                     const mapList = {
@@ -2510,6 +2555,14 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     };
                     setDom(costFree3, mapList, back.skill.viewAsCondition, "condition", costFree1.children, costFree2.children)
                 };
+                if (frequencyFree) {
+                    const mapList = {
+                        "frequency-phase-cardName": "回合牌名限一",
+                        "frequency-round-cardName": "每轮牌名限一",
+                        "frequency-game-cardName": "本局牌名限一",
+                    }
+                    setDom(frequencyFree, mapList, back.skill.viewAsFrequency, "frequency", [])
+                }
             }
             //第四页
             let subBack4 = newPage()
@@ -2526,7 +2579,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         "添加技能组",
                         "查看及删除技能组",
                         "增添标记",
-                        "长中文提示语句"
+                        "长中文提示语句",
+                        "技能提示"
                     ],
                     true,
                     function () {
@@ -2681,7 +2735,16 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                                 })
                                     .appendPrompt('语句编号', '%#&', '%#&',)
                                     .appendPrompt('语句内容', void 0, '语句编号请以%#&打头,这里输入内容', 4)
-                            }
+                            }; break;
+                            case 7: {
+                                game.xjb_create.multiprompt(function () {
+                                    back.skill.prompt = this.resultList[0];
+                                    back.skill.prompt2 = this.resultList[1];
+                                    back.organize();
+                                })
+                                    .appendPrompt('技能提示标题', back.skill.prompt ? back.skill.prompt : void 0, '这里写技能提示的标题', 1)
+                                    .appendPrompt('技能提示内容', back.skill.prompt2 ? back.skill.prompt2 : void 0, '这里写技能提示的内容', 3)
+                            }; break;
                         }
                     }
                 )
