@@ -208,6 +208,18 @@ div#myChouJiang_XJB_TXT {
   top: 10px;
 }
 
+div.xjb_ImgButton {
+  width: 28.3%;
+  height: 238px;
+  margin: 1.7%;
+  border: 3px solid #f0acf7;
+  background-size: cover;
+  background-repeat: no-repeat;
+  color: white;
+  text-align: center;
+  border-radius: 0.5em;
+}
+
 
 /*存档*/
 .xjb_ul_storage li p span {

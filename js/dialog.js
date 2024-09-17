@@ -512,48 +512,53 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
     //图片选择型对话框
     game.xjb_create.button = function (str1, str2, arr2, func, func2) {
         if (game.xjb_create.baned) return;
-        var dialog = game.xjb_create.confirm("<p id=xjb_dialog_p>" + str1 + "</p><hr>", func, func2);
+        const dialog = game.xjb_create.confirm(`
+            <div>
+            单击以选中图片，双击以删除图片。
+            </div>
+            <p id=xjb_dialog_p>
+            ${str1}
+            </p>
+            <hr>`, func, func2);
         ui.xjb_toBeHidden(dialog.buttons[0])
         ui.xjb_giveStyle(dialog, {
             height: "308.4px",
             top: "-170px"
         })
         for (var i = 0; i < arr2.length; i++) {
-            var img = dialog.addElement("div", void 0, {
-                width: "28.3%",
-                height: "238px",
-                margin: "1.7%",
-                border: "#f0acf7 3px solid ",
+            const img = dialog.addElement("div", void 0, {
                 "background-image": `url(${str2 + arr2[i]})`,
-                "background-size": "cover",
-                "background-repeat": "no-repeat",
-                color: "white",
-                "text-align": "center",
-                "border-radius": "0.5em",
             });
             img.name = arr2[i];
+            img.src = `${str2 + arr2[i]}`
             element().setTarget(img)
-                .setAttribute('src', str2 + arr2[i])
+                .addClass('xjb_ImgButton')
                 .innerHTML(img.name)
                 .listen(lib.config.touchscreen ? 'touchend' : 'click', function (e) {
                     document.getElementById("xjb_dialog_p").innerHTML = this.name
                     ui.xjb_toBeVisible(dialog.buttons[0])
-                    for (var a = 0; a < dialog.imgs.length; a++) {
-                        dialog.imgs[a].className = ""
-                    }
+                    const colorfulButton = dialog.querySelector(".xjb_color_circle")
+                    colorfulButton && colorfulButton.classList.remove("xjb_color_circle")
                     element().setTarget(this)
-                        .className("xjb_color_circle")
+                        .addClass("xjb_color_circle")
                         .setTarget(dialog.buttons[0])
                         .hook(ele => {
                             ele.result = this.name;
                         })
-                        .setAttribute('src', this.src);
                 })
             img.ondblclick = function () {
                 this.remove()
                 ui.xjb_toBeHidden(dialog.buttons[0])
                 if (arr2 && arr2.includes(this.name)) {
                     arr2.remove(this.name);
+                    if (this.src) {
+                        if (lib.node.fs.promises) {
+                            const path = window.decodeURIComponent(new URL(this.src).pathname).substring(1)
+                            lib.node.fs.promises.unlink(path)
+                        } else {
+                            game.removeFile(this.src);
+                        }
+                    }
                 }
             }
         }
