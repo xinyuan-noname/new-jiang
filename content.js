@@ -338,7 +338,7 @@ export function XJB_CONTENT(config, pack) {
                 text.innerHTML = game.xjb_choujiangStr(lib.config.xjb_list_hunbilist.choujiang[xx])
                 text.onclick = function () {
                     if (btn.disabled) return;
-                    this.style.color = ["red", "blue", "yellow", "pink", "white","orange"].randomGet()
+                    this.style.color = ["red", "blue", "yellow", "pink", "white", "orange"].randomGet()
                     var bool = this.innerHTML.search(/技能/) >= 0
                     game.xjb_systemEnergyChange(-1)
                     if (!bool) return
@@ -744,8 +744,18 @@ export function XJB_CONTENT(config, pack) {
                                 if (lib.character.xjb_newCharacter) {
                                     lib.character.xjb_newCharacter[4] = [lib.config.xjb_newcharacter.selectedSink];
                                 }
-                            }, function () {
+                            }, () => {
                                 game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
+                            }, function(){
+                                if (this.src) {
+                                    const src = this.src.replace(lib.xjb_src, lib.xjb_fileURL)
+                                    if (lib.node && lib.node.fs.promises) {
+                                        const path = window.decodeURIComponent(new URL(src).pathname).substring(1)
+                                        lib.node.fs.promises.unlink(path)
+                                    } else {
+                                        game.removeFile(src)
+                                    }
+                                }
                             })
                         },
                         sink4: function () {

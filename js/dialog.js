@@ -510,7 +510,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         return dialog
     }
     //图片选择型对话框
-    game.xjb_create.button = function (str1, str2, arr2, func, func2) {
+    game.xjb_create.button = function (str1, str2, arr2, func, func2, removeCallBack) {
         if (game.xjb_create.baned) return;
         const dialog = game.xjb_create.confirm(`
             <div>
@@ -551,13 +551,8 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                 ui.xjb_toBeHidden(dialog.buttons[0])
                 if (arr2 && arr2.includes(this.name)) {
                     arr2.remove(this.name);
-                    if (this.src) {
-                        if (lib.node && lib.node.fs.promises) {
-                            const path = window.decodeURIComponent(new URL(this.src).pathname).substring(1)
-                            lib.node.fs.promises.unlink(path)
-                        } else {
-                            game.removeFile(this.src);
-                        }
+                    if(removeCallBack){
+                        removeCallBack.apply(this,[])
                     }
                 }
             }
