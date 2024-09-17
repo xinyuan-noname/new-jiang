@@ -552,7 +552,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                 if (arr2 && arr2.includes(this.name)) {
                     arr2.remove(this.name);
                     if (this.src) {
-                        if (lib.node.fs.promises) {
+                        if (lib.node && lib.node.fs.promises) {
                             const path = window.decodeURIComponent(new URL(this.src).pathname).substring(1)
                             lib.node.fs.promises.unlink(path)
                         } else {
