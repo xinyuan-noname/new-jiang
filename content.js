@@ -116,7 +116,8 @@ export function XJB_CONTENT(config, pack) {
             getAPI: '获取工具',
             update: '刷新工具',
             putout: '输出目录',
-            download: '下载更新'
+            download: '下载更新',
+            downloadSimply: '简易更新'
         },
         visualMenu: function (node) {
             node.className = 'button controlbutton';
@@ -144,12 +145,20 @@ export function XJB_CONTENT(config, pack) {
                     }
                 }; break;
                 case 'download': {
-                    if (!("xjb_xyAPI" in window)) return alert("xjb_xyAPI未引入,请点击获取工具引入!")
-                    xjb_xyAPI.updateOnline()
-                    alert('请耐心等待,直到再次出现alert提示框!此前请不要关闭无名杀!')
+                    if (!("xjb_xyAPI" in window)) return alert("xjb_xyAPI未引入,请点击获取工具引入!");
+                    xjb_xyAPI.updateOnline();
+                    alert('请耐心等待,直到再次出现alert提示框!此前请不要关闭无名杀!');
                     xjb_xyAPI.updateDownloadHook = function (list) {
-                        alert('下载完成,失败的文件' + list)
+                        alert('下载完成,失败的文件' + list);
                     }
+                }; break;
+                case 'downloadSimply': {
+                    if (!("xjb_xyAPI" in window)) return alert("xjb_xyAPI未引入,请点击获取工具引入!");
+                    xjb_xyAPI.updateOnlineSimply();
+                    alert('请耐心等待,直到再次出现alert提示框!此前请不要关闭无名杀!');
+                    xjb_xyAPI.updateDownloadHook = function (list) {
+                        alert('下载完成,失败的文件' + list);
+                    };
                 }; break;
             }
         }
