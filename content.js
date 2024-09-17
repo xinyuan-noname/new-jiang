@@ -134,7 +134,7 @@ export function XJB_CONTENT(config, pack) {
                     alert('工具已刷新')
                 }; break;
                 case 'putout': {
-                    if (!("xjb_xyAPI" in window)) return game.xjb_create.alert("xjb_xyAPI未引入,请点击获取工具引入!")
+                    if (!("xjb_xyAPI" in window)) return alert("xjb_xyAPI未引入,请点击获取工具引入!")
                     xjb_xyAPI.directoryDownload();
                     xjb_xyAPI.directoryDownloadFHook = function () {
                         alert('目录导出失败')
@@ -144,9 +144,9 @@ export function XJB_CONTENT(config, pack) {
                     }
                 }; break;
                 case 'download': {
-                    if (!("xjb_xyAPI" in window)) return game.xjb_create.alert("xjb_xyAPI未引入,请点击获取工具引入!")
+                    if (!("xjb_xyAPI" in window)) return alert("xjb_xyAPI未引入,请点击获取工具引入!")
                     xjb_xyAPI.updateOnline()
-                    game.xjb_create.alert && game.xjb_create.alert('请耐心等待,直到出现alert提示框!此前请不要关闭无名杀!')
+                    alert('请耐心等待,直到再次出现alert提示框!此前请不要关闭无名杀!')
                     xjb_xyAPI.updateDownloadHook = function (list) {
                         alert('下载完成,失败的文件' + list)
                     }
