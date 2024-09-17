@@ -291,7 +291,7 @@ function importFile() {
     //引入api
     game.xjb_loadAPI = function (suc = () => void 0, fail = () => void 0) {
         if (window.xjb_xyAPI) {
-            game.xjb_create.alert('工具已引入,无需重新引入!');
+            alert('工具已引入,无需重新引入!');
             return;
         }
         game.download(

@@ -753,7 +753,7 @@ export function XJB_CONTENT(config, pack) {
                                         const path = window.decodeURIComponent(new URL(src).pathname).substring(1)
                                         lib.node.fs.promises.unlink(path)
                                     } else {
-                                        game.removeFile(src)
+                                        game.removeFile('extension/新将包/' + src.replace(lib.xjb_fileURL, ''))
                                     }
                                 }
                             })
