@@ -375,6 +375,95 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                 translate: "并蒂",
                 description: "锁定技，当你使用梅花牌时，你可令此牌额外结算一次。"
             })
+            const xjb_wei_fayi = SkillCreater(
+                "xjb_wei_fayi", {
+                enable: "phaseUse",
+                multitarget: true,
+                multiline: true,
+                limited: true,
+                zhuSkill: true,
+                groupSkill: "wei",
+                skillAnimation: true,
+                animationColor: "water",
+                filter: function (event, player, triggername) {
+                    if (player.group != "wei") return false;
+                    if (!player.hasZhuSkill("xjb_wei_fayi")) return false;
+                    if (!(game.countPlayer(cur => cur.group != "wei") > 1)) return false;
+                    return true;
+                },
+                filterTarget: function (card, player, target) {
+                    if (target == player) return false;
+                    if (!(target.group == "wei")) return false;
+                    return true;
+                },
+                selectTarget: -1,
+                content: async function (event, trigger, player) {
+                    player.awakenSkill("xjb_wei_fayi");
+                    const control = await player.chooseControl("red", "black")
+                        .set("ai", () => ["red", "black"].randomGet())
+                        .forResultControl();
+                    player.chat("我选" + get.translation(control));
+                    game.log(player, "选择了", get.translation(control))
+                    const result = await player.chooseToDebate(event.targets)
+                        .set("targetColor", control)
+                        .set("ai", card => {
+                            const val = get.value(card)
+                            const playerx = _status.event.source;
+                            const target = _status.event.player;
+                            const filter = get.attitude(target, playerx) < 0
+                                ? card => get.color(card, target) !== _status.event.getParent(2).targetColor
+                                : card => get.color(card, target) === _status.event.getParent(2).targetColor
+                            if (filter(card)) return val + 15;
+                            return val * Math.random()
+                        })
+                        .set("aiCard", target => {
+                            const playerx = _status.event.source;
+                            const filter = get.attitude(target, playerx) < 0
+                                ? card => get.color(card, target) !== _status.event.getParent(2).targetColor
+                                : card => get.color(card, target) === _status.event.getParent(2).targetColor
+                            let hs = target.getCards("h", filter)
+                            if (!hs.length) hs = target.getCards("h")
+                            return { bool: true, cards: [hs.randomGet()] }
+                        })
+                        .forResult()
+                    const { bool, opinion } = result;
+                    if (bool && opinion) {
+                        const color = ["red", "black"].find(item => item != control)
+                        if (opinion === control) {
+                            const maxHandCardsPlayer = game.filterPlayer().find(cur => cur.isMaxHandcard())
+                            await player.drawTo(maxHandCardsPlayer.countCards("h") + 1)
+                            if (result[color]) {
+                                for (const [cur, card] of result[color]) {
+                                    await cur.loseHp()
+                                }
+                            }
+                        } else {
+                            result[color].forEach(map => map[0].addSkill("xjb_wei_fayi_yidang"))
+                        }
+                    }
+                },
+                subSkill: {
+                    "yidang": {
+                        trigger: {
+                            player: ["dieAfter"],
+                        },
+                        forceDie: true,
+                        mark:true,
+                        intro:{
+                            name:"异",
+                            content:"丞相本兴义兵，匡扶汉室，当秉忠贞之志，守谦退之节。君子爱人以德，不宜如此。"
+                        },
+                        content: function () {
+                            const target = game.filterPlayer().find(cur => cur.hasSkill("xjb_wei_fayi"));
+                            target.restoreSkill("xjb_wei_fayi")
+                        },
+                        sub: true,
+                        sourceSkill: "xjb_wei_fayi",
+                    },
+                },
+                translate: "伐异",
+                description: "主公技，限定技，魏势力技，出牌阶段，你可选择一种颜色,然后令所有魏势力角色议事。若结果与你选择的颜色相同，你将手牌摸至全场唯一最多（至少摸一张），令颜色不同的角色各失去一点体力；否则，你于一名颜色不同的角色死亡后重置此技能。"
+            })
             const xjb_wei_fengtian = SkillCreater(
                 "xjb_wei_fengtian", {
                 enable: "phaseUse",

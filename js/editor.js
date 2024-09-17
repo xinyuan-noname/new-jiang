@@ -365,52 +365,9 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         }
                     })
                 }
-                const matchCardName = Object.keys(NonameCN.groupedList.cardName).join('|')
-                addMod(/^\s*(你|player)\s*计算(与|和)其他角色的?距离时?(减|\-|减少|加|\+|增加)([0-9]+)\s*$/, void 0, void 0, (match, ...p) => {
-                    let symbol = getSymbol(p[2]);
-                    return [`${symbol}:${p[3]}`, `globalFrom`];
-                })
-                addMod(/^\s*其他角色计算(与|和)(你|player)的?\s*距离时?(减|\-|减少|加|\+|增加)([0-9]+)\s*$/, void 0, void 0, (match, ...p) => {
-                    let symbol = getSymbol(p[2]);
-                    return [`${symbol}:${p[3]}`, `globalTo`];
-                })
-
-                //
-                addMod(new RegExp(`^\s*(你|player)\s*不能成为\s*(${matchCardName})的?\s*(目标|target)\s*$`), void 0, void 0, (match, ...p) => {
-                    return [`name:${NonameCN.getEn(p[1])}`, `targetEnabled_false`]
-                })
-                addMod(new RegExp(`^\s*(你|player)\s*不能成为\s*(${matchCardName})(和|与|或|、)(${matchCardName})的?\s*(目标|target)\s*$`), void 0, void 0, (match, ...p) => {
-                    return [`name:${NonameCN.getEn(p[1])}-${NonameCN.getEn(p[3])}`, `targetEnabled_false`]
-                })
-                addMod(/^\s*(你|player)\s*不能成为\s*(基本牌|装备牌|普通锦囊牌|延时锦囊牌)的?\s*(目标|target)\s*$/, void 0, void 0, (match, ...p) => {
-                    return [`type:${NonameCN.getEn(p[1])}`, `targetEnabled_false`]
-                })
-                addMod(/^\s*(你|player)\s*不能成为\s*锦囊牌的?\s*(目标|target)\s*$/, "type:trick-delay", "targetEnabled_false");
-
-                //
-                addMod(/^\s*(你|player)\s*使用的?\s*卡?牌(无|没有)(次数|数量|距离)限制\s*$/, void 0, void 0, (match, ...p) => {
-                    return [`all`, `${p[2] == '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`]
-                });
-                addMod(/^\s*(你|player)\s*使用的?\s*锦囊牌(无|没有)(次数|数量|距离)限制\s*$/, void 0, void 0, (match, ...p) => {
-                    return ["type:trick-delay", `${p[3] == '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`]
-                });
-                addMod(new RegExp(`^\s*(你|player)\s*使用的?\s*(${matchCardName})(无|没有)(次数|数量|距离)限制\s*$`), void 0, void 0, (match, ...p) => {
-                    return [`name:${NonameCN.getEn(p[1])}`, `${p[3] == '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`]
-                });
-                addMod(/^\s*(你|player)\s*使用的?\s*(基本牌|普通锦囊牌|延时锦囊牌)(无|没有)(次数|数量|距离)限制\s*$/, void 0, void 0, (match, ...p) => {
-                    return [`type:${NonameCN.getEn(p[1])}`, `${p[3] == '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`]
-                });
-
-                //
-                addMod(new RegExp(`^\s*(你|player)\s*不能使用(${matchCardName})\s*$`), void 0, void 0, (match, ...p) => {
-                    return [`name:${NonameCN.getEn(p[1])}`, `cardEnabled_false`]
-                });
-                addMod(new RegExp(`^\s*(你|player)\s*不能使用(${matchCardName})(和|与|或|、)(${matchCardName})\s*$`), void 0, void 0, (match, ...p) => {
-                    return [`name:${NonameCN.getEn(p[1])}-${NonameCN.getEn(p[3])}`, `cardEnabled_false`]
-                });
-                addMod(new RegExp(`^\s*(你|player)\s*不能使用牌\s*$`), void 0, void 0, (match, ...p) => {
-                    return [`all`, `cardEnabled_false`]
-                });
+                for (const [regexp, args] of NonameCN.skillModMap.entries()) {
+                    addMod(regexp, ...args)
+                }
             }
             back.subSkillTest = function () {
                 for (const skillName in back.skill.subSkill) {
@@ -1724,7 +1681,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 });
                 newLine()
                 //数字参数处理
-                for (let i = 1; i <= 10; i++) {
+                for (let i = 10; i >= 1; i--) {
                     update(i + '张');
                     update(get.cnNumber(i) + '张');
                     update(i + '点');
@@ -1759,16 +1716,14 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     that.changeWord("-" + get.cnNumber(i), "-" + i);
                 }
                 that.value = suitSymbolToCN(that.value);
-                update('其他', function (disposing, disposed, previous) {
-                    if (previous.match(/其他角色计算(与|和)/)) return previous;
-                    if (previous.match(/计算(与|和)其他角色的?距离/)) return previous;
+                update('其他', (disposing, disposed, previous) => {
+                    if (NonameCN.skillModMap.keys().some(regexp => regexp.test(previous))) return previous;
                     if (/其他(.+?)势力角色/.test(previous)) return previous;
                     if (/其他[男女双]性角色/.test(previous)) return previous;
                     return disposed;
                 })
-
-                parameter("至多", "至少")
-                parameter('梅花', '方片', '无花色', '黑桃', '红桃', '红色', '黑色', '无色', function (disposing, disposed, previous) {
+                parameter('梅花', '方片', '无花色', '黑桃', '红桃', '红色', '黑色', '无色', (disposing, disposed, previous) => {
+                    if (NonameCN.skillModMap.keys().some(regexp => regexp.test(previous))) return previous;
                     if (previous.includes(`牌堆中${disposing}牌`)) return previous;
                     if (previous.includes(`设置${disposing}作为`)) return previous;
                     return disposed;
@@ -1777,12 +1732,13 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 parameter("火属性", "冰属性", "雷属性");
                 parameter("任意张", "任意名", "从牌堆底");
                 parameter('魏势力', '蜀势力', '吴势力', '群势力', '晋势力', '神势力');
+                parameter("至多", "至少")
                 that.value = eachLine(contentFree.value, line => {
                     const startsWithAwait = /^\s*等待 /.test(line)
                     if (startsWithAwait) line = line.slice(3)
                     let group = findWordsGroup(line, playerCN);
-                    if (/(变量|常量|块变|令为)/.test(line) || !group.length) return;
-                    if (/其他角色计算(和|与)你的?距离/.test(line)) return;
+                    if (/(变量|常量|块变|令为)/.test(line) || !group.length || line.startsWith("返回")) return;
+                    if (NonameCN.skillModMap.keys().some(regexp => regexp.test(line))) return;
                     if (/添单[ ]*你/.test(line)) return;
                     if (/移除 你/.test(line)) return;
                     if (new RegExp(`^无视(${JOINED_PLAYAERCN})防具的牌`).test(line)) return;

@@ -463,6 +463,8 @@ export class NonameCN {
         '名字': "name",
         '牌名': 'name',
         '卡牌': 'card',
+        '牌组张数': "cards.length",
+        '牌组长度': "cards.length",
         '牌组': "cards",
         '卡牌组': "cards",
         '花色': 'suit',
@@ -487,6 +489,7 @@ export class NonameCN {
         '造成伤害的属性': 'trigger.nature',
         '伤害属性': 'trigger.nature',
         //
+        '触发事件的卡牌': "trigger.card",
         '触发事件的点数': "trigger.num",
         '触发事件点数': "trigger.num",
         '此牌对应的所有实体牌': 'trigger.cards',
@@ -677,6 +680,7 @@ export class NonameCN {
         cardName: getMapOfCard(false),
         type: getMapOfType(false),
         suit: getMapOfSuit(false),
+        color: getMapOfColor(false),
         nature: {
             '火属性': 'fire',
             '雷属性': 'thunder',
@@ -816,11 +820,14 @@ export class NonameCN {
             "选择结果颜色": "result.color",
             "选择结果花色": "result.suit",
             "选择结果选项编号": "result.choice",
+            //
             '判定结果卡牌': "result.card",
             "判定结果牌名": "result.name",
             "判定结果点数": "result.number",
             "判定结果颜色": "result.color",
             "判定结果花色": "result.suit",
+            //
+            "议事结果":"result.opinion",
         },
         player: {
             ...playerList,
@@ -861,6 +868,7 @@ export class NonameCN {
             '展示牌': "showCards",
             '随机获得牌': 'randomGain',
             '随机弃置手牌': 'randomDiscard',
+            "获得多名角色手牌": `gainMultiple`,
             '移动场上牌': 'moveCard',
             "观看手牌": "viewHandcards",
             '将手牌补至': 'drawTo',
@@ -925,8 +933,12 @@ export class NonameCN {
             "临时获得技能": "addTempSkill",
         },
         player_choose: {
+            //
+            "发起议事": "chooseToDebate",
+            "发起拼点": "chooseToCompare",
+            //
             '选择选项': "chooseControl",
-            '选择带取消的选项': `chooseControl:"cancel2"`,
+            '选择带取消的选项': `chooseControl:"cancel2":intoFunction`,
             //
             '选择确认': "chooseBool",
             //
@@ -1001,14 +1013,17 @@ export class NonameCN {
             '随机弃置装备区的牌': 'randomDiscard:"e":intoFunction',
             '随机弃置判定区的牌': 'randomDiscard:"j":intoFunction',
             '随机弃置手牌区的牌': 'randomDiscard:"h":intoFunction',
-            '弃置区域内的所有牌': 'randomDiscard:"hej":999',
+            '弃置区域内的所有牌': 'randomDiscard:"hej":Infinity',
             '获得角色区域内牌': 'gainPlayerCard:"hej":intoFunction',
             '弃置角色区域内牌': 'discardPlayerCard:"hej":intoFunction',
+            '获得区域内牌': 'gainPlayerCard:"hej":intoFunction',
+            '弃置区域内牌': 'discardPlayerCard:"hej":intoFunction',
             '获得角色牌': 'gainPlayerCard:"he":intoFunction',
             '弃置角色牌': 'discardPlayerCard:"he":intoFunction',
             '获得角色手牌': 'gainPlayerCard:"h":intoFunction',
             '弃置角色手牌': 'discardPlayerCard:"h":intoFunction',
             '隐式给牌': "give:false:intoFunctionWait",
+            "获得多名角色牌": `gainMultiple:"he":intoFunctionWait`,
             //
             '有牌': 'hasCard:void 0:"he"',
             '场上有牌': `hasCard:void 0:"ej"`,
@@ -1085,7 +1100,8 @@ export class NonameCN {
             '数改为0': "changeToZero",
             '数调为0': "changeToZero",
             "设置": "set",
-            "获取事件结果": "forResult"
+            "获取事件结果": "forResult",
+            "不涉及横置": "notLink"
         },
         event_set: {
             //
@@ -1488,12 +1504,12 @@ export class NonameCN {
         let list = Object.assign({}, ...Object.values(this.freeQuotation));
         return list[cn];
     }
-    static getStrFormFunc(key, value) {
+    static getStrFormFunc(key, value, noplayer) {
         if (Array.isArray(value)) {
             value = value.map(k => `"${k}"`)
-            return `[${value}].includes(get.${key}(card,${key == "type" ? "false," : ""}player))`
+            return `[${value}].includes(get.${key}(card,${key == "type" ? "false," : ""}player))`.replace(noplayer ? ",player" : "", "")
         }
-        return `get.${key}(card,${key == "type" ? "false," : ""}player) === "${value}"`
+        return `get.${key}(card,${key == "type" ? "false," : ""}player) === "${value}"`.replace(noplayer ? ",player" : "", "")
     }
     static getStrFormConst({ costName, costNature, costColor, costSuit }) {
         let result = ''
@@ -1537,7 +1553,8 @@ export class NonameCN {
             forResult: () => true,
             goto: () => true,
             redo: () => true,
-            finish: () => true
+            finish: () => true,
+            notLink: () => true,
         }
     }
     static getVirtualCard() {
@@ -1616,7 +1633,7 @@ export class NonameCN {
                 return `${map[p[0]]}`
             })
             .replace(/(.+?)点数(不?)(为|是|大于|小于|等于)(10|11|12|13|[1-9])$/mg, '获取 点数 $1\n $2$3 \n $4')
-            .replace(/(.+?)(牌名)?(不?[为是])(杀|闪|桃|酒|无懈可击|决斗)$/mg, '获取 牌名 $1 \n $3 \n $4')
+            .replace(/(.+?)(牌名)?(不?[为是])(杀|闪|桃|酒|无懈可击|决斗|闪电|乐不思蜀|兵粮寸断|桃园结义|南蛮入侵|万箭齐发)$/mg, '获取 牌名 $1 \n $3 \n $4')
             .replace(/(.+?)(副类别)?(不?[为是])(武器牌|防具牌|\+1马牌|-1马牌|进攻马牌|防御马牌)$/mg, '获取 副类别 $1 \n $3 \n $4')
             .replace(/(.+?)在(.+?)的?攻击范围内$/mg, "$2 攻击范围内有 $1")
             .replace(/(没有)(.+?)标签/mg, "无$2标签")
@@ -1877,7 +1894,7 @@ export class NonameCN {
                     if (cdt1.includes('-')) {
                         cdt1 = cdt1.split('-')
                     }
-                    result += `if(${that.getStrFormFunc(cdt0, cdt1)}) return false;\n`
+                    result += `if(${that.getStrFormFunc(cdt0, cdt1, true)}) return false;\n`
                 }
                 else getFilter(condition)
             })
@@ -2935,12 +2952,13 @@ export class NonameCN {
         trigger: {
             "每轮开始时": "每轮开始时",
             "准备阶段": "准备阶段(阶段类)",
-            "出牌阶段开始时": "出牌阶段开始时(阶段类)",
-            "结束阶段": "结束阶段(阶段类)",
             "判定阶段": "判定阶段(阶段类)",
-            "弃牌阶段": "弃牌阶段(阶段类)",
             "摸牌阶段": "摸牌阶段(阶段类)",
             "摸牌阶段2": "摸牌阶段(时机同【英姿】，阶段类)",
+            "出牌阶段开始时": "出牌阶段开始时(阶段类)",
+            "弃牌阶段": "弃牌阶段(阶段类)",
+            "弃牌阶段开始时": "弃牌阶段开始时(阶段类)",
+            "结束阶段": "结束阶段(阶段类)",
             '你使用牌指定目标时': "你使用牌指定目标时(使用牌类)",
             '你使用牌指定目标后': "你使用牌指定目标后(使用牌类)",
             '你成为牌的目标时': "你成为牌的目标时(使用牌类)",
@@ -2985,6 +3003,7 @@ export class NonameCN {
         unshown_filterTarget: {},
         unshown_filterCard: {},
     }
+    static skillModMap = new Map();
 }
 for (const [item, explanation] of Object.entries(NonameCN.giveSentence.trigger)) {
     if (!item.startsWith("你")) continue;
@@ -3007,4 +3026,184 @@ for (const [item, _] of Object.entries(NonameCN.giveSentence.filter)) {
         NonameCN.giveSentence.filter[item] = explanation;
         NonameCN.giveSentence.content[item] = explanation;
     }
+}
+{
+    const modsMap = NonameCN.skillModMap;
+    const matchCardName = Object.keys(NonameCN.groupedList.cardName).join('|')
+    modsMap.set(
+        /^\s*(你|player)\s*计算(与|和)其他角色的?距离时?(减|\-|减少|加|\+|增加)([0-9]+)\s*$/m,
+        [
+            void 0,
+            void 0,
+            (match, ...p) => {
+                let symbol = getSymbol(p[2]);
+                return [`${symbol}:${p[3]}`, `globalFrom`];
+            }
+        ]
+    );
+    modsMap.set(
+        /^\s*其他角色计算(与|和)(你|player)的?\s*距离时?(减|\-|减少|加|\+|增加)([0-9]+)\s*$/m,
+        [
+            void 0,
+            void 0,
+            (match, ...p) => {
+                let symbol = getSymbol(p[2]);
+                return [`${symbol}:${p[3]}`, `globalTo`];
+            }
+        ]
+    );
+
+    modsMap.set(
+        new RegExp(`^\s*(你|player)\s*不能成为\s*(${matchCardName})\s*(目标|target)\s*$`, 'm'),
+        [
+            void 0,
+            void 0,
+            (match, ...p) => {
+                return [`name:${NonameCN.getEn(p[1])}`, `targetEnabled_false`];
+            }
+        ]
+    );
+    modsMap.set(
+        new RegExp(`^\s*(你|player)\s*不能成为\s*(${matchCardName})(和|与|或|、)(${matchCardName})\s*(目标|target)\s*$`, 'm'),
+        [
+            void 0,
+            void 0,
+            (match, ...p) => {
+                return [`name:${NonameCN.getEn(p[1])}-${NonameCN.getEn(p[3])}`, `targetEnabled_false`];
+            }
+        ]
+    );
+    modsMap.set(
+        /^\s*(你|player)\s*不能成为\s*(基本牌|装备牌|普通锦囊牌|延时锦囊牌)\s*(目标|target)\s*$/m,
+        [
+            void 0,
+            void 0,
+            (match, ...p) => {
+                return [`type:${NonameCN.getEn(p[1])}`, `targetEnabled_false`];
+            }
+        ]
+    );
+    modsMap.set(
+        /^\s*(你|player)\s*不能成为\s*锦囊牌\s*(目标|target)\s*$/m,
+        [
+            "type:trick-delay",
+            "targetEnabled_false",
+            void 0
+        ]
+    );
+
+
+    modsMap.set(
+        /^\s*(你|player)\s*使用的?\s*卡?牌(无|没有)(次数|数量|距离)限制\s*$/m,
+        [
+            void 0,
+            void 0,
+            (match, ...p) => {
+                return [`all`, `${p[2] == '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`];
+            }
+        ]
+    );
+    modsMap.set(
+        /^\s*(你|player)\s*使用的?\s*锦囊牌(无|没有)(次数|数量|距离)限制\s*$/m,
+        [
+            void 0,
+            void 0,
+            (match, ...p) => {
+                return ["type:trick-delay", `${p[3] == '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`];
+            }
+        ]
+    );
+    modsMap.set(
+        new RegExp(`^\s*(你|player)\s*使用的?\s*(${matchCardName})(无|没有)(次数|数量|距离)限制\s*$`, 'm'),
+        [
+            void 0,
+            void 0,
+            (match, ...p) => {
+                return [`name:${NonameCN.getEn(p[1])}`, `${p[3] == '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`];
+            }
+        ]
+    );
+    modsMap.set(
+        /^\s*(你|player)\s*使用的?\s*(基本牌|普通锦囊牌|延时锦囊牌|装备牌)(无|没有)(次数|数量|距离)限制\s*$/m,
+        [
+            void 0,
+            void 0,
+            (match, ...p) => {
+                return [`type:${NonameCN.getEn(p[1])}`, `${p[3] == '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`];
+            }
+        ]
+    );
+    modsMap.set(
+        /^\s*(你|player)\s*使用的?\s*([红黑]色)手?牌(无|没有)(次数|数量|距离)限制\s*$/m,
+        [
+            void 0,
+            void 0,
+            (match, ...p) => {
+                return [`color:${NonameCN.getEn(p[1])}`, `${p[3] == '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`];
+            }
+        ]
+    );
+    modsMap.set(
+        /^\s*(你|player)\s*使用的?\s*(梅花|黑桃|红桃|方片)手?牌(无|没有)(次数|数量|距离)限制\s*$/m,
+        [
+            void 0,
+            void 0,
+            (match, ...p) => {
+                return [`suit:${NonameCN.getEn(p[1])}`, `${p[3] == '距离' ? 'targetInRange' : 'cardUsable'}_Infinity`];
+            }
+        ]
+    );
+
+
+    modsMap.set(
+        new RegExp(`^\s*(你|player)\s*不能使用(${matchCardName})\s*$`, 'm'),
+        [
+            void 0,
+            void 0,
+            (match, ...p) => {
+                return [`name:${NonameCN.getEn(p[1])}`, `cardEnabled_false`];
+            }
+        ]
+    );
+    modsMap.set(
+        new RegExp(`^\s*(你|player)\s*不能使用(${matchCardName})(和|与|或|、)(${matchCardName})\s*$`),
+        [
+            void 0,
+            void 0,
+            (match, ...p) => {
+                return [`name:${NonameCN.getEn(p[1])}-${NonameCN.getEn(p[3])}`, `cardEnabled_false`];
+            }
+        ]
+    );
+    modsMap.set(
+        new RegExp(/^\s*(你|player)\s*不能使用牌\s*$/m),
+        [
+            void 0,
+            void 0,
+            (match, ...p) => {
+                return [`all`, `cardEnabled_false`];
+            }
+        ]
+    );
+    modsMap.set(
+        new RegExp(/^\s*(你|player)\s*不能使用(黑|红)色手?牌\s*$/m),
+        [
+            void 0,
+            void 0,
+            (match, ...p) => {
+                return [`color:${NonameCN.getEn(p[1] + "色")}`, `cardEnabled_false`];
+            }
+        ]
+    );
+    modsMap.set(
+        new RegExp(/^\s*(你|player)\s*不能使用(梅花|黑桃|方片|红桃)手?牌\s*$/m),
+        [
+            void 0,
+            void 0,
+            (match, ...p) => {
+                return [`suit:${NonameCN.getEn(p[1])}`, `cardEnabled_false`];
+            }
+        ]
+    );
+
 }

@@ -4,3 +4,5 @@ json/
 
 #忽略的文件后缀
 *.tmp
+xjb_xyAPI.js
+log/log.txt
