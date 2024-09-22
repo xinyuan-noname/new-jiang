@@ -131,6 +131,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             let player = NonameCN.getVirtualPlayer();
             let vGame = NonameCN.getVirtualGame();
             let eventModel = NonameCN.getVirtualEvent();
+            let vStorage = NonameCN.getVirtualStorage();
             let backArr = ui.create.xjb_back()
             let back = backArr[0]
             let close = backArr[1]
@@ -546,6 +547,9 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 for (const [number, content] of back.cnSentence.entries()) {
                     str = str.replaceAll(number, `"${content}"`);
                 }
+                str = str.replace(/\\u([0-9A-Fa-f]{4})/g, (match, ...p) => {
+                    return String.fromCharCode(parseInt(p[0], 16));
+                })
                 //tab处理
                 str = adjustTab(str, back.skill.mode === 'self' ? 1 : 0);
                 back.target.value = str;
@@ -601,7 +605,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         notice = [], bool = true, index,
                         players
                     function watchAndWork(body, a, b) {
-                        if (body[a]) {
+                        if (body === 'storage') {
+                            str += ('.' + a)
+                        }
+                        else if (body[a] || body === vStorage) {
                             str += ('.' + a)
                             if (typeof body[a] === 'function') {
                                 bool = false;
@@ -626,6 +633,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         const type = game.xjb_judgeType(a)
                         if (type && notice.length) notice.push(type)
                         if (notice.includes('game')) WAW(vGame)
+                        else if (notice.includes('storageLower')) WAW(vStorage)
+                        else if (notice.includes('storage')) WAW('storage')
                         else if (notice.includes('get')) WAW(get)
                         else if (notice.includes('players')) { WAW(player) }
                         else if (notice.includes('player')) { WAW(player) }
@@ -638,6 +647,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         if (type && !notice.length) notice.push(type)
                         if (type === 'players') players = a
                         if (["const ", "let ", "var "].includes(a)) notice.push("variable")
+                        else if (['player', 'card'].some(viewer => { notice.includes(viewer) }) && a === "storage") notice.push('storage')
+                        else if (notice.includes('storage')) notice.push('storageLower')
                     }
                     if (notice.includes("Math") && index) {
                         const replacer = [];
@@ -869,6 +880,56 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                             .appendPrompt('替换什么', void 0, '这里写替换的文字,不支持正则!')
                             .appendPrompt('替换为', void 0, '这里替换后的文字')
                     })
+                if (giveSentenceType === 'content') {
+                    const button_longCnResearch = ui.create.xjb_button(myContainer, '长中文');
+                    element().setTarget(button_longCnResearch)
+                        .listen(DEFAULT_EVENT, e => {
+                            game.xjb_create.seeDelete(
+                                back.cnSentence,
+                                '使用',
+                                '删除',
+                                function () {
+                                    const id = this.container.dataset.xjb_id;
+                                    myTarget.value += id;
+                                    myTarget.arrange();
+                                    myTarget.submit();
+                                },
+                                function () {
+                                    const id = this.container.dataset.xjb_id;
+                                    /**
+                                     * @type {Map}
+                                     */
+                                    const map = back.cnSentence;
+                                    map.delete(id);
+                                },
+                                function () {
+                                },
+                                void 0,
+                                '-'
+                            )
+                        })
+                        .listen("mousedown", e => {
+                            const openDialog = () => {
+                                NonameCN.moreSetDialog[6](back);
+                            }
+                            if (e.button === 2) {
+                                openDialog()
+                            }
+                            if (e.button === 0) {
+                                let timer = setTimeout(openDialog, 300)
+                                const up = event => {
+                                    clearTimeout(timer)
+                                    event.target.removeEventListener('mouseup', up)
+                                }
+                                const level = event => {
+                                    clearTimeout(timer)
+                                    event.target.removeEventListener('mouselevel', level)
+                                }
+                                e.target.addEventListener('mouseup', up)
+                                e.target.addEventListener('mouselevel', level)
+                            }
+                        })
+                }
                 const button_thisIdWithQuotes = ui.create.xjb_button(myContainer, '"本技能ID"');
                 element().setTarget(button_thisIdWithQuotes)
                     .listen(DEFAULT_EVENT, e => {
@@ -1533,7 +1594,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .replaceOrder(/(本|此|该)技能id/g, back.getID)
                 .replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", back.ele.filter.adjustTab)
                 .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", back.ele.filter.adjustTab)
-                .replaceOrder("新三元式", "  ?  :  ")
+                .replaceThenOrder('新长中文', '', () => NonameCN.moreSetDialog[6](back))
                 .debounce('keyup', back.ele.filter.submit, 200)
                 .listen('keydown', deleteModule)
                 .listen('selectionStartChange', adjustSelection)
@@ -1817,9 +1878,13 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .clearThenOrder(/([/][*])[ ]*back.stepIgnore[ ]*\=false[ ]*[ ]*([*][/])/g, () => { back.stepIgnore = false })
                 .replaceOrder(/(本|此|该)技能id/g, back.getID)
                 .clearThenOrder("整理", back.ele.content.arrange)
+                .replaceThenOrder('新长中文', '', () => NonameCN.moreSetDialog[6](back))
                 .replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", back.ele.content.adjustTab)
                 .replaceThenOrder('新选择如果', "如果\n选择结果布尔\n那么\n分支开始\n\n分支结束", back.ele.content.adjustTab)
                 .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", back.ele.content.adjustTab)
+                .replaceThenOrder('新选择角色', '变量 选择事件 令为 你 选择角色 一名\n选择事件 设置角色限制条件\n选择事件 设置角色选择数量\n新步骤\n如果\n选择结果布尔\n那么\n分支开始\n\n分支结束',back.ele.content.adjustTab)
+                .replaceThenOrder('新选择选项', '变量 选项列表 令为 数组开始 %#&1 , %#&2  数组结束\n变量 选择事件 令为 你 选择选项 选项列表\n新步骤\n如果\n选择结果选项 为 %#&1\n那么\n分支开始\n\n分支结束\n如果\n选择结果选项 为 %#&2\n那么\n分支开始\n\n分支结束\n', back.ele.content.adjustTab)
+                .replaceThenOrder('新拼点事件', '变量 选择事件 令为 你 拼点 目标\n新步骤\n如果\n拼点赢\n那么\n分支开始\n\n分支结束\n如果\n拼点平局\n那么\n分支开始\n\n分支结束\n如果\n拼点输\n那么\n分支开始\n\n分支结束', back.ele.content.adjustTab)
                 .replaceOrder('新目标过滤', '(card,player,target)=>{}')
                 .replaceOrder('新卡牌过滤', '(card)=>{}')
                 .replaceOrder(/\bdo-while\b/g, "do{\n\n}while(  )")
@@ -2060,6 +2125,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .dittoUnderOrder()
                 .clearThenOrder("整理", back.ele.trigger.arrange)
                 .replaceOrder(/(本|此|该)技能id/g, back.getID)
+                .replaceThenOrder('新长中文', '', () => NonameCN.moreSetDialog[6](back))
                 .debounce('keyup', back.ele.trigger.submit, 200)
                 .listen('keydown', tabChange("trigger"))
                 .style({
@@ -2275,6 +2341,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .replaceOrder(/(本|此|该)技能id/g, back.getID)
                 .replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", back.ele.filterTarget.adjustTab)
                 .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", back.ele.filterTarget.adjustTab)
+                .replaceThenOrder('新长中文', '', () => NonameCN.moreSetDialog[6](back))
                 .debounce('keyup', back.ele.filterTarget.submit, 200)
                 .listen('keydown', tabChange("filterTarget"))
                 .style({
@@ -2305,6 +2372,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .replaceOrder(/(本|此|该)技能id/g, back.getID)
                 .replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", back.ele.filterCard.adjustTab)
                 .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", back.ele.filterCard.adjustTab)
+                .replaceThenOrder('新长中文', '', () => NonameCN.moreSetDialog[6](back))
                 .listen('keydown', tabChange("filterCard"))
                 .debounce('keyup', back.ele.filterCard.submit, 200)
                 .style({
@@ -2535,173 +2603,12 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         "添加技能组",
                         "查看及删除技能组",
                         "增添标记",
-                        "长中文提示语句",
-                        "技能提示"
+                        "长中文语句",
+                        "技能提示",
                     ],
                     true,
                     function () {
-                        switch (this.resultIndex) {
-                            case 0: {
-                                if (back.skill.subSkillEditing) return game.xjb_create.alert("此技能已经是一个子技能!")
-                                back.cachePrimarySkill();
-                                back.ele.groupsContainer.groupsPageNum = 0;
-                                back.clearTextarea();
-                                back.skillEditorStart();
-                                delete back.skill.subSkill
-                                back.skill.subSkillEditing = true;
-                            }; break;
-                            case 1: {
-                                if (back.skill.subSkillEditing) return game.xjb_create.alert("此技能已经是一个子技能!")
-                                const map = {};
-                                for (let skillName of Object.keys(back.skill.subSkill)) {
-                                    skillName = skillName;
-                                    if (back.skill.group.includes(skillName)) continue;
-                                    map[skillName] = `子技能-${skillName}`
-                                }
-                                game.xjb_create.seeDelete(
-                                    map,
-                                    '查看',
-                                    '删除',
-                                    function () {
-                                        const id = this.container.dataset.xjb_id;
-                                        back.cachePrimarySkill();
-                                        back.readSubskillCache(id);
-                                        element().setTarget(back)
-                                            .anotherClickTouch(this.yesButton, 'touchend')
-                                        back.ele.groupsContainer.groupsPageNum = 0;
-                                        back.skill.subSkillEditing = true;
-                                        back.organize()
-                                    },
-                                    function () {
-                                        const id = this.container.dataset.xjb_id
-                                        delete back.skill.subSkill[id]
-                                        back.organize()
-                                    },
-                                    function () {
-                                    }
-                                )
-                            }; break;
-                            case 2: {
-                                if (back.skill.subSkillEditing) {
-                                    back.cacheSubskill()
-                                }
-                                back.readPrimarySkillCache()
-                                back.skill.subSkillEditing = false;
-                            }; break;
-                            case 3: {
-                                const map = {};
-                                for (let skillName of Object.keys(back.skill.subSkill)) {
-                                    skillName = back.skill.id + "_" + skillName;
-                                    if (back.skill.group.includes(skillName)) continue;
-                                    map[skillName] = `${skillName}(${skillName})`
-                                }
-                                for (let skillName of lib.xjb_skillsStore) {
-                                    if (!lib.translate[skillName]) continue;
-                                    if (!lib.translate[skillName + "_info"]) continue;
-                                    if (back.skill.group.includes(skillName)) continue;
-                                    map[skillName] = `${lib.translate[skillName]}(${skillName})`
-                                }
-                                game.xjb_create.seeDelete(
-                                    map,
-                                    '查看',
-                                    '添加',
-                                    function () {
-                                        if (this.innerText === "查看") {
-                                            const id = this.container.dataset.xjb_id
-                                            this.descEle.innerHTML += `<span>${lib.translate[id + '_info']}</span>`
-                                            this.innerText = "收起"
-                                            this.seeExpanding = true;
-                                        } else if (this.innerText === "收起") {
-                                            /**
-                                             * @type {HTMLElement}
-                                             */
-                                            const descEle = this.descEle
-                                            const span = descEle.querySelector('span')
-                                            span && span.remove();
-                                            this.innerText = '查看'
-                                            this.seeExpanding = false;
-                                        }
-
-                                    },
-                                    function () {
-                                        const id = this.container.dataset.xjb_id
-                                        this.yesButton.result.push(id)
-                                    },
-                                    function () {
-                                        back.skill.group.push(...this.result)
-                                        back.organize()
-                                    }
-                                )
-                            }; break;
-                            case 4: {
-                                const map = {};
-                                for (let skillName of back.skill.group) {
-                                    map[skillName] = `${lib.translate[skillName]}(${skillName})`
-                                }
-                                let dialog = game.xjb_create.seeDelete(
-                                    map,
-                                    '查看',
-                                    '删除',
-                                    function () {
-                                        if (this.innerText === "查看") {
-                                            const id = this.container.dataset.xjb_id
-                                            this.descEle.innerHTML += `<span>${lib.translate[id + '_info']}</span>`
-                                            this.innerText = "收起"
-                                            this.seeExpanding = true;
-                                        } else if (this.innerText === "收起") {
-                                            /**
-                                             * @type {HTMLElement}
-                                             */
-                                            const descEle = this.descEle
-                                            const span = descEle.querySelector('span')
-                                            span && span.remove();
-                                            this.innerText = '查看'
-                                        }
-                                    },
-                                    function () {
-                                        const id = this.container.dataset.xjb_id
-                                        this.yesButton.result.remove(id)
-                                    },
-                                    function () {
-                                        back.skill.group = [...this.result]
-                                        back.organize()
-                                    }
-                                )
-                                dialog.buttons[0].result = [...back.skill.group]
-                            }; break;
-                            case 5: {
-                                game.xjb_create.multiprompt(function () {
-                                    back.skill.marktext = this.resultList[0];
-                                    back.skill.markName = this.resultList[1];
-                                    back.skill.markContent = this.resultList[2];
-                                    back.organize();
-                                })
-                                    .appendPrompt('标记外观', back.skill.marktext ? back.skill.marktext : void 0, '这里写标记外观文字,只能写一个字!',)
-                                    .appendPrompt('标记名字', back.skill.markName ? back.skill.markName : void 0, '这里写标记的名字',)
-                                    .appendPrompt('标记内容', back.skill.markContent ? back.skill.markContent : void 0, '这里写点开标记后显示的内容,你可以用#表示标记数量', 4);
-                            }; break;
-                            case 6: {
-                                game.xjb_create.multiprompt(function () {
-                                    /**
-                                     * @type {Map}
-                                     */
-                                    const cnSentence = back.cnSentence;
-                                    cnSentence.set(this.resultList[0], this.resultList[1])
-                                    back.organize();
-                                })
-                                    .appendPrompt('语句编号', '%#&', '%#&',)
-                                    .appendPrompt('语句内容', void 0, '语句编号请以%#&打头,这里输入内容', 4)
-                            }; break;
-                            case 7: {
-                                game.xjb_create.multiprompt(function () {
-                                    back.skill.prompt = this.resultList[0];
-                                    back.skill.prompt2 = this.resultList[1];
-                                    back.organize();
-                                })
-                                    .appendPrompt('技能提示标题', back.skill.prompt ? back.skill.prompt : void 0, '这里写技能提示的标题', 1)
-                                    .appendPrompt('技能提示内容', back.skill.prompt2 ? back.skill.prompt2 : void 0, '这里写技能提示的内容', 3)
-                            }; break;
-                        }
+                        NonameCN.moreSetDialog[this.resultIndex](back);
                     }
                 )
             })

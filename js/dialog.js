@@ -551,8 +551,8 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
                 ui.xjb_toBeHidden(dialog.buttons[0])
                 if (arr2 && arr2.includes(this.name)) {
                     arr2.remove(this.name);
-                    if(removeCallBack){
-                        removeCallBack.apply(this,[])
+                    if (removeCallBack) {
+                        removeCallBack.apply(this, [])
                     }
                 }
             }
@@ -823,7 +823,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         return dialog
     }
     //
-    game.xjb_create.seeDelete = function (map, seeStr = "查看", deleteStr = "删除", seeCallback = () => true, deleteCallback = () => true, func, prompt) {
+    game.xjb_create.seeDelete = function (map, seeStr = "查看", deleteStr = "删除", seeCallback = () => true, deleteCallback = () => true, func, prompt, link) {
         if (game.xjb_create.baned) return;
         const dialog = game.xjb_create.search(prompt, func)
         const textarea = dialog.textarea;
@@ -885,10 +885,11 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             deleteButton.yesButton = dialog.buttons[0];
             textarea.index.push(container);
         }
-        for (const [attr, desc] of Object.entries(map)) {
+        const entriedMap = map instanceof Map ? map.entries() : Object.entries(map)
+        for (const [attr, desc] of entriedMap) {
             const promise = new Promise(res => {
                 setTimeout(() => {
-                    addLi(attr, desc);
+                    addLi(attr, link ? attr + link + desc : desc);
                     res();
                 }, 0)
             })
@@ -905,7 +906,6 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         });
         return dialog
     }
-
     game.xjb_create.range = function (str, min, max, value = 0, callback, changeValue = () => true) {
         if (game.xjb_create.baned) return;
         let dialog = game.xjb_create.confirm(void 0, callback);

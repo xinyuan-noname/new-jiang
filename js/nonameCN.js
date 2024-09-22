@@ -480,6 +480,8 @@ export class NonameCN {
         '势力': "group",
         //
         '来源': 'source',
+        //
+        '新步骤':"'step'",
         //伤害事件
         '受到伤害点数': 'trigger.num',
         '受伤点数': 'trigger.num',
@@ -621,6 +623,7 @@ export class NonameCN {
         "’": "'",
         "”": "\"",
         "“": "\"",
+        "！": "!",
         //
         '+': ' + ',
         '-': ' - ',
@@ -720,9 +723,15 @@ export class NonameCN {
             '此牌的目标组': `trigger.getParent("useCard",void 0,true).targets`,
             '此牌的已触发的目标组': `trigger.getParent("useCard",void 0,true).triggeredTargets2`,
             "阶段列表": `trigger.getParent("phase",void 0,true).phaseList`,
+            "选项列表": "choiceList"
+        },
+        array_structure: {
+            "数组开始": "[",
+            "数组结束": "]",
         },
         array_method: {
             "包含": 'includes',
+            "不包含": 'includes:denyPrefix',
             "添单": "add",
             "添多": "addArray",
             "剪接": "splice",
@@ -739,9 +748,9 @@ export class NonameCN {
             "牌堆底牌组(放回)": "bottomCards:ture:intoFunctionWait",
             "技能使用次数": "skillCount",
             //弃牌堆中
-            '弃牌堆中普通锦囊牌': 'discardPile:card=>get.type(card)==="trick"',
-            '弃牌堆中延时锦囊牌': 'discardPile:card=>get.type(card)==="delay"',
-            '弃牌堆中基本牌': 'discardPile:card=>get.type(card)==="basic"',
+            '弃牌堆中普通锦囊牌': 'discardPile;card=>get.type(card)==="trick"',
+            '弃牌堆中延时锦囊牌': 'discardPile;card=>get.type(card)==="delay"',
+            '弃牌堆中基本牌': 'discardPile;card=>get.type(card)==="basic"',
             '弃牌堆中装备牌': 'discardPile:card=>get.type(card)==="equip"',
             '弃牌堆中宝物牌': 'discardPile:card=>get.subtype(card)=="equip5"',
             '弃牌堆中防具牌': 'discardPile:card=>get.subtype(card)=="equip2"',
@@ -820,6 +829,7 @@ export class NonameCN {
             "选择结果颜色": "result.color",
             "选择结果花色": "result.suit",
             "选择结果选项编号": "result.choice",
+            "选择结果选项": "result.control",
             //
             '判定结果卡牌': "result.card",
             "判定结果牌名": "result.name",
@@ -827,7 +837,19 @@ export class NonameCN {
             "判定结果颜色": "result.color",
             "判定结果花色": "result.suit",
             //
-            "议事结果":"result.opinion",
+            "议事结果": "result.opinion",
+            //
+            '拼点平局': "result.tie",
+            '拼点平': "result.tie",
+            '拼点没平': "result.tie",
+            '拼点未平': "result.tie",
+            '拼点胜': "result.bool",
+            '拼点赢': "result.bool",
+            '拼点没赢': "!result.bool",
+            '拼点未赢': "!result.bool",
+            '拼点输': "!result.bool && !result.tie",
+            '拼点未输': "result.bool || result.tie",
+            '拼点没输': "result.bool || result.tie",
         },
         player: {
             ...playerList,
@@ -836,6 +858,9 @@ export class NonameCN {
         player_attribute: {
             '性别': 'sex',
             '储存': 'storage',
+            '储存信息': 'storage',
+            '存储': 'storage',
+            '存储信息': 'storage',
             '体力': 'hp',
             '体力值': 'hp',
             '体力上限': 'maxHp',
@@ -845,7 +870,7 @@ export class NonameCN {
         },
         player_method: {
             "攻击范围内有": "inRange",
-            '执行一个额外的回合': 'insertPhase',
+            '执行额外的回合': 'insertPhase',
             "摸牌或回复体力值": "chooseDrawRecover",
             //判定区和装备栏
             '废除判定区': 'disableJudge',
@@ -916,6 +941,8 @@ export class NonameCN {
             '拥有标记': 'hasMark',
             '有标记': "hasMark",
             '清除标记': 'clearMark',
+            '标记添加记录': 'markAuto',
+            '标记移除记录': 'unmarkAuto',
             //
             '失去所有技能': "clearSkills",
             '清除技能': "clearSkills",
@@ -929,6 +956,7 @@ export class NonameCN {
             '失去技能并录入日志': "removeSkillLog",
             '拥有技能': 'hasSkill',
             '有技能': 'hasSkill',
+            '能够拼点': "canCompare",
             //
             "临时获得技能": "addTempSkill",
         },
@@ -973,6 +1001,8 @@ export class NonameCN {
             '进行一次判定': "judge",
             '选择牌和角色': "chooseCardTarget",
             '选择角色和牌': "chooseCardTarget",
+            '选择牌拼点': "chooseToCompare",
+            '拼点': "chooseToCompare",
         },
         player_withArg: {
             ...getMapOfHasCard(),
@@ -1496,10 +1526,225 @@ export class NonameCN {
         }
         list["获取名为" + back.getSourceID() + "的父事件的名字"] = `getParent:"${back.getSourceID()}"://!?name`
         list["获取名为" + id + "的父事件的名字"] = `getParent:"${id}"://!?name`
+        list["获取名为\"" + id + "\"的父事件的名字"] = `getParent:"${id}"://!?name`
         list["此牌"] = NonameCN.analyzeThisCard(back.skill.trigger, true);
         list["这些牌"] = NonameCN.analyzeTheseCard(back.skill.trigger, true);
         return list;
     }
+    static giveSentence = {
+        filter: {
+            '此牌是你使用的': '此牌是你使用的(触发技-)',
+            '本事件是你造成的': '本事件是你造成的(触发技-)',
+            '触发事件的角色不是你': '触发事件的角色不是你(触发技-)',
+            '触发事件的目标不是你': '触发事件的目标不是你(触发技-)',
+            '触发事件的来源不是你': '触发事件的来源不是你(触发技-)',
+            '此牌是红色': '此牌为红色(颜色)',
+            '此牌是黑色': '此牌为黑色(颜色)',
+            '此牌为梅花': "此牌为梅花(花色)",
+            '此牌为黑桃': "此牌为黑桃(花色)",
+            '此牌为红桃': "此牌为红桃(花色)",
+            '此牌为方片': "此牌为方片(花色)",
+            '此牌是延时锦囊牌': '此牌是延时锦囊牌(类别)',
+            '此牌是普通锦囊牌': '此牌是普通锦囊牌(类别)',
+            '此牌是基本牌': '此牌是基本牌(类别)',
+            '此牌是装备牌': '此牌是装备牌(类别)',
+            '此牌是火杀': "此牌是火杀(属性+牌名)",
+            '此牌是杀': '此牌是杀(牌名)',
+            '此牌是闪': '此牌是闪(牌名)',
+            '此牌是桃': '此牌是桃(牌名)',
+            '此牌是酒': '此牌是酒(牌名)',
+            '此牌是无懈可击': '此牌是无懈可击(牌名)',
+            '此牌是决斗': '此牌是决斗(牌名)',
+            '此牌点数为A': '此牌点数为A(点数)',
+            '此牌点数不小于10': '此牌点数不小于10(点数)',
+            '此牌为武器牌': "此牌为武器牌(副类别)",
+            '此牌为防具牌': "此牌为防具牌(副类别)",
+            '此牌为+1马牌': "此牌为+1牌马(副类别)",
+            '此牌为-1马牌': "此牌为-1马牌(副类别)",
+            '此牌为宝物牌': "此牌为宝物牌(副类别)",
+            '此牌有伤害标签': '此牌有伤害标签(标签)',
+            '此牌有多目标标签': '此牌有多目标标签(标签)',
+            '你在你的攻击范围内': '你在你的攻击范围内(攻击范围)',
+            '你未受伤': '你未受伤(体力)',
+            '你已受伤': '你已受伤(体力)',
+            '你体力值大于3': '你体力值大于3(体力)',
+            '你体力上限大于3': '你体力上限大于3(体力)',
+            '你为男性': '你为男性(性别)',
+            '你为女性': '你为女性(性别)',
+            '你已横置': "你已横置(状态)",
+            '你已翻面': "你已翻面*(状态)",
+            "你处于自己的出牌阶段": "你处于自己的出牌阶段(阶段)",
+            '你手牌上限大于3': '你手牌上限大于3',
+            '你的手牌数大于3': "你的手牌数大于3",
+            '你的牌数大于3': "你的牌数大于3",
+            '你的场上的牌数大于3': "你的场上的牌数大于3",
+            '你的区域内的牌数大于3': "你的牌数大于3",
+            '场上势力数大于2': "场上势力数大于2",
+            '你体力值为全场最少或之一': "你体力值为全场最少或之一",
+            '你手牌数为全场最少或之一': "你手牌数为全场最少或之一",
+            '你有牌': "你有牌",
+            '你有手牌': "你有手牌",
+            '你场上有牌': "你场上有牌",
+            '你手牌区有牌': '你手牌区有牌',
+            '你装备区有牌': '你装备区有牌',
+            '你判定区有牌': '你判定区有牌',
+            '你有杀': "你有杀",
+            '你手牌区有杀': "你手牌区有杀",
+            '你装备区有杀': "你装备区有杀",
+            '你判定区有杀': "你判定区有杀",
+            '你有未被废除的装备栏': '你有未被废除的装备栏',
+            '你的装备栏均已被废除': '你的装备栏均已被废除',
+            '你有空置的武器栏': '你有空置的武器栏',
+            '你有空置的防具栏': '你有空置的防具栏',
+            '你有空置的+1马栏': '你有空置的+1马栏',
+            '你有空置的-1马栏': '你有空置的-1马栏',
+            '你有空置的宝物栏': '你有空置的宝物栏',
+            '你本回合未造成伤害': "你本回合未造成伤害",
+            '你本回合造成过伤害': "你本回合造成过伤害",
+            '你本回合未使用过牌': "你本回合未使用过牌",
+            '你本回合使用过牌': "你本回合使用过牌",
+            '你本回合未对触发事件的角色造成过伤害': "你本回合未对触发事件的角色造成过伤害",
+            '你本回合出牌阶段没有打出过杀': "你本回合出牌阶段没有打出过杀",
+            '你本回合出牌阶段没有使用过杀': "你本回合出牌阶段没有使用过杀",
+            '你本回合出牌阶段没有打出过火杀': "你本回合出牌阶段没有打出过火杀",
+            '你本回合出牌阶段没有使用过火杀': "你本回合出牌阶段没有使用过火杀",
+            '你本回合出牌阶段没有打出过红杀': "你本回合出牌阶段没有打出过红杀",
+            '你本回合出牌阶段没有使用过红杀': "你本回合出牌阶段没有使用过红杀",
+            '触发事件上有父事件摸牌': "触发事件上有名为摸牌的父事件",
+            '场上有男性角色': '场上有男性角色',
+            '场上有其他男性角色': '场上有其他男性角色',
+            '场上有女性角色': '场上有女性角色',
+            '场上有其他女性角色': '场上有其他女性角色',
+            '场上有魏势力角色': '场上有魏势力角色',
+            '场上有其他魏势力角色': '场上有其他魏势力角色',
+            '场上有蜀势力角色': '场上有蜀势力角色',
+            '场上有其他蜀势力角色': '场上有其他蜀势力角色',
+            '场上有吴势力角色': '场上有吴势力角色',
+            '场上有其他吴势力角色': '场上有其他吴势力角色',
+            '场上有群势力角色': '场上有群势力角色',
+            '场上有其他群势力角色': '场上有其他群势力角色',
+            '场上有晋势力角色': '场上有晋势力角色',
+            '场上有其他晋势力角色': '场上有其他晋势力角色',
+        },
+        content: {
+            "你摸一张牌": "你摸一张牌(牌类)",
+            "你从牌堆底摸一张牌": "你从牌堆底摸一张牌(牌类)",
+            "你将手牌摸至五张": "你将手牌摸至五张(牌类)",
+            "你随机弃置一张牌": "你随机弃置一张牌(牌类)",
+            "你移动场上一张牌": "你移动场上一张牌(牌类)",
+            '你选择使用一张牌': "你选择使用一张牌(牌类)",
+            "你展示牌堆顶的五张牌": "你展示牌堆顶的五张牌(牌类)",
+            "你展示牌堆底的五张牌": "你展示牌堆底的五张牌(牌类)",
+            "你展示牌堆顶的五张牌(放回)": "你展示牌堆顶的五张(放回)(牌类)",
+            "你展示牌堆底的五张牌(放回)": "你展示牌堆底的五张(放回)(牌类)",
+            "你选择对一名角色使用一张杀": "你选择对一名角色使用一张杀(牌类)",
+            "你增加一点体力上限": "你增加一点体力上限(体力类)",
+            "你回复一点体力值": "你回复一点体力值(体力类)",
+            "你将体力值回复至三点": "你将体力值回复至三点(体力类)",
+            "你失去一点体力": "你失去一点体力(体力类)",
+            "你获得一点护甲": "你获得一点护甲(体力类-护甲)",
+            "你可以摸两张牌或回复一点体力值": "你可以摸两张牌或回复一点体力值(牌类-体力类)",
+            "你本回合非锁定技失效": "你本回合非锁定技失效(技能类)",
+            "你临时获得技能 'dangxian'": "你临时获得技能当先(技能类)",
+            '你获得技能"yiji"直到下个回合结束': '你获得技能遗计("yiji")直到下个回合结束(技能类)',
+            "你翻面": "你翻面",
+            "你横置或重置": "你横置或重置",
+            "你执行一个额外的准备阶段": "你执行一个额外的准备阶段(阶段类)",
+            "你执行一个额外的判定阶段": "你执行一个额外的判定阶段(阶段类)",
+            "你执行一个额外的摸牌阶段": "你执行一个额外的摸牌阶段(阶段类)",
+            "你执行一个额外的出牌阶段": "你执行一个额外的出牌阶段(阶段类)",
+            "你执行一个额外的弃牌阶段": "你执行一个额外的弃牌阶段(阶段类)",
+            "你执行一个额外的结束阶段": "你执行一个额外的结束阶段(阶段类)",
+            "你跳过下一个准备阶段": "你跳过下一个准备阶段(阶段类)",
+            "你跳过下一个判定阶段": "你跳过下一个判定阶段(阶段类)",
+            "你跳过下一个摸牌阶段": "你跳过下一个判定阶段(阶段类)",
+            "你跳过下一个出牌阶段": "你跳过下一个出牌阶段(阶段类)",
+            "你跳过下一个弃牌阶段": "你跳过下一个弃牌阶段(阶段类)",
+            "你跳过下一个结束阶段": "你跳过下一个结束阶段(阶段类)",
+            '你获得一枚"new_wuhun"标记': "你获得一枚梦魇标记(标记类)",
+            '你移去一枚"new_wuhun"标记': "你移去一枚梦魇标记(标记类)",
+            "此杀的伤害+1": "此杀伤害+1(触发技:使用杀时|使用杀指定目标时)",
+            "此杀的伤害改为1": "此杀伤害改为1(触发技:使用杀时|使用杀指定目标时)",
+            "此杀需要的闪的数量+1": "此杀需要的闪的数量+1(触发技:使用杀时|使用杀指定目标时)",
+            "此杀需要的闪的数量改为2": "此杀需要的闪的数量改为1(触发技:使用杀时|使用杀指定目标时)",
+            "此决斗需要的杀的数量+1": "此决斗需要的杀的数量+1(触发技:使用决斗时|使用决斗指定目标时|成为决斗的目标时)",
+            "此决斗需要的杀的数量改为2": "此决斗需要的杀的数量改为1(触发技:使用决斗时|使用决斗指定目标时|成为决斗的目标时)",
+            "造成的伤害+1": "造成的伤害+1(触发技:伤害类)",
+            "造成的伤害改为1": "造成的伤害改为1",
+            "令此牌对你无效": "令此牌对你无效",
+            "此牌额外结算1次": "此牌额外结算1次",
+            "此牌不可被响应": "此牌不可被响应",
+            "此牌取消你为目标": "此牌取消你为目标",
+            "此牌不可被此牌的目标响应": "此牌不可被此牌的目标响应",
+            "此牌无视此牌的目标的防具": "此牌无视此牌的目标的防具",
+            "你视为对你使用一张无中生有": "你视为对你使用一张无中生有(牌类)",
+            "你视为对你使用一张不可被无懈可击响应的无中生有": "你视为对你使用一张不可被无懈可击响应的无中生有(牌类)",
+            "目标组-1视为对目标组-0使用一张不可被无懈可击响应、不影响ai的决斗": "目标组-1视为对目标组-0使用一张不可被无懈可击响应、不影响ai的决斗(牌类)",
+            "目标组-1视为对目标组-0使用一张不计入次数、不影响ai的杀": "目标组-1视为对目标组-0使用不计入次数、不影响ai的杀(牌类)",
+            '第一个所选角色摸一张牌': "第一个所选角色摸一张牌(选择目标后写该语句)",
+            '触发事件的角色摸一张牌': "触发事件的角色摸一张牌(触发技)",
+            '触发事件的目标摸一张牌': "触发事件的目标摸一张牌(触发技)",
+            "你使用杀无距离限制": "你使用杀无距离限制(mod类)",
+            "你使用杀无次数限制": "你使用杀无次数限制(mod类)",
+            "你不能成为顺手牵羊和乐不思蜀的目标": "你不能成为顺手牵羊和乐不思蜀的目标(mod类)",
+            "变量牌组令为你获取手牌": "变量牌组令为你获取手牌",
+        },
+        trigger: {
+            "每轮开始时": "每轮开始时",
+            "准备阶段": "准备阶段(阶段类)",
+            "判定阶段": "判定阶段(阶段类)",
+            "摸牌阶段": "摸牌阶段(阶段类)",
+            "摸牌阶段2": "摸牌阶段(时机同【英姿】，阶段类)",
+            "出牌阶段开始时": "出牌阶段开始时(阶段类)",
+            "弃牌阶段": "弃牌阶段(阶段类)",
+            "弃牌阶段开始时": "弃牌阶段开始时(阶段类)",
+            "结束阶段": "结束阶段(阶段类)",
+            '你使用牌指定目标时': "你使用牌指定目标时(使用牌类)",
+            '你使用牌指定目标后': "你使用牌指定目标后(使用牌类)",
+            '你成为牌的目标时': "你成为牌的目标时(使用牌类)",
+            '你成为牌的目标后': "你成为牌的目标后(使用牌类)",
+            "你判定牌生效前": "你判定牌生效前(判定牌类)",
+            "你判定牌生效后": "你判定牌生效后(判定牌类)",
+            "你受到伤害后": "你受到伤害后(伤害类)",
+            "你造成伤害后": "你造成伤害后(伤害类)",
+            "你受到一点伤害后": "你受到一点伤害后(伤害类)",
+            "你造成一点伤害后": "你造成一点伤害后(伤害类)",
+            "你失去体力后": "你失去体力后(体力类)",
+            "你失去一点体力后": "你失去一点体力后(体力类)",
+            "你体力减少后": "你体力减少后(体力类)",
+            "你令一名角色进入濒死状态": "你令一名角色进入濒死状态(濒死类)",
+            '你进入濒死状态时': '你进入濒死状态时(濒死类)',
+            '你脱离濒死状态时': "你脱离濒死状态时(濒死类)",
+            "你杀死一名角色后": "你杀死一名角色后",
+            "一名角色准备阶段": "一名角色准备阶段(阶段类)",
+            "一名角色出牌阶段开始时": "一名角色出牌阶段开始时(阶段类)",
+            "一名角色结束阶段": "一名角色结束阶段(阶段类)",
+            "一名角色判定阶段": "一名角色判定阶段(阶段类)",
+            "一名角色弃牌阶段": "一名角色弃牌阶段(阶段类)",
+            "一名角色摸牌阶段": "一名角色摸牌阶段(阶段类)",
+        },
+        filterTarget: {},
+        filterCard: {},
+        unshown_filter: {},
+        unshown_content: {
+            "变量选择事件令为": 0,
+            "选择事件设置角色限制条件 非我过滤": 0,
+            "选择事件设置角色限制条件 唯我过滤": 0,
+            "选择事件设置选项列表": 0,
+            '变量卡牌令为触发事件的牌组-0': 0,
+            '销毁卡牌': 0,
+            '游戏 移至处理区': 0,
+            '本技能发动次数-1': 0,
+            '"step 1"': 0,
+            "'step 1'": 0,
+            '%#&': 0,
+        },
+        unshown_trigger: {},
+        unshown_filterTarget: {},
+        unshown_filterCard: {},
+    }
+    static skillModMap = new Map();
+    static moreSetDialog = [];
     static getEn(cn) {
         let list = Object.assign({}, ...Object.values(this.freeQuotation));
         return list[cn];
@@ -1549,7 +1794,6 @@ export class NonameCN {
             filterTarget: () => true,
             "set": () => true,
             cancel: () => true,
-            trigger: () => true,
             forResult: () => true,
             goto: () => true,
             redo: () => true,
@@ -1561,6 +1805,10 @@ export class NonameCN {
         const vCardObj = game.createCard();
         vCardObj.destroyed = true;
         return vCardObj;
+    }
+    static getVirtualStorage() {
+        const vStorageObj = new Array(1).fill();
+        return vStorageObj;
     }
     /**
      * @param that 一个对象，其changeWord方法被调用来执行文本替换。
@@ -1585,7 +1833,7 @@ export class NonameCN {
             .replace(/(?<=代为) (?=使用 |打出 |使用或打出 )/g, "")
             .replace(/体力值 (回复|恢复)至 /g, "体力值回复至 ")
             .replace(/(体力值|手牌数) 为全场最少/g, "$1为全场最少")
-            .replace(/有多目标 标签/g, "有多目标标签")
+            .replace(/([有无])多目标 标签/g, "$1多目标标签")
             .replace(new RegExp(`无视[ ]+(${JOINED_PLAYAERCN})[ ]+防具的牌`, 'g'), "无视$1防具的牌")
     }
     static underlieVariable(that) {
@@ -1702,6 +1950,7 @@ export class NonameCN {
             .replace(/(.+?)展示牌堆顶的?(.+?张)牌(\(放回\))?$/g, "event.topCards = 获取 牌堆顶牌组$3 $2\n$1 展示牌 event.topCards")
             .replace(/(.+?)展示牌堆底的?(.+?张)牌(\(放回\))?$/g, "event.bottomCards = 获取 牌堆底牌组$3 $2\n $1 展示牌 event.bottomCards")
             .replace(/^销毁(此牌|卡牌)/mg, '$1 修正\n$1 移除\n$1 已销毁 令为 真\n游戏 日志 $1 "已销毁"')
+
     }
     static standardEeffectMid(that) {
         textareaTool().setTarget(that)
@@ -1709,8 +1958,9 @@ export class NonameCN {
             .replace(/(再|各)摸/g, "摸")
             .replace(/可以获得(?=.*牌)/g, " 获得牌 ")
             .replace('的事件', "事件")
-            .replace(/^(.+?)(?<!\[)(".+?")(?!\])(.+?)$/mg, '$1$3 $2')
+            .replace(/^(.+?)(?<!\[)(?<!:)(".+?")(?!\])(.+?)$/mg, '$1$3 $2')
             .replace(/(选择|判定)事件(?![ ])/g, '$1事件 ')
+            .replace(/(?<=事件)(?=取消)$/mg, ' ')
     }
     static standardEeffect(that) {
         textareaTool().setTarget(that)
@@ -1826,6 +2076,7 @@ export class NonameCN {
             viewAsFrequency, id
         }
     }
+    //技能各部分的组装
     static GenerateOpening(back) {
         let result = '';
         const { mode, id } = back.skill
@@ -2424,7 +2675,7 @@ export class NonameCN {
         return result;
     }
     static GenerateContent(back) {
-        const { contentAsync, type, content, id, mod } = back.skill;
+        const { contentAsync, type, content, id, mod, kind } = back.skill;
         const boolIsAwakeSkill = type.filter(i => {
             return ["limited", "juexingji", "dutySkill"].includes(i)
         }).length > 0;
@@ -2591,7 +2842,7 @@ export class NonameCN {
             }
         }
         if (/^[此该本]技能发动次数[减-]\d+$/m.test(result)) {
-            result = result.replace(/^[此该本]技能发动次数[减-]/mg, `player.storage.counttrigger["${id}"]-=`)
+            result = result.replace(/^[此该本]技能发动次数[减-]/mg, kind === "trigger" ? `player.storage.counttrigger["${id}"]-=` : `player.getStat().skill["${id}"]-=`)
         }
         if (!result.endsWith("\n")) result += "\n"
         return result;
@@ -2792,228 +3043,17 @@ export class NonameCN {
         }
         return result;
     }
-    static giveSentence = {
-        filter: {
-            '此牌是你使用的': '此牌是你使用的(触发技-)',
-            '本事件是你造成的': '本事件是你造成的(触发技-)',
-            '触发事件的角色不是你': '触发事件的角色不是你(触发技-)',
-            '触发事件的目标不是你': '触发事件的目标不是你(触发技-)',
-            '触发事件的来源不是你': '触发事件的来源不是你(触发技-)',
-            '此牌是红色': '此牌为红色(颜色)',
-            '此牌是黑色': '此牌为黑色(颜色)',
-            '此牌为梅花': "此牌为梅花(花色)",
-            '此牌为黑桃': "此牌为黑桃(花色)",
-            '此牌为红桃': "此牌为红桃(花色)",
-            '此牌为方片': "此牌为方片(花色)",
-            '此牌是延时锦囊牌': '此牌是延时锦囊牌(类别)',
-            '此牌是普通锦囊牌': '此牌是普通锦囊牌(类别)',
-            '此牌是基本牌': '此牌是基本牌(类别)',
-            '此牌是装备牌': '此牌是装备牌(类别)',
-            '此牌是火杀': "此牌是火杀(属性+牌名)",
-            '此牌是杀': '此牌是杀(牌名)',
-            '此牌是闪': '此牌是闪(牌名)',
-            '此牌是桃': '此牌是桃(牌名)',
-            '此牌是酒': '此牌是酒(牌名)',
-            '此牌是无懈可击': '此牌是无懈可击(牌名)',
-            '此牌是决斗': '此牌是决斗(牌名)',
-            '此牌点数为A': '此牌点数为A(点数)',
-            '此牌点数不小于10': '此牌点数不小于10(点数)',
-            '此牌为武器牌': "此牌为武器牌(副类别)",
-            '此牌为防具牌': "此牌为防具牌(副类别)",
-            '此牌为+1马牌': "此牌为+1牌马(副类别)",
-            '此牌为-1马牌': "此牌为-1马牌(副类别)",
-            '此牌为宝物牌': "此牌为宝物牌(副类别)",
-            '此牌有伤害标签': '此牌有伤害标签(标签)',
-            '此牌有多目标标签': '此牌有多目标标签(标签)',
-            '你在你的攻击范围内': '你在你的攻击范围内(攻击范围)',
-            '你未受伤': '你未受伤(体力)',
-            '你已受伤': '你已受伤(体力)',
-            '你体力值大于3': '你体力值大于3(体力)',
-            '你体力上限大于3': '你体力上限大于3(体力)',
-            '你为男性': '你为男性(性别)',
-            '你为女性': '你为女性(性别)',
-            '你已横置': "你已横置(状态)",
-            '你已翻面': "你已翻面*(状态)",
-            "你处于自己的出牌阶段": "你处于自己的出牌阶段(阶段)",
-            '你手牌上限大于3': '你手牌上限大于3',
-            '你的手牌数大于3': "你的手牌数大于3",
-            '你的牌数大于3': "你的牌数大于3",
-            '你的场上的牌数大于3': "你的场上的牌数大于3",
-            '你的区域内的牌数大于3': "你的牌数大于3",
-            '场上势力数大于2': "场上势力数大于2",
-            '你体力值为全场最少或之一': "你体力值为全场最少或之一",
-            '你手牌数为全场最少或之一': "你手牌数为全场最少或之一",
-            '你有牌': "你有牌",
-            '你有手牌': "你有手牌",
-            '你场上有牌': "你场上有牌",
-            '你手牌区有牌': '你手牌区有牌',
-            '你装备区有牌': '你装备区有牌',
-            '你判定区有牌': '你判定区有牌',
-            '你有杀': "你有杀",
-            '你手牌区有杀': "你手牌区有杀",
-            '你装备区有杀': "你装备区有杀",
-            '你判定区有杀': "你判定区有杀",
-            '你有未被废除的装备栏': '你有未被废除的装备栏',
-            '你的装备栏均已被废除': '你的装备栏均已被废除',
-            '你有空置的武器栏': '你有空置的武器栏',
-            '你有空置的防具栏': '你有空置的防具栏',
-            '你有空置的+1马栏': '你有空置的+1马栏',
-            '你有空置的-1马栏': '你有空置的-1马栏',
-            '你有空置的宝物栏': '你有空置的宝物栏',
-            '你本回合未造成伤害': "你本回合未造成伤害",
-            '你本回合造成过伤害': "你本回合造成过伤害",
-            '你本回合未使用过牌': "你本回合未使用过牌",
-            '你本回合使用过牌': "你本回合使用过牌",
-            '你本回合未对触发事件的角色造成过伤害': "你本回合未对触发事件的角色造成过伤害",
-            '你本回合出牌阶段没有打出过杀': "你本回合出牌阶段没有打出过杀",
-            '你本回合出牌阶段没有使用过杀': "你本回合出牌阶段没有使用过杀",
-            '你本回合出牌阶段没有打出过火杀': "你本回合出牌阶段没有打出过火杀",
-            '你本回合出牌阶段没有使用过火杀': "你本回合出牌阶段没有使用过火杀",
-            '你本回合出牌阶段没有打出过红杀': "你本回合出牌阶段没有打出过红杀",
-            '你本回合出牌阶段没有使用过红杀': "你本回合出牌阶段没有使用过红杀",
-            '场上有男性角色': '场上有男性角色',
-            '场上有其他男性角色': '场上有其他男性角色',
-            '场上有女性角色': '场上有女性角色',
-            '场上有其他女性角色': '场上有其他女性角色',
-            '场上有魏势力角色': '场上有魏势力角色',
-            '场上有其他魏势力角色': '场上有其他魏势力角色',
-            '场上有蜀势力角色': '场上有蜀势力角色',
-            '场上有其他蜀势力角色': '场上有其他蜀势力角色',
-            '场上有吴势力角色': '场上有吴势力角色',
-            '场上有其他吴势力角色': '场上有其他吴势力角色',
-            '场上有群势力角色': '场上有群势力角色',
-            '场上有其他群势力角色': '场上有其他群势力角色',
-            '场上有晋势力角色': '场上有晋势力角色',
-            '场上有其他晋势力角色': '场上有其他晋势力角色',
-        },
-        content: {
-            "你摸一张牌": "你摸一张牌(牌类)",
-            "你从牌堆底摸一张牌": "你从牌堆底摸一张牌(牌类)",
-            "你将手牌摸至五张": "你将手牌摸至五张(牌类)",
-            "你随机弃置一张牌": "你随机弃置一张牌(牌类)",
-            "你移动场上一张牌": "你移动场上一张牌(牌类)",
-            '你选择使用一张牌': "你选择使用一张牌(牌类)",
-            "你展示牌堆顶的五张牌": "你展示牌堆顶的五张牌(牌类)",
-            "你展示牌堆底的五张牌": "你展示牌堆底的五张牌(牌类)",
-            "你展示牌堆顶的五张牌(放回)": "你展示牌堆顶的五张(放回)(牌类)",
-            "你展示牌堆底的五张牌(放回)": "你展示牌堆底的五张(放回)(牌类)",
-            "你选择对一名角色使用一张杀": "你选择对一名角色使用一张杀(牌类)",
-            "你增加一点体力上限": "你增加一点体力上限(体力类)",
-            "你回复一点体力值": "你回复一点体力值(体力类)",
-            "你将体力值回复至三点": "你将体力值回复至三点(体力类)",
-            "你失去一点体力": "你失去一点体力(体力类)",
-            "你获得一点护甲": "你获得一点护甲(体力类-护甲)",
-            "你可以摸两张牌或回复一点体力值": "你可以摸两张牌或回复一点体力值(牌类-体力类)",
-            "你本回合非锁定技失效": "你本回合非锁定技失效(技能类)",
-            "你临时获得技能 'dangxian'": "你临时获得技能当先(技能类)",
-            '你获得技能"yiji"直到下个回合结束': '你获得技能遗计("yiji")直到下个回合结束(技能类)',
-            "你翻面": "你翻面",
-            "你横置或重置": "你横置或重置",
-            "你执行一个额外的准备阶段": "你执行一个额外的准备阶段(阶段类)",
-            "你执行一个额外的判定阶段": "你执行一个额外的判定阶段(阶段类)",
-            "你执行一个额外的摸牌阶段": "你执行一个额外的摸牌阶段(阶段类)",
-            "你执行一个额外的出牌阶段": "你执行一个额外的出牌阶段(阶段类)",
-            "你执行一个额外的弃牌阶段": "你执行一个额外的弃牌阶段(阶段类)",
-            "你执行一个额外的结束阶段": "你执行一个额外的结束阶段(阶段类)",
-            "你跳过下一个准备阶段": "你跳过下一个准备阶段(阶段类)",
-            "你跳过下一个判定阶段": "你跳过下一个判定阶段(阶段类)",
-            "你跳过下一个摸牌阶段": "你跳过下一个判定阶段(阶段类)",
-            "你跳过下一个出牌阶段": "你跳过下一个出牌阶段(阶段类)",
-            "你跳过下一个弃牌阶段": "你跳过下一个弃牌阶段(阶段类)",
-            "你跳过下一个结束阶段": "你跳过下一个结束阶段(阶段类)",
-            '你获得一枚"new_wuhun"标记': "你获得一枚梦魇标记(标记类)",
-            '你移去一枚"new_wuhun"标记': "你移去一枚梦魇标记(标记类)",
-            "此杀的伤害+1": "此杀伤害+1(触发技:使用杀时|使用杀指定目标时)",
-            "此杀的伤害改为1": "此杀伤害改为1(触发技:使用杀时|使用杀指定目标时)",
-            "此杀需要的闪的数量+1": "此杀需要的闪的数量+1(触发技:使用杀时|使用杀指定目标时)",
-            "此杀需要的闪的数量改为2": "此杀需要的闪的数量改为1(触发技:使用杀时|使用杀指定目标时)",
-            "此决斗需要的杀的数量+1": "此决斗需要的杀的数量+1(触发技:使用决斗时|使用决斗指定目标时|成为决斗的目标时)",
-            "此决斗需要的杀的数量改为2": "此决斗需要的杀的数量改为1(触发技:使用决斗时|使用决斗指定目标时|成为决斗的目标时)",
-            "造成的伤害+1": "造成的伤害+1(触发技:伤害类)",
-            "造成的伤害改为1": "造成的伤害改为1",
-            "令此牌对你无效": "令此牌对你无效",
-            "此牌额外结算1次": "此牌额外结算1次",
-            "此牌不可被响应": "此牌不可被响应",
-            "此牌取消你为目标": "此牌取消你为目标",
-            "此牌不可被此牌的目标响应": "此牌不可被此牌的目标响应",
-            "此牌无视此牌的目标的防具": "此牌无视此牌的目标的防具",
-            "你视为对你使用一张无中生有": "你视为对你使用一张无中生有(牌类)",
-            "你视为对你使用一张不可被无懈可击响应的无中生有": "你视为对你使用一张不可被无懈可击响应的无中生有(牌类)",
-            "目标组-1视为对目标组-0使用一张不可被无懈可击响应、不影响ai的决斗": "目标组-1视为对目标组-0使用一张不可被无懈可击响应、不影响ai的决斗(牌类)",
-            "目标组-1视为对目标组-0使用一张不计入次数、不影响ai的杀": "目标组-1视为对目标组-0使用不计入次数、不影响ai的杀(牌类)",
-            '第一个所选角色摸一张牌': "第一个所选角色摸一张牌(选择目标后写该语句)",
-            '触发事件的角色摸一张牌': "触发事件的角色摸一张牌(触发技)",
-            '触发事件的目标摸一张牌': "触发事件的目标摸一张牌(触发技)",
-            "你使用杀无距离限制": "你使用杀无距离限制(mod类)",
-            "你使用杀无次数限制": "你使用杀无次数限制(mod类)",
-            "你不能成为顺手牵羊和乐不思蜀的目标": "你不能成为顺手牵羊和乐不思蜀的目标(mod类)",
-            "变量牌组令为你获取手牌": "变量牌组令为你获取手牌",
-        },
-        trigger: {
-            "每轮开始时": "每轮开始时",
-            "准备阶段": "准备阶段(阶段类)",
-            "判定阶段": "判定阶段(阶段类)",
-            "摸牌阶段": "摸牌阶段(阶段类)",
-            "摸牌阶段2": "摸牌阶段(时机同【英姿】，阶段类)",
-            "出牌阶段开始时": "出牌阶段开始时(阶段类)",
-            "弃牌阶段": "弃牌阶段(阶段类)",
-            "弃牌阶段开始时": "弃牌阶段开始时(阶段类)",
-            "结束阶段": "结束阶段(阶段类)",
-            '你使用牌指定目标时': "你使用牌指定目标时(使用牌类)",
-            '你使用牌指定目标后': "你使用牌指定目标后(使用牌类)",
-            '你成为牌的目标时': "你成为牌的目标时(使用牌类)",
-            '你成为牌的目标后': "你成为牌的目标后(使用牌类)",
-            "你判定牌生效前": "你判定牌生效前(判定牌类)",
-            "你判定牌生效后": "你判定牌生效后(判定牌类)",
-            "你受到伤害后": "你受到伤害后(伤害类)",
-            "你造成伤害后": "你造成伤害后(伤害类)",
-            "你受到一点伤害后": "你受到一点伤害后(伤害类)",
-            "你造成一点伤害后": "你造成一点伤害后(伤害类)",
-            "你失去体力后": "你失去体力后(体力类)",
-            "你失去一点体力后": "你失去一点体力后(体力类)",
-            "你体力减少后": "你体力减少后(体力类)",
-            "你令一名角色进入濒死状态": "你令一名角色进入濒死状态(濒死类)",
-            '你进入濒死状态时': '你进入濒死状态时(濒死类)',
-            '你脱离濒死状态时': "你脱离濒死状态时(濒死类)",
-            "你杀死一名角色后": "你杀死一名角色后",
-            "一名角色准备阶段": "一名角色准备阶段(阶段类)",
-            "一名角色出牌阶段开始时": "一名角色出牌阶段开始时(阶段类)",
-            "一名角色结束阶段": "一名角色结束阶段(阶段类)",
-            "一名角色判定阶段": "一名角色判定阶段(阶段类)",
-            "一名角色弃牌阶段": "一名角色弃牌阶段(阶段类)",
-            "一名角色摸牌阶段": "一名角色摸牌阶段(阶段类)",
-        },
-        filterTarget: {},
-        filterCard: {},
-        unshown_filter: {},
-        unshown_content: {
-            "变量选择事件令为": 0,
-            "选择事件设置角色限制条件 非我过滤": 0,
-            "选择事件设置角色限制条件 唯我过滤": 0,
-            "选择事件设置选项列表": 0,
-            '变量卡牌令为触发事件的牌组-0': 0,
-            '销毁卡牌': 0,
-            '游戏 移至处理区': 0,
-            '本技能发动次数-1': 0,
-            '"step 1"': 0,
-            "'step 1'": 0,
-            '%#&': 0,
-        },
-        unshown_trigger: {},
-        unshown_filterTarget: {},
-        unshown_filterCard: {},
-    }
-    static skillModMap = new Map();
 }
-for (const [item, explanation] of Object.entries(NonameCN.giveSentence.trigger)) {
-    if (!item.startsWith("你")) continue;
-    NonameCN.giveSentence.trigger["一名角色" + item.substring(1)] = "一名角色" + explanation.substring(1)
-}
-for (const [item, _] of Object.entries(NonameCN.giveSentence.filter)) {
-    if (!item.startsWith("此牌")) continue;
-    NonameCN.giveSentence.filterCard["卡牌" + item.substring(2)] = 0;
-}
+//该代码块用于编辑giveSentence
 {
+    for (const [item, explanation] of Object.entries(NonameCN.giveSentence.trigger)) {
+        if (!item.startsWith("你")) continue;
+        NonameCN.giveSentence.trigger["一名角色" + item.substring(1)] = "一名角色" + explanation.substring(1)
+    }
+    for (const [item, _] of Object.entries(NonameCN.giveSentence.filter)) {
+        if (!item.startsWith("此牌")) continue;
+        NonameCN.giveSentence.filterCard["卡牌" + item.substring(2)] = 0;
+    }
     const varSentence = {
         "变量x令为你体力值的一半且向上取整": "变量x令为你体力值的一半且向上取整",
         "变量x令为你体力值的一半且向下取整": "变量x令为你体力值的一半且向下取整",
@@ -3206,4 +3246,177 @@ for (const [item, _] of Object.entries(NonameCN.giveSentence.filter)) {
         ]
     );
 
+}
+//moreSetDialog
+{
+    NonameCN.moreSetDialog.push(
+        back => {
+            if (back.skill.subSkillEditing) return game.xjb_create.alert("此技能已经是一个子技能!")
+            back.cachePrimarySkill();
+            back.ele.groupsContainer.groupsPageNum = 0;
+            back.clearTextarea();
+            back.skillEditorStart();
+            delete back.skill.subSkill
+            back.skill.subSkillEditing = true;
+        },
+        back => {
+            if (back.skill.subSkillEditing) return game.xjb_create.alert("此技能已经是一个子技能!")
+            const map = {};
+            for (let skillName of Object.keys(back.skill.subSkill)) {
+                skillName = skillName;
+                if (back.skill.group.includes(skillName)) continue;
+                map[skillName] = `子技能-${skillName}`
+            }
+            game.xjb_create.seeDelete(
+                map,
+                '查看',
+                '删除',
+                function () {
+                    const id = this.container.dataset.xjb_id;
+                    back.cachePrimarySkill();
+                    back.readSubskillCache(id);
+                    element().setTarget(back)
+                        .anotherClickTouch(this.yesButton, 'touchend')
+                    back.ele.groupsContainer.groupsPageNum = 0;
+                    back.skill.subSkillEditing = true;
+                    back.organize()
+                },
+                function () {
+                    const id = this.container.dataset.xjb_id
+                    delete back.skill.subSkill[id]
+                    back.organize()
+                },
+                function () {
+                }
+            )
+        },
+        back => {
+            if (back.skill.subSkillEditing) {
+                back.cacheSubskill()
+            }
+            back.readPrimarySkillCache()
+            back.skill.subSkillEditing = false;
+        },
+        back => {
+            const map = {};
+            for (let skillName of Object.keys(back.skill.subSkill)) {
+                skillName = back.skill.id + "_" + skillName;
+                if (back.skill.group.includes(skillName)) continue;
+                map[skillName] = `${skillName}(${skillName})`
+            }
+            for (let skillName of lib.xjb_skillsStore) {
+                if (!lib.translate[skillName]) continue;
+                if (!lib.translate[skillName + "_info"]) continue;
+                if (back.skill.group.includes(skillName)) continue;
+                map[skillName] = `${lib.translate[skillName]}(${skillName})`
+            }
+            game.xjb_create.seeDelete(
+                map,
+                '查看',
+                '添加',
+                function () {
+                    if (this.innerText === "查看") {
+                        const id = this.container.dataset.xjb_id
+                        this.descEle.innerHTML += `<span>${lib.translate[id + '_info']}</span>`
+                        this.innerText = "收起"
+                        this.seeExpanding = true;
+                    } else if (this.innerText === "收起") {
+                        /**
+                         * @type {HTMLElement}
+                         */
+                        const descEle = this.descEle
+                        const span = descEle.querySelector('span')
+                        span && span.remove();
+                        this.innerText = '查看'
+                        this.seeExpanding = false;
+                    }
+
+                },
+                function () {
+                    const id = this.container.dataset.xjb_id
+                    this.yesButton.result.push(id)
+                },
+                function () {
+                    back.skill.group.push(...this.result)
+                    back.organize()
+                }
+            )
+        },
+        back => {
+            const map = {};
+            for (let skillName of back.skill.group) {
+                map[skillName] = `${lib.translate[skillName]}(${skillName})`
+            }
+            let dialog = game.xjb_create.seeDelete(
+                map,
+                '查看',
+                '删除',
+                function () {
+                    if (this.innerText === "查看") {
+                        const id = this.container.dataset.xjb_id
+                        this.descEle.innerHTML += `<span>${lib.translate[id + '_info']}</span>`
+                        this.innerText = "收起"
+                        this.seeExpanding = true;
+                    } else if (this.innerText === "收起") {
+                        /**
+                         * @type {HTMLElement}
+                         */
+                        const descEle = this.descEle
+                        const span = descEle.querySelector('span')
+                        span && span.remove();
+                        this.innerText = '查看'
+                    }
+                },
+                function () {
+                    const id = this.container.dataset.xjb_id
+                    this.yesButton.result.remove(id)
+                },
+                function () {
+                    back.skill.group = [...this.result]
+                    back.organize()
+                }
+            )
+            dialog.buttons[0].result = [...back.skill.group]
+        },
+        back => {
+            game.xjb_create.multiprompt(function () {
+                back.skill.marktext = this.resultList[0];
+                back.skill.markName = this.resultList[1];
+                back.skill.markContent = this.resultList[2];
+                back.organize();
+            })
+                .appendPrompt('标记外观', back.skill.marktext ? back.skill.marktext : void 0, '这里写标记外观文字,只能写一个字!',)
+                .appendPrompt('标记名字', back.skill.markName ? back.skill.markName : void 0, '这里写标记的名字',)
+                .appendPrompt('标记内容', back.skill.markContent ? back.skill.markContent : void 0, '这里写点开标记后显示的内容,你可以用#表示标记数量', 4);
+        },
+        back => {
+            const dialog = game.xjb_create.multiprompt(function () {
+                /**
+                 * @type {Map}
+                 */
+                const cnSentence = back.cnSentence;
+                cnSentence.set(this.resultList[0], this.resultList[1])
+                back.organize();
+            })
+                .appendPrompt('语句编号', '%#&', '%#&',)
+                .appendPrompt('语句内容', void 0, '语句编号请以%#&打头，可以创建新的编号，也可以输入已有语句编号进行修改，这里输入语句内容', 4)
+            const textareas = dialog.querySelectorAll('textarea');
+            textareas[0].addEventListener('keyup', function () {
+                if (back.cnSentence.has(this.value)) {
+                    textareas[1].value = back.cnSentence.get(this.value);
+                } else {
+                    textareas[1].value = '';
+                }
+            })
+        },
+        back => {
+            game.xjb_create.multiprompt(function () {
+                back.skill.prompt = this.resultList[0];
+                back.skill.prompt2 = this.resultList[1];
+                back.organize();
+            })
+                .appendPrompt('技能提示标题', back.skill.prompt ? back.skill.prompt : void 0, '这里写技能提示的标题', 1)
+                .appendPrompt('技能提示内容', back.skill.prompt2 ? back.skill.prompt2 : void 0, '这里写技能提示的内容', 3)
+        }
+    )
 }
