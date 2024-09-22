@@ -208,43 +208,27 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
             }
         },
         bianshen: function () {
-            lib.xjb_list_xinyuan.X_skill_num = {
-                "益": 1,
-                "损": 2,
-                "愈": 11,
-                "疾": 12,
-                "雷": 14,
-                "焰": 4,
-                "冰": 24,
-                "破": 54,
-                "盈": 123,
-                "缺": 113
-            }
             lib.skill._xjb_bianshen = {
                 enable: "phaseUse",
                 filter: function (event, player) {
+                    if (lib.config.xjb_bianshen !== 1) return false;
+                    if (!(player == game.me || player.isUnderControl())) return false;
                     //将武将的实体定位卡牌商店中的某个物品
-                    let trueBody = game.xjb_storeCard_information.xjb_BScharacter
-                    trueBody.update();
-                    //变身功能未开启取消
-                    if (lib.config.xjb_bianshen !== 1) return false
+                    const trueBody = game.xjb_storeCard_information.xjb_BScharacter;
                     //魂币不足，取消
-                    if (!game.xjb_condition(1, trueBody.content.cost)) return false;
-                    if (!trueBody.content.ok) return false
-                    //处于变身状态，取消
-                    if (player.countMark('_xin_bianshen') > 0) return false
+                    if (!game.xjb_canPayWithB(trueBody.cost)) return false;
                     //能量不足，取消
-                    if (lib.config.xjb_systemEnergy < 0) return false
+                    if (!trueBody.ok) return false;
+                    //处于变身状态，取消
+                    if (player.countMark('_xin_bianshen') > 0) return false;
                     return true
                 },
                 content: function () {
                     "step 0"
-                    if (!lib.skill._xjb_bianshen.filter(trigger, player)) event.finish()
-                    "step 1"
                     let trueBody = game.xjb_storeCard_information.xjb_BScharacter;
                     let addToList = function (arr, tsl) {
                         for (let k in lib.translate) {
-                            lib.translate[k] && lib.translate[k].indexOf(tsl) >= 0 && lib.character[k] && arr.push(k)
+                            lib.translate[k] && lib.translate[k].includes(tsl) && lib.character[k] && arr.push(k)
                         }
                     }
                     let po = [], yu = [], yi = [], ji = [], all = [];
@@ -257,41 +241,36 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                     var list = [Ayi, Apo, Ayu, Aji, Aall]
                     player.chooseButton([`选择一张变身的武将牌，花费魂币: ${trueBody.content.cost}`, '-武将列表-', [list, 'character']])
                     event.yi = Ayi; event.po = Apo; event.yu = Ayu; event.ji = Aji; event.all = Aall
-                    "step 2"
+                    "step 1"
                     if (result.bool) {
                         var name = result.links[0];
-                        let trueBody = game.xjb_storeCard_information.xjb_BScharacter
-                        const cost = trueBody.content.cost
-                        var list = [cost]
-                        lib.character[name][5] && list.push(lib.character[name][5])
+                        let trueBody = game.xjb_storeCard_information.xjb_BScharacter;
+                        game.xjb_costHunbi(trueBody.cost);
+                        game.xjb_systemEnergyChange(trueBody.content.energyNeed)
                         let object = {
                             name: name,
-                            skills: [...lib.character[name][3], "skill_X"],
-                            hp: lib.character[name][2],
-                            maxHp: lib.character[name][2],
-                            hs: get.cards(5),
+                            skills: [...lib.character[name][3]],
+                            hp: lib.character[name].hp,
+                            maxHp: lib.character[name].maxHp,
+                            hs: get.cards([3, 4, 5, 6].randomGet()),
                             es: []
                         }
                         if (name === event.yi) {
-                            list.push("益");
                             let cards = game.xjb_cardFactory(["xjb_baiyin", "club", 1], ["xjb_hutou", "spade", 11])
                             player.expandEquip && player.expandEquip(4);
                             object.es.add(...cards);
                         }
                         if (name === event.po) {
-                            list.push("破");
                             let cards = game.xjb_cardFactory(["xjb_chitu", "heart", 5], ["xjb_qinglong", "spade", 5])
                             player.expandEquip && player.expandEquip(1);
                             object.es.add(...cards);
                         }
                         if (name === event.yu) {
-                            list.push("愈");
                             let cards = game.xjb_cardFactory(["xjb_qingnangshu", "heart", 7])
                             player.expandEquip && player.expandEquip(5);
                             object.es.add(...cards);
                         }
                         if (name === event.ji) {
-                            list.push("疾");
                             let cards = game.xjb_cardFactory(["xjb_card_lw", "red", 13])
                             player.expandEquip && player.expandEquip(3);
                             object.hs.add(...cards);
@@ -301,8 +280,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                             player.expandEquip && player.expandEquip(2);
                             object.hs.add(...cards);
                         }
-                        list.push(object)
-                        player.xjb_bianshen(...list)
+                        player.xjb_bianshen(object)
                     }
                 }
             }

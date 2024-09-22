@@ -23,8 +23,7 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
             lib.translate.suidongSkill = "<b description=随动技：因为此技能效果获得牌后可以立即使用该牌>随动技</b>"
             lib.translate.qzj = "<b description=强制技：技能结算后,此技能指定的目标角色当前回合失去技能>强制技</b>"
             lib.translate.queqiaoxian = "<b description=鹊桥仙：技能结算后,可令一名珠联璧合的异性角色额外结算一次>鹊桥仙</b>"
-            lib.translate.xin_qinnang2 = '青囊'
-            lib.translate.xin_xuming = '续命'
+            lib.translate.xin_qinnang2 = '青囊';
             lib.translate._xjb_huobi = "货币"
             lib.translate.xin_qinnang2_info = '出牌阶段限一次，你可对一名角色使用任意张【桃】，你以此法你每使用一张【桃】，你和其各摸一张牌。'
             lib.translate.lunaticMasochist = "疼痛敏感"
@@ -426,20 +425,18 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                             return { bool: true, cards: [hs.randomGet()] }
                         })
                         .forResult()
-                    const { bool, opinion } = result;
-                    if (bool && opinion) {
-                        const color = ["red", "black"].find(item => item != control)
-                        if (opinion === control) {
-                            const maxHandCardsPlayer = game.filterPlayer().find(cur => cur.isMaxHandcard())
-                            await player.drawTo(maxHandCardsPlayer.countCards("h") + 1)
-                            if (result[color]) {
-                                for (const [cur, card] of result[color]) {
-                                    await cur.loseHp()
-                                }
+                    const { opinion } = result;
+                    const color = ["red", "black"].find(item => item != control)
+                    if (opinion === control) {
+                        const maxHandCardsPlayer = game.filterPlayer().find(cur => cur.isMaxHandcard())
+                        await player.drawTo(maxHandCardsPlayer.countCards("h") + 1)
+                        if (result[color]) {
+                            for (const [cur, card] of result[color]) {
+                                await cur.loseHp();
                             }
-                        } else {
-                            result[color].forEach(map => map[0].addSkill("xjb_wei_fayi_yidang"))
                         }
+                    } else {
+                        result[color].forEach(map => map[0].addSkill("xjb_wei_fayi_yidang"))
                     }
                 },
                 subSkill: {
@@ -448,14 +445,15 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
                             player: ["dieAfter"],
                         },
                         forceDie: true,
-                        mark:true,
-                        intro:{
-                            name:"异",
-                            content:"丞相本兴义兵，匡扶汉室，当秉忠贞之志，守谦退之节。君子爱人以德，不宜如此。"
+                        mark: true,
+                        marktext:"异",
+                        intro: {
+                            name: "异党",
+                            content: "丞相本兴义兵，匡扶汉室，当秉忠贞之志，守谦退之节。君子爱人以德，不宜如此。"
                         },
                         content: function () {
-                            const target = game.filterPlayer().find(cur => cur.hasSkill("xjb_wei_fayi"));
-                            target.restoreSkill("xjb_wei_fayi")
+                            const target = game.filterPlayer().find(cur => cur.hasSkill("xjb_wei_fayi", null, false, false));
+                            target.restoreSkill("xjb_wei_fayi");
                         },
                         sub: true,
                         sourceSkill: "xjb_wei_fayi",
@@ -891,37 +889,6 @@ window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
             }
         },
         "xjb_theCardSkill": function () {
-            //以下是诸葛亮装备
-            //1.装备技能:续命
-            lib.skill.xin_xuming = {
-                trigger: {
-                    global: "dying",
-                },
-                frequent: true,
-                content: function () {
-                    "step 0"
-                    var list0 = []
-                    if (player.getExpansions('qixing').length > 0) list0.push('弃置一颗"星"，令其恢复1点体力')
-                    list0.push('使用一张【奇门遁甲】')
-                    if (list0.length > 0) event.list0 = list0
-                    "step 1"
-                    player.chooseControl(event.list0).set('prompt', '续命:选择一项执行之').set('ai', function () {
-                        if (get.attitude(player, trigger.player) > 0) return '弃置一颗"星"，令其恢复1点体力'
-                        return '使用一张【奇门遁甲】';
-                    })
-                    "step 2"
-                    if (result.control == '使用一张【奇门遁甲】') {
-                        player.chooseUseTarget(game.createCard('xjb_qimendunjia'), true)
-                        event.finish();
-                    }
-                    else {
-                        var card = player.getExpansions('qixing').slice(-1)
-                        player.loseToDiscardpile(card);
-                        trigger.player.recover()
-                    }
-                }
-            }
-            /*以上是诸葛亮装备技能*/
             //1.装备技能:偃月
             lib.skill.xin_yanyue = {
                 equipSkill: true,

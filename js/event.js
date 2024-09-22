@@ -840,13 +840,8 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                             player.removeMark("_xin_bianshen", 1)
                         }
                         next.call = i
-                    } else if (typeof i == 'string') {
-                        next.qimen = i
-                    } else if (typeof i == 'number') {
-                        next.cost = i
-                    }
+                    } 
                 })
-                if (!next.qimen) next.qimen = ""
                 next.setContent('xjb_bianshen');
                 return next;
             },
@@ -859,11 +854,6 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 event.player.storage[event.call.name] = event.player.addSubPlayer(event.call);
                 event.player.callSubPlayer(event.call)
                 event.player.addMark('_xin_bianshen')
-                "step 2"
-                event.player.storage["xjb_qimendunjia"] = event.qimen
-                event.player.useCard(game.createCard('xjb_qimendunjia'), event.player)
-                game.xjb_systemEnergyChange(-50)
-                game.cost_xjb_cost(1, event.cost)
             },
         },
         chooseLoseHpMaxHp: {

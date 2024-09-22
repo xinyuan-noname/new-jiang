@@ -96,16 +96,8 @@ export function XJB_CONTENT(config, pack) {
             skill_X: 'X技',
             xjb_lingli: "灵力",
             hun_system: '魂币系统',
-            fileURL: "导出路径"
         },
         onclick: function (layout) {
-            if (layout == "fileURL") {
-                game.xjb_create.prompt('这里可以设置本扩展文件的导出路径', lib.config.xjb_fileURL ? lib.config.xjb_fileURL : "file:///", function () {
-                    lib.config.xjb_fileURL = this.result;
-                    game.saveConfig("xjb_fileURL", this.result)
-                })
-                return false;
-            }
             ui.create.xjb_book(ui.window, xjb_library["intro"][layout])
         }
     }
@@ -786,16 +778,16 @@ export function XJB_CONTENT(config, pack) {
                 name: '<img src="' + lib.xjb_src + 'image/xjb_locked.png" width="16">' + '点我解锁变身功能',
                 clear: true,
                 onclick: function () {
-                    var that = this
-                    if (lib.config.xjb_hunbi >= 15) {
-                        game.xjb_create.confirm('你已有' + lib.config.xjb_hunbi + '个魂币，解锁该功能需要15个魂币，确定要解锁吗？', function () {
-                            game.cost_xjb_cost("B", 15)
-                            game.saveConfig('xjb_bianshen', 1);
+                    const goods = game.xjb_goods.permission_callFellow
+                    if (lib.config.xjb_hunbi >= goods.price) {
+                        game.xjb_create.confirm('你已有' + lib.config.xjb_hunbi + '个魂币，解锁该功能需要' + goods.price + '个魂币，确定要解锁吗？', () => {
+                            game.xjb_costHunbi(goods.price,'开启魂将功能权限')
+                            game.saveConfig(goods.mapToConfig, 1);
                             game.xjb_create.alert('已解锁变身功能，重启即生效');
-                            that.innerHTML = '<img src="' + lib.xjb_src + 'image/xjb_open.png" width="16">' + '你已解锁变身功能'
+                            this.innerHTML = '<img src="' + lib.xjb_src + 'image/xjb_open.png" width="16">' + '你已解锁变身功能'
                         })
                     }
-                    else game.xjb_create.alert('需要15个魂币，你的魂币不足！');
+                    else game.xjb_create.alert('需要' + goods.price + '个魂币，你的魂币不足！');
                 }
             }
         }
@@ -804,17 +796,16 @@ export function XJB_CONTENT(config, pack) {
                 name: '<img src="' + lib.xjb_src + 'image/xjb_locked.png" width="16">' + '点我解锁养成功能',
                 clear: true,
                 onclick: function () {
-                    var that = this
-                    if (lib.config.xjb_hunbi >= 5) {
-                        game.xjb_create.confirm('你已有' + lib.config.xjb_hunbi + '个魂币，解锁养成功能需要5个魂币，确定要解锁吗？', function () {
-                            game.cost_xjb_cost(1, 5)
-                            game.saveConfig('xjb_yangcheng', 1);
-                            game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter);
-                            game.xjb_create.alert('已解锁养成功能，角色已添加到soul包，重启则自动生效');
-                            that.innerHTML = '<img src="' + lib.assetURL + '/extension/新将包/image/xjb_open.png" width="16">' + '你已解锁养成功能'
+                    const goods = game.xjb_goods.permission_raise
+                    if (lib.config.xjb_hunbi >= goods.price) {
+                        game.xjb_create.confirm('你已有' + lib.config.xjb_hunbi + '个魂币，解锁该功能需要' + goods.price + '个魂币，确定要解锁吗？', () => {
+                            game.xjb_costHunbi(goods.price,'开启养成功能权限')
+                            game.saveConfig(goods.mapToConfig, 1);
+                            game.xjb_create.alert('已解锁养成功能，重启即生效');
+                            this.innerHTML = '<img src="' + lib.xjb_src + 'image/xjb_open.png" width="16">' + '你已解锁变身功能'
                         })
                     }
-                    else game.xjb_create.alert('需要5个魂币，你的魂币不足！');
+                    else game.xjb_create.alert('需要' + goods.price + '个魂币，你的魂币不足！');
                 }
             }
         }
@@ -823,15 +814,15 @@ export function XJB_CONTENT(config, pack) {
                 name: '<img src="' + lib.xjb_src + 'image/xjb_locked.png" width="16">' + '点我解锁触屏即杀功能',
                 clear: true,
                 onclick: function () {
-                    var that = this
-                    if (lib.config.xjb_hunbi >= 50) {
-                        game.xjb_create.confirm('你已有' + lib.config.xjb_hunbi + '个魂币，解锁触屏即杀功能需要50个魂币，确定要解锁吗？', function () {
-                            game.cost_xjb_cost(1, 50)
-                            game.saveConfig('xjb_chupingjisha', 1);
-                            that.innerHTML = '<img src="' + lib.xjb_src + 'image/xjb_open.png" width="16">' + '你已解锁触屏即杀'
+                    const goods = game.xjb_goods.permission_cpjs
+                    if (lib.config.xjb_hunbi >= goods.price) {
+                        game.xjb_create.confirm('你已有' + lib.config.xjb_hunbi + '个魂币，解锁触屏即杀功能需要' + goods.price + '个魂币，确定要解锁吗？', () => {
+                            game.xjb_costHunbi(goods.price,'开启触屏即杀功能权限')
+                            game.saveConfig(goods.mapToConfig, 1);
+                            this.innerHTML = '<img src="' + lib.xjb_src + 'image/xjb_open.png" width="16">' + '你已解锁触屏即杀'
                         })
                     }
-                    else game.xjb_create.alert('需要50个魂币，你的魂币不足！');
+                    else game.xjb_create.alert('需要' + goods.price + '个魂币，你的魂币不足！');
                 }
             }
         }

@@ -164,7 +164,6 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         if (!game.xjb_currencyRate || !game.xjb_currencyRate.CoinToEnergy) return 0
         return (game.xjb_currencyRate.CoinToEnergy * lib.config.xjb_hunbi / lib.config.xjb_systemEnergy)
     }
-    /*consume*/
     game.xjb_condition = function (num1, num2) {
         var Uhave
         switch (num1) {
@@ -176,6 +175,11 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         if (Uhave >= num2) return true
         return false
     }
+    game.xjb_canPayWithB = function (number) {
+        return lib.config.xjb_hunbi >= number;
+    }
+    /*consume*/
+    
     game.cost_xjb_cost = function (type, num2, log) {
         num2 = Math.abs(num2)
         if (type == 1 || type == "B") game.xjb_costHunbi(num2, log)
@@ -193,6 +197,7 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
             game.xjb_writeHunbiLog(logString);
         }
     }
+    
     //计算乘以浮流率后的价格
     game.xjb_howMuchIsIt = function (value, min, max) {
         let price = Math.round(value * game.xjb_inflationRate());
@@ -232,8 +237,7 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
     }
     /*goods*/
     class Goods {
-        constructor(previousPrice, minCost, translate) {
-
+        constructor(previousPrice, minCost, translate, mapToConfig) {
             if (typeof previousPrice === "function") {
                 Object.defineProperty(this, "previousPrice", {
                     get() {
@@ -253,6 +257,7 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
                 this.minCost = minCost;
             }
             this.translate = translate;
+            if (mapToConfig) this.mapToConfig = mapToConfig
         }
         getPrice() {
             return game.xjb_howMuchIsIt(this.previousPrice, this.minCost);
@@ -280,6 +285,9 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
                 return (15 + (num + 1) * 5)
             },
             "技能槽"
-        )
+        ),
+        permission_raise: new Goods(6, 4, '养成武将权限', 'xjb_yangcheng'),
+        permission_cpjs: new Goods(48, 40, '触屏即杀权限', 'xjb_chupingjisha'),
+        permission_callFellow: new Goods(15, 12, '魂将权限', 'xjb_bianshen'),
     }
 }

@@ -234,6 +234,31 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                     min: 0,
                     max: 5,
                 },
+                xjb_qimendunjia_1:{
+                    counterpart:"奇门遁甲-红桃-8",
+                    min:0,
+                    max:2
+                },
+                xjb_qimendunjia_2:{
+                    counterpart:"奇门遁甲-黑桃-8",
+                    min:0,
+                    max:2
+                },
+                xjb_qimendunjia_3:{
+                    counterpart:"奇门遁甲-梅花-8",
+                    min:0,
+                    max:2
+                },
+                xjb_qimendunjia_4:{
+                    counterpart:"奇门遁甲-方片-8",
+                    min:0,
+                    max:2
+                },
+                xjb_tianqian_1:{
+                    counterpart:"天谴-黑桃-9",
+                    min:0,
+                    max:1
+                }
             };
             window.addEventListener('hashchange', function () {
                 if (location.hash.indexOf('xjb_card') < 0) return false;
