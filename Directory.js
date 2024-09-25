@@ -8,22 +8,16 @@ window["xjb_xyAPI_Directory_新将包"]={
         "info.json",
         "LICENSE",
         "precontent.js",
-        "qimendunjia.png",
         "README.md",
         "skillCard.png",
-        "xin_baiyin.png",
-        "xin_chitu.png",
-        "xin_hutou.png",
         "xin_newCharacter.jpg",
-        "xin_qinglong.png",
-        "xin_qinnangshu.png",
-        "xin_qixing.png",
         "xjb_Infinity.png",
         "xjb_jingu.png",
         "xjb_seizeHpCard.png",
         "xjb_shenshapo.png",
         "xjb_tianming_huobi1.png",
         "xjb_tianming_huobi2.png",
+        "xjb_xyAPI.js",
         "xjb_zhihuan.png"
     ],
     "audio": [
@@ -79,6 +73,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "Xskill.js"
     ],
     "json": [
+        ".json",
         "1.json"
     ],
     "lingli": [
@@ -128,9 +123,19 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_yin2.png",
         "xjb_yin3.png"
     ],
-    "image/card": [
+    "image/card_callFellow": [
+        "xin_chitu.png",
+        "xin_hutou.png",
+        "xjb_baiyin.png",
+        "xjb_qinglong.png",
+        "xjb_qingnangshu.png",
+        "xjb_qixing.png"
+    ],
+    "image/card_clearBad": [
         "xjb_chucanquhui.png",
         "xjb_lijingtuzhi.png",
+        "xjb_qimendunjia.png",
+        "xjb_tianqian.png",
         "xjb_xiugengxuzi.png"
     ],
     "image/character_soul": [
@@ -160,6 +165,11 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_yingzheng.jpg",
         "xjb_zhouyu.jpg",
         "xjb_zhugeliang.jpg"
+    ],
+    "js/card": [
+        "callFellow.js",
+        "clearBad.js",
+        "store.js"
     ],
     "js/skill": [
         "bossSkill.js",
