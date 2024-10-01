@@ -17,7 +17,6 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_shenshapo.png",
         "xjb_tianming_huobi1.png",
         "xjb_tianming_huobi2.png",
-        "xjb_xyAPI.js",
         "xjb_zhihuan.png"
     ],
     "audio": [
@@ -124,9 +123,9 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_yin3.png"
     ],
     "image/card_callFellow": [
-        "xin_chitu.png",
-        "xin_hutou.png",
         "xjb_baiyin.png",
+        "xjb_chitu.png",
+        "xjb_hutou.png",
         "xjb_qinglong.png",
         "xjb_qingnangshu.png",
         "xjb_qixing.png"

@@ -421,26 +421,36 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                         return book;
                     }
                 }
-                let book = document.createElement("div")
-                ui.xjb_giveStyle(book, {
-                    backgroundImage: `url(${lib.xjb_src}/lingli/book.jpg)`,
-                    "background-size": "100% 100%",
-                    padding: "25px",
-                    "z-index": "10",
-                    fontSize: "22px",
-                    padding: "7%",
-                    overflow: "auto"
-                })
-                book.className = "xjbToCenter"
-                text.style && ui.xjb_giveStyle(book, text.style)
-                father.appendChild(book)
+                let bookBack = element("div")
+                    .style({
+                        backgroundImage: `url(${lib.xjb_src}/lingli/book.jpg)`,
+                        "background-size": "100% 100%",
+                        "z-index": "10",
+                        padding: "8%",
+                    })
+                    .style(text.style)
+                    .addClass("xjbToCenter")
+                    .exit()
+                let book = element("div")
+                    .style({
+                        height:"80%",
+                        width:"80%",
+                        fontSize: "22px",
+                        overflow: "auto"
+                    })
+                    .addClass("xjbToCenter")
+                    .father(bookBack)
+                    .exit()
+                father.appendChild(bookBack)
                 //添加标题和作者
-                let headline = document.createElement("h4")
-                let writer = document.createElement("h5")
-                book.appendChild(headline)
-                book.appendChild(writer)
-                headline.className = "xjbHeadline"
-                writer.className = "xjbWriter"
+                let headline = element("h4")
+                    .addClass("xjbHeadline")
+                    .father(book)
+                    .exit()
+                let writer = element("h5")
+                    .addClass("xjbWriter")
+                    .father(book)
+                    .exit()
                 let body = {
                     headline: headline,
                     writer: writer,
@@ -488,7 +498,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                             ignore = Boolean(ignoreValue)
                             //console.log(targetList,nowTarget)
                         }
-                        let wonderfulTimer = window.requestAnimationFrame(function xjbWonderfulWriter() {
+                        requestAnimationFrame(function xjbWonderfulWriter() {
                             if (!wordsGroups.length) {
                                 cancelAnimationFrame(xjbWonderfulWriter)
                                 book.cantTouch = false
@@ -555,21 +565,6 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                                     ignore = true;
                                 }
                                 return window.requestAnimationFrame(xjbWonderfulWriter)
-                                /*
-                                let chain = '', nowWord = wordsGroups.shift();
-                                theWord = nowWord;
-                                nowWord = wordsGroups.shift();
-                                while (nowWord !== 'ぇ') {
-                                    theWord += nowWord;
-                                    nowWord = wordsGroups.shift();
-                                }
-                                nowWord = wordsGroups.shift()
-                                while (nowWord !== 'こ') {
-                                    chain += nowWord;
-                                    nowWord = wordsGroups.shift();
-                                }
-                                theWord = `<a onclick="location.href=this.href" href=${chain}>${theWord}</a>`
-                                */
                             }
                             else if (theWord === "ア") {
                                 if (nowTarget.nodeName.toLowerCase() === "i") {
@@ -586,16 +581,16 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
 
                     })
                 }
-                Write(text.headline, "headline").then(function (data) {
+                Write(text.headline, "headline").then(() => {
                     return Write(text.writer, "writer")
-                }).then(function (data) {
+                }).then(() => {
                     return Write(text.content, "content")
                 })
-                book.addEventListener("dblclick", () => book.remove())
+                bookBack.addEventListener("dblclick", () => bookBack.remove())
                 if (!lib.xjb_library) {
                     lib.xjb_library = {}
                 }
-                lib.xjb_library[text.headline + "-" + text.writer] = book
+                lib.xjb_library[text.headline + "-" + text.writer] = bookBack
                 return book
             }
             //幕布

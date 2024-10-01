@@ -86,15 +86,12 @@ export function XJB_CONTENT(config, pack) {
     })
     lib.extensionMenu.extension_新将包.delete.name = '<img src="' + lib.xjb_src + 'image/trash.png" width="16">' + '删除'
     lib.extensionMenu.extension_新将包['Eplanation'] = {
-        name: '<img src="' + lib.xjb_src + 'image/instruction.png" width="16"></img>说明编辑',
+        name: '<img src="' + lib.xjb_src + 'image/instruction.png" width="16"></img>概念说明',
         init: '',
         item: {
             mingxie: '鸣谢',
             disk: "网盘",
             remnantArea: "残区",
-            qzj: '强制技',
-            skill_X: 'X技',
-            xjb_lingli: "灵力",
             hun_system: '魂币系统',
         },
         onclick: function (layout) {
@@ -409,7 +406,7 @@ export function XJB_CONTENT(config, pack) {
                         xjb_skillTag_fuSkill: "福技:首次使用后恢复体力并加护甲",
                         xjb_skillTag_luSkill: "禄技:首次使用后摸四张牌",
                         xjb_skillTag_shouSkill: "寿技:首次使用后加两点体力上限",
-                        xjb_skillTag_qzj: "强制技:结算后,令目标失去技能",
+                        xjb_skillTag_qzj: "强制技:结算后,令目标失去技能(此时切勿用本体编辑器编辑技能!)",
                         xjb_skillTag_suidongSkill: "随动技:因本技能而获得牌，该角色可以立即使用之",
                         xjb_skillTag_queqiaoxian: "鹊桥仙:结算后,可令有姻缘的珠联璧合角色额外结算一次",
                     })

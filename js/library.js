@@ -38,15 +38,6 @@ export const xjb_library = {
             `,
          style: wuyan
       },
-      "qzj": {
-         headline: "强制技",
-         writer: "",
-         content:
-            `B强制技B(qzj):一种特殊的主动技。n 
-             B特性B:使技能目标该回合所有技能数据清空。n
-             B提示B:请不要于此时用游戏自带编辑器编辑扩展，防止数据丢失！`,
-         style: siyan
-      },
       "remnantArea": {
          headline: "残区",
          writer: "",
@@ -61,17 +52,6 @@ export const xjb_library = {
                B使用残牌B:n
                一名角色使用残牌意味着:在其残区中置入和使用的残牌同名的牌。
                `,
-         style: wuyan
-      },
-      "xjb_lingli": {
-         headline: "灵力",
-         writer: "",
-         content: `
-            B一些全局函数B n
-            ア1. window.xjb_lingli.daomo.test(player)アn
-            这个函数用于检测player是否拥有导魔介质n
-            2.
-            `,
          style: wuyan
       },
       "hun_system": {
@@ -107,31 +87,6 @@ export const xjb_library = {
             B两种货币B：n
             场上角色累积使用牌、打出牌、造成伤害的分数达到500，牌堆中便添加一张【铜币】；
             场上角色累积使用牌、打出牌、造成伤害的分数达到1500，牌堆中便添加一张【金币】
-            `,
-         style: siyan
-      },
-      "skill_X": {
-         headline: "X技",
-         writer: "",
-         content: `
-            AX技Aア(skill_X)ア:n
-            为方便独立出来的技能。每一个数字对应一个效果。一般和アplayer.fc_Xア一起使用。n
-            A player.fc_X A:X技的数据处理器。用法如下:n
-             1.B数字类参数B，一个数字只对应着一项事件(摸牌、恢复体力、失去体力等等)，可以连写，会依次执行。n
-             2.B布尔类参数B，布尔用于确认是否选择角色。アtrueア→令角色执行事件，アfalseア→アonlymeア角色执行事件。 n
-             3.B数组类参数B，数组的每一项和数字对应，并决定着事件的数值。n            
-             4.B字符串类参数B，当这类参数为如下所提到的，会有如下效果:n
-             ①アnoskill_tempア:强制技效果；n
-             ②アbaiban_tempア:执行角色该回合白板；n
-             ③アusechenSkillア:使用名臣技；n
-             5.B对象类参数B，其键有如下所提到的，会有如下效果:n
-            ①アnatureア:数组，为伤害设置属性；n
-            ②アexpireア:对象，为アtempSkillア设置期限;n
-            ③アskillsア:数组，设置获得的技能;n
-            ④アidentityア:数组，设置成为的身份；n
-            ⑤アawakenア:数组，设置废除的技能；n
-            ⑥アonlymeア:数组，设置アonlymeア角色。n   
-            n                       
             `,
          style: siyan
       },

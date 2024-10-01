@@ -48,7 +48,9 @@ const eventList = {
     '失去体力': 'loseHp',
     '失去体力值': "loseHp",
     '失去体力上限': 'loseMaxHp',
+    '减少体力上限': 'loseMaxHp',
     '增加体力上限': 'gainMaxHp',
+    '获得体力上限': 'gainMaxHp',
     //
     '横置或重置': 'link',
     '翻面': 'turnOver',
@@ -75,16 +77,6 @@ const cardNameList = (() => {
 })();
 const cardTypeList = (() => {
     return ['basic', 'equip', 'delay', ...Object.keys(lib.cardType)]
-})();
-const skillList = (() => {
-    let list = Object.keys(lib.skill)
-    list = list.filter(a => {
-        if (a === "global") return false;
-        if (a === "globalmap") return false;
-        if (a.indexOf("_") === 0) return false;
-        return true;
-    })
-    return list;
 })();
 function getMapOfOneOfPlayers() {
     const map = {}
@@ -144,6 +136,7 @@ function getMapOfColorCard() {
     }
     return map;
 }
+
 function getMapOfgetParent() {
     const list = {}
     for (let [i, k] of Object.entries(eventList)) {
@@ -197,6 +190,17 @@ function getMapOfTri_Use() {
     }
     return map;
 }
+function getMapOfWhen() {
+    const map = {}
+    for (let [cn, en] of Object.entries(eventList)) {
+        map["于下次" + cn + "前"] = `when;{player:"${en}Before"}`
+        map["于下次" + cn + "时"] = `when;{player:"${en}Begin"}`
+        map["于下次" + cn + "后"] = `when;{player:"${en}End"}`
+        map["于下次" + cn + "结算后"] = `when;{player:"${en}After"}`
+    }
+    return map;
+}
+
 function getMapOfHasCard() {
     const idList = cardNameList
     const map = {};
@@ -212,17 +216,17 @@ function getMapOfHasCard() {
 function getMapOfHasType() {
     const idList = cardTypeList
     const map = {
-        "有普通锦囊牌": `hasCard:{type:"trick"}:"hes"`,
-        "判定区内有普通锦囊牌": `hasCard:{type:"trick"}:"j"`,
-        "手牌区内有普通锦囊牌": `hasCard:{type:"trick"}`,
-        "装备区内有普通锦囊牌": `hasCard:{type:"trick"}:"e"`
+        "有普通锦囊牌": `hasCard;{type:"trick"};"hes"`,
+        "判定区内有普通锦囊牌": `hasCard;{type:"trick"};"j"`,
+        "手牌区内有普通锦囊牌": `hasCard;{type:"trick"}`,
+        "装备区内有普通锦囊牌": `hasCard;{type:"trick"};"e"`
     };
     for (let k of idList) {
         //这里不加intoFunction标志,表明不能向其中添加参数
-        map["有" + lib.translate[k] + "牌"] = `hasCard:"hes":{type:"${k}"}`;
-        map["判定区内有" + lib.translate[k] + "牌"] = `hasCard:{type:"${k}"}:"j"`;
-        map["手牌区内有" + lib.translate[k] + "牌"] = `hasCard:{type:"${k}"}`;
-        map["装备区内有" + lib.translate[k] + "牌"] = `hasCard:{type:"${k}"}:"e"`;
+        map["有" + lib.translate[k] + "牌"] = `hasCard;"hes";{type:"${k}"}`;
+        map["判定区内有" + lib.translate[k] + "牌"] = `hasCard;{type:"${k}"};"j"`;
+        map["手牌区内有" + lib.translate[k] + "牌"] = `hasCard;{type:"${k}"}`;
+        map["装备区内有" + lib.translate[k] + "牌"] = `hasCard;{type:"${k}"};"e"`;
     }
     return map;
 }
@@ -230,14 +234,14 @@ function getMapOfCanAddJudge() {
     const idList = cardNameList.filter(card => get.type(card) === 'delay')
     const map = {};
     for (let k of idList) {
-        map["可以被贴上" + lib.translate[k]] = `canAddJudge:"${k}"`;
+        map["可以被贴上" + lib.translate[k]] = `canAddJudge;"${k}"`;
     }
     return map;
 }
 function getMapOfChangeGroup() {
     const map = {};
     for (let [cn, attr] of Object.entries(getMapOfGroup())) {
-        map["将势力改为" + cn] = `changeGroup:${attr}`;
+        map["将势力改为" + cn] = `changeGroup;${attr}`;
     }
     return map;
 }
@@ -255,7 +259,7 @@ function getMapOfStep() {
 }
 function getMapOfQuan() {
     const map = {}
-    for (let i = 1; i < 51; i++) {
+    for (let i = 1; i < 10; i++) {
         map[i + "张"] = '' + i
         map[get.cnNumber(i) + "张"] = '' + i
         map[i + "名"] = '' + i
@@ -290,8 +294,8 @@ function getMapOfRandomNum() {
 function getMapOfUSeVcard() {
     const map = {}
     for (const [cn, en] of Object.entries(getMapOfCard())) {
-        map[`视为使用${cn}`] = `useCard:{name:${en},isCard:true}:intoFunction`
-        map[`选择对角色使用${cn}`] = `chooseUseTarget:{name:${en},isCard:true}:intoFunction`
+        map[`视为使用${cn}`] = `useCard;{name:${en},isCard:true}:intoFunction`
+        map[`选择对角色使用${cn}`] = `chooseUseTarget;{name:${en},isCard:true}:intoFunction`
     }
     return map
 }
@@ -307,16 +311,17 @@ function getMapOfActionHistory() {
         ["使用技能", "useSkill"]
     ]
     const map = {
-        "本回合的出牌阶段使用牌次数": `getHistory:"useCard":evt=>evt.isPhaseUsing()`,
-        "本回合的出牌阶段打出牌次数": `getHistory:"respond":evt=>evt.isPhaseUsing()`,
-        '本回合造成伤害点数': `getHistory:"sourceDamage"://!?reduce((acc,cur)=>acc+cur.num,0)`,
-        '本回合造成的伤害点数': `getHistory:"sourceDamage"://!?reduce((acc,cur)=>acc+cur.num,0)`
+        "本回合的出牌阶段使用牌次数": `getHistory;"useCard";evt=>evt.isPhaseUsing()`,
+        "本回合的出牌阶段打出牌次数": `getHistory;"respond";evt=>evt.isPhaseUsing()`,
+        '本回合造成伤害点数': `getHistory;"sourceDamage";//!?reduce((acc,cur)=>acc+cur.num,0)`,
+        '本回合造成的伤害点数': `getHistory;"sourceDamage";//!?reduce((acc,cur)=>acc+cur.num,0)`,
+        '本回合造成伤害的点数': `getHistory;"sourceDamage";//!?reduce((acc,cur)=>acc+cur.num,0)`
     }
     for (const [cn, en] of list) {
-        map[`本回合${cn}次数`] = `getHistory:"${en}"://!?length`;
-        map[`获取本回合${cn}事件`] = `getHistory:"${en}"`;
-        map[`本局游戏${cn}次数`] = `getAllHistory:"${en}"://!?length`
-        map[`获取本局游戏${cn}事件`] = `getAllHistory:"${en}"`
+        map[`本回合${cn}次数`] = `getHistory;"${en}";//!?length`;
+        map[`获取本回合${cn}事件`] = `getHistory;"${en}"`;
+        map[`本局游戏${cn}次数`] = `getAllHistory;"${en}";//!?length`
+        map[`获取本局游戏${cn}事件`] = `getAllHistory;"${en}"`
     }
     return map;
 }
@@ -391,6 +396,18 @@ function getMapOfOneOfTriCards() {
     const map = {}
     for (let i = 0; i < 10; i++) {
         map['触发事件的牌组-' + i] = `trigger.cards[${i}]`
+    }
+    return map
+}
+function getMapOfOneOfSelectedCards() {
+    const map = {}
+    for (let i = 0; i < 10; i++) {
+        const part = '第' + get.cnNumber(i + 1) + "张牌";
+        map['目前选择的' + part] =
+            map['当前选择的' + part] =
+            map['当前选择的卡牌-' + i] =
+            map['目前选择的牌组-' + i] =
+            `ui.selected.cards[${i}]`
     }
     return map
 }
@@ -481,7 +498,7 @@ export class NonameCN {
         //
         '来源': 'source',
         //
-        '新步骤':"'step'",
+        '新步骤': "'step'",
         //伤害事件
         '受到伤害点数': 'trigger.num',
         '受伤点数': 'trigger.num',
@@ -491,12 +508,8 @@ export class NonameCN {
         '造成伤害的属性': 'trigger.nature',
         '伤害属性': 'trigger.nature',
         //
-        '触发事件的卡牌': "trigger.card",
         '触发事件的点数': "trigger.num",
         '触发事件点数': "trigger.num",
-        '此牌对应的所有实体牌': 'trigger.cards',
-        '此牌对应的实体牌': 'trigger.cards',
-        "判定牌": "trigger.result.card",
         '当前回合序号': `trigger.getParent("phase",void 0,true).num`,
         //
         '获取': 'get',
@@ -568,22 +581,6 @@ export class NonameCN {
         '块变': 'let ',
         "等待": "await ",
         //
-        '令为': ' = ',
-        '自增': '++',
-        '自减': '--',
-        '或': ' || ',
-        '或者': ' || ',
-        '且': ' && ',
-        '并且': ' && ',
-        '非': '!',
-        '不是': ' != ',
-        '不为': ' != ',
-        '为': ' == ',
-        '是': ' == ',
-        '等于': ' == ',
-        '真等于': ' === ',
-        '不等于': ' != ',
-        '真不等于': ' !== ',
         '真': 'true',
         '假': 'false',
         '不': '!',
@@ -594,22 +591,6 @@ export class NonameCN {
         '分支开始': '{',
         '分支结束': '}',
         '否则': 'else ',
-        '大于': ' > ',
-        '大于等于': ' >= ',
-        '不小于': ' >= ',
-        '小于': ' < ',
-        '小于等于': ' <= ',
-        '不大于': ' <= ',
-        '加': ' + ',
-        '减': ' - ',
-        '乘': ' * ',
-        '乘以': ' * ',
-        '除以': ' / ',
-        '取模': ' % ',
-        '加等': " += ",
-        '减等': " -= ",
-        '除等': " /= ",
-        '乘等': " *= ",
         //数学
         '随机数': 'Math.random()',
         '圆周率': 'Math.PI',
@@ -619,10 +600,6 @@ export class NonameCN {
         "【": "[",
         "】": "]",
         "【】": "[]",
-        "‘": "'",
-        "’": "'",
-        "”": "\"",
-        "“": "\"",
         "！": "!",
         //
         '+': ' + ',
@@ -675,9 +652,13 @@ export class NonameCN {
         "牌堆": "ui.cardPile",
         "弃牌堆": "ui.discardPile",
         "处理区": "ui.ordering",
-        "目前选择卡牌的张数": "ui.selected.cards.length",
-        "目前选择目标的个数": "ui.selected.targets.length",
-        "目前选择按钮的个数": "ui.selected.buttons.length",
+        //
+        "目前选择的卡牌的张数": "ui.selected.cards.length",
+        "目前选择的目标的个数": "ui.selected.targets.length",
+        "目前选择的按钮的个数": "ui.selected.buttons.length",
+        "当前选择的卡牌的张数": "ui.selected.cards.length",
+        "当前选择的目标的个数": "ui.selected.targets.length",
+        "当前选择的按钮的个数": "ui.selected.buttons.length",
     }
     static freeQuotation = {
         cardName: getMapOfCard(false),
@@ -707,6 +688,59 @@ export class NonameCN {
         eventName: eventList,
     }
     static groupedList = {
+        punctuation: {
+            '成员访问操作符': ".",
+            '属性访问操作符': ".",
+            '员访符': ".",
+            '属访符': ".",
+            '员访': ".",
+            '属访': ".",
+            "函数调用操作符1": "(",
+            "函数调用操作符2": ")",
+            "函数调用操作符-左": "(",
+            "函数调用操作符-右": ")",
+            "调用符1": "(",
+            "调用符2": ")",
+            "调用符-左": "(",
+            "调用符-右": "(",
+            "调符1": "(",
+            "调符2": ")",
+            "调符-左": "(",
+            "调符-右": "(",
+            '令为': ' = ',
+            '自增': '++',
+            '自减': '--',
+            '或': ' || ',
+            '或者': ' || ',
+            '且': ' && ',
+            '并且': ' && ',
+            '非': '!',
+            '不是': ' != ',
+            '不为': ' != ',
+            '为': ' == ',
+            '是': ' == ',
+            '等于': ' == ',
+            '相等于': ' == ',
+            '真等于': ' === ',
+            '不等于': ' != ',
+            '真不等于': ' !== ',
+            '大于': ' > ',
+            '大于等于': ' >= ',
+            '不小于': ' >= ',
+            '小于': ' < ',
+            '小于等于': ' <= ',
+            '不大于': ' <= ',
+            '加': ' + ',
+            '减': ' - ',
+            '乘': ' * ',
+            '乘以': ' * ',
+            '除以': ' / ',
+            '取模': ' % ',
+            '加等': " += ",
+            '减等': " -= ",
+            '除等': " /= ",
+            '乘等': " *= ",
+        },
         staticValue: {
             "不可被无懈可击响应": `"nowuxie"`,
             "不计入次数": 'false',
@@ -801,11 +835,15 @@ export class NonameCN {
         },
         cards: {
             "触发事件的牌组": "trigger.cards",
-            "事件的牌组": "event.cards"
+            "事件的牌组": "event.cards",
+            "目前选择的牌组": "ui.selected.cards",
         },
         card: {
             ...getMapAboutCard(),
-            ...getMapOfOneOfTriCards()
+            ...getMapOfOneOfTriCards(),
+            ...getMapOfOneOfSelectedCards(),
+            "判定牌": "trigger.result.card",
+            '触发事件的卡牌': "trigger.card",
         },
         card_attr: {
             "点数": "number"
@@ -813,7 +851,13 @@ export class NonameCN {
         card_method: {
             "移除": "remove",
             "修正": "fix",
-            "已销毁": "destroyed"
+            "已销毁": "destroyed",
+            "牌名相同于": "sameNameAs",
+            "牌名不同于": "differentNameFrom",
+            "花色相同于": "sameSuitAs",
+            "花色不同于": "differentSuitFrom",
+            "点数相同于": "sameNumberAs",
+            "点数不同于": "differentNumberFrom",
         },
         result: {
             "选择结果布尔": "result.bool",
@@ -867,6 +911,76 @@ export class NonameCN {
             '护甲': 'hujia',
             '护甲值': 'hujia',
             'id': 'name',
+        },
+        player_method_hp: {
+            '体力值为全场最少或之一': 'isMinHp',
+            '体力值为全场最多或之一': 'isMaxHp',
+            '有全场最少或之一的体力值': 'isMinHp',
+            '有全场最多或之一的体力值': 'isMaxHp',
+            '没有全场最少或之一的体力值': 'isMinHp:denyPrefix',
+            '没有全场最多或之一的体力值': 'isMaxHp:denyPrefix',
+            '有全场唯一最少的体力值': 'isMinHp;true',
+            '有全场唯一最多的体力值': 'isMaxHp;true',
+            '没有全场唯一最少的体力值': 'isMinHp;true:denyPrefix',
+            '没有全场唯一最多的体力值': 'isMaxHp;true:denyPrefix',
+            //
+            '已损失的体力值':"getDamgedHp;",
+            '已损失体力值':"getDamgedHp;",
+            '已损体力值':"getDamgedHp;",
+            '已失体力值':"getDamgedHp;",
+        },
+        player_method_handcard: {
+            '手牌数为全场最少或之一': 'isMinHandcard',
+            '手牌数为全场最多或之一': 'isMaxHandcard',
+            '有全场最少或之一的手牌数': 'isMinHandcard',
+            '有全场最多或之一的手牌数': 'isMaxHandcard',
+            '有全场最少或之一的手牌数': 'isMinHandcard:denyPrefix',
+            '有全场最多或之一的手牌数': 'isMaxHandcard:denyPrefix',
+            '有全场唯一最少的手牌数': 'isMinHandcard;true',
+            '有全场唯一最多的手牌数': 'isMaxHandcard;true',
+            '没有全场唯一最少的手牌数': 'isMinHandcard;true:denyPrefix',
+            '没有全场唯一最多的手牌数': 'isMaxHandcard;true:denyPrefix',
+            "手牌上限": "getHandcardLimit;",
+        },
+        player_method_mark: {
+            //标记类
+            "标记数量": "countMark",
+            '统计标记': "countMark",
+            '获得标记': 'addMark',
+            '增加标记': 'addMark',
+            '移去标记': 'removeMark',
+            '拥有标记': 'hasMark',
+            '有标记': "hasMark",
+            '清除标记': 'clearMark',
+            '标记添加记录': 'markAuto',
+            '标记移除记录': 'unmarkAuto',
+            "有蓄力值": `hasMark:"charge"`,
+            "没有蓄力值": `hasMark:"charge":denyPrefix`,
+            "无蓄力值": `hasMark:"charge":denyPrefix`,
+        },
+        player_method_tempSkill: {
+            "本回合被破甲": `addTempSkill:"qinggang2"`,
+            "本回合非锁定技失效": `addTempSkill:"fengyin"`,
+            "获得技能直到下个出牌阶段结束": `addTempSkill;{player:"phaseUseEnd"}:intoFunctionWait`,
+            "获得技能直到下个回合结束": `addTempSkill;{player:"phaseEnd"}:intoFunctionWait`,
+            "获得技能直到下一轮开始时": `addTempSkill;"roundStart":intoFunctionWait`,
+        },
+        player_method_solt:{
+            '有未被废除的装备栏': "hasEnabledSlot",
+            '没有未被废除的装备栏': "hasEnabledSlot:denyPrefix",
+            "装备栏均已废除": "hasEnabledSlot:denyPrefix",
+            "装备栏均已被废除": "hasEnabledSlot:denyPrefix",
+            "已废除的装备栏数量": "countDisabled;",
+            "有空置的武器栏": "hasEmptySlot;1",
+            "没有空置的武器栏": "hasEmptySlot;1;denyPrefix",
+            "有空置的防具栏": "hasEmptySlot;2",
+            "没有空置的防具栏": "hasEmptySlot;2;denyPrefix",
+            "有空置的+1马栏": "hasEmptySlot;3",
+            "没有空置的+1马栏": "hasEmptySlot;3;denyPrefix",
+            "有空置的-1马栏": "hasEmptySlot;4",
+            "没有空置的-1马栏": "hasEmptySlot;4;denyPrefix",
+            "有空置的宝物栏": "hasEmptySlot;5",
+            "没有空置的宝物栏": "hasEmptySlot;5;denyPrefix",
         },
         player_method: {
             "攻击范围内有": "inRange",
@@ -924,25 +1038,6 @@ export class NonameCN {
             '未翻面': "isTurnedOver:denyPrefix",
             '判定区已废除': 'isDisabledJudge',
             '判定区未废除': 'isDisabledJudge:denyPrefix',
-            '有未被废除的装备栏': "hasEnabledSlot",
-            '无未被废除的装备栏': "hasEnabledSlot:denyPrefix",
-            '没有未被废除的装备栏': "hasEnabledSlot:denyPrefix",
-            "装备栏均已废除": "hasEnabledSlot:denyPrefix",
-            "装备栏均已被废除": "hasEnabledSlot:denyPrefix",
-            //
-            '体力值为全场最少或之一': 'isMinHp',
-            '手牌数为全场最少或之一': 'isMinHandcard',
-            //标记类
-            "标记数量": "countMark",
-            '统计标记': "countMark",
-            '获得标记': 'addMark',
-            '增加标记': 'addMark',
-            '移去标记': 'removeMark',
-            '拥有标记': 'hasMark',
-            '有标记': "hasMark",
-            '清除标记': 'clearMark',
-            '标记添加记录': 'markAuto',
-            '标记移除记录': 'unmarkAuto',
             //
             '失去所有技能': "clearSkills",
             '清除技能': "clearSkills",
@@ -1012,88 +1107,68 @@ export class NonameCN {
             ...getMapOfUSeVcard(),
             ...getMapOfSkip(),
             //
-            "本回合被破甲": `addTempSkill:"qinggang2"`,
-            "本回合非锁定技失效": `addTempSkill:"fengyin"`,
-            "获得技能直到下个出牌阶段结束": `addTempSkill;{player:"phaseUseEnd"}:intoFunctionWait`,
-            "获得技能直到下个回合结束": `addTempSkill;{player:"phaseEnd"}:intoFunctionWait`,
-            "获得技能直到下一轮开始时": `addTempSkill;"roundStart":intoFunctionWait`,
+            "播放判定生效动画": "tryJudgeAnimagte;true",
+            "播放判定失效动画": "tryJudgeAnimagte;false",
             //
-            "播放判定生效动画": "tryJudgeAnimagte:true",
-            "播放判定失效动画": "tryJudgeAnimagte:false",
-            //
-            "攻击范围": "getAttackRange:",
-            //标记类
-            "有蓄力值": `hasMark:"charge"`,
-            "没有蓄力值": `hasMark:"charge":denyPrefix`,
-            "无蓄力值": `hasMark:"charge":denyPrefix`,
+            "攻击范围": "getAttackRange;",
             //装备栏类
-            "已废除的装备栏数量": "countDisabled:",
-            "有空置的防具栏": "hasEmptySlot:2",
-            "无空置的防具栏": "hasEmptySlot:2:denyPrefix",
-            "有空置的武器栏": "hasEmptySlot:1",
-            "无空置的武器栏": "hasEmptySlot:1:denyPrefix",
-            "有空置的宝物栏": "hasEmptySlot:5",
-            "无空置的宝物栏": "hasEmptySlot:5:denyPrefix",
-            "有空置的+1马栏": "hasEmptySlot:3",
-            "无空置的+1马栏": "hasEmptySlot:3:denyPrefix",
-            "有空置的-1马栏": "hasEmptySlot:4",
-            "无空置的-1马栏": "hasEmptySlot:4:denyPrefix",
             //牌类事件      
-            '随机弃置牌': 'randomDiscard:"he":intoFunction',
-            '随机弃置装备区的牌': 'randomDiscard:"e":intoFunction',
-            '随机弃置判定区的牌': 'randomDiscard:"j":intoFunction',
-            '随机弃置手牌区的牌': 'randomDiscard:"h":intoFunction',
-            '弃置区域内的所有牌': 'randomDiscard:"hej":Infinity',
-            '获得角色区域内牌': 'gainPlayerCard:"hej":intoFunction',
-            '弃置角色区域内牌': 'discardPlayerCard:"hej":intoFunction',
-            '获得区域内牌': 'gainPlayerCard:"hej":intoFunction',
-            '弃置区域内牌': 'discardPlayerCard:"hej":intoFunction',
-            '获得角色牌': 'gainPlayerCard:"he":intoFunction',
-            '弃置角色牌': 'discardPlayerCard:"he":intoFunction',
-            '获得角色手牌': 'gainPlayerCard:"h":intoFunction',
-            '弃置角色手牌': 'discardPlayerCard:"h":intoFunction',
-            '隐式给牌': "give:false:intoFunctionWait",
-            "获得多名角色牌": `gainMultiple:"he":intoFunctionWait`,
+            '随机弃置牌': 'randomDiscard;"he";intoFunction',
+            '随机弃置装备区的牌': 'randomDiscard;"e";intoFunction',
+            '随机弃置判定区的牌': 'randomDiscard;"j";intoFunction',
+            '随机弃置手牌区的牌': 'randomDiscard;"h";intoFunction',
+            '弃置区域内的所有牌': 'randomDiscard;"hej";Infinity',
+            '获得角色区域内牌': 'gainPlayerCard;"hej";intoFunction',
+            '弃置角色区域内牌': 'discardPlayerCard;"hej";intoFunction',
+            '获得区域内牌': 'gainPlayerCard;"hej";intoFunction',
+            '弃置区域内牌': 'discardPlayerCard;"hej";intoFunction',
+            '获得角色牌': 'gainPlayerCard;"he";intoFunction',
+            '弃置角色牌': 'discardPlayerCard;"he";intoFunction',
+            '获得角色手牌': 'gainPlayerCard;"h";intoFunction',
+            '弃置角色手牌': 'discardPlayerCard;"h";intoFunction',
+            '隐式给牌': "give;false;intoFunctionWait",
+            "获得多名角色牌": `gainMultiple;"he";intoFunctionWait`,
             //
-            '有牌': 'hasCard:void 0:"he"',
-            '场上有牌': `hasCard:void 0:"ej"`,
-            '区域内有牌': 'hasCard:void 0:"hej"',
-            '装备区有牌': `hasCard:void 0:"e"`,
-            '判定区有牌': `hasCard:void 0:"j"`,
-            '手牌区有牌': `hasCard:void 0:"h"`,
-            '没有牌': 'hasCard:void 0:"he":denyPrefix',
-            '场上没有牌': `hasCard:void 0:"ej":denyPrefix`,
-            '区域内没有牌': 'hasCard:void 0:"hej":denyPrefix',
-            '装备区没有牌': `hasCard:void 0:"e":denyPrefix`,
-            '判定区没有牌': `hasCard:void 0:"j":denyPrefix`,
-            '手牌区没有牌': `hasCard:void 0:"h":denyPrefix`,
+            '有牌': 'hasCard;void 0;"he"',
+            '场上有牌': `hasCard;void 0;"ej"`,
+            '区域内有牌': 'hasCard;void 0;"hej"',
+            '装备区有牌': `hasCard;void 0;"e"`,
+            '判定区有牌': `hasCard;void 0;"j"`,
+            '手牌区有牌': `hasCard;void 0;"h"`,
+            '没有牌': 'hasCard;void 0;"he";denyPrefix',
+            '场上没有牌': `hasCard;void 0;"ej";denyPrefix`,
+            '区域内没有牌': 'hasCard;void 0;"hej";denyPrefix',
+            '装备区没有牌': `hasCard;void 0;"e";denyPrefix`,
+            '判定区没有牌': `hasCard;void 0;"j";denyPrefix`,
+            '手牌区没有牌': `hasCard;void 0;"h";denyPrefix`,
             //
-            "手牌上限": "getHandcardLimit:",
-            '手牌数': 'countCards:"h"',
-            '牌数': 'countCards:"he"',
-            '场上牌数': `countCards:"ej"`,
-            '场上的牌数': `countCards:"ej"`,
-            '区域内牌数': 'countCards:"hej"',
-            '手牌区牌数': 'countCards:"h"',
-            '装备区牌数': 'countCards:"e"',
-            '判定区牌数': 'countCards:"j"',
-            '区域内的牌数': 'countCards:"hej"',
-            '手牌区的牌数': 'countCards:"h"',
-            '装备区的牌数': 'countCards:"e"',
-            '判定区的牌数': 'countCards:"j"',
-            '获取手牌区牌': 'getCards:"h"',
-            '获取装备区牌': 'getCards:"e"',
-            '获取判定区牌': 'getCards:"j"',
-            '获取区域内牌': 'getCards:"hej"',
-            '获取牌': 'getCards:"he"',
-            '获取手牌': 'getCards:"h"',
+            
+            '手牌数': 'countCards;"h"',
+            '牌数': 'countCards;"he"',
+            '场上牌数': `countCards;"ej"`,
+            '场上的牌数': `countCards;"ej"`,
+            '区域内牌数': 'countCards;"hej"',
+            '手牌区牌数': 'countCards;"h"',
+            '装备区牌数': 'countCards;"e"',
+            '判定区牌数': 'countCards;"j"',
+            '区域内的牌数': 'countCards;"hej"',
+            '手牌区的牌数': 'countCards;"h"',
+            '装备区的牌数': 'countCards;"e"',
+            '判定区的牌数': 'countCards;"j"',
+            '获取手牌区牌': 'getCards;"h"',
+            '获取装备区牌': 'getCards;"e"',
+            '获取判定区牌': 'getCards;"j"',
+            '获取区域内牌': 'getCards;"hej"',
+            '获取牌': 'getCards;"he"',
+            '获取手牌': 'getCards;"h"',
             //
-
             //历史类
-            '获取本回合指定其他角色为目标的使用牌事件': "getHistory:'useCard':function(evt){return evt.targets.filter(current=>target!=player)}",
-            '获取本回合指定其他角色为目标的打出牌事件': "getHistory:'respond':function(evt){return evt.targets.filter(current=>target!=player)}",
-            '本回合没有对角色造成过伤害': `getHistory:"sourceDamage"`,
+            '获取本回合指定其他角色为目标的使用牌事件': "getHistory;'useCard';function(evt){return evt.targets.filter(current=>target!=player)}",
+            '获取本回合指定其他角色为目标的打出牌事件': "getHistory;'respond';function(evt){return evt.targets.filter(current=>target!=player)}",
             ...getMapOfActionHistory()
+        },
+        plyaer_when: {
+            ...getMapOfWhen()
         },
         players: {
             /*所(被)选(的)角色,所(被)选择(的)角色*/
@@ -1124,7 +1199,7 @@ export class NonameCN {
             '跳至': 'goto',
             '父事件': 'getParent',
             '获取父事件': 'getParent',
-            '获取父事件的名字': 'getParent://!?name',
+            '获取父事件的名字': 'getParent;//!?name',
             '数值改为0': "changeToZero",
             '数值调为0': "changeToZero",
             '数改为0': "changeToZero",
@@ -1135,27 +1210,27 @@ export class NonameCN {
         },
         event_set: {
             //
-            "设置ai": `set:"ai":intoFunction`,
-            "设置Ai": `set:"ai":intoFunction`,
-            "设置AI": `set:"ai":intoFunction`,
+            "设置ai": `set;"ai";intoFunction`,
+            "设置Ai": `set;"ai";intoFunction`,
+            "设置AI": `set;"ai";intoFunction`,
             //
-            "设置提示标题": `set:"prompt":intoFunction`,
-            "设置提示内容": `set:"prompt2":intoFunction`,
-            "设置提示事件提示": `set:"evtprompt":intoFunction`,
+            "设置提示标题": `set;"prompt";intoFunction`,
+            "设置提示内容": `set;"prompt2";intoFunction`,
+            "设置提示事件提示": `set;"evtprompt";intoFunction`,
             //
-            "设置选项列表": `set:"choiceList":intoFunction`,
-            "设置选项组": `set:"controls":intoFunction`,
+            "设置选项列表": `set;"choiceList";intoFunction`,
+            "设置选项组": `set;"controls";intoFunction`,
             //
-            "设置角色限制条件": `set:"filterTarget":intoFunction`,
-            "设置角色选择数量": `set:"selectTarget":intoFunction`,
+            "设置角色限制条件": `set;"filterTarget";intoFunction`,
+            "设置角色选择数量": `set;"selectTarget";intoFunction`,
             //
-            "设置卡牌选择数量": `set:"selectCard":intoFunction`,
-            "设置卡牌限制条件": `set:"filterCard":intoFunction`,
+            "设置卡牌选择数量": `set;"selectCard";intoFunction`,
+            "设置卡牌限制条件": `set;"filterCard";intoFunction`,
             //
-            "设置为强制发动": `set:"forced":true`,
+            "设置为强制发动": `set;"forced";true`,
             //判定类
-            "设置回调函数": `set:"callback":intoFunction`,
-            "设置判定收益": `set:"judge":intoFunction`,
+            "设置回调函数": `set;"callback";intoFunction`,
+            "设置判定收益": `set;"judge";intoFunction`,
             "设置红桃作为判定唯一正收益": `set;"judge";card=>get.suit(card)==="heart"?1:-2`,
             "设置黑桃作为判定唯一正收益": `set;"judge";card=>get.suit(card)==="spade"?1:-2`,
             "设置梅花作为判定唯一正收益": `set;"judge";card=>get.suit(card)==="club"?1:-2`,
@@ -1168,7 +1243,7 @@ export class NonameCN {
             "设置方片作为判定唯一负收益": `set;"judge";card=>get.suit(card)==="diamond"?-2:2`,
             "设置红色作为判定唯一负收益": `set;"judge;card=>get.color(card)==="red"?-2:2`,
             "设置黑色作为判定唯一负收益": `set;"judge";card=>get.color(card)==="black"?-2:2`,
-            "设置判定生效结果": `set:"judge2":intoFunction`,
+            "设置判定生效结果": `set;"judge2";intoFunction`,
             "设置判定生效结果与收益相反": `set;"judge2";result=>result.bool===false?true:false`
         },
         event_withArg: {
@@ -1244,29 +1319,29 @@ export class NonameCN {
             '日志': "log"
         },
         game_withArg: {
-            '胜利': 'over:true',
-            '失败': 'over:false',
-            "统计场上势力数": "countGroup:",
-            "统计场上男性数量": `countPlayer:cur=>cur.hasSex("male")`,
-            "统计场上女性数量": `countPlayer:cur=>cur.hasSex("female")`,
-            "统计场上其他男性数量": `countPlayer:cur=>cur.hasSex("male")&&cur!=player`,
-            "统计场上其他女性数量": `countPlayer:cur=>cur.hasSex("female")&&cur!=player`,
-            "统计场上魏势力角色数量": `countPlayer:cur=>cur.group!="wei"`,
-            "统计场上蜀势力角色数量": `countPlayer:cur=>cur.group!="shu"`,
-            "统计场上吴势力角色数量": `countPlayer:cur=>cur.group!="wu"`,
-            "统计场上群势力角色数量": `countPlayer:cur=>cur.group!="qun"`,
-            "统计场上晋势力角色数量": `countPlayer:cur=>cur.group!="jin"`,
-            "统计场上神势力角色数量": `countPlayer:cur=>cur.group!="shen"`,
-            "统计场上西势力角色数量": `countPlayer:cur=>cur.group!="western"`,
-            "统计场上键势力角色数量": `countPlayer:cur=>cur.group!="key"`,
-            "统计场上其他魏势力角色数量": `countPlayer:cur=>cur.group!="wei"&&cur!=player`,
-            "统计场上其他蜀势力角色数量": `countPlayer:cur=>cur.group!="shu"&&cur!=player`,
-            "统计场上其他吴势力角色数量": `countPlayer:cur=>cur.group!="wu"&&cur!=player`,
-            "统计场上其他群势力角色数量": `countPlayer:cur=>cur.group!="qun"&&cur!=player`,
-            "统计场上其他晋势力角色数量": `countPlayer:cur=>cur.group!="jin"&&cur!=player`,
-            "统计场上其他神势力角色数量": `countPlayer:cur=>cur.group!="shen"&&cur!=player`,
-            "统计场上其他西势力角色数量": `countPlayer:cur=>cur.group!="western"&&cur!=player`,
-            "统计场上其他键势力角色数量": `countPlayer:cur=>cur.group!="key"&&cur!=player`,
+            '胜利': 'over;true',
+            '失败': 'over;false',
+            "统计场上势力数": "countGroup;",
+            "统计场上男性数量": `countPlayer;cur=>cur.hasSex("male")`,
+            "统计场上女性数量": `countPlayer;cur=>cur.hasSex("female")`,
+            "统计场上其他男性数量": `countPlayer;cur=>cur.hasSex("male")&&cur!=player`,
+            "统计场上其他女性数量": `countPlayer;cur=>cur.hasSex("female")&&cur!=player`,
+            "统计场上魏势力角色数量": `countPlayer;cur=>cur.group!="wei"`,
+            "统计场上蜀势力角色数量": `countPlayer;cur=>cur.group!="shu"`,
+            "统计场上吴势力角色数量": `countPlayer;cur=>cur.group!="wu"`,
+            "统计场上群势力角色数量": `countPlayer;cur=>cur.group!="qun"`,
+            "统计场上晋势力角色数量": `countPlayer;cur=>cur.group!="jin"`,
+            "统计场上神势力角色数量": `countPlayer;cur=>cur.group!="shen"`,
+            "统计场上西势力角色数量": `countPlayer;cur=>cur.group!="western"`,
+            "统计场上键势力角色数量": `countPlayer;cur=>cur.group!="key"`,
+            "统计场上其他魏势力角色数量": `countPlayer;cur=>cur.group!="wei"&&cur!=player`,
+            "统计场上其他蜀势力角色数量": `countPlayer;cur=>cur.group!="shu"&&cur!=player`,
+            "统计场上其他吴势力角色数量": `countPlayer;cur=>cur.group!="wu"&&cur!=player`,
+            "统计场上其他群势力角色数量": `countPlayer;cur=>cur.group!="qun"&&cur!=player`,
+            "统计场上其他晋势力角色数量": `countPlayer;cur=>cur.group!="jin"&&cur!=player`,
+            "统计场上其他神势力角色数量": `countPlayer;cur=>cur.group!="shen"&&cur!=player`,
+            "统计场上其他西势力角色数量": `countPlayer;cur=>cur.group!="western"&&cur!=player`,
+            "统计场上其他键势力角色数量": `countPlayer;cur=>cur.group!="key"&&cur!=player`,
         },
         lib_filter: {
             '非我过滤': "lib.filter.notMe",
@@ -1569,6 +1644,11 @@ export class NonameCN {
             '你已受伤': '你已受伤(体力)',
             '你体力值大于3': '你体力值大于3(体力)',
             '你体力上限大于3': '你体力上限大于3(体力)',
+            '你体力值为全场最少或之一': "你体力值为全场最少或之一(体力)",
+            '你有全场唯一最少的体力值': '你有全场唯一最少的体力值(体力)',
+            '你有全场唯一最多的体力值': '你有全场唯一最多的体力值(体力)',
+            '你没有全场唯一最少的体力值': '你没有全场唯一最少的体力值(体力)',
+            '你没有全场唯一最多的体力值': '你没有全场唯一最多的体力值(体力)',
             '你为男性': '你为男性(性别)',
             '你为女性': '你为女性(性别)',
             '你已横置': "你已横置(状态)",
@@ -1580,8 +1660,11 @@ export class NonameCN {
             '你的场上的牌数大于3': "你的场上的牌数大于3",
             '你的区域内的牌数大于3': "你的牌数大于3",
             '场上势力数大于2': "场上势力数大于2",
-            '你体力值为全场最少或之一': "你体力值为全场最少或之一",
             '你手牌数为全场最少或之一': "你手牌数为全场最少或之一",
+            '有全场唯一最少的手牌数': '有全场唯一最少的手牌数',
+            '有全场唯一最多的手牌数': '有全场唯一最多的手牌数',
+            '没有全场唯一最少的手牌数': '有全场唯一最少的手牌数',
+            '没有全场唯一最多的手牌数': '没有全场唯一最多的手牌数',
             '你有牌': "你有牌",
             '你有手牌': "你有手牌",
             '你场上有牌': "你场上有牌",
@@ -1774,42 +1857,6 @@ export class NonameCN {
         if (!changeLine) result = result.replaceAll('\n', '')
         return result;
     }
-    static getVirtualPlayer() {
-        const player = ui.create.player();
-        player.init('xjb_caocao');
-        Object.values(this.groupedList.packed_playerCode).forEach(method => player[method] = () => { })
-        return player;
-    }
-    static getVirtualGame() {
-        const vGame = new game.constructor()
-        Object.values(this.groupedList.packed_gameCode).forEach(method => vGame[method] = () => { })
-        return vGame;
-    }
-    static getVirtualEvent() {
-        return {
-            ..._status.event,
-            num: 1,
-            targetprompt: '1',
-            getParent: () => true,
-            filterTarget: () => true,
-            "set": () => true,
-            cancel: () => true,
-            forResult: () => true,
-            goto: () => true,
-            redo: () => true,
-            finish: () => true,
-            notLink: () => true,
-        }
-    }
-    static getVirtualCard() {
-        const vCardObj = game.createCard();
-        vCardObj.destroyed = true;
-        return vCardObj;
-    }
-    static getVirtualStorage() {
-        const vStorageObj = new Array(1).fill();
-        return vStorageObj;
-    }
     /**
      * @param that 一个对象，其changeWord方法被调用来执行文本替换。
      */
@@ -1822,9 +1869,10 @@ export class NonameCN {
             .replace(/[ ]+$/mg, "")
             .replace(/\s+$/g, '')
             .replace(/\n[ ]*\n/g, '\n')
-        //method类
-        //event类
+        //method类m
         textareaTool().setTarget(that)
+            .replace(/第[ ]+([一二三四五六七八九十])张[ ]+/g, '第$1张')
+            .replace(/^相[ ]+等于$/mg, '相等于')
             .replace(/(?<=(选择对角色使用|视为使用))[ ]/g, '')
             .replace("此牌的目标 组", "此牌的目标组")
             .replace("此牌的已触发的 目标组", "此牌的已触发的目标组")
@@ -1832,7 +1880,7 @@ export class NonameCN {
             .replace(/^选择结果 目标 ([数组])$/mg, '选择结果目标$1')
             .replace(/(?<=代为) (?=使用 |打出 |使用或打出 )/g, "")
             .replace(/体力值 (回复|恢复)至 /g, "体力值回复至 ")
-            .replace(/(体力值|手牌数) 为全场最少/g, "$1为全场最少")
+            .replace(/(体力值|手牌数) 为全场最/g, "$1为全场最")
             .replace(/([有无])多目标 标签/g, "$1多目标标签")
             .replace(new RegExp(`无视[ ]+(${JOINED_PLAYAERCN})[ ]+防具的牌`, 'g'), "无视$1防具的牌")
     }
@@ -1842,7 +1890,7 @@ export class NonameCN {
             .replace(/令为/g, " 令为 ")
             .replace(/(?<=\w+)为/g, " 为 ")
             .replace(/(势力)为/g, "$1 为")
-            .replace(/(?<!名|令|成|视)为(?!全场最少或之一)(?!判定唯一[正负]收益)/g, '为 ')
+            .replace(/(?<!名|令|成|视)为(?!全场最[少多])(?!判定唯一[正负]收益)/g, '为 ')
             .replace(/令为\s*(.+?)且(向下取整|向上取整|四舍五入)$/mg, "令为 数学 $2 $1")
             .replace(/令为\s*(.+?)且至多为(.+?)$/mg, "令为 数学 最小值 $1 $2")
             .replace(/令为\s*(.+?)且至少为(.+?)$/mg, "令为 数学 最大值 $1 $2")
@@ -1950,7 +1998,6 @@ export class NonameCN {
             .replace(/(.+?)展示牌堆顶的?(.+?张)牌(\(放回\))?$/g, "event.topCards = 获取 牌堆顶牌组$3 $2\n$1 展示牌 event.topCards")
             .replace(/(.+?)展示牌堆底的?(.+?张)牌(\(放回\))?$/g, "event.bottomCards = 获取 牌堆底牌组$3 $2\n $1 展示牌 event.bottomCards")
             .replace(/^销毁(此牌|卡牌)/mg, '$1 修正\n$1 移除\n$1 已销毁 令为 真\n游戏 日志 $1 "已销毁"')
-
     }
     static standardEeffectMid(that) {
         textareaTool().setTarget(that)
@@ -1974,6 +2021,15 @@ export class NonameCN {
             .replace(/(获取)(.+?)\s*的?(手牌区|装备区|判定区)[内中]?的?牌$/mg, '$2 $1$3牌')
             //"你(...) 获取区域内牌 基本牌(..)"
             .replace(/(获取)(.+?)\s*的?(区域)[内中]的牌$/mg, '$2 $1$3内牌')
+    }
+    static standardFilterCardBef(that) {
+        textareaTool().setTarget(that)
+            .replace(/^卡牌(花色|点数|牌名)(相同|不同)$/mg, '如果\n当前选择的卡牌的张数 为 0\n那么\n\n分支开始\n发动\n分支结束\n卡牌 $1$2于 当前选择的第一张牌')
+            .replace(/^卡牌(颜色|类型|副类别|类别)([不相])同$/mg, '如果\n当前选择的卡牌的张数 为 0\n那么\n\n分支开始\n发动\n分支结束\n获取 $1 卡牌\n$2等于\n获取 $1 当前选择的第一张牌')
+    }
+    static standardFilterTargetBef(that) {
+        textareaTool().setTarget(that)
+            .replace(/^其他角色$/mg, '目标 不是 你')
     }
     static standardEvent(that) {
         //处理事件描述
@@ -2075,6 +2131,94 @@ export class NonameCN {
             preEve, selectCard, conditionBool, condition,
             viewAsFrequency, id
         }
+    }
+    static getVirtualPlayer() {
+        const player = ui.create.player();
+        player.init('xjb_caocao');
+        Object.values(this.groupedList.packed_playerCode).forEach(method => player[method] = () => { })
+        return player;
+    }
+    static getVirtualGame() {
+        const vGame = new game.constructor()
+        Object.values(this.groupedList.packed_gameCode).forEach(method => vGame[method] = () => { })
+        return vGame;
+    }
+    static getVirtualEvent() {
+        return {
+            ..._status.event,
+            num: 1,
+            targetprompt: '1',
+            getParent: () => true,
+            filterTarget: () => true,
+            "set": () => true,
+            cancel: () => true,
+            forResult: () => true,
+            goto: () => true,
+            redo: () => true,
+            finish: () => true,
+            notLink: () => true,
+        }
+    }
+    static getVirtualCard() {
+        const vCardObj = game.createCard();
+        vCardObj.destroyed = true;
+        return vCardObj;
+    }
+    static getVirtualStorage() {
+        const vStorageObj = new Array(1).fill();
+        return vStorageObj;
+    }
+    static getVirtualPlayers() {
+        const players = new Array();
+        const player = ui.create.player()
+        for (const attr in player) {
+            players[attr] = typeof player[attr] === 'function' ? () => true : true;
+        }
+        return players;
+    }
+    static disposeWithQuo(body, toDispose = '', matchNotObjColon = /(?<!\{[ \w"']+):(?![ \w"']+\})/) {
+        let arrA = toDispose.includes(';') ? toDispose.split(';') : toDispose.split(matchNotObjColon);
+        let arrB = [];
+        let result = ''
+        arrA = arrA.filter(each => {
+            if (each.startsWith("//!?")) {
+                arrB.push(each.replace("//!?", ""))
+                return false;
+            }
+            return true;
+        })
+        let verbA = arrA.shift()
+        if (body[verbA] || body === "ignore") {
+            result += '.' + verbA;
+            result += '(';
+            result += arrA.join(',');
+            result += ')';
+            if (arrB.length) {
+                result += '.'
+                result += arrB.join('.')
+            }
+        } else {
+            result += toDispose;
+        }
+        return result;
+    }
+    static disposeWhen(sentence) {
+        let result = sentence;
+        result = result.replace(/(.+?)(when\(.+?\)\.)(.+)$/, '$1$2then(()=>{\n$1$3;\n})')
+        return result;
+    }
+    static disposePlayers(sentence, players) {
+        let result = sentence, api;
+        api = sentence.replaceAll(players, '').replaceAll('.', '').replace(/\(.*/, '');
+        console.log(api)
+        if (![][api]) {
+            result = result.replace(players, 'i');
+            result = players + '.forEach(i=>' + result + ')';
+        }
+        return result;
+    }
+    static disposeStorage(sentence) {
+        return sentence.replace(',storage,', '.storage.')
     }
     //技能各部分的组装
     static GenerateOpening(back) {
@@ -3017,32 +3161,7 @@ export class NonameCN {
         }
         throw new Error(errorMessage);
     }
-    static disposeWithQuo(body, toDispose = '', matchNotObjColon = /(?<!\{[ \w"']+):(?![ \w"']+\})/) {
-        let arrA = toDispose.includes(';') ? toDispose.split(';') : toDispose.split(matchNotObjColon);
-        let arrB = [];
-        let result = ''
-        arrA = arrA.filter(each => {
-            if (each.startsWith("//!?")) {
-                arrB.push(each.replace("//!?", ""))
-                return false;
-            }
-            return true;
-        })
-        let verbA = arrA.shift()
-        if (body[verbA]) {
-            result += '.' + verbA;
-            result += '(';
-            result += arrA.join(',');
-            result += ')';
-            if (arrB.length) {
-                result += '.'
-                result += arrB.join('.')
-            }
-        } else {
-            result += toDispose;
-        }
-        return result;
-    }
+
 }
 //该代码块用于编辑giveSentence
 {
