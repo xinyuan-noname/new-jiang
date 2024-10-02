@@ -258,6 +258,16 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                     counterpart:"天谴-黑桃-9",
                     min:0,
                     max:1
+                },
+                xjb_fuci_1:{
+                    counterpart:"福赐-红桃-6",
+                    min:0,
+                    max:2
+                },
+                xjb_fuci_2:{
+                    counterpart:"福赐-红桃-8",
+                    min:0,
+                    max:2
                 }
             };
             window.addEventListener('hashchange', function () {

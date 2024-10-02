@@ -179,7 +179,6 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         return lib.config.xjb_hunbi >= number;
     }
     /*consume*/
-    
     game.cost_xjb_cost = function (type, num2, log) {
         num2 = Math.abs(num2)
         if (type == 1 || type == "B") game.xjb_costHunbi(num2, log)

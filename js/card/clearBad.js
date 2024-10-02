@@ -249,11 +249,11 @@ const xjb_tianqian = CardCreater(
         if (event.bool == false) {
             const hes = player.getCards('he');
             player.loseToDiscardpile(hes);
-            for(const destory of hes){
+            for (const destory of hes) {
                 destory.fix();
                 destory.remove();
                 destory.destoryed = true;
-                game.log(destory,'被销毁了')
+                game.log(destory, '被销毁了')
             }
             player.damage(player.storage.xjb_judge_tianqian, 'nosource', 'damage');
         } else {
@@ -281,4 +281,36 @@ const xjb_tianqian = CardCreater(
         if (lib.filter.judge(card, player, target) && cards.length && get.position(cards[0], true) == 'o') target.addJudge(card, cards);
     },
     allowMultiple: false,
+})
+const xjb_fuci = CardCreater(
+    "xjb_fuci", {
+    fullskin: true,
+    type: "trick",
+    selectTarget: 1,
+    enable: true,
+    filterTarget: true,
+    content: function () {
+        if (!target.storage.xjb_judge_fuci) target.storage.xjb_judge_fuci = 0;
+        target.storage.xjb_judge_fuci++;
+        target.popup('福赐层数:</br>' + target.storage.xjb_judge_fuci);
+        game.delay(1.5);
+        for (let i = 0; i < target.storage.xjb_judge_fuci; i++) {
+            target.getBuff();
+            game.delay(1.5)
+        }
+    },
+    translate: "福赐",
+    description: "出牌阶段，对一名角色使用。目标角色福赐层数+1然后随机获得x个增益效果。(x为福赐层数)",
+    ai: {
+        basic: {
+            order: 1,
+            useful: 2,
+            value: 8,
+        },
+        result: {
+            target: (player, target) => {
+                return 10;
+            },
+        },
+    },
 })

@@ -433,8 +433,8 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                     .exit()
                 let book = element("div")
                     .style({
-                        height:"80%",
-                        width:"80%",
+                        height: "80%",
+                        width: "80%",
                         fontSize: "22px",
                         overflow: "auto"
                     })
@@ -1323,47 +1323,70 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 ui.create.xjb_theStorage(obj.div_1),
                 ui.create.xjb_theStorage(obj.div_1)]
                 var addP = function (element, str1, str2) {
-                    element.innerHTML = '<b>' + str1 + '</b>'
-                    var p = document.createElement("p")
-                    p.innerHTML = str2
-                    element.appendChild(p)
-                    ui.xjb_giveStyle(element, { color: '#b0e0e6' })
+                    element.innerHTML = `<b>${str1}</b>`;
+                    const p = document.createElement("p");
+                    p.innerHTML = str2;
+                    element.appendChild(p);
+                    ui.xjb_giveStyle(element, { color: '#b0e0e6' });
                 }
-                var name = ['割圆术', '黄金分割', '自然常数']
-                var π = lib._xjb["Math_doPI"], e = lib._xjb["Math_doe"], Φ = lib._xjb["Math_doΦ"]
-                var num = [π(lib.config.xjb_π), Φ(lib.config.xjb_Φ), e(lib.config.xjb_e)]
-                var project = ["xjb_π", "xjb_Φ", "xjb_e"]
+                const name = ['割圆术', '黄金分割', '自然常数']
+                const π = lib._xjb["Math_doPI"], e = lib._xjb["Math_doe"], Φ = lib._xjb["Math_doΦ"]
+                const num = [π(lib.config.xjb_π), Φ(lib.config.xjb_Φ), e(lib.config.xjb_e)]
+                const acc = [π, Φ, e]
+                const project = ["xjb_π", "xjb_Φ", "xjb_e"]
                 for (var i = 0; i < list.length; i++) {
-                    list[i].ul.onclick = undefined
-                    list[i].ul.className = "xjb_ul_storage"
-                    addP(list[i].theNum, '项目名', name[i])
-                    addP(list[i].theCharacter, '当前值', num[i])
-                    addP(list[i].theLevel, '投资区', '<span class=1>×1</span><span class=6>×6</span><span class=36>×36</span><span class=216>×216</span>')
-                    var spans = list[i].ul.getElementsByTagName("span")
-                    for (var a = 0; a < spans.length; a++) {
-                        function constructor(str) {
-                            return function () {
-                                var number = get.xjb_number(this.className)
-                                if (lib.config.xjb_hunbi >= number) {
-                                    game.xjb_systemEnergyChange(number * game.xjb_currencyRate.secondRate)
-                                    game.cost_xjb_cost(1, number, '投资')
-                                    lib.config[str] += number
-                                    game.saveConfig(str, lib.config[str])
-                                    if (Math.random() * 50 < Math.min(number, 49)) {
-                                        game.saveConfig("xjb_hundaka2", lib.config["xjb_hundaka2"] + 1)
-                                        game.xjb_create.alert('你知道的，你要的报酬到了，打卡点数已增加');
-                                    }
-                                    else game.xjb_create.alert('今日你所捐的，于你亦是有益的，数学会让你见识它的伟大力量。');
-                                    game.xjb_LZ_project()
-                                } else { game.xjb_create.alert("佯装行善，夸下海口，却无子，去罢。") }
+                    const { ul, theNum, theCharacter, theLevel, theTime } = list[i];
+                    ul.onclick = void 0;
+                    ul.classList.add("xjb_ul_storage");
+                    ul.id = project[i];
+                    ul.acc = acc[i];
+                    addP(theNum, '项目名', name[i]);
+                    addP(theCharacter, '当前值', num[i]);
+                    addP(theLevel, '投资区', `<span class=1_xjb_touzi>×1</span>
+                        <span class=6_xjb_touzi>×6</span>
+                        <span class=36_xjb_touzi>×36</span>
+                        <span class=216_xjb_touzi>216</span>
+                        <span class=withdraw_xjb_touzi>取</span>`)
+                    ul.addEventListener(lib.config.touchscreen ? "touchend" : "click", function (e) {
+                        const number = parseInt(e.target.className);
+                        const that = this;
+                        const type = this.id;
+                        if (lib.config.xjb_hunbi >= number) {
+                            game.xjb_systemEnergyChange(number * game.xjb_currencyRate.secondRate);
+                            game.xjb_costHunbi(number, "投资");
+                            lib.config[type] += number;
+                            game.saveConfig(type, lib.config[type]);
+                            if (Math.random() * 50 < Math.min(number, 40)) {
+                                game.saveConfig("xjb_hundaka2", ++lib.config["xjb_hundaka2"]);
+                                game.xjb_create.alert('你知道的，你要的报酬到了，打卡点数已增加');
                             }
+                            else game.xjb_create.alert('今日你所捐的，于你亦是有益的，数学会让你见识它的伟大力量。');
+                        } else if (e.target.className === "withdraw_xjb_touzi") {
+                            if (lib.config[type] <= 100) game.xjb_create.alert(`你当前投资额为:${lib.config[type]}点，需达到100点我们才会给予反馈服务哦！`)
+                            else {
+                                const max = parseInt((lib.config[type] - 100) / 5)
+                                game.xjb_create.range(`你当前投资额为:${lib.config[type]}点，可提取${max} 个魂币`,
+                                    0, max, 0,
+                                    function () {
+                                        lib.config[type] -= this.result * 5;
+                                        game.saveConfig(type, lib.config[type]);
+                                        game.xjb_getHunbi(this.result, 1, true, true, '投资反馈');
+                                        that.querySelectorAll('p')[1].innerHTML = that.acc(lib.config[type]);
+                                    },
+                                    function () {
+                                        this.prompt.innerHTML = `你当前投资额为:${lib.config[type]}点，可提取${parseInt((lib.config[type] - 100) / 5)} 个魂币`
+                                    }
+                                )
+                            }
+                        } else {
+                            game.xjb_create.alert("佯装行善，夸下海口，却无子，去罢。");
                         }
-                        spans[a].onclick = constructor(project[i])
-                    }
-                    ui.xjb_giveStyle(list[i].theLevel, { width: "32%" })
-                    ui.xjb_giveStyle(list[i].theCharacter, { width: "24%" })
-                    ui.xjb_giveStyle(list[i].theNum, { width: "15%" })
-                    list[i].theTime.remove()
+                        that.querySelectorAll('p')[1].innerHTML = that.acc(lib.config[type]);
+                    })
+                    ui.xjb_giveStyle(theLevel, { width: "40%", marginLeft: "0", marginRight: "0" })
+                    ui.xjb_giveStyle(theCharacter, { width: "24%" })
+                    ui.xjb_giveStyle(theNum, { width: "15%" })
+                    theTime.remove()
                 }
             }
         },
@@ -1474,7 +1497,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 if (Object.keys(lib.skill).includes(skillName)) {
                     if (game.xjb_condition(3, 1)) { }
                     if (game.xjb_condition(3, 1)) {
-                        game.xjb_create.alert(`你获得了技能${get.translation(skillName)}`)
+                        game.xjb_create.alert(`你获得了技能${get.translation(skillName)} `)
                         lib.config.xjb_newcharacter.skill.add(skillName)
                         game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
                         game.xjb_systemEnergyChange(-20)

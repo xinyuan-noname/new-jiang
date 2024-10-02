@@ -28,7 +28,6 @@ import {
 import {
     NonameCN
 } from './nonameCN.js'
-import { getSymbol } from './math.js';
 window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
     window.XJB_EDITOR_LIST = {
         filter: [
@@ -66,8 +65,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             '当你使用杀后', '当你使用决斗后', '当你使用桃后', '当你使用\u5357\u86ee\u5165\u4fb5后', '当你使用万箭齐发后'
         ],
     };
-    window.XJB_PUNC = [" || ", " && ", " + ", " - ", " * ", " / ", " % ",
-        " += ", " -= ", "++", "--", "!", " >= ", " <= ", " == ", " === ",
+    window.XJB_PUNC = ["!", " || ", " && ", " + ", " - ", " * ", " / ", " % ",
+        " += ", " -= ",
+        "++", "--",
+        " > ", " < ", " >= ", " <= ", " == ", " === ",
         "(", ")", "."]
     lib.xjb_class = {
         player: ['_status.currentPhase', 'target', 'game.me',
@@ -92,16 +93,17 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
         gain: ['"gain2"', '"draw"', '"giveAuto"', "'gain2'", "'draw'", "'giveAuto'"],
         card: ["trigger.card", 'card'],
         logicConj: [" > ", " < ", " >= ", " <= ", " == ", ">", "<", ">=", "<=", "=="],
+        variable: ["const ", "let ", "var "]
     }
     get.xjb_en = (str) => NonameCN.getEn(str);
     lib.xjb_translate = { ...NonameCN.AllList }
     lib.xjb_editorUniqueFunc = NonameCN.uniqueFunc;
     //判定类型
     get.xjb_judgeType = game.xjb_judgeType = function (word) {
-        if (!isNaN(Number(word))) return 'number'
+        if (!word || !word.length) return;
         if (Object.values(NonameCN.groupedList.array).some(arr => word === arr)) return "array"
         for (let k in lib.xjb_class) {
-            if (lib.xjb_class[k] && lib.xjb_class[k].includes(word)) return k
+            if (lib.xjb_class[k].includes(word)) return k;
         }
     }
     function EditorContent() {
@@ -376,10 +378,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             }
             back.isContentAsync = function () {
                 if (back.skill.contentAsync) return;
-                if (back.skill.content.some(line => /\bawait\b/.test(line))){
+                if (back.skill.content.some(line => /\bawait\b/.test(line))) {
                     back.skill.contentAsync = true;
                     back.stepIgnore = true;
-                } 
+                }
             }
             //调整显示
             back.updateDisplay = function () {
@@ -615,6 +617,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         }
                         else str += a
                     }
+                    let lastTurn;
                     //组装函数前语句
                     for (let b = 0; b < i.length; b++) {
                         //这个bool来控制循环的进行与否
@@ -622,23 +625,22 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         const a = i[b];
                         const WAW = (body) => (watchAndWork(body, a, b));
                         const type = game.xjb_judgeType(a)
-                        if (type && notice.length) notice.push(type)
-                        if (notice.includes('game')) WAW(vGame)
+                        type && notice.push(type);
+                        if (lastTurn == 'game') WAW(vGame)
                         else if (notice.includes('storageLower')) WAW(vStorage)
                         else if (notice.includes('storage')) WAW('storage')
-                        else if (notice.includes('get')) WAW(get)
-                        else if (notice.includes('players')) { WAW(vPlayers) }
-                        else if (notice.includes('player')) { WAW(player) }
-                        else if (notice.includes('event')) WAW(eventModel)
-                        else if (notice.includes('Math')) WAW(Math)
-                        else if (notice.includes('card')) WAW(vCardObject)
-                        else if (notice.includes('variable')) WAW({})
-                        else if (notice.includes('array')) WAW(new Array(1).fill())
+                        else if (lastTurn === 'get') WAW(get)
+                        else if (lastTurn === 'players') { WAW(vPlayers) }
+                        else if (lastTurn === 'player') { WAW(player) }
+                        else if (lastTurn === 'event') WAW(eventModel)
+                        else if (lastTurn === 'Math') WAW(Math)
+                        else if (lastTurn === 'card') WAW(vCardObject)
+                        else if (lastTurn === 'variable') WAW({})
+                        else if (lastTurn === 'array') WAW(new Array(1).fill())
                         else WAW(new Array(1).fill());
-                        if (type && !notice.length) notice.push(type)
-                        if (type === 'players') players = a
-                        if (["const ", "let ", "var "].includes(a)) notice.push("variable")
-                        else if (['player', 'card'].some(viewer => notice.includes(viewer)) && a === "storage") notice.push('storage') && notice.remove('player')
+                        lastTurn = type;
+                        if (type === 'players') players = a;
+                        if (['player', 'card'].some(viewer => notice.includes(viewer)) && a === "storage") notice.push('storage') && notice.remove('player')
                         else if (notice.includes('storage')) notice.push('storageLower') && notice.remove('storage')
                     }
                     if (notice.includes("Math") && index) {
@@ -710,9 +712,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     }
                     if (notice.includes('player') && sentence.includes('.when(')) {
                         sentence = NonameCN.disposeWhen(sentence, players);
-                    }
-                    if (notice.includes('player') && sentence.includes(',storage,')) {
-                        sentence = NonameCN.disposeStorage(sentence);
                     }
                     list4.push(sentence);
                 });
@@ -1572,6 +1571,9 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .clearThenOrder(/([/][*])[ ]*back.FilterInherit[ ]*\=false[ ]*[ ]*([*][/])/g, () => { back.FilterInherit = false })
                 .clearThenOrder("整理", back.ele.filter.arrange)
                 .replaceOrder(/(本|此|该)技能id/g, back.getID)
+                .replaceOrder(/访\*(\d+)/g,(match,...p)=>{
+                    return '访  '.repeat(parseInt(p[0]))
+                })
                 .replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", back.ele.filter.adjustTab)
                 .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", back.ele.filter.adjustTab)
                 .replaceThenOrder('新长中文', '', () => NonameCN.moreSetDialog[6](back))
@@ -1780,7 +1782,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     let group = findWordsGroup(line, playerCN);
                     if (/(变量|常量|块变|令为)/.test(line) || !group.length || line.startsWith("返回")) return;
                     if (NonameCN.skillModMap.keys().some(regexp => regexp.test(line))) return;
-                    if (/[员属]访/.test(line)) return;
+                    if (/[ ]访问?[ ]/.test(line)) return;
                     if (/添单[ ]*你/.test(line)) return;
                     if (/移除 你/.test(line)) return;
                     if (new RegExp(`^无视(${JOINED_PLAYAERCN})防具的牌`).test(line)) return;
@@ -1858,6 +1860,9 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .replaceThenOrder(/(?<![/][*])[ ]*back.stepIgnore[ ]*\=[ ]*true[ ]*(?![*][/])/g, "/*back.stepIgnore=true*/", () => { back.stepIgnore = true })
                 .clearThenOrder(/([/][*])[ ]*back.stepIgnore[ ]*\=false[ ]*[ ]*([*][/])/g, () => { back.stepIgnore = false })
                 .replaceOrder(/(本|此|该)技能id/g, back.getID)
+                .replaceOrder(/访\*(\d+)/g,(match,...p)=>{
+                    return '访  '.repeat(parseInt(p[0]))
+                })
                 .clearThenOrder("整理", back.ele.content.arrange)
                 .replaceThenOrder('新长中文', '', () => NonameCN.moreSetDialog[6](back))
                 .replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", back.ele.content.adjustTab)
@@ -2106,6 +2111,9 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .dittoUnderOrder()
                 .clearThenOrder("整理", back.ele.trigger.arrange)
                 .replaceOrder(/(本|此|该)技能id/g, back.getID)
+                .replaceOrder(/访\*(\d+)/g,(match,...p)=>{
+                    return '访  '.repeat(parseInt(p[0]))
+                })
                 .replaceThenOrder('新长中文', '', () => NonameCN.moreSetDialog[6](back))
                 .debounce('keyup', back.ele.trigger.submit, 200)
                 .listen('keydown', tabChange("trigger"))
@@ -2205,6 +2213,9 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 NonameCN.standardBoolExpBefore(that)
                 NonameCN.underlieVariable(that)
                 NonameCN.standardFilterTargetBef(that)
+                .replaceOrder(/访\*(\d+)/g,(match,...p)=>{
+                    return '访  '.repeat(parseInt(p[0]))
+                })
                 new Array('你', '目标').forEach(i => {
                     that.changeWord(new RegExp(i, 'g'), i + ' ')
                 })

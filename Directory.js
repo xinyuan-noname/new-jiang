@@ -132,6 +132,7 @@ window["xjb_xyAPI_Directory_新将包"]={
     ],
     "image/card_clearBad": [
         "xjb_chucanquhui.png",
+        "xjb_fuci.png",
         "xjb_lijingtuzhi.png",
         "xjb_qimendunjia.png",
         "xjb_tianqian.png",
