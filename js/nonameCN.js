@@ -470,6 +470,8 @@ export class NonameCN {
             skill: {},
             ele: {}
         },
+        custom: {},
+        content_ignoreIndex: [],
         marktext: "",
         markName: "",
         markContent: "",
@@ -583,6 +585,8 @@ export class NonameCN {
         //
         '真': 'true',
         '假': 'false',
+        '真值': 'true',
+        '假值': 'false',
         '不': '!',
         '如果': 'if(',
         '如果不': 'if(!',
@@ -689,9 +693,9 @@ export class NonameCN {
     static groupedList = {
         punctuation: {
             '访问': ".",
-            '访':".",
+            '访': ".",
             '注释': '//',
-            '单行注释':"//",
+            '单行注释': "//",
             //
             '自增': '++',
             '自减': '--',
@@ -710,11 +714,11 @@ export class NonameCN {
             '严格不等于': ' !== ',
             '大于': ' > ',
             '大于等于': ' >= ',
-            '大等':" >= ",
+            '大等': " >= ",
             '不小于': ' >= ',
             '小于': ' < ',
             '小于等于': ' <= ',
-            '小等':" <= ",
+            '小等': " <= ",
             '不大于': ' <= ',
             //普通运算
             '加': ' + ',
@@ -725,42 +729,42 @@ export class NonameCN {
             '取模': ' % ',
             '模': ' % ',
             //位运算
-            'AND':" & ",
-            'OR':" | ",
-            'NOT':" ~ ",
-            'XOR':" ^ ",            
-            '位与':" & ",
-            '位或':" | ",
-            '位非':" ~ ",
-            '异或':" ^ ",
-            '位异或':" ^ ",
-            '左移':"<<",
-            '右移':">>",
+            'AND': " & ",
+            'OR': " | ",
+            'NOT': " ~ ",
+            'XOR': " ^ ",
+            '位与': " & ",
+            '位或': " | ",
+            '位非': " ~ ",
+            '异或': " ^ ",
+            '位异或': " ^ ",
+            '左移': "<<",
+            '右移': ">>",
             //逻辑算符
             '或者': ' || ',
-            "逻辑或":' || ',
+            "逻辑或": ' || ',
             '且': ' && ',
             '并且': ' && ',
-            '逻辑且':" && ",
-            '逻辑非':'!',
+            '逻辑且': " && ",
+            '逻辑非': '!',
             //赋值语句
             '令为': ' = ',
             '加等': " += ",
             '减等': " -= ",
-            '模等':" %= ",
+            '模等': " %= ",
             '除等': " /= ",
             '乘等': " *= ",
-            '取模等':" %= ",
+            '取模等': " %= ",
             '除以等': " /= ",
             '乘以等': " *= ",
-            '位与等':" &= ",
-            '位或等':" |= ",
-            '位非等':" ~= ",
-            '异或等':" ^= ",
-            '左移等':" <<= ",
-            '右移等':" >>= ",
-            '逻辑或等':" ||= ",
-            '逻辑且等':" &&= ",
+            '位与等': " &= ",
+            '位或等': " |= ",
+            '位非等': " ~= ",
+            '异或等': " ^= ",
+            '左移等': " <<= ",
+            '右移等': " >>= ",
+            '逻辑或等': " ||= ",
+            '逻辑且等': " &&= ",
         },
         staticValue: {
             "不可被无懈可击响应": `"nowuxie"`,
@@ -835,8 +839,12 @@ export class NonameCN {
             //标签
             "有伤害标签": `tag:"damage":intoFunctionWait`,
             "无伤害标签": `tag:"damage":intoFunctionWait:denyPrefix`,
+            "带伤害标签": `tag:"damage":intoFunctionWait`,
+            "不带伤害标签": `tag:"damage":intoFunctionWait:denyPrefix`,
             "有多角色标签": `tag:"multitarget":intoFunctionWait`,
             "无多角色标签": `tag:"multitarget":intoFunctionWait:denyPrefix`,
+            "带多角色标签": `tag:"damage":intoFunctionWait`,
+            "不带多角色标签": `tag:"damage":intoFunctionWait:denyPrefix`,
             "有多目标标签": `tag:"multitarget":intoFunctionWait`,
             "无多目标标签": `tag:"multitarget":intoFunctionWait:denyPrefix`,
         },
@@ -881,6 +889,8 @@ export class NonameCN {
             "点数不同于": "differentNumberFrom",
         },
         result: {
+            "有选择结果": "result.bool===true",
+            "无选择结果": "result.bool===false",
             "选择结果布尔": "result.bool",
             "选择结果卡牌": "result.card",
             "选择结果牌组": "result.cards",
@@ -919,6 +929,7 @@ export class NonameCN {
         player: {
             ...playerList,
             ...getMapOfOneOfPlayers(),
+            '角色': "player",
         },
         player_attribute: {
             '性别': 'sex',
@@ -945,10 +956,10 @@ export class NonameCN {
             '没有全场唯一最少的体力值': 'isMinHp;true:denyPrefix',
             '没有全场唯一最多的体力值': 'isMaxHp;true:denyPrefix',
             //
-            '已损失的体力值':"getDamgedHp;",
-            '已损失体力值':"getDamgedHp;",
-            '已损体力值':"getDamgedHp;",
-            '已失体力值':"getDamgedHp;",
+            '已损失的体力值': "getDamgedHp;",
+            '已损失体力值': "getDamgedHp;",
+            '已损体力值': "getDamgedHp;",
+            '已失体力值': "getDamgedHp;",
         },
         player_method_handcard: {
             '手牌数为全场最少或之一': 'isMinHandcard',
@@ -986,7 +997,7 @@ export class NonameCN {
             "获得技能直到下个回合结束": `addTempSkill;{player:"phaseEnd"}:intoFunctionWait`,
             "获得技能直到下一轮开始时": `addTempSkill;"roundStart":intoFunctionWait`,
         },
-        player_method_solt:{
+        player_method_solt: {
             '有未被废除的装备栏': "hasEnabledSlot",
             '没有未被废除的装备栏': "hasEnabledSlot:denyPrefix",
             "装备栏均已废除": "hasEnabledSlot:denyPrefix",
@@ -1163,7 +1174,7 @@ export class NonameCN {
             '判定区没有牌': `hasCard;void 0;"j";denyPrefix`,
             '手牌区没有牌': `hasCard;void 0;"h";denyPrefix`,
             //
-            
+
             '手牌数': 'countCards;"h"',
             '牌数': 'countCards;"he"',
             '场上牌数': `countCards;"ej"`,
@@ -1424,6 +1435,9 @@ export class NonameCN {
             '同时获得牌': "packed_gameCode_gainAsync"
         },
     }
+    static groupedRegExpList = {
+
+    }
     static viewAsFrequencyList = [
         "frequency-phase-cardName",
         "frequency-round-cardName",
@@ -1608,6 +1622,12 @@ export class NonameCN {
         list["这些牌"] = NonameCN.analyzeTheseCard(game.xjb_back.skill.trigger)
         list["设置提示标题跟随技能"] = `set:"prompt":get.prompt("${id}")`
         list["设置提示内容跟随技能"] = `set:"prompt2":get.prompt2("${id}")`
+        list["拥有本技能的角色"] = `game.filterPlayer().find(cur=>cur.hasSkill("${id}",null,false,false))`
+        list["拥有该技能的角色"] = `game.filterPlayer().find(cur=>cur.hasSkill("${id}",null,false,false))`
+        list["拥有此技能的角色"] = `game.filterPlayer().find(cur=>cur.hasSkill("${id}",null,false,false))`
+        list["有本技能的角色"] = `game.filterPlayer().find(cur=>cur.hasSkill("${id}",null,false,false))`
+        list["有该技能的角色"] = `game.filterPlayer().find(cur=>cur.hasSkill("${id}",null,false,false))`
+        list["有此技能的角色"] = `game.filterPlayer().find(cur=>cur.hasSkill("${id}",null,false,false))`
         for (const [phaseCn, phaseEn] of Object.entries(phaseList)) {
             list[`${phaseCn}|${id}`] = `"${phaseEn}|${id}"`
         }
@@ -1659,7 +1679,8 @@ export class NonameCN {
             '此牌为-1马牌': "此牌为-1马牌(副类别)",
             '此牌为宝物牌': "此牌为宝物牌(副类别)",
             '此牌有伤害标签': '此牌有伤害标签(标签)',
-            '此牌有多目标标签': '此牌有多目标标签(标签)',
+            '此牌不是单体牌': '此牌有多角色标签(标签)',
+            '此牌是单体牌': '此牌不带多角色标签(标签)',
             '你在你的攻击范围内': '你在你的攻击范围内(攻击范围)',
             '你未受伤': '你未受伤(体力)',
             '你已受伤': '你已受伤(体力)',
@@ -1879,17 +1900,54 @@ export class NonameCN {
         return result;
     }
     /**
+     * 
+     * @param {string[]|string} inputData 
+     * @returns {string}
+     */
+    static getStrNormalFunc(inputData) {
+        let result = '', IF = false, branch = 0;
+        if (!Array.isArray(inputData) && typeof inputData != 'string') return result;
+        if (typeof inputData === 'string') inputData = inputData.split('\n');
+        for (const [index, line] of inputData.entries()) {
+            switch (true) {
+                case (line === 'if(' && IF === false): {
+                    result += line;
+                    IF = true
+                }; break;
+                case (line === ")" && IF === true): {
+                    result += line;
+                    IF = false;
+                }; break;
+                case (IF === true): {
+                    if ([' || ', ' && '].includes(line)) result += '\n'
+                    result += line;
+                }; break;
+                case (line === "{"): {
+                    result += '{\n';
+                    branch++;
+                }; break;
+                case (line === "}" && branch > 0): {
+                    result += '}\n'
+                    branch--;
+                }; break;
+                case (branch > 0): {
+                    result += `${line}\n`
+                }; break;
+                case (index === inputData.length - 1): {
+                    result += `${line}`
+                }; break;
+                default: {
+                    result += `${line}\n`
+                }; break;
+            }
+        }
+        return result;
+    }
+    /**
      * @param that 一个对象，其changeWord方法被调用来执行文本替换。
      */
     static deleteBlank(that) {
         const JOINED_PLAYAERCN = this.playerCN.join("|")
-        //处理空白字符
-        textareaTool().setTarget(that)
-            .replace(/^[ ]+/mg, "")
-            .replace(/[ ]+/g, " ")
-            .replace(/[ ]+$/mg, "")
-            .replace(/\s+$/g, '')
-            .replace(/\n[ ]*\n/g, '\n')
         //method类m
         textareaTool().setTarget(that)
             .replace(/第[ ]+([一二三四五六七八九十])张[ ]+/g, '第$1张')
@@ -1904,6 +1962,14 @@ export class NonameCN {
             .replace(/(体力值|手牌数) 为全场最/g, "$1为全场最")
             .replace(/([有无])多目标 标签/g, "$1多目标标签")
             .replace(new RegExp(`无视[ ]+(${JOINED_PLAYAERCN})[ ]+防具的牌`, 'g'), "无视$1防具的牌")
+        //处理空白字符
+        textareaTool().setTarget(that)
+            .replace(/^\n+/g, "\n")
+            .replace(/^[ ]+/mg, "")
+            .replace(/[ ]+/g, " ")
+            .replace(/[ ]+$/mg, "")
+            .replace(/\s+$/g, '')
+            .replace(/\n[ ]*\n/g, '\n')
     }
     static underlieVariable(that) {
         textareaTool().setTarget(that)
@@ -1954,7 +2020,7 @@ export class NonameCN {
             .replace(/(.+?)(副类别)?(不?[为是])(武器牌|防具牌|\+1马牌|-1马牌|进攻马牌|防御马牌)$/mg, '获取 副类别 $1 \n $3 \n $4')
             .replace(/(.+?)在(.+?)的?攻击范围内$/mg, "$2 攻击范围内有 $1")
             .replace(/(没有)(.+?)标签/mg, "无$2标签")
-            .replace(/(.+?)(有|无)(伤害|多角色|多目标)标签/g, function (match, ...p) {
+            .replace(/(.+?)(有|无|带|不带)(伤害|多角色|多目标)标签/g, function (match, ...p) {
                 if (p[0].includes("获取")) return match
                 return `获取 ${p[1]}${p[2]}标签 ${p[0]}`
             })
@@ -2267,9 +2333,9 @@ export class NonameCN {
         return result
     }
     static GenerateMod(back) {
-        const { mod } = back.skill;
+        const { mod, custom } = back.skill;
         let result = '';
-        if (!mod.length) return result;
+        if (!mod.length && !custom.mod) return result;
         const that = this;
         result += "mod:{\n";
         const getFilter = function (line, ...label) {
@@ -2396,6 +2462,7 @@ export class NonameCN {
             }
             result += "},\n"
         }
+        if (custom.mod) result += NonameCN.getStrNormalFunc(custom.mod)
         result += "},\n";
         return result
     }
@@ -2836,7 +2903,8 @@ export class NonameCN {
         return result;
     }
     static GenerateContent(back) {
-        const { contentAsync, type, content, id, mod, kind } = back.skill;
+        const { contentAsync, type, content,
+            id, mod, kind, content_ignoreIndex } = back.skill;
         const boolIsAwakeSkill = type.filter(i => {
             return ["limited", "juexingji", "dutySkill"].includes(i)
         }).length > 0;
@@ -2858,7 +2926,8 @@ export class NonameCN {
         }
         if (boolIsAwakeSkill) result += 'player.awakenSkill("' + id + '");\n';
         if (boolIsZhuanhuanSkill) result += 'player.changeZhuanhuanji("' + id + '");\n'
-        if (boolHasContent) back.skill.content.forEach(i => {
+        if (boolHasContent) back.skill.content.forEach((i, lineNum) => {
+            if (content_ignoreIndex.includes(lineNum)) return;
             if (back.ContentInherit) return (result += `${i}\n`);
             let a = i;
             if (i.indexOf("'step") >= 0 || i.indexOf('"step') >= 0) {
@@ -2870,7 +2939,16 @@ export class NonameCN {
             } else if (i.includes('result.targets') && !bool) {
                 a = 'if(result.bool) ' + i
             } else {
-                if (i.startsWith('if(result.bool){')) bool = true;
+                const conditionList = [
+                    'if(result.bool){',
+                    'if(result.bool===true){'
+                ];
+                for (const condition of conditionList) {
+                    if (i.startsWith(condition)) {
+                        bool = true;
+                        break;
+                    }
+                }
             }
             if (i.includes('chooseTarget')) {
                 if (a.indexOf('other') > 0) {
@@ -3178,7 +3256,6 @@ export class NonameCN {
         }
         throw new Error(errorMessage);
     }
-
 }
 //该代码块用于编辑giveSentence
 {

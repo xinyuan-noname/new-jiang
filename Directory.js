@@ -171,6 +171,9 @@ window["xjb_xyAPI_Directory_新将包"]={
         "clearBad.js",
         "store.js"
     ],
+    "js/lingli": [
+        "event.js"
+    ],
     "js/skill": [
         "bossSkill.js",
         "soulSkill.js",

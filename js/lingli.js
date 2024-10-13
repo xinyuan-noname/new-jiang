@@ -1,4 +1,9 @@
+import { lingli_event } from "./lingli/event.js"
 window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
+    for (const event in lingli_event) {
+        lib.element.player[event] = lingli_event[event].player;
+        lib.element.content[event] = lingli_event[event].content;
+    }
     lib.skill.xjb_11 = {
         saturation: function () {
             //空气
@@ -253,8 +258,8 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                 filter: function (event, player) {
                     if (player.countMark("_xjb_lingli") < 1) return;
                     let list = []
-                    if (!lib.config.xjb_count[player.name1]) return;
-                    if (lib.config.xjb_count[player.name1].lingfa) lib.config.xjb_count[player.name1].lingfa.forEach(function (i) {
+                    if (!lib.config.xjb_count[player.name]) return;
+                    if (lib.config.xjb_count[player.name].lingfa) lib.config.xjb_count[player.name].lingfa.forEach(function (i) {
                         if (!lib.skill[i]) return
                         if (player.countCards("hsx", i + "_card") > 0) return;
                         lib.card.xjb_skillCard.cardConstructor(i);
@@ -298,8 +303,8 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                 filter: function (event, player) {
                     if (player.countMark("_xjb_lingli") < 1) return false
                     let list = []
-                    if (!lib.config.xjb_count[player.name1]) return
-                    if (lib.config.xjb_count[player.name1].lingtan) lib.config.xjb_count[player.name1].lingtan.forEach(function (i) {
+                    if (!lib.config.xjb_count[player.name]) return
+                    if (lib.config.xjb_count[player.name].lingtan) lib.config.xjb_count[player.name].lingtan.forEach(function (i) {
                         if (!lib.skill[i]) return
                         lib.card.xjb_skillCard.cardConstructor(i);
                         lib.card.xjb_skillCard.skillLeadIn(i);
@@ -339,17 +344,6 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                 },
             }
             lib.translate._xjb_soul_lingtan = "<span data-nature=xjb_hun><font color=white>灵弹</font></span>"
-            lib.skill._xjb_soul_tiaomo = {
-                trigger: {
-                    global: "roundStart"
-                },
-                forced: true,
-                filter: function (event, player) {
-                    player.coordinate = undefined
-                    return true
-                },
-                content: function () { }
-            }
             lib.skill._xjb_lingliBeforeDeath = {
                 trigger: {
                     player: ["dieBefore"]
@@ -434,24 +428,6 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                 let library = lib.xjb_src + "position/library.jpg"
                 let LH = lib.xjb_src + lib.config.xjb_newcharacter.selectedSink.slice(8)
                 let myName = lib.config.xjb_newcharacter.name2
-                /*if (!lib.config.xjb_count.xjb_chanter.dialog.firstMeet) {
-                    game.xjb_dialog([
-                        [LH, myName, "green", "咦，之前还没有发现，这里怎么有这么大一座图书馆啊！", library],
-                        [chanter, "琪盎特儿", "white", "确实，这座图书馆建在不起眼的地方，所以也没有什么人来"],
-                        [LH, myName, "green", "你是？"],
-                        [chanter, "琪盎特儿", "white", "我名唤琪盎特儿，索姓，乃是本图书馆的第四任馆主。"],
-                        [LH, myName, "green", "我是" + myName + "，" + "人如其名，想必琪盎特儿小姐是一位咏唱使吧。"],
-                        [chanter, "琪盎特儿", "white", "虽说以名取人不可取，但我仍旧要承认这件事实，不错，我的确是一位咏唱使。"],
-                        [LH, myName, "green", "咏唱使是伟大的职业。我向你表示敬意。我现在却是无职，只身一人，四处闯荡而已。"],
-                        [chanter, "琪盎特儿", "white", "在这一个混乱的时代，单枪匹马是冒险的事情。"],
-                        [LH, myName, "green", "没有什么冒险不冒险的，安全不安全的。坚守城池固然不易攻破，但谁能否定随机应变不是佳策呢？"],
-                        [chanter, "琪盎特儿", "white", "那便祝福你了。虽然是点头之交，我不介意为你效劳。"]
-                    ], () => {
-                        lib.config.xjb_count.xjb_chanter.dialog.firstMeet = true
-                        game.saveConfig("xjb_count", lib.config.xjb_count)
-                    })
-                    return;
-                }*/
                 game.xjb_dialog([
                     [chanter, "琪盎特儿", "white", "再次相逢了，" + myName + "，是什么打算把你送到我这边来的呢？", library]
                 ]);

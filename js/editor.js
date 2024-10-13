@@ -5,7 +5,6 @@ import {
     validParenthness,
     findPrefix,
     whichPrefix,
-    addPSFix,
     eachLine,
     findWordsGroup,
     clearWordsGroup,
@@ -16,7 +15,6 @@ import {
     JavascriptKeywords,
     JavascriptUsualType,
     JavascriptGlobalVariable,
-    getLineOfInput,
     getLineRangeOfInput
 } from './string.js'
 import {
@@ -62,7 +60,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             '你于回合外失去手牌后', '你于回合外失去牌后',
             '当你使用杀指定目标时', '当你使用杀指定目标后',
             '当你成为杀的目标后', '当你成为决斗的目标后',
-            '当你使用杀后', '当你使用决斗后', '当你使用桃后', '当你使用\u5357\u86ee\u5165\u4fb5后', '当你使用万箭齐发后'
+            '当你使用杀后', '当你使用决斗后', '当你使用桃后'
         ],
     };
     window.XJB_PUNC = ["!", " || ", " && ", " + ", " - ", " * ", " / ", " % ",
@@ -355,6 +353,28 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     addMod(regexp, ...args)
                 }
             }
+            back.addUserCustom = function () {
+                back.skill.content_ignoreIndex = [];
+                let start = false, nowMatch = '', i = 0;
+                for (const line of [...back.skill.content]) {
+                    let match = line.match(/^<([$_a-zA-Z0-9]+)>$/);
+                    if (!nowMatch && match) {
+                        nowMatch = match[1];
+                        back.skill.custom[nowMatch] = '';
+                        start = true;
+                        back.skill.content_ignoreIndex.push(i);
+                    }
+                    else if (start && line === `</${nowMatch}>`) {
+                        start = false;
+                        nowMatch = null;
+                        back.skill.content_ignoreIndex.push(i);
+                    } else if (start) {
+                        back.skill.custom[nowMatch] += `${line}\n`;
+                        back.skill.content_ignoreIndex.push(i);
+                    }
+                    i++;
+                }
+            }
             back.subSkillTest = function () {
                 for (const skillName in back.skill.subSkill) {
                     if (back.skill.subSkill[skillName].viewAsSubSkill) delete back.skill.subSkill[skillName];
@@ -432,36 +452,38 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     }; break;
                 }
             }
+            //
+            function isJianxiongGain() {
+                /**
+                 * @type {Map}
+                 */
+                let map = back.skill.variable_content
+                let p = map.get("trigger.cards")
+                const bool1 = back.skill.trigger.player.includes("damageEnd");
+                const bool2 = back.skill.content.some(str => {
+                    return /gain\(.*trigger.cards.*\)/.exec(str) !== null;
+                });
+                const bool3 = back.skill.content.some(str => {
+                    return new RegExp(`gain\(.*${p}.*\)`).exec(str) != null;
+                })
+                return bool1 && (bool2 || bool3);
+            }
+            function isViewAs() {
+                const bool = back.skill.kind && back.skill.kind !== "trigger" && back.skill.kind !== 'enable:"phaseUse"'
+                return bool
+            }
+            function moreViewAs() {
+                const bool = back.skill.viewAs.length > 1 && back.skill.viewAsCondition.length > 1
+                return bool;
+            }
             back.prepare = function () {
                 back.allVariable();
                 back.skill.boolList.length = 0;
                 if (!back.skill.mode) back.skill.mode = 'self';
-                function isJianxiongGain() {
-                    /**
-                     * @type {Map}
-                     */
-                    let map = back.skill.variable_content
-                    let p = map.get("trigger.cards")
-                    const bool1 = back.skill.trigger.player.includes("damageEnd");
-                    const bool2 = back.skill.content.some(str => {
-                        return /gain\(.*trigger.cards.*\)/.exec(str) !== null;
-                    });
-                    const bool3 = back.skill.content.some(str => {
-                        return new RegExp(`gain\(.*${p}.*\)`).exec(str) != null;
-                    })
-                    return bool1 && (bool2 || bool3);
-                }
-                function isViewAs() {
-                    const bool = back.skill.kind && back.skill.kind !== "trigger" && back.skill.kind !== 'enable:"phaseUse"'
-                    return bool
-                }
-                function moreViewAs() {
-                    const bool = back.skill.viewAs.length > 1 && back.skill.viewAsCondition.length > 1
-                    return bool;
-                }
+
                 isJianxiongGain() && back.skill.boolList.push("jianxiong_gain");
                 isViewAs() && back.skill.boolList.push("viewAs");
-                moreViewAs() && back.skill.boolList.push("moreViewAs")
+                moreViewAs() && back.skill.boolList.push("moreViewAs");
                 //
                 back.modTest();
                 back.groupTest();
@@ -471,6 +493,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 //dom部分
                 //更新显示状态
                 back.updateDisplay();
+                back.addUserCustom();
             }
             back.organize = function () {
                 back.prepare();
@@ -974,6 +997,28 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     this.selectionStart = start;
                     this.selectionEnd = start + replacer.length;
                 }
+            }
+            const addCommonOrder = ele => {
+                textareaTool().setTarget(ele)
+                    .replaceOrder(/(本|此|该)技能id/g, back.getID)
+                    .replaceOrder(/访\*(\d+)/g, (_, ...p) => {
+                        return '访  '.repeat(parseInt(p[0]))
+                    })
+                    .clearThenOrder("整理", ele.arrange)
+                    .replaceThenOrder('新长中文', '', () => NonameCN.moreSetDialog[6](back))
+                    .replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", ele.adjustTab)
+                    .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", ele.adjustTab)
+                    .replaceOrder(/\bdo-while\b/g, "do{\n\n}\nwhile(  )")
+                    .replaceOrder(/\bwhile-/g, "while(  ){\n\n}")
+                    .replaceOrder(/\bfor-in\b/g, "for( 常量 k in  ){\n\n}")
+                    .replaceOrder(/\bfor-of\b/g, "for( 常量 k of  ){\n\n}")
+                    .replaceOrder(/\bfor-;;/g, "for( 块变 i 令为 0 ; i< ; i++ ){\n\n}")
+                    .replaceOrder(/\bswitch-case\*(\d+)/g, (_,...p)=>{
+                        return `switch (){\n${"case ():{\n\n}\nbreak;\n".repeat(parseInt(p[0]))}default:{\n\n}\nbreak;\n}`
+                    })
+                    .replaceOrder(/^如果\*(\d+)/mg, (_,...p)=>{
+                        return "如果\n\n那么\n分支开始\n\n分支结束\n".repeat(parseInt(p[0])).slice(0,-1)
+                    })
             }
             /**
              * @type {HTMLElement}
@@ -1542,6 +1587,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     back.returnIgnore = true;
                     back.FilterInherit = true
                     filterFree.changeWord(/继承.+\n/, wonderfulInherit);
+                    filterFree.value = `/*back.FilterInherit=true*/\n${filterFree.value}`;
                 }
                 back.skill.filter = []
                 if (!filterFree.value || filterFree.value.length === 0) return back.skill.filter.push('true') && back.organize()
@@ -1569,14 +1615,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .dittoUnderOrder()
                 .replaceThenOrder(/(?<![/][*])[ ]*back.FilterInherit[ ]*\=[ ]*true[ ]*(?![*][/])/g, "/*back.FilterInherit=true*/", () => { back.FilterInherit = true })
                 .clearThenOrder(/([/][*])[ ]*back.FilterInherit[ ]*\=false[ ]*[ ]*([*][/])/g, () => { back.FilterInherit = false })
-                .clearThenOrder("整理", back.ele.filter.arrange)
-                .replaceOrder(/(本|此|该)技能id/g, back.getID)
-                .replaceOrder(/访\*(\d+)/g,(match,...p)=>{
-                    return '访  '.repeat(parseInt(p[0]))
-                })
-                .replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", back.ele.filter.adjustTab)
-                .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", back.ele.filter.adjustTab)
-                .replaceThenOrder('新长中文', '', () => NonameCN.moreSetDialog[6](back))
                 .debounce('keyup', back.ele.filter.submit, 200)
                 .listen('keydown', deleteModule)
                 .listen('selectionStartChange', adjustSelection)
@@ -1793,10 +1831,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 that.changeWord(new RegExp(`(${JOINED_PLAYAERCN})`, 'g'), ' $1 ');
                 NonameCN.standardEeffect(that);
                 NonameCN.standardEvent(that);
-                NonameCN.deleteBlank(that);
                 that.changeWord(/(?<!\n)(并且|或者)/g, '\n$1');
                 that.changeWord(/(并且|或者)(?!\n)/g, '$1\n');
                 that.adjustTab();
+                NonameCN.deleteBlank(that);
             }
             contentFree.zeroise = function () {
                 this.value = "";
@@ -1827,6 +1865,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     wonderfulInherit = wonderfulInherit.replace(/\s\s+/g, '\n')
                     wonderfulInherit = wonderfulInherit.replace(new RegExp(preSkill, 'g'), back.skill.id)
                     contentFree.changeWord(/继承.+\n/, wonderfulInherit);
+                    contentFree.value = `/*back.stepIgnore = true*/\n/*back.ContentInherit = true*/\n${contentFree.value}`
                     back.stepIgnore = true;
                     back.ContentInherit = true;
                 }
@@ -1858,26 +1897,18 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .replaceThenOrder(/(?<![/][*])back.ContentInherit[ ]*\=[ ]*true[ ]*(?![*][/])/g, "/*back.ContentInherit=true*/", () => { back.ContentInherit = false })
                 .clearThenOrder(/([/][*])[ ]*back.ContentInherit[ ]*\=[ ]*false[ ]*([*][/])/g, () => { back.ContentInherit = false })
                 .replaceThenOrder(/(?<![/][*])[ ]*back.stepIgnore[ ]*\=[ ]*true[ ]*(?![*][/])/g, "/*back.stepIgnore=true*/", () => { back.stepIgnore = true })
-                .clearThenOrder(/([/][*])[ ]*back.stepIgnore[ ]*\=false[ ]*[ ]*([*][/])/g, () => { back.stepIgnore = false })
-                .replaceOrder(/(本|此|该)技能id/g, back.getID)
-                .replaceOrder(/访\*(\d+)/g,(match,...p)=>{
-                    return '访  '.repeat(parseInt(p[0]))
-                })
-                .clearThenOrder("整理", back.ele.content.arrange)
-                .replaceThenOrder('新长中文', '', () => NonameCN.moreSetDialog[6](back))
-                .replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", back.ele.content.adjustTab)
-                .replaceThenOrder('新选择如果', "如果\n选择结果布尔\n那么\n分支开始\n\n分支结束", back.ele.content.adjustTab)
-                .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", back.ele.content.adjustTab)
+                .clearThenOrder(/([/][*])[ ]*back.stepIgnore[ ]*\=[ ]*false[ ]*([*][/])/g, () => { back.stepIgnore = false })
+                .replaceThenOrder('新选择如果', "如果\n有选择结果\n那么\n分支开始\n\n分支结束", back.ele.content.adjustTab)
                 .replaceThenOrder('新选择角色', '变量 选择事件 令为 你 选择角色 一名\n选择事件 设置角色限制条件\n选择事件 设置角色选择数量\n新步骤\n如果\n选择结果布尔\n那么\n分支开始\n\n分支结束', back.ele.content.adjustTab)
                 .replaceThenOrder('新选择选项', '变量 选项列表 令为 数组开始 %#&1 , %#&2  数组结束\n变量 选择事件 令为 你 选择选项 选项列表\n新步骤\n如果\n选择结果选项 为 %#&1\n那么\n分支开始\n\n分支结束\n如果\n选择结果选项 为 %#&2\n那么\n分支开始\n\n分支结束\n', back.ele.content.adjustTab)
                 .replaceThenOrder('新拼点事件', '变量 选择事件 令为 你 拼点 目标\n新步骤\n如果\n拼点赢\n那么\n分支开始\n\n分支结束\n如果\n拼点平局\n那么\n分支开始\n\n分支结束\n如果\n拼点输\n那么\n分支开始\n\n分支结束', back.ele.content.adjustTab)
                 .replaceOrder('新目标过滤', '(card,player,target)=>{}')
                 .replaceOrder('新卡牌过滤', '(card)=>{}')
-                .replaceOrder(/\bdo-while\b/g, "do{\n\n}while(  )")
-                .replaceOrder(/\bwhile-\b/g, "while(  ){\n}")
-                .replaceOrder(/\bfor-in\b/g, "for( 常量 k in  ){\n\n}")
-                .replaceOrder(/\bfor-of\b/g, "for( 常量 k of  ){\n\n}")
-                .replaceOrder(/\bfor-;;/g, "for( 块变 i 令为 0 ; i< ; i++ ){\n\n}")
+                .replaceOrder(/^<([$_a-zA-Z0-9]+)[>]?->$/mg, '<$1>\n\n</$1>')
+                .replaceOrder(/^f-([$_a-zA-Z0-9]+)->$/mg, '$1( ){\n\n\n},')
+                .replaceOrder(/^f-+[>]/mg, 'function( ){\n\n\n}')
+                .replaceOrder(/^f-(卡牌)?可使?用性(模组)?->$/mg, 'cardEnabled(card){\n\n\n},')
+                .replaceOrder(/^(模组|mod)[区域]?->$/mg, '<mod>\n\n</mod>')
                 .debounce('keyup', back.ele.content.submit, 200)
                 .listen('keydown', deleteModule)
                 .listen('selectionStartChange', adjustSelection)
@@ -2213,9 +2244,9 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 NonameCN.standardBoolExpBefore(that)
                 NonameCN.underlieVariable(that)
                 NonameCN.standardFilterTargetBef(that)
-                .replaceOrder(/访\*(\d+)/g,(match,...p)=>{
-                    return '访  '.repeat(parseInt(p[0]))
-                })
+                    .replaceOrder(/访\*(\d+)/g, (match, ...p) => {
+                        return '访  '.repeat(parseInt(p[0]))
+                    })
                 new Array('你', '目标').forEach(i => {
                     that.changeWord(new RegExp(i, 'g'), i + ' ')
                 })
@@ -2363,10 +2394,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .dittoUnderOrder()
                 .order(/.+/, e => { if (!back.skill.type.includes('filterCard')) e.target.value = '' })
                 .clearThenOrder("整理", back.ele.filterCard.arrange)
-                .replaceOrder(/(本|此|该)技能id/g, back.getID)
-                .replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", back.ele.filterCard.adjustTab)
-                .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", back.ele.filterCard.adjustTab)
-                .replaceThenOrder('新长中文', '', () => NonameCN.moreSetDialog[6](back))
                 .listen('keydown', tabChange("filterCard"))
                 .debounce('keyup', back.ele.filterCard.submit, 200)
                 .style({
@@ -2581,6 +2608,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     }
                     setDom(frequencyFree, mapList, back.skill.viewAsFrequency, "frequency", [])
                 }
+            }
+            //给以上所有free绑定事件
+            for (const eleToAdd of [filterFree, contentFree, filterCardFree, filterTargetFree]) {
+                addCommonOrder(eleToAdd);
             }
             //第四页
             let subBack4 = newPage()

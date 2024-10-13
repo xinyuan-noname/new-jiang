@@ -49,6 +49,11 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
         if (!lib.config.xjb_count[id]) lib.config.xjb_count[id] = {}
         if (!lib.config.xjb_count[id].daomo[type]) lib.config.xjb_count[id].daomo[type] = { number: 0 };
     }
+    game.xjb_isKind = function (player, kindName) {
+        player = typeof player === "string" ? player : player.name;
+        if (!lib.config.xjb_count[player]) return false;
+        if (!lib.config.xjb_count[player].kind != kindName) return false;
+    }
     game.updateRed = function () {
         var list = lib.config["xjb_redSkill"].list, keys = Object.keys(lib.skill)
         for (let i = 0; i < list.length; i++) {
