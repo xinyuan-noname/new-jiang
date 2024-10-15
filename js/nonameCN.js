@@ -478,6 +478,18 @@ export class NonameCN {
     }
     static basicList = {
         "数学": "Math",
+        //虚拟牌
+        '虚拟牌': 'vCard',
+        '虚拟牌0': 'vCard0',
+        '虚拟牌1': 'vCard1',
+        '虚拟牌2': 'vCard2',
+        '虚拟牌3': 'vCard3',
+        '虚拟牌4': 'vCard4',
+        '虚拟牌5': 'vCard5',
+        '虚拟牌6': 'vCard6',
+        '虚拟牌7': 'vCard7',
+        '虚拟牌8': 'vCard8',
+        '虚拟牌9': 'vCard9',
         //get
         '名字': "name",
         '牌名': 'name',
@@ -570,7 +582,7 @@ export class NonameCN {
         '废除宝物栏': 'disableEquip:"equip5":intoFunction',
         '任意张': '[1,Infinity]',
         '任意名': '[1,Infinity]',
-        //
+        //固定值
         '其他': 'other',
         '至多': 'atMost',
         '至少': 'atLeast',
@@ -582,18 +594,22 @@ export class NonameCN {
         '块级变量': 'let ',
         '块变': 'let ',
         "等待": "await ",
-        //
+        '分岔': "switch ",
+        '打断': "break;",
+        '情况': "case ",
+        //布尔值
         '真': 'true',
         '假': 'false',
         '真值': 'true',
         '假值': 'false',
-        '不': '!',
+        //if-else类分支语句
         '如果': 'if(',
         '如果不': 'if(!',
         '若': 'if(',
         '那么': ')',
         '分支开始': '{',
         '分支结束': '}',
+        '不': '!',
         '否则': 'else ',
         //数学
         '随机数': 'Math.random()',
@@ -628,6 +644,7 @@ export class NonameCN {
         '&&': ' && ',
         //关键字
         'else': 'else ',
+        "switch": "switch ",
         'in': ' in ',
         'for(var': 'for(var ',
         'for(let': 'for(let ',
@@ -691,6 +708,15 @@ export class NonameCN {
         eventName: eventList,
     }
     static groupedList = {
+        custom: {
+            '牌堆中颜色不同的牌': "info;event.name;//!?custom_researchCardsDif;true;'color';intoFunction",
+            '牌堆中花色不同的牌': "info;event.name;//!?custom_researchCardsDif;true;'suit';intoFunction",
+            '牌堆中属性不同的牌': "info;event.name;//!?custom_researchCardsDif;true;'nature';intoFunction",
+            '牌堆中点数不同的牌': "info;event.name;//!?custom_researchCardsDif;true;'number';intoFunction",
+            '牌堆中牌名不同的牌': "info;event.name;//!?custom_researchCardsDif;true;'name';intoFunction",
+            '牌堆中类别不同的牌': "info;event.name;//!?custom_researchCardsDif;true;'type';intoFunction",
+            '牌堆中副类别不同的牌': "info;event.name;//!?custom_researchCardsDif;true;'subtype';intoFunction",
+        },
         punctuation: {
             '访问': ".",
             '访': ".",
@@ -1147,7 +1173,6 @@ export class NonameCN {
             //牌类事件      
             '随机弃置牌': 'randomDiscard;"he";intoFunction',
             '随机弃置装备区的牌': 'randomDiscard;"e";intoFunction',
-            '随机弃置判定区的牌': 'randomDiscard;"j";intoFunction',
             '随机弃置手牌区的牌': 'randomDiscard;"h";intoFunction',
             '弃置区域内的所有牌': 'randomDiscard;"hej";Infinity',
             '获得角色区域内牌': 'gainPlayerCard;"hej";intoFunction',
@@ -1174,7 +1199,6 @@ export class NonameCN {
             '判定区没有牌': `hasCard;void 0;"j";denyPrefix`,
             '手牌区没有牌': `hasCard;void 0;"h";denyPrefix`,
             //
-
             '手牌数': 'countCards;"h"',
             '牌数': 'countCards;"he"',
             '场上牌数': `countCards;"ej"`,
@@ -1193,7 +1217,6 @@ export class NonameCN {
             '获取区域内牌': 'getCards;"hej"',
             '获取牌': 'getCards;"he"',
             '获取手牌': 'getCards;"h"',
-            //
             //历史类
             '获取本回合指定其他角色为目标的使用牌事件': "getHistory;'useCard';function(evt){return evt.targets.filter(current=>target!=player)}",
             '获取本回合指定其他角色为目标的打出牌事件': "getHistory;'respond';function(evt){return evt.targets.filter(current=>target!=player)}",
@@ -1802,10 +1825,12 @@ export class NonameCN {
             "此牌取消你为目标": "此牌取消你为目标",
             "此牌不可被此牌的目标响应": "此牌不可被此牌的目标响应",
             "此牌无视此牌的目标的防具": "此牌无视此牌的目标的防具",
-            "你视为对你使用一张无中生有": "你视为对你使用一张无中生有(牌类)",
-            "你视为对你使用一张不可被无懈可击响应的无中生有": "你视为对你使用一张不可被无懈可击响应的无中生有(牌类)",
-            "目标组-1视为对目标组-0使用一张不可被无懈可击响应、不影响ai的决斗": "目标组-1视为对目标组-0使用一张不可被无懈可击响应、不影响ai的决斗(牌类)",
-            "目标组-1视为对目标组-0使用一张不计入次数、不影响ai的杀": "目标组-1视为对目标组-0使用不计入次数、不影响ai的杀(牌类)",
+            '你选择对一名角色杀': "你选择对一名角色杀(使用牌类)",
+            "你视为对你使用一张无中生有": "你视为对你使用一张无中生有(使用牌类)",
+            "你视为对你使用一张不可被无懈可击响应的无中生有": "你视为对你使用一张不可被无懈可击响应的无中生有(使用牌类)",
+            "目标组-1视为对目标组-0使用一张不可被无懈可击响应、不影响ai的决斗": "目标组-1视为对目标组-0使用一张不可被无懈可击响应、不影响ai的决斗(使用牌类)",
+            "目标组-1视为对目标组-0使用一张不计入次数、不影响ai的杀": "目标组-1视为对目标组-0使用不计入次数、不影响ai的杀(使用牌类)",
+            '变量 牌组 令为 获取 牌堆中颜色不同的两张牌\n你 获得牌 牌组':"你获得牌堆中颜色不同的两张牌(牌类)",
             '第一个所选角色摸一张牌': "第一个所选角色摸一张牌(选择目标后写该语句)",
             '触发事件的角色摸一张牌': "触发事件的角色摸一张牌(触发技)",
             '触发事件的目标摸一张牌': "触发事件的目标摸一张牌(触发技)",
@@ -2060,7 +2085,7 @@ export class NonameCN {
         textareaTool().setTarget(that)
             .replace(/额外执行一个/g, "执行一个额外的")
             .replace(/获得此牌$/mg, "获得牌 此牌")
-            .replace(/(.+?)执行(一个)?额外的?(准备|出牌|摸牌|弃牌|结束)阶段/g, (match, ...p) => {
+            .replace(/(.+?)执行(一个)?额外的?(准备|判定|出牌|摸牌|弃牌|结束)阶段/g, (match, ...p) => {
                 return `阶段列表 剪接 当前回合序号 0 ${(p[2] + '阶段')}|${that.getID()}`
             })
             .replace(/可以(失去.+?点体力|受到.+?点伤害|摸.+?张牌)/g, function (match, ...p) {
@@ -2301,6 +2326,12 @@ export class NonameCN {
             result = result.replace(players, 'i');
             result = players + '.forEach(i=>' + result + ')';
         }
+        return result;
+    }
+    static disposeNeedTrans(sentence) {
+        let [result, temp] = sentence.split('//!?')
+        temp = `.${temp}`.replace(',', '(')
+        result = `${result})${temp}`.replaceAll(',)',')')
         return result;
     }
     //技能各部分的组装
@@ -3228,6 +3259,22 @@ export class NonameCN {
         result += `group:[${group}],\n`;
         return result;
     }
+    static GenerateResearchDifCards_custom() {
+        return [
+            "custom_researchCardsDif:function(bool,kind,num){",
+            "const cards = [], records = [];",
+            "for(const card of bool ? ui.cardPile.childNodes : ui.discardPile.childNodes){",
+            "const record = get[kind](card);",
+            "if(!records.includes(record)){",
+            "cards.push(card);",
+            "records.push(record);",
+            "}",
+            "if(cards.length===num) break;",
+            "}",
+            "return cards;",
+            "},\n"
+        ].join('\n')
+    }
     static GenerateEnding(back) {
         const { mode } = back.skill
         let result = ''
@@ -3307,7 +3354,7 @@ export class NonameCN {
     );
 
     modsMap.set(
-        new RegExp(`^\s*(你|player)\s*不能成为\s*(${matchCardName})\s*(目标|target)\s*$`, 'm'),
+        new RegExp(`^\s*(你|player)\s*不能成为\s*(${matchCardName})的?\s*(目标|target)\s*$`, 'm'),
         [
             void 0,
             void 0,
@@ -3317,7 +3364,7 @@ export class NonameCN {
         ]
     );
     modsMap.set(
-        new RegExp(`^\s*(你|player)\s*不能成为\s*(${matchCardName})(和|与|或|、)(${matchCardName})\s*(目标|target)\s*$`, 'm'),
+        new RegExp(`^\s*(你|player)\s*不能成为\s*(${matchCardName})(和|与|或|、)(${matchCardName})的?\s*(目标|target)\s*$`, 'm'),
         [
             void 0,
             void 0,

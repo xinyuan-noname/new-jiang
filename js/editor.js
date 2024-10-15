@@ -500,6 +500,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 /*初始化:最终输出的文字*/
                 let strParts = [];
                 const { asCardType } = NonameCN.analyzeViewAsData(back);
+                const filter = NonameCN.GenerateFilter(back, asCardType)
+                const content = NonameCN.GenerateContent(back)
                 //根据所选的编辑器类型确定开头
                 strParts.push(NonameCN.GenerateOpening(back));
                 strParts.push(NonameCN.GenerateInit(back));
@@ -507,13 +509,15 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 strParts.push(NonameCN.GenerateKind(back));
                 strParts.push(NonameCN.GenerateTag(back));
                 strParts.push(NonameCN.GenerateGetIndex(back));
+                if(content.includes('get.info(event.name).custom_researchCardsDif')){
+                    strParts.push(NonameCN.GenerateResearchDifCards_custom())
+                }
                 //filter部分
-                const filter = NonameCN.GenerateFilter(back, asCardType)
                 strParts.push(filter);
                 strParts.push(NonameCN.GenerateEnable(back))
                 //content部分
                 if (!back.skill.boolList.includes("viewAs")) {
-                    strParts.push(NonameCN.GenerateContent(back));
+                    strParts.push(content);
                 }
                 else if (back.skill.viewAs.length && back.skill.viewAsCondition.length) {
                     strParts.push(NonameCN.GenerateViewAs(back, 0));
@@ -735,6 +739,9 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     }
                     if (notice.includes('player') && sentence.includes('.when(')) {
                         sentence = NonameCN.disposeWhen(sentence, players);
+                    }
+                    if (notice.includes('get') && sentence.includes('//!?')) {
+                        sentence = NonameCN.disposeNeedTrans(sentence);
                     }
                     list4.push(sentence);
                 });
@@ -1013,12 +1020,17 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     .replaceOrder(/\bfor-in\b/g, "for( 常量 k in  ){\n\n}")
                     .replaceOrder(/\bfor-of\b/g, "for( 常量 k of  ){\n\n}")
                     .replaceOrder(/\bfor-;;/g, "for( 块变 i 令为 0 ; i< ; i++ ){\n\n}")
-                    .replaceOrder(/\bswitch-case\*(\d+)/g, (_,...p)=>{
-                        return `switch (){\n${"case ():{\n\n}\nbreak;\n".repeat(parseInt(p[0]))}default:{\n\n}\nbreak;\n}`
+                    .replaceOrder(/\bswitch-case\*(\d+)/g, (_, ...p) => {
+                        return `switch (  ){\n${"case ():{\n\n}\nbreak;\n".repeat(parseInt(p[0]))}default:{\n\n}\nbreak;\n}`
                     })
-                    .replaceOrder(/^如果\*(\d+)/mg, (_,...p)=>{
-                        return "如果\n\n那么\n分支开始\n\n分支结束\n".repeat(parseInt(p[0])).slice(0,-1)
+                    .replaceOrder(/^新?花色分支$/mg, '变量 花色 令为 获取 花色 卡牌\n分岔 ( 花色 ) \n分支开始\n\t情况 红桃 :\n\t分支开始\n\t\t\n\t分支结束\n\t打断\n\t情况 方片 :\n\t分支开始\n\t\t\n\t分支结束\n\t打断\n\t情况 黑桃 :\n\t分支开始\n\t\t\n\t分支结束\n\t打断\n\t情况 梅花 :\n\t分支开始\n\t\t\n\t分支结束\n\t打断\n分支结束')
+                    .replaceOrder(/^如果\*(\d+)/mg, (_, ...p) => {
+                        return "如果\n\n那么\n分支开始\n\n分支结束\n".repeat(parseInt(p[0])).slice(0, -1)
                     })
+                    .replaceOrder("新虚拟牌", '变量 虚拟牌 令为\n{\n牌名 : 杀 ,\n花色 : 梅花 ,\n点数 : A点 ,\n属性 : 火属性\n}')
+                    .replaceOrder('\\t', '\t')
+                    .replaceOrder('转义t', '\t')
+                    .replaceOrder('转义n', '\n')
             }
             /**
              * @type {HTMLElement}
@@ -1772,7 +1784,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     update(i + '枚');
                     update(get.cnNumber(i) + '枚');
                 }
-                "abcdefghjlmnopqrstuvwxyz".split('').forEach(i => {
+                "bcdefghlmnoprstuvwxyz".split('').forEach(i => {
                     update(i + '点');
                     update(i.toUpperCase() + '点');
                     update(i + '名');
@@ -1803,13 +1815,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     if (/其他[男女双]性角色/.test(previous)) return previous;
                     return disposed;
                 })
-                parameter('梅花', '方片', '无花色', '黑桃', '红桃', '红色', '黑色', '无色', (disposing, disposed, previous) => {
-                    if (NonameCN.skillModMap.keys().some(regexp => regexp.test(previous))) return previous;
-                    if (previous.includes(`牌堆中${disposing}牌`)) return previous;
-                    if (previous.includes(`设置${disposing}作为`)) return previous;
-                    return disposed;
-                });
-                parameter("A点", "J点", "Q点", "K点");
                 parameter("火属性", "冰属性", "雷属性");
                 parameter("任意张", "任意名", "从牌堆底");
                 parameter('魏势力', '蜀势力', '吴势力', '群势力', '晋势力', '神势力');
@@ -2142,7 +2147,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .dittoUnderOrder()
                 .clearThenOrder("整理", back.ele.trigger.arrange)
                 .replaceOrder(/(本|此|该)技能id/g, back.getID)
-                .replaceOrder(/访\*(\d+)/g,(match,...p)=>{
+                .replaceOrder(/访\*(\d+)/g, (match, ...p) => {
                     return '访  '.repeat(parseInt(p[0]))
                 })
                 .replaceThenOrder('新长中文', '', () => NonameCN.moreSetDialog[6](back))
