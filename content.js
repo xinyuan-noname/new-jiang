@@ -93,6 +93,7 @@ export function XJB_CONTENT(config, pack) {
             disk: "网盘",
             remnantArea: "残区",
             hun_system: '魂币系统',
+            economic:"魂的货币体系"
         },
         onclick: function (layout) {
             ui.create.xjb_book(ui.window, xjb_library["intro"][layout])

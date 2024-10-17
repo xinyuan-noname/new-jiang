@@ -234,40 +234,40 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                     min: 0,
                     max: 5,
                 },
-                xjb_qimendunjia_1:{
-                    counterpart:"奇门遁甲-红桃-8",
-                    min:0,
-                    max:2
+                xjb_qimendunjia_1: {
+                    counterpart: "奇门遁甲-红桃-8",
+                    min: 0,
+                    max: 2
                 },
-                xjb_qimendunjia_2:{
-                    counterpart:"奇门遁甲-黑桃-8",
-                    min:0,
-                    max:2
+                xjb_qimendunjia_2: {
+                    counterpart: "奇门遁甲-黑桃-8",
+                    min: 0,
+                    max: 2
                 },
-                xjb_qimendunjia_3:{
-                    counterpart:"奇门遁甲-梅花-8",
-                    min:0,
-                    max:2
+                xjb_qimendunjia_3: {
+                    counterpart: "奇门遁甲-梅花-8",
+                    min: 0,
+                    max: 2
                 },
-                xjb_qimendunjia_4:{
-                    counterpart:"奇门遁甲-方片-8",
-                    min:0,
-                    max:2
+                xjb_qimendunjia_4: {
+                    counterpart: "奇门遁甲-方片-8",
+                    min: 0,
+                    max: 2
                 },
-                xjb_tianqian_1:{
-                    counterpart:"天谴-黑桃-9",
-                    min:0,
-                    max:1
+                xjb_tianqian_1: {
+                    counterpart: "天谴-黑桃-9",
+                    min: 0,
+                    max: 1
                 },
-                xjb_fuci_1:{
-                    counterpart:"福赐-红桃-6",
-                    min:0,
-                    max:2
+                xjb_fuci_1: {
+                    counterpart: "福赐-红桃-6",
+                    min: 0,
+                    max: 2
                 },
-                xjb_fuci_2:{
-                    counterpart:"福赐-红桃-8",
-                    min:0,
-                    max:2
+                xjb_fuci_2: {
+                    counterpart: "福赐-红桃-8",
+                    min: 0,
+                    max: 2
                 }
             };
             window.addEventListener('hashchange', function () {
@@ -309,9 +309,6 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
         },
         guozhan: function () {
             if (get.mode() === "guozhan") {
-                lib.characterPack.mode_guozhan["xjb_fazheng"] = lib.character["xjb_fazheng"]
-                lib.characterPack.mode_guozhan["xjb_daqiao"] = lib.character["xjb_daqiao"]
-                lib.characterPack.mode_guozhan["xjb_zhangliang_liuhou"] = lib.character["xjb_zhangliang_liuhou"]
                 if (lib.config.xjb_newCharacter_addGuoZhan == 1 && lib.config.xjb_yangcheng == 1 && lib.config.xjb_hun) {
                     lib.characterPack.mode_guozhan["xjb_newCharacter"] = lib.character["xjb_newCharacter"]
                 }
@@ -339,29 +336,29 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                 for (const [attr, preValue] of Object.entries(map)) {
                     game.xjb_checkCharacterCount(id, attr, preValue)
                 }
-                function bookWrite(author, books, type) {
-                    if (!lib.translate[i]) return;
-                    let target = lib.config.xjb_count[i].book
-                    if (lib.translate[i].indexOf(author) >= 0) {
-                        let list1 = target.filter(item1 => {
-                            return !books.includes(item1.headline)
-                        })
-                        target.length = 0
-                        target.push(...list1)
-                        books.forEach((item, index) => {
-                            target.push({ type: type[index], headline: item })
-                        })
+                {
+                    const bookWrite = (author, books, type) => {
+                        if (!lib.translate[i]) return;
+                        let target = lib.config.xjb_count[i].book
+                        if (lib.translate[i].indexOf(author) >= 0) {
+                            let list1 = target.filter(item1 => {
+                                return !books.includes(item1.headline)
+                            })
+                            target.length = 0
+                            target.push(...list1)
+                            books.forEach((item, index) => {
+                                target.push({ type: type[index], headline: item })
+                            })
+                        }
                     }
+                    let wonderfulP = new Array(10).fill("poem")
+                    let wonderfulA = new Array(10).fill("article")
+                    bookWrite("曹操", ["龟虽寿", "短歌行", "观沧海"], wonderfulP)
+                    bookWrite("曹植", ["白马篇", "铜雀台赋", "赠白马王彪"], wonderfulP)
+                    bookWrite("曹丕", ["燕歌行"], wonderfulP)
+                    bookWrite("诸葛亮", ["隆中对", "出师表", "诫子书", "诫外生书"], wonderfulA)
+                    bookWrite("李白", ['行路难', "蜀道难", "清平调", "梦游天姥吟留别", "将进酒", "弃我去者"], wonderfulP)
                 }
-                let wonderfulP = new Array(10).fill("poem")
-                let wonderfulA = new Array(10).fill("article")
-                bookWrite("曹操", ["龟虽寿", "短歌行", "观沧海", "述志令"], ["poem", "poem", "poem", "article"])
-                bookWrite("曹植", ["白马篇", "洛神赋", "铜雀台赋", "赠白马王彪"], wonderfulP)
-                bookWrite("曹丕", ["燕歌行"], ["poem"])
-                bookWrite("陈琳", ["为袁绍檄豫州"], ["article"])
-                bookWrite("诸葛亮", ["隆中对", "出师表", "诫子书", "诫外生书"], wonderfulA)
-                bookWrite("李白", ['行路难', "蜀道难", "清平调", "梦游天姥吟留别", "将进酒"], wonderfulP)
-                bookWrite("芙艾派依", ["魂的货币体系"], ["lingli"]);
                 const daomoes = ["xuemo", "tear", "taoyao", "dragon", "sun", "blood"];
                 for (const daomo of daomoes) {
                     game.xjb_checkCharacterDaomo(id, daomo)
