@@ -340,12 +340,11 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                     const bookWrite = (author, books, type) => {
                         if (!lib.translate[i]) return;
                         let target = lib.config.xjb_count[i].book
-                        if (lib.translate[i].indexOf(author) >= 0) {
+                        if (lib.translate[i].includes(author)) {
                             let list1 = target.filter(item1 => {
-                                return !books.includes(item1.headline)
+                                return !books.includes(item1.headline) 
                             })
-                            target.length = 0
-                            target.push(...list1)
+                            target = [...list1]
                             books.forEach((item, index) => {
                                 target.push({ type: type[index], headline: item })
                             })

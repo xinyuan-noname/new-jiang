@@ -509,7 +509,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 strParts.push(NonameCN.GenerateKind(back));
                 strParts.push(NonameCN.GenerateTag(back));
                 strParts.push(NonameCN.GenerateGetIndex(back));
-                if(content.includes('get.info(event.name).custom_researchCardsDif')){
+                if (content.includes('get.info(event.name).custom_researchCardsDif')) {
                     strParts.push(NonameCN.GenerateResearchDifCards_custom())
                 }
                 //filter部分
@@ -961,9 +961,12 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                             function () {
                                 const id = this.container.dataset.xjb_id;
                                 if (myTarget.value.length) myTarget.value += '\n';
-                                myTarget.value += id;
+                                const index = myTarget.lastPlaceIndex || myTarget.value.length;
+                                const pPart = myTarget.value.slice(0, index), lPart = myTarget.value.slice(index)
+                                myTarget.value = `${pPart}${id}${lPart}`;
                                 myTarget.arrange();
                                 myTarget.submit();
+                                myTarget.selectionStart = index + id.length;
                             },
                             function () {
                             },
@@ -1007,6 +1010,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             }
             const addCommonOrder = ele => {
                 textareaTool().setTarget(ele)
+                    .listen('blur', function () { this.lastPlaceIndex = this.selectionStart })
                     .replaceOrder(/(本|此|该)技能id/g, back.getID)
                     .replaceOrder(/访\*(\d+)/g, (_, ...p) => {
                         return '访  '.repeat(parseInt(p[0]))
@@ -1015,6 +1019,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     .replaceThenOrder('新长中文', '', () => NonameCN.moreSetDialog[6](back))
                     .replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", ele.adjustTab)
                     .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", ele.adjustTab)
+                    .replaceThenOrder(/^如果\*(\d+)/mg, (_, ...p) => {
+                        return "如果\n\n那么\n分支开始\n\n分支结束\n".repeat(parseInt(p[0])).slice(0, -1)
+                    }, ele.adjustTab)
+                    .replaceThenOrder('新默认', "默认 :\n分支开始\n\n分支结束\n打断", ele.adjustTab)
                     .replaceOrder(/\bdo-while\b/g, "do{\n\n}\nwhile(  )")
                     .replaceOrder(/\bwhile-/g, "while(  ){\n\n}")
                     .replaceOrder(/\bfor-in\b/g, "for( 常量 k in  ){\n\n}")
@@ -1022,15 +1030,13 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     .replaceOrder(/\bfor-;;/g, "for( 块变 i 令为 0 ; i< ; i++ ){\n\n}")
                     .replaceOrder(/\bswitch-case\*(\d+)/g, (_, ...p) => {
                         return `switch (  ){\n${"case ():{\n\n}\nbreak;\n".repeat(parseInt(p[0]))}default:{\n\n}\nbreak;\n}`
-                    })
-                    .replaceOrder(/^新?花色分支$/mg, '变量 花色 令为 获取 花色 卡牌\n分岔 ( 花色 ) \n分支开始\n\t情况 红桃 :\n\t分支开始\n\t\t\n\t分支结束\n\t打断\n\t情况 方片 :\n\t分支开始\n\t\t\n\t分支结束\n\t打断\n\t情况 黑桃 :\n\t分支开始\n\t\t\n\t分支结束\n\t打断\n\t情况 梅花 :\n\t分支开始\n\t\t\n\t分支结束\n\t打断\n分支结束')
-                    .replaceOrder(/^如果\*(\d+)/mg, (_, ...p) => {
-                        return "如果\n\n那么\n分支开始\n\n分支结束\n".repeat(parseInt(p[0])).slice(0, -1)
-                    })
+                    }, ele.adjustTab)
+                    .replaceThenOrder(
+                        /^新?花色分支$/mg,
+                        '变量 花色 令为 获取 花色 卡牌\n分岔 ( 花色 ) \n分支开始\n\t情况 红桃 :\n\t分支开始\n\t\t\n\t分支结束\n\t打断\n\t情况 方片 :\n\t分支开始\n\t\t\n\t分支结束\n\t打断\n\t情况 黑桃 :\n\t分支开始\n\t\t\n\t分支结束\n\t打断\n\t情况 梅花 :\n\t分支开始\n\t\t\n\t分支结束\n\t打断\n分支结束',
+                        ele.adjustTab
+                    )
                     .replaceOrder("新虚拟牌", '变量 虚拟牌 令为\n{\n牌名 : 杀 ,\n花色 : 梅花 ,\n点数 : A点 ,\n属性 : 火属性\n}')
-                    .replaceOrder('\\t', '\t')
-                    .replaceOrder('转义t', '\t')
-                    .replaceOrder('转义n', '\n')
             }
             /**
              * @type {HTMLElement}
@@ -1822,7 +1828,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 that.value = eachLine(contentFree.value, line => {
                     const startsWithAwait = /^\s*等待 /.test(line)
                     if (startsWithAwait) line = line.slice(3)
-                    let group = findWordsGroup(line, playerCN);
+                    let group = findWordsGroup(line, playerCN, "!的");
                     if (/(变量|常量|块变|令为)/.test(line) || !group.length || line.startsWith("返回")) return;
                     if (NonameCN.skillModMap.keys().some(regexp => regexp.test(line))) return;
                     if (/[ ]访问?[ ]/.test(line)) return;
@@ -1830,10 +1836,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     if (/移除 你/.test(line)) return;
                     if (new RegExp(`^无视(${JOINED_PLAYAERCN})防具的牌`).test(line)) return;
                     if (/^选择结果目标[数组]/.test(line)) return;
-                    let restWords = clearWordsGroup(line, playerCN);
+                    let restWords = clearWordsGroup(line, playerCN, "!的");
                     return `${startsWithAwait ? "等待 " : ""}${group.shift()} ${restWords} ${group.join(" ")}`
                 })
-                that.changeWord(new RegExp(`(${JOINED_PLAYAERCN})`, 'g'), ' $1 ');
+                that.changeWord(new RegExp(`(?<!的)(${JOINED_PLAYAERCN})`, 'g'), ' $1 ');
                 NonameCN.standardEeffect(that);
                 NonameCN.standardEvent(that);
                 that.changeWord(/(?<!\n)(并且|或者)/g, '\n$1');
@@ -1907,6 +1913,9 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .replaceThenOrder('新选择角色', '变量 选择事件 令为 你 选择角色 一名\n选择事件 设置角色限制条件\n选择事件 设置角色选择数量\n新步骤\n如果\n选择结果布尔\n那么\n分支开始\n\n分支结束', back.ele.content.adjustTab)
                 .replaceThenOrder('新选择选项', '变量 选项列表 令为 数组开始 %#&1 , %#&2  数组结束\n变量 选择事件 令为 你 选择选项 选项列表\n新步骤\n如果\n选择结果选项 为 %#&1\n那么\n分支开始\n\n分支结束\n如果\n选择结果选项 为 %#&2\n那么\n分支开始\n\n分支结束\n', back.ele.content.adjustTab)
                 .replaceThenOrder('新拼点事件', '变量 选择事件 令为 你 拼点 目标\n新步骤\n如果\n拼点赢\n那么\n分支开始\n\n分支结束\n如果\n拼点平局\n那么\n分支开始\n\n分支结束\n如果\n拼点输\n那么\n分支开始\n\n分支结束', back.ele.content.adjustTab)
+                .replaceThenOrder("新花色判定", '变量 判定事件 令为 你 进行判定\n新步骤\n分岔 ( 判定结果的花色 )\n分支开始\n情况 红桃 :\n分支开始\n\n分支结束\n打断\n情况 方片 :\n分支开始\n\n分支结束\n打断\n情况 黑桃 :\n分支开始\n\n分支结束\n打断\n情况 梅花 :\n分支开始\n\n分支结束\n打断\n分支结束', back.ele.content.adjustTab)
+                .replaceThenOrder("新颜色判定", '变量 判定事件 令为 你 进行判定\n新步骤\n如果\n判定结果的颜色 为 红色\n那么\n分支开始\n\n分支结束\n否则\n分支开始\n\n分支结束', back.ele.content.adjustTab)
+                .replaceThenOrder("新牌名判定", '变量 判定事件 令为 你 进行判定\n新步骤\n如果\n判定结果的牌名 为 桃\n那么\n分支开始\n\n分支结束\n否则\n分支开始\n\n分支结束', back.ele.content.adjustTab)
                 .replaceOrder('新目标过滤', '(card,player,target)=>{}')
                 .replaceOrder('新卡牌过滤', '(card)=>{}')
                 .replaceOrder(/^<([$_a-zA-Z0-9]+)[>]?->$/mg, '<$1>\n\n</$1>')

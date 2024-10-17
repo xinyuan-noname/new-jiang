@@ -187,11 +187,12 @@ export function eachLine(str, callback) {
  * @param {string[]} wordsgroup - 包含多个单词的数组，用于构建正则表达式进行匹配。
  * @returns {string[]} 返回一个数组，包含所有在字符串str中找到的与wordsgroup中的单词匹配的项。
  */
-export function findWordsGroup(str, wordsgroup) {
+export function findWordsGroup(str, wordsgroup, requirePrefix, requireSurfix) {
     let result = [];
     wordsgroup = [...new Set(wordsgroup.filter(item => item && str.includes(item)))];
     if (wordsgroup.length == 0) return [];
-    let regexp = new RegExp(`(${wordsgroup.join("|")})`, 'g'), match
+    let regexp = new RegExp(`${requirePrefix ? "(?<" + requirePrefix + ")" : ""}(${wordsgroup.join("|")})${requireSurfix ? "(?" + requireSurfix + ")" : ""}`, "g"),
+        match
     while ((match = regexp.exec(str)) !== null) {
         result.push(match[0]);
     }
@@ -204,8 +205,8 @@ export function findWordsGroup(str, wordsgroup) {
  * @param {string[]} wordsgroup - 包含多个需要移除的单词的数组，用于构建正则表达式。
  * @returns {string} 返回一个新的字符串，其中wordsgroup中的所有单词已被移除。
  */
-export function clearWordsGroup(str, wordsgroup) {
-    let regexp = new RegExp(`(${wordsgroup.join("|")})`, "g")
+export function clearWordsGroup(str, wordsgroup, requirePrefix, requireSurfix) {
+    let regexp = new RegExp(`${requirePrefix ? "(?<" + requirePrefix + ")" : ""}(${wordsgroup.join("|")})${requireSurfix ? "(?" + requireSurfix + ")" : ""}`, "g")
     return str.replace(regexp, "")
 }
 /**
