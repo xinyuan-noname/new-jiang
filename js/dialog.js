@@ -139,20 +139,16 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             this.goon = nextDialog
             return nextDialog
         }
+        div.elementTool = element;
         return div
     };
     //创建按钮
     ui.create.xjb_button = function (length, str, remove) {
         var button = element("div")
+            .addClass("xjb_dialogButton")
             .innerHTML(str)
             .father(length)
             .style({
-                color: "#041322",
-                "text-align": "center",
-                "font-size": "36px",
-                "background-color": "#e4d5b7",
-                "border-radius": "0.5em",
-                position: "relative",
                 margin: "auto",
                 marginLeft: "15px",
                 marginRight: "15px",
@@ -161,9 +157,8 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
         if (remove && remove.length) {
             button.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function (e) {
                 e.stopPropagation();
-                for (var i = 0; i < remove.length; i++) {
-                    remove[i].remove()
-                    remove[i].remove()
+                for (const item of remove) {
+                    item.remove();
                 }
             })
         }

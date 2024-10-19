@@ -906,7 +906,7 @@ export class NonameCN {
         },
         card_attr: {
             "点数": "number",
-            "是实体牌": "isCard"
+            "不是转化牌": "isCard"
         },
         card_method: {
             "移除": "remove",

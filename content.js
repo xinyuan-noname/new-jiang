@@ -93,7 +93,7 @@ export function XJB_CONTENT(config, pack) {
             disk: "网盘",
             remnantArea: "残区",
             hun_system: '魂币系统',
-            economic:"魂的货币体系"
+            economic: "魂的货币体系"
         },
         onclick: function (layout) {
             ui.create.xjb_book(ui.window, xjb_library["intro"][layout])
@@ -779,7 +779,7 @@ export function XJB_CONTENT(config, pack) {
                     const goods = game.xjb_goods.permission_callFellow
                     if (lib.config.xjb_hunbi >= goods.price) {
                         game.xjb_create.confirm('你已有' + lib.config.xjb_hunbi + '个魂币，解锁该功能需要' + goods.price + '个魂币，确定要解锁吗？', () => {
-                            game.xjb_costHunbi(goods.price,'开启魂将功能权限')
+                            game.xjb_costHunbi(goods.price, '开启魂将功能权限')
                             game.saveConfig(goods.mapToConfig, 1);
                             game.xjb_create.alert('已解锁变身功能，重启即生效');
                             this.innerHTML = '<img src="' + lib.xjb_src + 'image/xjb_open.png" width="16">' + '你已解锁变身功能'
@@ -797,7 +797,7 @@ export function XJB_CONTENT(config, pack) {
                     const goods = game.xjb_goods.permission_raise
                     if (lib.config.xjb_hunbi >= goods.price) {
                         game.xjb_create.confirm('你已有' + lib.config.xjb_hunbi + '个魂币，解锁该功能需要' + goods.price + '个魂币，确定要解锁吗？', () => {
-                            game.xjb_costHunbi(goods.price,'开启养成功能权限')
+                            game.xjb_costHunbi(goods.price, '开启养成功能权限')
                             game.saveConfig(goods.mapToConfig, 1);
                             game.xjb_create.alert('已解锁养成功能，重启即生效');
                             this.innerHTML = '<img src="' + lib.xjb_src + 'image/xjb_open.png" width="16">' + '你已解锁变身功能'
@@ -815,7 +815,7 @@ export function XJB_CONTENT(config, pack) {
                     const goods = game.xjb_goods.permission_cpjs
                     if (lib.config.xjb_hunbi >= goods.price) {
                         game.xjb_create.confirm('你已有' + lib.config.xjb_hunbi + '个魂币，解锁触屏即杀功能需要' + goods.price + '个魂币，确定要解锁吗？', () => {
-                            game.xjb_costHunbi(goods.price,'开启触屏即杀功能权限')
+                            game.xjb_costHunbi(goods.price, '开启触屏即杀功能权限')
                             game.saveConfig(goods.mapToConfig, 1);
                             this.innerHTML = '<img src="' + lib.xjb_src + 'image/xjb_open.png" width="16">' + '你已解锁触屏即杀'
                         })
@@ -836,8 +836,15 @@ export function XJB_CONTENT(config, pack) {
             }
         }
     }
+    lib.extensionMenu.extension_新将包.TETRIS = {
+        name: '<div>TETRIS</div>',
+        clear:true,
+        onclick: function () {
+            game.xjb_gameTetris();
+        },
+    }
     lib.extensionMenu.extension_新将包.skillEditor = {
-        name: '<div>技能编写器</div>',
+        name: '<div>技能编辑器</div>',
         clear: true,
         onclick: function () {
             game.xjb_skillEditor()

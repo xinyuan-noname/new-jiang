@@ -606,14 +606,11 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 if (!father) father = ui.window
                 father.appendChild(back)
                 ui.xjb_giveStyle(back, {
-                    width: "100%",
-                    height: "100%",
-                    backgroundColor: "rgba(60,65,81,0.7)",
-                    "z-index": "9",
                     "text-align": "center",
                     "font-size": "32px",
                 })
-                back.classList.add('xjbTocenter')
+                back.classList.add('xjbTocenter');
+                back.classList.add('xjb_curtain');
                 return back
             }
             ui.create.xjb_double = function (str) {

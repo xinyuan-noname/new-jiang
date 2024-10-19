@@ -376,6 +376,13 @@ img.xjb-interact-close {
   width: 40px;
 }
 
+/*蒙层背景*/
+div.xjb_curtain {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(60, 65, 81, 0.7);
+  z-index: 9;
+}
 
 /*对话框*/
 .xjb_dialogBase {
@@ -393,13 +400,51 @@ img.xjb-interact-close {
   display: block
 }
 
+.xjb_dialogButton {
+  color: #041322;
+  text-align: center;
+  font-size: 36px;
+  background-color: #e4d5b7;
+  border-radius: 0.5em;
+  position: relative;
+}
+
 .xjb-dialog-prompt {
   position: relative;
   overflow: auto;
   font-size: 24px
 }
 
+/*tetris*/
+.xjb_tetrisDialog {
+  height: 90vh;
+}
 
+.xjb_tetrisDialog * {
+  position: relative;
+}
+
+.xjb_tetrisDialog .tetrisMoveArea .xjb_dialogButton {
+  font-size: 24px;
+}
+
+.xjb_tetrisDialog table {
+  background-color: #93a47b;
+  margin: auto auto;
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 250px;
+  height: 500px;
+}
+
+.xjb_tetrisDialog tr,
+.xjb_tetrisDialog td {
+  border: 2px solid #000;
+}
+
+.xjb_tetrisDialog td.xjb-tetrisCovered {
+  background-color: aqua;
+}
 
 /*势力样式*/
 /*魂势力*/

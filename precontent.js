@@ -12,6 +12,9 @@ import {
 import {
     LOAD_HPCARD
 } from "./js/hpCard.js";
+import {
+    LOAD_GAME_TETRIS
+} from "./js/game/tetris.js"
 function provideFunction() {
     lib.xjb_dataGet = function () {
         return Object.keys(lib.config).filter(function (a) {
@@ -550,6 +553,7 @@ export function XJB_PRECONTENT() {
     initialize();
     window.xjb_library = xjb_library;
     LOAD_HPCARD(lib, game, ui, get, ai, _status)
+    LOAD_GAME_TETRIS(lib, game, ui, get, ai, _status)
     importFile();
     //折头折百花联动
     // if (lib.config.extensions.includes('枝头折百花') && lib.config.extension_枝头折百花_enable) {
