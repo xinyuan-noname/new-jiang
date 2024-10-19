@@ -171,6 +171,9 @@ window["xjb_xyAPI_Directory_新将包"]={
         "clearBad.js",
         "store.js"
     ],
+    "js/game": [
+        "tetris.js"
+    ],
     "js/lingli": [
         "event.js"
     ],
