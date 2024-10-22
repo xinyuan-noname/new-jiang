@@ -16,13 +16,13 @@ import {
     JavascriptUsualType,
     JavascriptGlobalVariable,
     getLineRangeOfInput
-} from './string.js'
+} from './tool/string.js'
 import {
     listenAttributeChange,
     element,
     textareaTool,
     touchE
-} from './ui.js'
+} from './tool/ui.js'
 import {
     NonameCN
 } from './nonameCN.js'
@@ -500,8 +500,9 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 /*初始化:最终输出的文字*/
                 let strParts = [];
                 const { asCardType } = NonameCN.analyzeViewAsData(back);
-                const filter = NonameCN.GenerateFilter(back, asCardType)
-                const content = NonameCN.GenerateContent(back)
+                const filter = NonameCN.GenerateFilter(back, asCardType);
+                const content = NonameCN.GenerateContent(back);
+                const enableSkillNeed = NonameCN.GenerateEnable(back)
                 //根据所选的编辑器类型确定开头
                 strParts.push(NonameCN.GenerateOpening(back));
                 strParts.push(NonameCN.GenerateInit(back));
@@ -509,12 +510,18 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 strParts.push(NonameCN.GenerateKind(back));
                 strParts.push(NonameCN.GenerateTag(back));
                 strParts.push(NonameCN.GenerateGetIndex(back));
-                if (content.includes('get.info(event.name).custom_researchCardsDif')) {
+                if (content.includes('.custom_researchCardsDif')) {
                     strParts.push(NonameCN.GenerateResearchDifCards_custom())
+                }
+                if (enableSkillNeed.includes('.custom_selectedIsSameCard')) {
+                    strParts.push(NonameCN.GenerateChooseSameCard_custom())
+                }
+                if (enableSkillNeed.includes('.custom_selectedIsDifCard')) {
+                    strParts.push(NonameCN.GenerateChooseDifCard_custom())
                 }
                 //filter部分
                 strParts.push(filter);
-                strParts.push(NonameCN.GenerateEnable(back))
+                strParts.push(enableSkillNeed)
                 //content部分
                 if (!back.skill.boolList.includes("viewAs")) {
                     strParts.push(content);
@@ -555,6 +562,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     str = str.replace(/(?<=(\=|^)\s*)\.(?=[a-z])/img, "player.");
                     str = str.replace(/([/][*])(.|\n)*([*][/])/g, "");
                 }
+                str = str.replaceAll('\\-skillID', back.getID());
+                str = str.replaceAll('\\skillID', `"${back.getID()}"`);
                 str = str.replace(/\.undefined/g, "");
                 str = correctPunctuation(str)
                 str = deleteRepeat(str, /if\(.+?\)/g);
@@ -1891,7 +1900,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     return;
                 }
                 //后续处理，如果涉及到继承，则为数字1就返回
-                const list = dispose(contentFree.value, back.ContentInherit ? 1 : void 0, NonameCN.ContentList)
+                const implicitText = NonameCN.implicitText_content(contentFree.value);
+                const list = dispose(implicitText, back.ContentInherit ? 1 : void 0, NonameCN.ContentList)
                 const redispose = NonameCN.replace(list.join('\n'))
                 back.skill.content.push(...redispose);
                 if (bool !== true) back.organize()
@@ -2258,9 +2268,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 NonameCN.standardBoolExpBefore(that)
                 NonameCN.underlieVariable(that)
                 NonameCN.standardFilterTargetBef(that)
-                    .replaceOrder(/访\*(\d+)/g, (match, ...p) => {
-                        return '访  '.repeat(parseInt(p[0]))
-                    })
                 new Array('你', '目标').forEach(i => {
                     that.changeWord(new RegExp(i, 'g'), i + ' ')
                 })
@@ -2339,7 +2346,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 const that = filterCardFree
                 back.skill.filterCard = [];
                 back.skill.selectCard = '';
-                let line = dispose(that.value);
+                let implicitText = NonameCN.implicitText_filterCard(that.value)
+                let line = dispose(implicitText);
                 let processLine = line.filter(line => {
                     let result = line
                     if (line.includes('atLeast')) {

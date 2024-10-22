@@ -41,6 +41,8 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
             }
         }
     }
+    lib.translate._xjb_UseHpCard= "<font color=gold>体力牌</font>"
+        
     lib.skill._xjb_changeHpCard = {
         trigger: {
             player: ["gainMaxHpAfter", "loseMaxHpAfter"],
@@ -49,7 +51,7 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
         charlotte: true,
         content: function () {
             "step 0"
-            player.xjb_adjustHpCard()
+            player.xjb_adjustHpCard();
         },
         mark: true,
     }

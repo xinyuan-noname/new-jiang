@@ -73,8 +73,6 @@ const xjb_soulBoss_fuyao = SkillCreater(
     description: "持恒技，charlotte技，摸牌阶段，你多摸两倍的牌，然后令随机一名其他角色进入旋转状态。"
 })
 
-
-
 /*旋转状态*/
 const xjb_zhuanzhuan = SkillCreater(
     "xjb_zhuanzhuan", {

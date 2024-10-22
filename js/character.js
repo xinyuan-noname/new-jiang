@@ -1,15 +1,15 @@
 import {
     xjbSkill,
     xjbTranslate
-} from "./skill/xjbSkill.js";
+} from "./skill/xjbSkill.mjs";
 import {
     bossSkill,
     bossTranslate
-} from "./skill/bossSkill.js"
+} from "./skill/bossSkill.mjs"
 import {
     soulSkill,
     soulTranslate
-} from "./skill/soulSkill.js"
+} from "./skill/soulSkill.mjs"
 window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
     game.import("character", () => {
         const result = {
@@ -70,7 +70,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     sex: "male",
                     group: "wei",
                     hp: 4,
-                    skills: ["xjb_jianxiong", "xin_fengtian"],
+                    skills: ["xjb_jianxiong", "xjb_huibian"],
                     trashBin: []
                 },
                 "xjb_zhouyu": {
@@ -105,14 +105,14 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     sex: "male",
                     group: "shu",
                     hp: 3,
-                    skills: ["xin_jincui", "xin_chushi"],
+                    skills: ["xjb_zhijue","xjb_qiongzhi","kongcheng"],
                     trashBin: []
                 },
                 "xjb_jin_simayi": {
                     sex: "male",
                     group: "jin",
-                    hp: 4,
-                    skills: ["xin_huanshi", "xin_zhabing"],
+                    hp: 3,
+                    skills: ["xjb_xianmou", "xjb_yinlve"],
                     trashBin: []
                 },
                 "xjb_yingzheng": {
@@ -127,13 +127,6 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     group: "shu",
                     hp: 3,
                     skills: ["xin_enyuan", "xjb_fuyi"],
-                    trashBin: []
-                },
-                "xjb_jiaxu": {
-                    sex: "male",
-                    group: "qun",
-                    hp: 3,
-                    skills: ["xin_whlw2", "xin_whlw1", "xin_chongmou"],
                     trashBin: []
                 },
             },
@@ -200,7 +193,6 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                 "xjb_jin_simayi": "司马懿",
                 "xjb_yingzheng": "嬴政",
                 "xjb_fazheng": "法正",
-                "xjb_jiaxu": "贾诩",
 
                 xjb_chidan: '赤胆忠心',
                 xjb_fengyun: '风云荟萃',
@@ -229,7 +221,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     sex: "female",
                     group: "xjb_hun",
                     hp: 3,
-                    skills: ['xjb_lingpiao'],
+                    skills: ['xjb_soul_lingpiao'],
                     trashBin: []
                 },
                 xjb_chanter: {
@@ -243,7 +235,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     sex: "male",
                     group: "xjb_hun",
                     hp: 3,
-                    skills: ["xjb_minglou", "xjb_guifan"],
+                    skills: ["xjb_soul_minglou", "xjb_soul_guifan"],
                     trashBin: []
                 },
                 xjb_xuemo: {

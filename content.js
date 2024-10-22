@@ -91,6 +91,7 @@ export function XJB_CONTENT(config, pack) {
         item: {
             mingxie: '鸣谢',
             disk: "网盘",
+            HpCard: "体力牌",
             remnantArea: "残区",
             hun_system: '魂币系统',
             economic: "魂的货币体系"
@@ -835,13 +836,6 @@ export function XJB_CONTENT(config, pack) {
                 });
             }
         }
-    }
-    lib.extensionMenu.extension_新将包.TETRIS = {
-        name: '<div>TETRIS</div>',
-        clear:true,
-        onclick: function () {
-            game.xjb_gameTetris();
-        },
     }
     lib.extensionMenu.extension_新将包.skillEditor = {
         name: '<div>技能编辑器</div>',

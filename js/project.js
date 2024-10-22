@@ -1,6 +1,7 @@
-import { element } from "./ui.js"
+import { element } from "./tool/ui.js"
 window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
     /*file*/
+    ui.xjb_domTool = element;
     game.xjb_transferFile = function (BLOB, fileWay, silent) {
         function download() {
             const obj = {}
@@ -420,7 +421,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
             //造书
             ui.create.xjb_book = (father, text) => {
                 if (!text) return console.error("未传入文本对象")
-                if (!text.headline || !text.writer || !text.style || !text.content) return console.error("传入的文本对象缺少属性");
+                if (!"headline" in text || !"writer" in text || !text.style || ! "content" in text) return console.error("传入的文本对象缺少属性");
                 if (lib.xjb_library) {
                     let book = lib.xjb_library[text.headline + "-" + text.writer];
                     if (book) {

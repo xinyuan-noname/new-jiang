@@ -1,5 +1,5 @@
-import { horizontalLine, plumbLine } from './canvas.js';
-import { element, textareaTool } from './ui.js';
+import { horizontalLine, plumbLine } from './tool/canvas.js';
+import { element, textareaTool } from './tool/ui.js';
 window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
     //这是创建对话框
     ui.create.xjb_dialogBase = function () {

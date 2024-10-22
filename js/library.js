@@ -38,6 +38,35 @@ export const xjb_library = {
             `,
          style: wuyan
       },
+      "HpCard": {
+         headline: "体力牌玩法",
+         writer: "",
+         content: `
+            A体力牌Aア(HpCard)アn
+            B解释B:n
+            反映着玩家的体力值和体力上限的卡牌n
+            本扩展的体力牌初始化时,遵循尽量不出现一点和二点的规则n
+            本扩展体力牌最大的点数为5点n
+            B操作-额外使用体力牌B:n
+            游戏开始时,有一次额外使用体力牌的机会,每种体力牌各限一次n
+            B操作-给出体力牌B:n
+            一名角色交出其体力牌,该体力牌会记录在角色进度当中n
+            用法:アplayer.xjb_giveHpCard(target,num)ア//アtargetア-目标,アnumア-体力牌张数n
+            B操作-交换体力牌B:n
+            一名角色选择目标和自己的一张体力牌交换之n
+            注意,交换体力牌不仅仅交换体力上限而且交换体力值n
+            用法:アplayer.xjb_swapHpCard(target)ア//アtargetア-目标n
+            B操作-体力牌翻面B:n
+            让一张体力牌翻面,比如:从三点的体力牌翻至四点的体力牌n
+            此过程只改变体力上限而不改变体力值n
+            体力点数对应关系:5-4|4-3,5|3-4|2-1,3|1-2n
+            用法:アplayer.xjb_turnOverHpCard(index)ア//アindexア-体力牌是第几张(索引)n
+            B操作-分割体力牌B:n
+            从选择一张体力牌分割,比如你将体力牌全部分割成1,交换体力牌时就能占到大便宜n
+            用法:アplayer.xjb_splitHpCard(index,forced)ア//アindexア-体力牌是第几张(索引),アforcedア-是否强制进行n
+         `,
+         style: wuyan
+      },
       "remnantArea": {
          headline: "残区",
          writer: "",
@@ -397,7 +426,7 @@ A其三 n
    将军既帝室之胄，信义著于四海，总揽英雄，思贤如渴，若跨有荆、益，保其岩阻，西和诸戎，南抚\u5937越，外结好孙权，内修政理；天下有变，则命一上将将荆州之军以向宛、洛，将军身率益州之众出于秦川，百姓孰敢不箪食壶浆以迎将军者乎？诚如是，则霸业可成，汉室可兴矣。
 `,
          style: wuyan
-      }, 
+      },
       "出师表": {
          headline: "出师表",
          writer: "蜀汉 建兴 诸葛亮",

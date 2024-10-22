@@ -10,11 +10,10 @@ import {
     xjb_library
 } from "./js/library.js";
 import {
-    LOAD_HPCARD
-} from "./js/hpCard.js";
-import {
     LOAD_GAME_TETRIS
 } from "./js/game/tetris.js"
+import {LOAD_HPCARD} from "./js/feature/hpCard.js";
+import { LOAD_REMNANT_AREA } from "./js/feature/remnantArea.js";
 function provideFunction() {
     lib.xjb_dataGet = function () {
         return Object.keys(lib.config).filter(function (a) {
@@ -547,14 +546,21 @@ function initialize() {
         }
     }
 }
+function LOAD_FEATURE() {
+    LOAD_HPCARD(lib, game, ui, get, ai, _status);
+    LOAD_REMNANT_AREA(lib, game, ui, get, ai, _status);
+}
+function LOAD_SMALL_GAME() {
+    LOAD_GAME_TETRIS(lib, game, ui, get, ai, _status)
+}
 export function XJB_PRECONTENT() {
     provideFunction();
     way();
     initialize();
-    window.xjb_library = xjb_library;
-    LOAD_HPCARD(lib, game, ui, get, ai, _status)
-    LOAD_GAME_TETRIS(lib, game, ui, get, ai, _status)
     importFile();
+    LOAD_FEATURE();
+    LOAD_SMALL_GAME();
+    window.xjb_library = xjb_library;
     //折头折百花联动
     // if (lib.config.extensions.includes('枝头折百花') && lib.config.extension_枝头折百花_enable) {
     //     lib.nature && lib.nature.push && lib.nature.push('flower')

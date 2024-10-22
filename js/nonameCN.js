@@ -9,10 +9,10 @@ import {
 import {
     findPrefix,
     eachLine
-} from "./string.js";
+} from "./tool/string.js";
 import {
     textareaTool
-} from './ui.js'
+} from './tool/ui.js'
 const phaseList = {
     "回合": "phase",
     "准备阶段": "phaseZhunbei",
@@ -384,14 +384,6 @@ function getMapAboutCard() {
     }
     return map
 };
-function getMapOfSkip() {
-    const map = {}
-    for (const [cn, en] of Object.entries(phaseList)) {
-        if (cn === '回合') continue;
-        map['跳过下一个' + cn] = `skip:"${en}"`
-    }
-    return map
-}
 function getMapOfOneOfTriCards() {
     const map = {}
     for (let i = 0; i < 10; i++) {
@@ -713,13 +705,36 @@ export class NonameCN {
     }
     static groupedList = {
         custom: {
-            '牌堆中颜色不同的牌': "info;event.name;//!?custom_researchCardsDif;true;'color';intoFunction",
-            '牌堆中花色不同的牌': "info;event.name;//!?custom_researchCardsDif;true;'suit';intoFunction",
-            '牌堆中属性不同的牌': "info;event.name;//!?custom_researchCardsDif;true;'nature';intoFunction",
-            '牌堆中点数不同的牌': "info;event.name;//!?custom_researchCardsDif;true;'number';intoFunction",
-            '牌堆中牌名不同的牌': "info;event.name;//!?custom_researchCardsDif;true;'name';intoFunction",
-            '牌堆中类别不同的牌': "info;event.name;//!?custom_researchCardsDif;true;'type';intoFunction",
-            '牌堆中副类别不同的牌': "info;event.name;//!?custom_researchCardsDif;true;'subtype';intoFunction",
+            //
+            '牌堆中颜色不同的牌': "info;\\skillID;//!?custom_researchCardsDif;true;'color';intoFunction",
+            '牌堆中花色不同的牌': "info;\\skillID;//!?custom_researchCardsDif;true;'suit';intoFunction",
+            '牌堆中属性不同的牌': "info;\\skillID;//!?custom_researchCardsDif;true;'nature';intoFunction",
+            '牌堆中点数不同的牌': "info;\\skillID;//!?custom_researchCardsDif;true;'number';intoFunction",
+            '牌堆中牌名不同的牌': "info;\\skillID;//!?custom_researchCardsDif;true;'name';intoFunction",
+            '牌堆中类别不同的牌': "info;\\skillID;//!?custom_researchCardsDif;true;'type2';intoFunction",
+            '牌堆中副类别不同的牌': "info;\\skillID;//!?custom_researchCaerdsDif;true;'subtype';intoFunction",
+            //
+            '弃牌堆中颜色不同的牌': "info;\\skillID;//!?custom_researchCardsDif;false;'color';intoFunction",
+            '弃牌堆中花色不同的牌': "info;\\skillID;//!?custom_researchCardsDif;false;'suit';intoFunction",
+            '弃牌堆中属性不同的牌': "info;\\skillID;//!?custom_researchCardsDif;false;'nature';intoFunction",
+            '弃牌堆中点数不同的牌': "info;\\skillID;//!?custom_researchCardsDif;false;'number';intoFunction",
+            '弃牌堆中牌名不同的牌': "info;\\skillID;//!?custom_researchCardsDif;false;'name';intoFunction",
+            '弃牌堆中类别不同的牌': "info;\\skillID;//!?custom_researchCardsDif;false;'type2';intoFunction",
+            '弃牌堆中副类别不同的牌': "info;\\skillID;//!?custom_researchCaerdsDif;false;'subtype';intoFunction",
+            //
+            '当前选择的卡牌颜色是否相同': "info;\\skillID;//!?custom_selectedIsSameCard;card;'color';intoFunction",
+            '当前选择的卡牌花色是否相同': "info;\\skillID;//!?custom_selectedIsSameCard;card;'suit';intoFunction",
+            '当前选择的卡牌属性是否相同': "info;\\skillID;//!?custom_selectedIsSameCard;card;'nature';intoFunction",
+            '当前选择的卡牌点数是否相同': "info;\\skillID;//!?custom_selectedIsSameCard;card;'number';intoFunction",
+            '当前选择的卡牌类别是否相同': "info;\\skillID;//!?custom_selectedIsSameCard;card;'type2';intoFunction",
+            '当前选择的卡牌副类别是否相同': "info;\\skillID;//!?custom_selectedIsSameCard;card;'subtype';intoFunction",
+            //
+            '当前选择的卡牌颜色是否不同': "info;\\skillID;//!?custom_selectedIsDifCard;card;'color';intoFunction",
+            '当前选择的卡牌花色是否不同': "info;\\skillID;//!?custom_selectedIsDifCard;card;'suit';intoFunction",
+            '当前选择的卡牌属性是否不同': "info;\\skillID;//!?custom_selectedIsDifCard;card;'nature';intoFunction",
+            '当前选择的卡牌点数是否不同': "info;\\skillID;//!?custom_selectedIsDifCard;card;'number';intoFunction",
+            '当前选择的卡牌类别是否不同': "info;\\skillID;//!?custom_selectedIsDifCard;card;'type2';intoFunction",
+            '当前选择的卡牌副类别是否不同': "info;\\skillID;//!?custom_selectedIsDifCard;card;'subtype';intoFunction"
         },
         punctuation: {
             '访问': ".",
@@ -961,10 +976,21 @@ export class NonameCN {
             '拼点未输': "result.bool || result.tie",
             '拼点没输': "result.bool || result.tie",
         },
+        staticStr_phase: {
+            '准备阶段|\\-skillID': '"phaseZhunbei|\\-skillID"',
+            '出牌阶段|\\-skillID': '"phaseUse|\\-skillID"',
+            '结束阶段|\\-skillID': '"phaseJieShu|\\-skillID"',
+            '判定阶段|\\-skillID': '"phaseJudge|\\-skillID"',
+            '弃牌阶段|\\-skillID': '"phaseDiscard|\\-skillID"',
+            '摸牌阶段|\\-skillID': '"phaseDraw|\\-skillID"'
+        },
         player: {
             ...playerList,
             ...getMapOfOneOfPlayers(),
             '角色': "player",
+            "有本技能的角色": `game.filterPlayer().find(cur=>cur.hasSkill(\\skillID,null,false,false))`,
+            "有该技能的角色": `game.filterPlayer().find(cur=>cur.hasSkill(\\skillID,null,false,false))`,
+            "有此技能的角色": `game.filterPlayer().find(cur=>cur.hasSkill(\\skillID,null,false,false))`,
         },
         player_attribute: {
             '性别': 'sex',
@@ -1049,6 +1075,34 @@ export class NonameCN {
             "有空置的宝物栏": "hasEmptySlot;5",
             "没有空置的宝物栏": "hasEmptySlot;5;denyPrefix",
         },
+        player_method_hasCard: {
+            '有无懈': "hasWuxie",
+            '有无懈可击': "hasWuxie",
+            '有杀': "hasSha",
+            '有闪': "hasShan",
+            '有手牌': 'hasCard',
+            '没有手牌': "hasCard:denyPrefix",
+            '有牌': 'hasCard;void 0;"he"',
+            '场上有牌': `hasCard;void 0;"ej"`,
+            '区域内有牌': 'hasCard;void 0;"hej"',
+            '装备区有牌': `hasCard;void 0;"e"`,
+            '判定区有牌': `hasCard;void 0;"j"`,
+            '手牌区有牌': `hasCard;void 0;"h"`,
+            '没有牌': 'hasCard;void 0;"he";denyPrefix',
+            '场上没有牌': `hasCard;void 0;"ej";denyPrefix`,
+            '区域内没有牌': 'hasCard;void 0;"hej";denyPrefix',
+            '装备区没有牌': `hasCard;void 0;"e";denyPrefix`,
+            '判定区没有牌': `hasCard;void 0;"j";denyPrefix`,
+            '手牌区没有牌': `hasCard;void 0;"h";denyPrefix`,
+        },
+        player_method_phase: {
+            '跳过下一个准备阶段': 'skip:"phaseZhunbei"',
+            '跳过下一个出牌阶段': 'skip:"phaseUse"',
+            '跳过下一个判定阶段': 'skip:"phaseJudge"',
+            '跳过下一个弃牌阶段': 'skip:"phaseDiscard"',
+            '跳过下一个摸牌阶段': 'skip:"phaseDraw"',
+            '跳过下一个结束阶段': 'skip:"phaseJieShu"'
+        },
         player_method: {
             "攻击范围内有": "inRange",
             '执行额外的回合': 'insertPhase',
@@ -1085,8 +1139,7 @@ export class NonameCN {
             //
             '更新状态': "update",
             //
-            '有手牌': 'hasCard',
-            '没有手牌': "hasCard:denyPrefix",
+
             //宗族类
             "获取宗族": "getClans",
             "属于宗族": "hasClan",
@@ -1172,7 +1225,6 @@ export class NonameCN {
             ...getMapOfCanAddJudge(),
             ...getMapOfChangeGroup(),
             ...getMapOfUSeVcard(),
-            ...getMapOfSkip(),
             //
             "播放判定生效动画": "tryJudgeAnimagte;true",
             "播放判定失效动画": "tryJudgeAnimagte;false",
@@ -1194,20 +1246,6 @@ export class NonameCN {
             '弃置角色手牌': 'discardPlayerCard;"h";intoFunction',
             '隐式给牌': "give;false;intoFunctionWait",
             "获得多名角色牌": `gainMultiple;"he";intoFunctionWait`,
-            //
-            '有牌': 'hasCard;void 0;"he"',
-            '场上有牌': `hasCard;void 0;"ej"`,
-            '区域内有牌': 'hasCard;void 0;"hej"',
-            '装备区有牌': `hasCard;void 0;"e"`,
-            '判定区有牌': `hasCard;void 0;"j"`,
-            '手牌区有牌': `hasCard;void 0;"h"`,
-            '没有牌': 'hasCard;void 0;"he";denyPrefix',
-            '场上没有牌': `hasCard;void 0;"ej";denyPrefix`,
-            '区域内没有牌': 'hasCard;void 0;"hej";denyPrefix',
-            '装备区没有牌': `hasCard;void 0;"e";denyPrefix`,
-            '判定区没有牌': `hasCard;void 0;"j";denyPrefix`,
-            '手牌区没有牌': `hasCard;void 0;"h";denyPrefix`,
-            //
             '手牌数': 'countCards;"h"',
             '牌数': 'countCards;"he"',
             '场上牌数': `countCards;"ej"`,
@@ -1657,12 +1695,7 @@ export class NonameCN {
         list["拥有本技能的角色"] = `game.filterPlayer().find(cur=>cur.hasSkill("${id}",null,false,false))`
         list["拥有该技能的角色"] = `game.filterPlayer().find(cur=>cur.hasSkill("${id}",null,false,false))`
         list["拥有此技能的角色"] = `game.filterPlayer().find(cur=>cur.hasSkill("${id}",null,false,false))`
-        list["有本技能的角色"] = `game.filterPlayer().find(cur=>cur.hasSkill("${id}",null,false,false))`
-        list["有该技能的角色"] = `game.filterPlayer().find(cur=>cur.hasSkill("${id}",null,false,false))`
-        list["有此技能的角色"] = `game.filterPlayer().find(cur=>cur.hasSkill("${id}",null,false,false))`
-        for (const [phaseCn, phaseEn] of Object.entries(phaseList)) {
-            list[`${phaseCn}|${id}`] = `"${phaseEn}|${id}"`
-        }
+
         return list
     }
     static get FilterList() {
@@ -1670,6 +1703,7 @@ export class NonameCN {
         let list = Object.assign({}, this.basicList);
         const id = back.getID()
         for (let k in this.groupedList) {
+            get
             list = Object.assign(list, this.groupedList[k]);
         }
         list["获取名为" + back.getSourceID() + "的父事件的名字"] = `getParent:"${back.getSourceID()}"://!?name`
@@ -1713,7 +1747,7 @@ export class NonameCN {
             '此牌有伤害标签': '此牌有伤害标签(标签)',
             '此牌不是单体牌': '此牌有多角色标签(标签)',
             '此牌是单体牌': '此牌不带多角色标签(标签)',
-            "此牌 是实体牌":"此牌是实体牌",
+            "此牌 是实体牌": "此牌是实体牌",
             '你在你的攻击范围内': '你在你的攻击范围内(攻击范围)',
             '你未受伤': '你未受伤(体力)',
             '你已受伤': '你已受伤(体力)',
@@ -1883,8 +1917,17 @@ export class NonameCN {
             "一名角色弃牌阶段": "一名角色弃牌阶段(阶段类)",
             "一名角色摸牌阶段": "一名角色摸牌阶段(阶段类)",
         },
-        filterTarget: {},
-        filterCard: {},
+        filterTarget: {
+            "其他角色": "其他角色"
+        },
+        filterCard: {
+            "卡牌颜色相同": "",
+            "卡牌花色相同": "",
+            "卡牌点数相同": "",
+            "卡牌类别相同": "",
+            "卡牌属性相同": "",
+            "卡牌牌名相同": "",
+        },
         unshown_filter: {},
         unshown_content: {
             "变量选择事件令为": 0,
@@ -2095,9 +2138,6 @@ export class NonameCN {
         textareaTool().setTarget(that)
             .replace(/额外执行一个/g, "执行一个额外的")
             .replace(/获得此牌$/mg, "获得牌 此牌")
-            .replace(/(.+?)执行(一个)?额外的?(准备|判定|出牌|摸牌|弃牌|结束)阶段/g, (match, ...p) => {
-                return `阶段列表 剪接 当前回合序号 0 ${(p[2] + '阶段')}|${that.getID()}`
-            })
             .replace(/可以(失去.+?点体力|受到.+?点伤害|摸.+?张牌)/g, function (match, ...p) {
                 return match.replace("可以", "")
             })
@@ -2146,8 +2186,7 @@ export class NonameCN {
     }
     static standardFilterCardBef(that) {
         textareaTool().setTarget(that)
-            .replace(/^卡牌(花色|点数|牌名)(相同|不同)$/mg, '如果\n当前选择的卡牌的张数 为 0\n那么\n\n分支开始\n发动\n分支结束\n卡牌 $1$2于 当前选择的第一张牌')
-            .replace(/^卡牌(颜色|类型|副类别|类别)([不相])同$/mg, '如果\n当前选择的卡牌的张数 为 0\n那么\n\n分支开始\n发动\n分支结束\n获取 $1 卡牌\n$2等于\n获取 $1 当前选择的第一张牌')
+
     }
     static standardFilterTargetBef(that) {
         textareaTool().setTarget(that)
@@ -2179,6 +2218,18 @@ export class NonameCN {
             .replace(/([\u4e00-\u9fa5]*?)使用或打出([\u4e00-\u9fa5]+)/g, function (match, ...p) {
                 return `${p[0]}使用${p[1]} ${p[0]}打出${p[1]}`;
             })
+    }
+    static implicitText_content(text) {
+        let result = text
+            .replace(/(.+?)[ ]*执行(一个)?额外的?(准备|判定|出牌|摸牌|弃牌|结束)阶段/g, `阶段列表 剪接 当前回合序号 0 $3阶段|\\-skillID`)
+        console.log("content", result);
+        return result;
+    }
+    static implicitText_filterCard(text) {
+        let result = text
+            .replace(/^卡牌(花色|点数|牌名|颜色|类型|副类别|类别)(相同|不同)$/mg, '获取 当前选择的卡牌$1是否$2')
+        console.log("filterCard", result);
+        return result;
     }
     //处理模拟代码块
     static replace(undisposed) {
@@ -3282,6 +3333,34 @@ export class NonameCN {
             "if(cards.length===num) break;",
             "}",
             "return cards;",
+            "},\n"
+        ].join('\n')
+    }
+    static GenerateChooseSameCard_custom() {
+        return [
+            "custom_selectedIsSameCard:function(card,kind){",
+            "const mode = get.itemtype(card)==='button'?'buttons':'cards';",
+            "if(!ui.selected[mode].length) return true;",
+            "if(mode === 'buttons') return ui.selected[mode].every(selected=>{",
+            "return get[kind](selected.link)===get[kind](card);",
+            "})",
+            "else return ui.selected[mode].every(selected=>{",
+            "return get[kind](selected)===get[kind](card);",
+            "})",
+            "},\n"
+        ].join('\n')
+    }
+    static GenerateChooseDifCard_custom() {
+        return [
+            "custom_selectedIsDifCard:function(card,kind){",
+            "const mode = get.itemtype(card)==='button'?'buttons':'cards';",
+            "if(!ui.selected[mode].length) return true;",
+            "if(mode === 'buttons') return ui.selected[mode].every(selected=>{",
+            "return get[kind](selected.link)===get[kind](card);",
+            "})",
+            "else return ui.selected[mode].every(selected=>{",
+            "return get[kind](selected)===get[kind](card);",
+            "})",
             "},\n"
         ].join('\n')
     }

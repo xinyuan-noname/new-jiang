@@ -496,7 +496,6 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 }
             },
         },
-
         "xjb_chooseHEJXS": {
             player: function () {
                 let next = game.createEvent('xjb_chooseHEJXS')
