@@ -48,7 +48,6 @@ window["xjb_xyAPI_Directory_新将包"]={
         "π.png"
     ],
     "js": [
-        "canvas.js",
         "card.js",
         "character.js",
         "dialog.js",
@@ -56,7 +55,6 @@ window["xjb_xyAPI_Directory_新将包"]={
         "editor.js",
         "event.js",
         "final.js",
-        "hpCard.js",
         "library.js",
         "lingli.js",
         "math.js",
@@ -65,10 +63,8 @@ window["xjb_xyAPI_Directory_新将包"]={
         "raise.js",
         "rpg.js",
         "skills.js",
-        "string.js",
         "title.js",
         "translate.js",
-        "ui.js",
         "Xskill.js"
     ],
     "json": [
@@ -171,16 +167,29 @@ window["xjb_xyAPI_Directory_新将包"]={
         "clearBad.js",
         "store.js"
     ],
+    "js/feature": [
+        "hpCard.js",
+        "remnantArea.js"
+    ],
     "js/game": [
         "tetris.js"
     ],
     "js/lingli": [
         "event.js"
     ],
+    "js/progress": [
+        "show.js"
+    ],
     "js/skill": [
-        "bossSkill.js",
-        "soulSkill.js",
-        "xjbSkill.js"
+        "bossSkill.mjs",
+        "raiseSkill.mjs",
+        "soulSkill.mjs",
+        "xjbSkill.mjs"
+    ],
+    "js/tool": [
+        "canvas.js",
+        "string.js",
+        "ui.js"
     ],
     "sink/xin_newCharacter": [],
     "skin/image": [],
