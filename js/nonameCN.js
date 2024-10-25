@@ -439,6 +439,7 @@ export class NonameCN {
         filter_card: [],
         filter_suit: [],
         filter_color: [],
+        variableArea_filter: [],
         variable_filter: new Map(),
         variable_content: new Map(),
         filterTarget: [],
@@ -467,6 +468,7 @@ export class NonameCN {
         },
         custom: {},
         content_ignoreIndex: [],
+        filter_ignoreIndex: [],
         marktext: "",
         markName: "",
         markContent: "",
@@ -1267,7 +1269,21 @@ export class NonameCN {
             //历史类
             '获取本回合指定其他角色为目标的使用牌事件': "getHistory;'useCard';function(evt){return evt.targets.filter(current=>target!=player)}",
             '获取本回合指定其他角色为目标的打出牌事件': "getHistory;'respond';function(evt){return evt.targets.filter(current=>target!=player)}",
-            ...getMapOfActionHistory()
+            ...getMapOfActionHistory(),
+            '获取本回合失去牌的类型个数': `getHistory;"lose";//!?map(evt => evt.cards).flat().map(card => get.type2(card)).toUniqued().length`,
+            '获取本回合失去牌的颜色个数': `getHistory;"lose";//!?map(evt => evt.cards).flat().map(card => get.color(card)).toUniqued().length`,
+            '获取本回合失去牌的花色个数': `getHistory;"lose";//!?map(evt => evt.cards).flat().map(card => get.suit(card)).toUniqued().length`,
+            '获取本回合失去牌的点数个数': `getHistory;"lose";//!?map(evt => evt.cards).flat().map(card => get.number(card)).toUniqued().length`,
+            '获取本回合失去牌的副类别个数': `getHistory;"lose";//!?map(evt => evt.cards).flat().map(card => get.subtype(card)).toUniqued().length`,
+            '获取本回合失去牌的牌名个数': `getHistory;"lose";//!?map(evt => evt.cards).flat().map(card => get.name(card)).toUniqued().length`,
+            '获取本回合失去牌的属性个数': `getHistory;"lose";//!?map(evt => evt.cards).flat().map(card => get.nature(card)).toUniqued().length`,
+            '获取本回合获得牌的类型个数': `getHistory;"gain";//!?map(evt => evt.cards).flat().map(card => get.type2(card)).toUniqued().length`,
+            '获取本回合获得牌的颜色个数': `getHistory;"gain";//!?map(evt => evt.cards).flat().map(card => get.color(card)).toUniqued().length`,
+            '获取本回合获得牌的花色个数': `getHistory;"gain";//!?map(evt => evt.cards).flat().map(card => get.suit(card)).toUniqued().length`,
+            '获取本回合获得牌的点数个数': `getHistory;"gain";//!?map(evt => evt.cards).flat().map(card => get.number(card)).toUniqued().length`,
+            '获取本回合获得牌的副类别个数': `getHistory;"gain";//!?map(evt => evt.cards).flat().map(card => get.subtype(card)).toUniqued().length`,
+            '获取本回合获得牌的牌名个数': `getHistory;"gain";//!?map(evt => evt.cards).flat().map(card => get.name(card)).toUniqued().length`,
+            '获取本回合获得牌的属性个数': `getHistory;"gain";//!?map(evt => evt.cards).flat().map(card => get.nature(card)).toUniqued().length`,
         },
         plyaer_when: {
             ...getMapOfWhen()
@@ -1633,8 +1649,7 @@ export class NonameCN {
                 if (name) result += `\n && \nget.name(evt.card) === ${name}`
                 if (color) result += `\n && \nget.color(evt.card) === ${color}`
                 if (suit) result += `\n && \nget.suit(evt.card) === ${suit}`
-                if (type) result += `\n && \nget.type(evt.card) === ${type}`
-                if (args.includes('锦囊牌')) result += `\n && \nget.type2(evt.card) === "trick"`
+                if (type) result += `\n && \nget.type2(evt.card) === ${type}`
                 if (subtype) result += `\n && \nget.subtype(evt.card) === ${subtype}`
                 if (nature) result += `\n && \nget.nature(evt.card) === ${nature}`
                 result += `)`
@@ -1657,8 +1672,7 @@ export class NonameCN {
                 if (name) result += `\n && \nget.name(evt.card) === ${name}`
                 if (color) result += `\n && \nget.color(evt.card) === ${color}`
                 if (suit) result += `\n && \nget.suit(evt.card) === ${suit}`
-                if (type) result += `\n && \nget.type(evt.card) === ${type}`
-                if (args.includes('锦囊牌')) result += `\n && \nget.type2(evt.card) === "trick"`
+                if (type) result += `\n && \nget.type2(evt.card) === ${type}`
                 if (subtype) result += `\n && \nget.subtype(evt.card) === ${subtype}`
                 if (nature) result += `\n && \nget.nature(evt.card) === ${nature}`
                 result += `)`
@@ -1878,6 +1892,7 @@ export class NonameCN {
             '第一个所选角色摸一张牌': "第一个所选角色摸一张牌(选择目标后写该语句)",
             '触发事件的角色摸一张牌': "触发事件的角色摸一张牌(触发技)",
             '触发事件的目标摸一张牌': "触发事件的目标摸一张牌(触发技)",
+            '本技能发动次数-1': "本技能发动次数-1(其他类)",
             "你使用杀无距离限制": "你使用杀无距离限制(mod类)",
             "你使用杀无次数限制": "你使用杀无次数限制(mod类)",
             "你不能成为顺手牵羊和乐不思蜀的目标": "你不能成为顺手牵羊和乐不思蜀的目标(mod类)",
@@ -2083,7 +2098,7 @@ export class NonameCN {
             .replace(/(.+?)(颜色)?(不?[为是])(黑|红|无)色$/mg, '获取 颜色 $1 \n $3 \n $4色')
             .replace(/(.+?)(花色)?(不?[为是])(梅花|黑桃|方片|红桃)$/mg, '获取 花色 $1 \n $3 \n $4')
             .replace(/(.+?)(类别)?(不?[为是])(非延时锦囊牌|延时锦囊牌|普通锦囊牌|基本牌|装备牌)$/mg, '获取 类别 $1 \n $3 \n $4')
-            .replace(/(.+?)(类别)?(不?[为是])(锦囊牌|基本牌|装备牌)$/mg, '获取 广义类别 $1 \n $3 \n $4')
+            .replace(/(.+?)(类别)?(不?[为是])锦囊牌$/mg, '获取 广义类别 $1 \n $3 \n $4')
             .replace(/(?<=点数不?[为是])(A|J|Q|K)$/g, function (match, ...p) {
                 const map = {
                     A: 1,
@@ -2649,10 +2664,23 @@ export class NonameCN {
         result += `},\n`
         return result;
     }
+    static TestFilterOk(str, lineNum) {
+        let func
+        const test = str.replace("filter:function(event,player,triggername){", '')
+        console.log(test)
+        try {
+            func = new Function("event", "player", "triggername", test);
+        } catch (err) {
+            console.log(err, lineNum);
+            return false;
+        }
+        console.log(func)
+        return true;
+    }
     static GenerateFilter(back, asCardType) {
         const { id, type, uniqueList, trigger, filter,
             filter_card, filter_suit, filter_color,
-            uniqueTrigger,
+            uniqueTrigger, variableArea_filter, filter_ignoreIndex,
             mod } = back.skill
         const boolZhuSkill = type.includes("zhuSkill");
         const boolGroupSkill = type.includes("groupSkill");
@@ -2669,11 +2697,14 @@ export class NonameCN {
                 boolTri_filterCardNeed,
                 boolFilter_Card, boolFilter_Color, boolTri_filterCardNeed,
                 boolUniqueTrigger, boolfilterHasContent].every(bool => bool === false)
+        const logicWords = [" > ", " < ", " >= ", " <= ", " == ", " != ", " === ", " !== ", " || ", " && "]
         if (boolOnlyMod) return ''
         let result = '';
         let IF = false;
         let branch = 0
+        let variable;
         result += 'filter:function(event,player,triggername){\n'
+        if (variableArea_filter.length) result += variableArea_filter.join("\n") + "\n"
         //主公技
         if (boolZhuSkill) {
             result += `if(! player.hasZhuSkill("${id}")) return false;\n`;
@@ -2716,17 +2747,25 @@ export class NonameCN {
         }
         if (boolfilterHasContent) filter.forEach((i, k) => {
             //如果是空字符，则不处理
+            if (filter_ignoreIndex.includes(k)) return;
+            if (i === "true") return;
             if (i === "") return;
-            const previousLine = k ? filter[k - 1] : ''
-            const nextLine = k < filter.length - 1 ? filter[k + 1] : ''
-            const logicWords = [" > ", " < ", " >= ", " <= ", " == ", " != ", " === ", " !== ", " || ", " && "]
+            const previousLine = k ? filter[k - 1] : '';
+            const nextLine = k < filter.length - 1 ? filter[k + 1] : '';
             //如果含赋值语句或本身就有return，则不添加return
-            if (i.includes("return")
-                || i.includes("var ") || i.includes("let ") || i.includes("const ")
-                || i.includes(" = ") || i.includes(" += ") || i.includes(" -= ")
-                || i.includes(" /= ") || i.includes(" *= ") || i.includes(" %= ")
-                || i.includes(" >>= ") || i.includes(" <<= ") || i.includes(" **= ")
-                || i.includes("++") || i.includes("--")) {
+            if (variable && NonameCN.TestFilterOk(result, k)) variable = false;
+            if (i.includes("return")) {
+                result += i + '\n'
+            }
+            else if (["var ", "let ", "const "].some(keyword => i.includes(keyword))) {
+                variable = true;
+                result += i + '\n'
+            }
+            else if (variable) {
+                result += i + '\n'
+            }
+            else if ([" = ", " += ", " -= ", " /= ", " *= ", " %= ",
+                " >>= ", " <<= ", " **= ", "++", "--"].some(keyword => i.includes(keyword))) {
                 result += i + '\n'
             }
             else if (i === 'if(') {
@@ -3172,8 +3211,11 @@ export class NonameCN {
                 })
             }
         }
-        if (/^[此该本]技能发动次数[减-]\d+$/m.test(result)) {
+        if (/^令?[此该本]技能发动次数[减-]\d+$/m.test(result)) {
             result = result.replace(/^[此该本]技能发动次数[减-]/mg, kind === "trigger" ? `player.storage.counttrigger["${id}"]-=` : `player.getStat().skill["${id}"]-=`)
+        }
+        if (/^令?[此该本]技能发动次数令为\d+$/m.test(result)) {
+            result = result.replace(/^[此该本]技能发动次数令为/mg, kind === "trigger" ? `player.storage.counttrigger["${id}"]=` : `player.getStat().skill["${id}"]=`)
         }
         if (!result.endsWith("\n")) result += "\n"
         return result;
@@ -3409,7 +3451,8 @@ export class NonameCN {
         "变量x令为你体力值的一半且四舍五入": "变量x令为你体力值的一半且四舍五入",
         "变量y令为你体力上限且至多为5": "变量y令为你体力上限且至多为5",
         "变量z令为你手牌数且至少为1": "变量z令为你手牌数且至少为1",
-        "变量X令为场上势力数": "变量X令为场上势力数"
+        "变量X令为场上势力数": "变量X令为场上势力数",
+        "变量Y令为你获取本回合失去牌的类型个数": "变量Y令为你获取本回合失去牌的类型个数",
     }
     for (const [item, explanation] of Object.entries(varSentence)) {
         NonameCN.giveSentence.filter[item] = explanation;

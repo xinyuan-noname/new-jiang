@@ -375,6 +375,25 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     i++;
                 }
             }
+            back.addFilterVariable = function () {
+                back.skill.filter_ignoreIndex = [];
+                back.skill.variableArea_filter = [];
+                let start = false;
+                for (const [i, line] of [...back.skill.filter].entries()) {
+                    if (line === "#变量区头" || line === "#变量 区头") {
+                        start = true;
+                        back.skill.filter_ignoreIndex.push(i)
+                    }
+                    else if (line === "#变量区尾" || line === "#变量 区尾") {
+                        start = false;
+                        back.skill.filter_ignoreIndex.push(i)
+                    }
+                    else if (start) {
+                        back.skill.variableArea_filter.push(line)
+                        back.skill.filter_ignoreIndex.push(i)
+                    }
+                }
+            }
             back.subSkillTest = function () {
                 for (const skillName in back.skill.subSkill) {
                     if (back.skill.subSkill[skillName].viewAsSubSkill) delete back.skill.subSkill[skillName];
@@ -480,7 +499,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 back.allVariable();
                 back.skill.boolList.length = 0;
                 if (!back.skill.mode) back.skill.mode = 'self';
-
                 isJianxiongGain() && back.skill.boolList.push("jianxiong_gain");
                 isViewAs() && back.skill.boolList.push("viewAs");
                 moreViewAs() && back.skill.boolList.push("moreViewAs");
@@ -490,10 +508,12 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 back.aiTest();
                 back.subSkillTest();
                 back.isContentAsync();
-                //dom部分
+                //
+                if (back.hasVariableArea) back.addFilterVariable();
+                //
+                back.addUserCustom();
                 //更新显示状态
                 back.updateDisplay();
-                back.addUserCustom();
             }
             back.organize = function () {
                 back.prepare();
@@ -1060,23 +1080,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 width: '90%'
             });
             let h1Title = newElement("span", "魂氏技能编辑器", h1);
-            listener(h1Title, e => {
-                h1.slide.style.display = h1.slide.style.display == "none" ? "inline" : "none"
-            });
-            let h1Slide = newElement("span", "滑动翻页", h1)
-            h1.slide = h1Slide;
-            listener(h1Slide, e => {
-                lib.config.xjb_editorSplide = !lib.config.xjb_editorSplide;
-                game.saveConfig("xjb_editorSplide", lib.config.xjb_editorSplide);
-                h1.slide.style.color = lib.config.xjb_editorSplide ? "red" : "gray";
-            });
-            ui.xjb_giveStyle(h1.slide, {
-                margin: "10px",
-                display: "none",
-                color: (lib.config.xjb_editorSplide ? "red" : "gray"),
-                opacity: "0.75",
-                fontSize: "0.75em"
-            })//*/
+            listener(h1Title, () => { });
             //换页功能
             //切换至下一页
             const next = newElement('span', '下一页', h1).setStyle({
@@ -1111,61 +1115,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     .listen(DEFAULT_EVENT, turnLastPage)
                     .shortCut('l');
             }
-
-            (function touchPageChange() {
-                function hasParentBack(ele) {
-                    let parentNode = ele.parentNode;
-                    while (parentNode != null) {
-                        if (parentNode == back) {
-                            return true;
-                        }
-                        parentNode = parentNode.parentNode;
-                    }
-                    return false;
-                }
-                // 初始化触摸相关变量
-                let startX = 0;
-                let isMoving = false;
-                let diffX = 0
-                // 监听touchstart事件
-                function touchS(event) {
-                    if (hasParentBack(event.target) || !lib.config.xjb_editorSplide) return;
-                    if (event.touches.length === 1) {
-                        // 记录起始X坐标
-                        startX = event.touches[0].clientX;
-                        isMoving = true;
-                    }
-                }
-                document.addEventListener('touchstart', touchS);
-                // 监听touchmove事件
-                function touchM(event) {
-                    if (hasParentBack(event.target) || !lib.config.xjb_editorSplide) return;
-                    if (isMoving && event.touches.length === 1) {
-                        const endX = event.touches[0].clientX;
-                        diffX = endX - startX;
-                        // 按照滑动方向更新当前显示的页面    
-                        startX = endX;
-                    }
-                }
-                document.addEventListener('touchmove', touchM);
-                // 监听touchend事件
-                function touchE(event) {
-                    if (hasParentBack(event.target) || !lib.config.xjb_editorSplide) return;
-                    if (diffX > 5) {
-                        turnLastPage();
-                    } else if (diffX < -5) {
-                        turnNextPage();
-                    }
-                    // 更新起始X坐标
-                    isMoving = false;
-                }
-                document.addEventListener('touchend', touchE);
-                listener(back.close, e => {
-                    document.removeEventListener("touchstart", touchS)
-                    document.removeEventListener("touchend", touchE)
-                    document.removeEventListener("touchmove", touchM)
-                })
-            })();
             //第一页
             let subBack = newPage()
             let idSeter = newElement('div', '技能id:', subBack).style1();
@@ -1640,6 +1589,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .clearOrder()
                 .dittoOrder()
                 .dittoUnderOrder()
+                .replaceThenOrder(/新变量[区域]/g, '#变量区头\n\n#变量区尾', () => { back.hasVariableArea = true })
                 .replaceThenOrder(/(?<![/][*])[ ]*back.FilterInherit[ ]*\=[ ]*true[ ]*(?![*][/])/g, "/*back.FilterInherit=true*/", () => { back.FilterInherit = true })
                 .clearThenOrder(/([/][*])[ ]*back.FilterInherit[ ]*\=false[ ]*[ ]*([*][/])/g, () => { back.FilterInherit = false })
                 .debounce('keyup', back.ele.filter.submit, 200)
