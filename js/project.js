@@ -1369,17 +1369,17 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                         } else if (e.target.className === "withdraw_xjb_touzi") {
                             if (lib.config[type] <= 100) game.xjb_create.alert(`你当前投资额为:${lib.config[type]}点，需达到100点我们才会给予反馈服务哦！`)
                             else {
-                                const max = parseInt((lib.config[type] - 100) / 5)
+                                const max = parseInt((lib.config[type] - 100) / 7)
                                 game.xjb_create.range(`你当前投资额为:${lib.config[type]}点，可提取${max} 个魂币`,
                                     0, max, 0,
                                     function () {
-                                        lib.config[type] -= this.result * 5;
+                                        lib.config[type] -= this.result * 7;
                                         game.saveConfig(type, lib.config[type]);
                                         game.xjb_getHunbi(this.result, 1, true, true, '投资反馈');
                                         that.querySelectorAll('p')[1].innerHTML = that.acc(lib.config[type]);
                                     },
                                     function () {
-                                        this.prompt.innerHTML = `你当前投资额为:${lib.config[type]}点，可提取${parseInt((lib.config[type] - 100) / 5)} 个魂币`
+                                        this.prompt.innerHTML = `你当前投资额为:${lib.config[type]}点，可提取${parseInt((lib.config[type] - 100) / 7)} 个魂币`
                                     }
                                 )
                             }

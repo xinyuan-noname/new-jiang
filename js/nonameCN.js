@@ -8,11 +8,15 @@ import {
 } from "../../../noname.js"
 import {
     findPrefix,
-    eachLine
+    eachLine,
+    addPSFix
 } from "./tool/string.js";
 import {
     textareaTool
 } from './tool/ui.js'
+import {
+    editorInbuiltSkillMap
+} from './editor/skill.js'
 const phaseList = {
     "回合": "phase",
     "准备阶段": "phaseZhunbei",
@@ -473,6 +477,7 @@ export class NonameCN {
         markName: "",
         markContent: "",
     }
+    static editorInbuiltSkillMap = editorInbuiltSkillMap;
     static basicList = {
         "数学": "Math",
         //虚拟牌
@@ -816,7 +821,10 @@ export class NonameCN {
         staticValue: {
             "不可被无懈可击响应": `"nowuxie"`,
             "不计入次数": 'false',
+            '强制发动':"true",
             '不影响ai': `"noai"`,
+            '亮出式': '"gain2"',
+            '隐藏式': '"draw"',
             '摸牌式': '"draw"',
             '给牌式': '"giveAuto"',
             '从牌堆底': '"bottom"',
@@ -1097,6 +1105,26 @@ export class NonameCN {
             '判定区没有牌': `hasCard;void 0;"j";denyPrefix`,
             '手牌区没有牌': `hasCard;void 0;"h";denyPrefix`,
         },
+        player_method_countCard:{
+            '手牌数': 'countCards;"h"',
+            '牌数': 'countCards;"he"',
+            '场上牌数': `countCards;"ej"`,
+            '场上的牌数': `countCards;"ej"`,
+            '区域内牌数': 'countCards;"hej"',
+            '手牌区牌数': 'countCards;"h"',
+            '装备区牌数': 'countCards;"e"',
+            '判定区牌数': 'countCards;"j"',
+            '区域内的牌数': 'countCards;"hej"',
+            '手牌区的牌数': 'countCards;"h"',
+            '装备区的牌数': 'countCards;"e"',
+            '判定区的牌数': 'countCards;"j"',
+            '可被获得的手牌数':"countGainableCards;'h';intoFunctionWait",
+            '可被获得的牌数':"countGainableCards;'he';intoFunctionWait",
+            '可被获得的区域内牌数':"countGainableCards;'hej';intoFunctionWait",
+            '可被获得的手牌区的牌数':"countGainableCards;'h';intoFunctionwait",
+            '可被获得的装备区的牌数':"countGainableCards;'e';intoFunctionWait",
+            '可被获得的判定区的牌数':"countGainableCards;'j';intoFunctionWait",
+        },
         player_method_phase: {
             '跳过下一个准备阶段': 'skip:"phaseZhunbei"',
             '跳过下一个出牌阶段': 'skip:"phaseUse"',
@@ -1248,18 +1276,6 @@ export class NonameCN {
             '弃置角色手牌': 'discardPlayerCard;"h";intoFunction',
             '隐式给牌': "give;false;intoFunctionWait",
             "获得多名角色牌": `gainMultiple;"he";intoFunctionWait`,
-            '手牌数': 'countCards;"h"',
-            '牌数': 'countCards;"he"',
-            '场上牌数': `countCards;"ej"`,
-            '场上的牌数': `countCards;"ej"`,
-            '区域内牌数': 'countCards;"hej"',
-            '手牌区牌数': 'countCards;"h"',
-            '装备区牌数': 'countCards;"e"',
-            '判定区牌数': 'countCards;"j"',
-            '区域内的牌数': 'countCards;"hej"',
-            '手牌区的牌数': 'countCards;"h"',
-            '装备区的牌数': 'countCards;"e"',
-            '判定区的牌数': 'countCards;"j"',
             '获取手牌区牌': 'getCards;"h"',
             '获取装备区牌': 'getCards;"e"',
             '获取判定区牌': 'getCards;"j"',
@@ -1335,6 +1351,8 @@ export class NonameCN {
             "设置提示标题": `set;"prompt";intoFunction`,
             "设置提示内容": `set;"prompt2";intoFunction`,
             "设置提示事件提示": `set;"evtprompt";intoFunction`,
+            "设置提示标题跟随技能": `set:"prompt":get.prompt(\\skillID)`,
+            "设置提示内容跟随技能": `set:"prompt2":get.prompt2(\\skillID)`,
             //
             "设置选项列表": `set;"choiceList";intoFunction`,
             "设置选项组": `set;"controls";intoFunction`,
@@ -1521,9 +1539,6 @@ export class NonameCN {
             '同时获得牌': "packed_gameCode_gainAsync"
         },
     }
-    static groupedRegExpList = {
-
-    }
     static viewAsFrequencyList = [
         "frequency-phase-cardName",
         "frequency-round-cardName",
@@ -1704,12 +1719,9 @@ export class NonameCN {
         list["获取名为" + id + "的父事件的名字"] = `getParent:"${id}"://!?name`
         list["此牌"] = NonameCN.analyzeThisCard(game.xjb_back.skill.trigger)
         list["这些牌"] = NonameCN.analyzeTheseCard(game.xjb_back.skill.trigger)
-        list["设置提示标题跟随技能"] = `set:"prompt":get.prompt("${id}")`
-        list["设置提示内容跟随技能"] = `set:"prompt2":get.prompt2("${id}")`
         list["拥有本技能的角色"] = `game.filterPlayer().find(cur=>cur.hasSkill("${id}",null,false,false))`
         list["拥有该技能的角色"] = `game.filterPlayer().find(cur=>cur.hasSkill("${id}",null,false,false))`
         list["拥有此技能的角色"] = `game.filterPlayer().find(cur=>cur.hasSkill("${id}",null,false,false))`
-
         return list
     }
     static get FilterList() {
@@ -1717,7 +1729,6 @@ export class NonameCN {
         let list = Object.assign({}, this.basicList);
         const id = back.getID()
         for (let k in this.groupedList) {
-            get
             list = Object.assign(list, this.groupedList[k]);
         }
         list["获取名为" + back.getSourceID() + "的父事件的名字"] = `getParent:"${back.getSourceID()}"://!?name`
@@ -3134,7 +3145,7 @@ export class NonameCN {
             }
             else result += a + "\n"
             //如果遇见了chooseTarget,则自动增加步数
-            if (!back.stepIgnore && i.includes('chooseTarget') && !/^(var|let|const) /.test(i)) {
+            if (!contentAsync && !back.stepIgnore && i.includes('chooseTarget') && !/^(var|let|const) /.test(i)) {
                 step++;
                 if (!branch) addStepForChoose()
                 else afterBranch.push(addStepForChoose)

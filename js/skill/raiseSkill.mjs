@@ -1,5 +1,5 @@
 import { _status, lib, ui, game, ai, get } from "../../../../noname.js"
-export default function SkillCreater(name, skill) {
+function SkillCreater(name, skill) {
     lib.skill[name] = { ...skill }
     delete lib.skill[name].translate;
     delete lib.skill[name].description;

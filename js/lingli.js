@@ -1,24 +1,8 @@
-import { lingli_event } from "./lingli/event.js"
+import "./lingli/event.mjs"
+import './lingli/gSkill.mjs'
 window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
-    for (const event in lingli_event) {
-        lib.element.player[event] = lingli_event[event].player;
-        lib.element.content[event] = lingli_event[event].content;
-    }
     lib.skill.xjb_11 = {
         saturation: function () {
-            //空气
-            lib.skill._xjb_P_air = {
-                trigger: {
-                    global: ["phaseBegin", "phaseEnd"]
-                },
-                filter: function (event, player) {
-                    return player.storage.lingliPosition === "air" && Math.random() >= Math.random()
-                },
-                direct: true,
-                content: function () {
-                    player.xjb_molizeLingli()
-                }
-            }
             //血色空间   
             lib.skill.xjb_P_blood = {
                 init: function (player) {
@@ -88,8 +72,6 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                             next.setContent(function () {
                                 target.xjb_addlingli()
                                 target.damage(player, event.nature)
-                                target.xjb_eventLine(1)
-                                target.xjb_eventLine(1)
                             })
                         }; break;
                     }
@@ -235,203 +217,45 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
             }
             lib.translate.xjb_soul_lingqiang = "灵枪"
             lib.translate.xjb_soul_lingqiang_info = "出牌阶段，你可以销毁一张牌，然后将产生的1Ch魔力(1C)发射之。"
-            lib.skill.xjb_soul_lingdun = {
-                trigger: {
-                    global: "xjb_lingHitBegin"
-                },
-                filter: function (event, player) {
-                    if (player.countMark("_xjb_lingli") <= 0) return;
-                    return event.target == player;
-                },
-                content: function () {
-                    trigger.cancel()
-                    player.xjb_loselingli();
-                }
-            }
-            lib.translate.xjb_soul_lingdun = "灵盾"
-            lib.translate.xjb_soul_lingdun_info = "当魔力通过袭来时，你可用灵力和其对撞。"
         },
         moliSkill: function () {
-            lib.skill._xjb_soul_lingfa = {
-                enable: "phaseUse",
-                usable: 1,
-                filter: function (event, player) {
-                    if (player.countMark("_xjb_lingli") < 1) return;
-                    let list = []
-                    if (!lib.config.xjb_count[player.name]) return;
-                    if (lib.config.xjb_count[player.name].lingfa) lib.config.xjb_count[player.name].lingfa.forEach(function (i) {
-                        if (!lib.skill[i]) return
-                        if (player.countCards("hsx", i + "_card") > 0) return;
-                        lib.card.xjb_skillCard.cardConstructor(i);
-                        lib.card.xjb_skillCard.skillLeadIn(i);
-                        list.push(["灵法", "", i])
-                    })
-                    return list.length > 0;
-                },
-                content: function () {
-                    "step 0"
-                    let list = []
-                    if (lib.config.xjb_count[player.name1].lingfa) lib.config.xjb_count[player.name1].lingfa.forEach(function (i) {
-                        if (!lib.skill[i]) return
-                        if (player.countCards("x", i + "_card") > 0) return
-                        lib.card.xjb_skillCard.cardConstructor(i);
-                        lib.card.xjb_skillCard.skillLeadIn(i);
-                        list.push(["灵法", "", i])
-                    })
-                    if (list.length) {
-                        let dialog = ui.create.dialog("灵力自用转化牌", [list, "vcard"])
-                        player.chooseButton(dialog)
-                    }
-                    "step 1"
-                    if (result && result.bool) {
-                        player.xjb_molizeLingli(1, player, result.links[0][2])
-                    }
-                },
-                ai: {
-                    basic: {
-                        order: 9,
-                    },
-                    result: {
-                        player: 1,
-                    },
-                },
-            }
-            lib.translate._xjb_soul_lingfa = "<span data-nature=xjb_hun><font color=white>灵法</font></span>"
-            lib.skill._xjb_soul_lingtan = {
-                enable: "phaseUse",
-                usable: 1,
-                filter: function (event, player) {
-                    if (player.countMark("_xjb_lingli") < 1) return false
-                    let list = []
-                    if (!lib.config.xjb_count[player.name]) return
-                    if (lib.config.xjb_count[player.name].lingtan) lib.config.xjb_count[player.name].lingtan.forEach(function (i) {
-                        if (!lib.skill[i]) return
-                        lib.card.xjb_skillCard.cardConstructor(i);
-                        lib.card.xjb_skillCard.skillLeadIn(i);
-                        list.push(["灵弹", "", i])
-                    })
-                    return list.length > 0
-                },
-                filterTarget: function (card, player, target) {
-                    return player != target;
-                },
-                content: function () {
-                    "step 0"
-                    let list = []
-                    if (lib.config.xjb_count[player.name1].lingtan) lib.config.xjb_count[player.name1].lingtan.forEach(function (i) {
-                        if (!lib.skill[i]) return
-                        lib.card.xjb_skillCard.cardConstructor(i);
-                        lib.card.xjb_skillCard.skillLeadIn(i);
-                        list.push(["灵弹", "", i])
-                    })
-                    if (list.length) {
-                        let dialog = ui.create.dialog("灵力弹射转化牌", [list, "vcard"])
-                        player.chooseButton(dialog)
-                    }
-                    "step 1"
-                    if (result.bool) {
-                        let cardName = result.links[0][2]
-                        player.xjb_molizeLingli(1, target, cardName)
-                    }
-                },
-                ai: {
-                    basic: {
-                        order: 9,
-                    },
-                    result: {
-                        target: 1,
-                    },
-                },
-            }
-            lib.translate._xjb_soul_lingtan = "<span data-nature=xjb_hun><font color=white>灵弹</font></span>"
-            lib.skill._xjb_lingliBeforeDeath = {
-                trigger: {
-                    player: ["dieBefore"]
-                },
-                filter: function (event, player) {
-                    return player.countMark("_xjb_lingli")
-                },
-                direct: true,
-                forced: true,
-                content: function () {
-                    let num1 = trigger.player.removeMark("_xjb_lingli", trigger.player.countMark("_xjb_lingli"));
-                    let num2 = trigger.player.removeMark("_xjb_moli", trigger.player.countMark("_xjb_moli"));
-                    if (_status.currentPhase) {
-                        _status.currentPhase.xjb_addlingli(num1)
-                        _status.currentPhase.addMark(num2)
-                    }
-                }
-            }
-            lib.skill._xjb_soul_daomo = {
-                enable: "phaseUse",
-                usable: 1,
-                filter: function (event, player) {
-                    if (!lib.config.xjb_lingli_Allallow) return !(!lib.characterPack['xjb_soul'][player.name1])
-                    return game.xjb_hasDaomo(player)
-                },
-                filterTarget: function (card, player, target) {
-                    return player != target;
-                },
-                content: function () {
-                    "step 0"
-                    player.xjb_buildBridge(target)
-                },
-                ai: {
-                    basic: {
-                        order: 9,
-                    },
-                    result: {
-                        target: function (player, target) {
-                            if (target.countMark("_xjb_lingli") >= player.countMark("_xjb_lingli")) return 0
-                            return -1
-                        },
-                    },
-                },
-            }
-            lib.translate._xjb_soul_daomo = "<span data-nature=xjb_hun><font color=white>导魔</font></span>"
-            lib.config.xjb_developer = false
-            lib.skill._xjb_soul_qiling = {
-                enable: "phaseUse",
-                check: function (card) {
-                    if (lib.card[card.name].debuff) return 0;
-                    if (lib.card[card.name].hasSkill) return 999;
-                    return 10 - get.value(card)
-                },
-                filterCard: true,
-                usable: 1,
-                selectCard: true,
-                filter: function (event, player) {
-                    if (lib.config.xjb_lingli_Allallow) return true
-                    return lib.characterPack['xjb_soul'][player.name1]
-                },
-                content: function () {
-                    player.xjb_addZhenFa(cards)
-                },
-                ai: {
-                    basic: {
-                        order: 2,
-                    },
-                    result: {
-                        player: 1,
-                    },
-                },
-            }
-            lib.translate._xjb_soul_qiling = "<span data-nature=xjb_hun><font color=white>启灵</font></span>"
-            lib.translate._xjb_soul_qiling_info = "选择一张牌置于阵法区以获得灵力/魔力"
+            // lib.skill._xjb_soul_daomo = {
+            //     enable: "phaseUse",
+            //     usable: 1,
+            //     filter: function (event, player) {
+            //         if (!lib.config.xjb_lingli_Allallow) return !(!lib.characterPack['xjb_soul'][player.name1])
+            //         return game.xjb_hasDaomo(player)
+            //     },
+            //     filterTarget: function (card, player, target) {
+            //         return player != target;
+            //     },
+            //     content: function () {
+            //         "step 0"
+            //         player.xjb_chooseToBuildBridge(target)
+            //     },
+            //     ai: {
+            //         basic: {
+            //             order: 9,
+            //         },
+            //         result: {
+            //             target: function (player, target) {
+            //                 if (target.countMark("_xjb_lingli") >= player.countMark("_xjb_lingli")) return 0
+            //                 return -1
+            //             },
+            //         },
+            //     },
+            // }
+            // lib.translate._xjb_soul_daomo = "<span data-nature=xjb_hun><font color=white>导魔</font></span>"
         },
         play: function () {
             lib.soul = {}
-            lib.soul.xjb_chanter = function () {
+            lib.soul.xjb_chanter = () => {
                 if (!lib.config.xjb_count.xjb_chanter.dialog) lib.config.xjb_count.xjb_chanter.dialog = {}
-                let chanter = lib.xjb_src + "soul_chanter.jpg"
-                let chanter2 = lib.xjb_src + "soul_chanter2.jpg"
-                let library = lib.xjb_src + "position/library.jpg"
-                let LH = lib.xjb_src + lib.config.xjb_newcharacter.selectedSink.slice(8)
-                let myName = lib.config.xjb_newcharacter.name2
-                game.xjb_dialog([
-                    [chanter, "琪盎特儿", "white", "再次相逢了，" + myName + "，是什么打算把你送到我这边来的呢？", library]
-                ]);
-
+                let chanter = lib.xjb_src + "soul_chanter.jpg";
+                let chanter2 = lib.xjb_src + "soul_chanter2.jpg";
+                let library = lib.xjb_src + "position/library.jpg";
+                let LH = lib.xjb_src + lib.config.xjb_newcharacter.selectedSink.slice(8);
+                let myName = lib.config.xjb_newcharacter.name2;
             }
         },
         linglichang: function () {
@@ -723,27 +547,6 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
             }
         },
         Marks: function () {
-            lib.skill._xjb_zhenfa = {
-                marktext: "阵",
-                intro: {
-                    name: "阵法",
-                    content: "expansion",
-                    markcount: "expansion",
-                },
-                trigger: {
-                    player: ["addToExpansionAfter"],
-                },
-                forced: true,
-                filter: function (event, player) {
-                    if (!(event.gaintag.includes('_xjb_zhenfa'))) return false;
-                    return true;
-                },
-                content: function () {
-                    "step 0"
-                    let num = xjb_lingli.area["fanchan"](trigger.cards.length)
-                    player.xjb_addlingli(num)
-                },
-            }
             xjb_lingli.daomo.type.forEach(i => {
                 lib.skill["_xjb_daomo_" + i] = {
                     marktext: xjbLogo[i](20),
@@ -762,25 +565,6 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                     name: xjbLogo.xuemo(230),
                     content: function (storage, player, skill) {
                         return "能量值:" + storage + "C"
-                    },
-                }
-            }
-            lib.skill._xjb_lingli = {
-                marktext: "灵",
-                intro: {
-                    name: "灵力",
-                    content: function (storage, player, skill) {
-                        let num = xjb_lingli.updateK(game.xjb_getSb.position(player))
-                        return "灵力值:" + storage + "Ch/" + Math.floor(num) + "Ch"
-                    },
-                }
-            }
-            lib.skill._xjb_moli = {
-                marktext: "魔",
-                intro: {
-                    name: "魔力",
-                    content: function (storage, player, skill) {
-                        return "魔力值:" + storage + "Ch;<br>导魔最大值：" + player.storage.xjb_daomoMax;
                     },
                 }
             }

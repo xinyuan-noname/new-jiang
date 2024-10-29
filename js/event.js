@@ -121,7 +121,7 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 eventLine.forEach(event => {
                     this[event]()
                 })
-                game.log(this, `因灵力转化发生事件：${eventLine.translateLine}`)
+                game.log(this, `因灵力波动发生事件：${eventLine.translateLine}`)
                 return eventLine
             },
             "xjb_fire": function (num) {
@@ -366,6 +366,25 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
         },
     }
     lib.skill.xjb_2 = {
+        "xjb_destoryCards": {
+            player: function (cards) {
+                let next = game.createEvent('xjb_destoryCards')
+                next.player = this
+                next.cards = cards
+                next.setContent('xjb_destoryCards');
+                return next
+            },
+            content: function () {
+                "step 0"
+                for (const card of event.cards) {
+                    card.fix()
+                    card.remove()
+                    card.destroyed = true
+                }
+                "step 1"
+                ui.updatehl();
+            }
+        },
         "fc_X2": {
             player: function () {
                 let next = game.createEvent('fc_X2')
@@ -426,7 +445,9 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
             },
             content: function () {
                 for (var i = 0; i < event.num; i++) {
-                    let card = game.createCard2(["tao", "sha", "shan", "jiu"].randomGet())
+                    const name = ["tao", "sha", "shan", "jiu", "juedou", "wuxie", "guohe", "shunshou", "lebu", "bingliang"].randomGet()
+                    const nature = name === "sha" ? [...lib.inpile_nature, null].randomGet() : null;
+                    const card = game.createCard2(name, void 0, void 0, nature)
                     player.gain(card)
                 }
             },
@@ -447,13 +468,9 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                     event.finish()
                 }
                 "step 1"
-                for (var i = 0; i < event.num; i++) {
-                    let card = player.getCards(event.position).randomGet()
-                    player.lose(card)
-                    card.fix()
-                    card.remove()
-                    ui.updatehl()
-                }
+                let cards = player.getCards(event.position).randomGets(event.num)
+                player.lose(cards)
+                player.xjb_destoryCards(cards)
             },
         },
         "xjb_DisSkillCard": {
@@ -472,27 +489,6 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 "step 1"
                 if (result && result.links) {
                     player.gain(result.links, "gain2")
-                }
-            },
-        },
-        "xjb_addZhenFa": {
-            player: function (cards) {
-                let next = game.createEvent('xjb_addZhenFa')
-                next.player = this
-                next.cards = cards
-                if (!Array.isArray(cards)) next.cards = [cards]
-                next.setContent('xjb_addZhenFa');
-                return next
-            },
-            content: function () {
-                "step 0"
-                player.addToExpansion(event.cards, 'gain2').gaintag.add("_xjb_zhenfa");
-                game.log(player, event.cards, '进入阵法区')
-                "step 1"
-                const zhenfa = player.getExpansions("_xjb_zhenfa");
-                const skillCardLength = zhenfa.filter(i => lib.card[i.name].hasSkill).length;
-                if (skillCardLength > 3) {
-                    player.xjb_DisSkillCard(skillCardLength - 3)
                 }
             },
         },

@@ -1,4 +1,12 @@
-import SkillCreater from './skill/raiseSkill.mjs'
+import './skill/raiseSkill.mjs'
+function SkillCreater(name, skill) {
+    lib.skill[name] = { ...skill }
+    delete lib.skill[name].translate;
+    delete lib.skill[name].description;
+    lib.translate[name] = skill.translate;
+    lib.translate[name + "_info"] = skill.description
+    return lib.skill[name];
+};
 window.XJB_LOAD_SKILLS = function (_status, lib, game, ui, get, ai) {
     /**
      * 

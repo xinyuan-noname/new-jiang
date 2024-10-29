@@ -149,8 +149,7 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
         else if ([1, 2].includes(mod)) {
             player.xjb_HpCardArea.push(game.xjb_genHpCardData(3));
             player.xjb_HpCardArea.push(game.xjb_genHpCardData(2 + mod));
-            const times = (player.maxHp - mod) / 5
-            console.log(times)
+            const times = (player.maxHp - mod) / 5;
             for (let i = 0; i < times - 1; i++) {
                 player.xjb_HpCardArea.push(game.xjb_genHpCardData(5));
             }
@@ -409,7 +408,6 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
             player.$xjb_giveHpCard(list1[0].obv, event.target)
             event.target.$xjb_giveHpCard(list2[0].obv, player)
             game.delay();
-            console.log(player.xjb_HpCardArea, target.xjb_HpCardArea)
             'step 6'
             player.update();
             event.target.update();

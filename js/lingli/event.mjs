@@ -1,4 +1,84 @@
-export const lingli_event = {
+import { _status, lib, ui, game, ai, get } from "../../../../noname.js"
+
+const lingli_event = {
+    "xjb_qiling": {
+        player: function (num = 1) {
+            let next = game.createEvent('xjb_qiling');
+            next.player = this;
+            next.num = num;
+            next.setContent('xjb_qiling');
+            return next
+        },
+        content: function () {
+            "step 0"
+            if (event.num === 0) {
+                event.trigger("xjb_qilingZero");
+                event.finish();
+            }
+            "step 1"
+            game.log(player, "进行了一次启灵")
+            const num = xjb_lingli.area["fanchan"](1);
+            player.xjb_addlingli(num);
+            event.num--;
+            "step 2"
+            if (event.num > 0) event.goto(1);
+        }
+    },
+    "xjb_transDensity": {
+        player: function () {
+            const player = this;
+            const next = game.createEvent('xjb_transDensity')
+            next.player = player;
+            next.setContent("xjb_transDensity");
+            return next;
+        },
+        content: function () {
+            "step 0"
+            if (player.xjb_isLingliStable()) {
+                event.trigger("xjb_transLingliStable");
+                event.finish();
+            }
+            "step 1"
+            player.xjb_loselingli(1);
+            player.storage.xjb_lingliDensity++;
+            "step 2"
+            event.goto(0);
+        }
+    },
+    "xjb_transDensityForced": {
+        player: function (num = 1) {
+            const player = this;
+            const next = game.createEvent('xjb_transDensityForced')
+            next.player = player;
+            next.num = num;
+            next.setContent("xjb_transDensityForced");
+            return next;
+        },
+        content: function () {
+            "step 0"
+            player.xjb_loselingli(event.num);
+            player.storage.xjb_lingliDensity += event.num;
+        }
+    },
+    "xjb_addZhenFa": {
+        player: function (cards) {
+            let next = game.createEvent('xjb_addZhenFa')
+            next.player = this
+            next.cards = cards
+            if (!Array.isArray(cards)) next.cards = [cards]
+            next.setContent('xjb_addZhenFa');
+            return next
+        },
+        content: function () {
+            "step 0"
+            player.addToExpansion(event.cards, 'gain2').gaintag.add("_xjb_zhenfa");
+            game.log(player, event.cards, '进入阵法区');
+            "step 1"
+            const zhenfa = player.getExpansions("_xjb_zhenfa");
+            if (zhenfa.length > 3) player.xjb_discardZhenfaCard(3 - zhenfa.length);
+            player.actionHistory.at(-1)["custom"].push(event);
+        },
+    },
     "xjb_molizeLingli": {
         player: function (num = 1, target, card) {
             if (!this.countMark("_xjb_lingli")) return
@@ -31,16 +111,16 @@ export const lingli_event = {
             event.target.xjb_switchlingli()
         },
     },
-    "xjb_buildBridge": {
+    "xjb_chooseToBuildBridge": {
         player: function (target) {
             if (!lib.config.xjb_count[this.name]) return;
             if (!lib.config.xjb_count[this.name].daomo) {
                 lib.config.xjb_count[this.name].daomo = {}
             };
-            let next = game.createEvent('xjb_buildBridge')
+            let next = game.createEvent('xjb_chooseToBuildBridge')
             next.player = this
             next.target = target
-            next.setContent('xjb_buildBridge');
+            next.setContent('xjb_chooseToBuildBridge');
             return next
         },
         content: function () {
@@ -204,4 +284,64 @@ export const lingli_event = {
             ui.updatehl();
         },
     },
+    "xjb_discardZhenfaCard": {
+        player: function (num = 1, filterButton) {
+            /**
+            * @type {Player}
+            */
+            const player = this;
+            let next = game.createEvent('xjb_discardZhenfaCard')
+            next.player = player;
+            next.num = num;
+            next.filterButton = filterButton;
+            next.setContent('xjb_discardZhenfaCard');
+            return next
+        },
+        content: function () {
+            "step 0"
+            player.chooseButton(
+                ["选择从阵法区中移除牌", player.getExpansions("_xjb_zhenfa")],
+                event.number,
+                true,
+                event.filterButton
+            );
+            "step 1"
+            if (result && result.links) {
+                player.gain(result.links, "gain2");
+            }
+        }
+    }
+}
+/**
+ * @type {Player}
+ */
+const lingli_method = {
+    "xjb_hasLingli": function () {
+        const player = this;
+        return player.hasMark("_xjb_lingli")
+    },
+    "xjb_countLingli": function () {
+        const player = this;
+        return player.countMark("_xjb_lingli")
+    },
+    "xjb_hasMoli": function () {
+        const player = this;
+        return player.hasMark("_xjb_moli")
+    },
+    "xjb_getLingliDensity": function () {
+        const player = this;
+        if (!player.storage.xjb_lingliDensity) player.storage.xjb_lingliDensity = 0
+        return player.storage.xjb_lingliDensity;
+    },
+    "xjb_isLingliStable": function () {
+        const player = this;
+        return player.countMark("_xjb_lingli") <= player.xjb_getLingliDensity()
+    }
+}
+for (const event in lingli_event) {
+    lib.element.player[event] = lingli_event[event].player;
+    lib.element.content[event] = lingli_event[event].content;
+}
+for (const method in lingli_method) {
+    lib.element.player[method] = lingli_method[method];
 }

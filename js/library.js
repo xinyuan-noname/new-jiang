@@ -91,6 +91,23 @@ export const xjb_library = {
                `,
          style: wuyan
       },
+      "lingli":{
+         headline: "灵力规则",
+         writer: "",
+         content:
+            `
+               A灵力Aア(lingli)アn
+               B解释B：n
+               魔法运作的基本单位之一。n
+               A魔力Aア(lingli)アn
+               B解释B：n
+               魔法运作的基本单位之一。n
+               A操作-启灵Aア(xjb_qiling)アn
+               启灵指的是从灵力场汲取灵力的操作。
+               用法：アplayer.xjb_qiling(num)アnum是汲取灵力的次数。
+            `,
+         style: wuyan
+      },
       "hun_system": {
          headline: "魂币系统",
          writer: "",
@@ -472,6 +489,7 @@ A其三 n
          headline: "灵力简论",
          writer: "琪盎特儿",
          content: `
+   本书现在已经作废，现在有新的灵力规则，本书仅以留作纪念。n
    A常见用语 n
    灵    アLingア n
    自然性 アProperty of value being natural numberア n

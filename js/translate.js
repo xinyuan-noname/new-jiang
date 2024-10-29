@@ -8,7 +8,6 @@ window.XJB_LOAD_TRANSLATE = function (_status, lib, game, ui, get, ai) {
         "xin_whlw2_info": "锁定技，当有角色于你的回合内进入濒死阶段时，你获得其所有手牌。",
         "xin_htzjq2": "铁骑",
         "xin_htzjq2_info": "当你使用【杀】指定一名角色为目标后，你令其选择失去一点体力/体力上限。",
-        
         "xjb_xinsheng": "新生",
         "xjb_xinsheng_info": "出牌阶段，你可以弃置三张手牌令一名角色复活。",
         "xjb_lunhui": "灵愈",

@@ -1040,6 +1040,28 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             const addCommonOrder = ele => {
                 textareaTool().setTarget(ele)
                     .listen('blur', function () { this.lastPlaceIndex = this.selectionStart })
+                    .listen('keyup', function () {
+                        if (!this.value.includes('引入')) return;
+                        for (const [regexp, result] of NonameCN.editorInbuiltSkillMap.entries()) {
+                            if (!regexp.test(this.value)) continue;
+                            this.value = this.value.replace(regexp, '');
+                            back.skill.contentAsync = !(!result.contentAsync);
+                            if ('filter' in result) {
+                                back.ele.filter.value = result.filter;
+                                back.ele.filter.submit();
+                            }
+                            if ('content' in result) {
+                                back.ele.content.value = result.content;
+                                back.ele.content.submit();
+                            }
+                            if ('trigger' in result) {
+                                back.skill.kind = 'trigger';
+                                back.ele.trigger.value = result.trigger;
+                                back.ele.trigger.submit();
+                            }
+                            break;
+                        }
+                    })
                     .replaceOrder(/(本|此|该)技能id/g, back.getID)
                     .replaceOrder(/访\*(\d+)/g, (_, ...p) => {
                         return '访  '.repeat(parseInt(p[0]))
