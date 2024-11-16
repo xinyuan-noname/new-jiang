@@ -93,15 +93,6 @@ window["xjb_xyAPI_Directory_新将包"]={
     "node": [
         "gen_dir.js"
     ],
-    "other": [
-        "lingliData.txt"
-    ],
-    "position": [
-        "azureSky.jpg",
-        "lake.jpg",
-        "library.jpg",
-        "redSpace.jpg"
-    ],
     "sink": [],
     "skin": [],
     "title": [
@@ -162,10 +153,23 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_zhouyu.jpg",
         "xjb_zhugeliang.jpg"
     ],
+    "image/position": [
+        "azureSky.jpg",
+        "lake.jpg",
+        "library.jpg",
+        "redSpace.jpg"
+    ],
     "js/card": [
         "callFellow.js",
         "clearBad.js",
         "store.js"
+    ],
+    "js/editor": [
+        "arrange.mjs",
+        "interaction.mjs",
+        "organize.mjs",
+        "skill.js",
+        "transCnText.mjs"
     ],
     "js/feature": [
         "hpCard.js",
@@ -175,7 +179,8 @@ window["xjb_xyAPI_Directory_新将包"]={
         "tetris.js"
     ],
     "js/lingli": [
-        "event.js"
+        "event.mjs",
+        "gSkill.mjs"
     ],
     "js/progress": [
         "show.js"
