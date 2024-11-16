@@ -1,6 +1,7 @@
 export const PiChar = String.fromCharCode(960);
 export const degChar = String.fromCharCode(176);
 export const cnCharRange = '\u4e00-\u9fa5'
+export const JavascriptOperators = [" = ", " += ", " -= ", " /= ", " *= ", " %= ", " >>= ", " <<= ", " **= ", "++", "--"]
 export const JavascriptKeywords = [
     'abstract', 'await', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'class', 'const',
     'continue', 'debugger', 'default', 'delete', 'do', 'double', 'else', 'enum', 'export', 'extends',
@@ -77,6 +78,10 @@ export function getLineRangeOfInput(element) {
     }
     return [last, content.length];
 }
+export function getLastLine(str) {
+    const lastNewLineIndex = str.lastIndexOf('\n');
+    return lastNewLineIndex !== -1 ? str.substring(lastNewLineIndex + 1) : str;
+}
 /**
  * 获取指定元素中的某一行文本内容。
  * 
@@ -144,23 +149,39 @@ export function suitSymbolToCN(str) {
 
     return result;
 }
+export function moveWordToEnd(str, word, space = "", judge1 = () => true, judge2 = () => true) {
+    const regexp = new RegExp(`^(.*?)(${word.replace(/[-\/\\^$*+?.()|[\]{}]/, "\\$&")})(.*?)$`, "mg");
+    return str.replace(regexp, (match, p1, p2, p3) => {
+        if (!judge1(p1, p2, p3) || !judge2(p1, p2, p3)) return match;
+        return `${p1}${p3}${space}${p2}`
+    })
+}
 /**
  * @param {String} str 
  * @param {number} basic 
  * @returns {String}
  */
-export function adjustTab(str, basic = 0, start = '{', end = '}') {
+export function adjustTab(str, basic = 0, start = '{', end = '}', ingoreInitialTab) {
     const arr1 = str.split('\n');
+    const stack = [];
     let tabLevel = basic;
     let arr2 = arr1.map(line => {
-        if (!line.length) return line;
-        const times = line.match(/^\t+/) ? line.match(/^\t+/)[0].length : 0;
-        if (!line.includes(start) && [end, `${end},`, `${end})`].some(item => line.endsWith(item))) tabLevel--;
+        const times = ingoreInitialTab ? 0 :
+            line.match(/^\t+/) ? line.match(/^\t+/)[0].length : 0;
+        const bool = line.endsWith(start)
+        let chars = line.match(new RegExp(`(${start.replace(/[-\/\\^$*+?.()|[\]{}]/, "\\$&")}|${end.replace(/[-\/\\^$*+?.()|[\]{}]/, "\\$&")})`, 'g'));
+        chars && chars.forEach(char => {
+            if (char == start) {
+                stack.push(bool)
+            } else if (stack.length) {
+                if (stack.pop()) tabLevel--
+            }
+        })
         const deltaValue = times - tabLevel;
         let result = line;
         if (deltaValue > 0) result = line.slice(deltaValue);
         else if (deltaValue < 0) result = '\t'.repeat(Math.abs(deltaValue)) + line;
-        if (line.endsWith(start)) tabLevel++;
+        bool && (tabLevel++);
         return result;
     })
     return arr2.join('\n');
@@ -208,6 +229,16 @@ export function findWordsGroup(str, wordsgroup, requirePrefix, requireSurfix) {
 export function clearWordsGroup(str, wordsgroup, requirePrefix, requireSurfix) {
     let regexp = new RegExp(`${requirePrefix ? "(?<" + requirePrefix + ")" : ""}(${wordsgroup.join("|")})${requireSurfix ? "(?" + requireSurfix + ")" : ""}`, "g")
     return str.replace(regexp, "")
+}
+export function pointInWhichLine(str, point) {
+    if (!str || point < 0) return null;
+    let acc = 0;
+    const lines = Array.isArray(str) ? str : str.split("\n")
+    for (const [num, line] of lines.entries()) {
+        acc += line.length + 1;
+        if (point < acc) return num;
+    }
+    return null;
 }
 /**
  * 

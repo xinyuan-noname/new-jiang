@@ -35,7 +35,8 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     sex: "male",
                     group: "wu",
                     hp: 3,
-                    skills: ["xin_taoni", "xin_jiang", "xin_yingyi"],
+                    maxHp: 4,
+                    skills: ["xjb_taoni", "jiang"],
                     trashBin: []
                 },
                 "xjb_guojia": {
@@ -63,7 +64,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     sex: "male",
                     group: "shu",
                     hp: 3,
-                    skills: ["xin_niepan", "xin_lianhuan"],
+                    skills: ["xjb_fengchu", "lianhuan"],
                     trashBin: []
                 },
                 "xjb_caocao": {
@@ -105,7 +106,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     sex: "male",
                     group: "shu",
                     hp: 3,
-                    skills: ["xjb_zhijue","xjb_qiongzhi","kongcheng"],
+                    skills: ["xjb_zhijue", "xjb_qiongzhi", "kongcheng"],
                     trashBin: []
                 },
                 "xjb_jin_simayi": {
@@ -122,19 +123,12 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     skills: ["xin_tianming", "xin_zulong", "xin_longpan"],
                     trashBin: []
                 },
-                "xjb_fazheng": {
-                    sex: "male",
-                    group: "shu",
-                    hp: 3,
-                    skills: ["xin_enyuan", "xjb_fuyi"],
-                    trashBin: []
-                },
             },
             characterSort: {
                 XJB: {
                     'xjb_fengyun': ["xjb_yingzheng"],
                     'xjb_chidan': ["xjb_ganning", "xjb_dianwei"],
-                    'xjb_tiandu': ["xjb_sunce", "xjb_zhouyu", "xjb_pangtong", "xjb_guojia", "xjb_fazheng"],
+                    'xjb_tiandu': ["xjb_sunce", "xjb_zhouyu", "xjb_pangtong", "xjb_guojia"],
                     'xjb_zaiwu': ["xjbhan_caocao", "xjbhan_xunyu", "xjb_caocao"],
                     'xjb_jincui': ["xjb_zhugeliang", "xjb_liushan"],
                     'xjb_guijin': ["xjb_jin_simayi"],
@@ -192,7 +186,6 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                 "xjb_zhugeliang": "诸葛亮",
                 "xjb_jin_simayi": "司马懿",
                 "xjb_yingzheng": "嬴政",
-                "xjb_fazheng": "法正",
 
                 xjb_chidan: '赤胆忠心',
                 xjb_fengyun: '风云荟萃',

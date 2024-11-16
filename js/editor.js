@@ -14,8 +14,7 @@ import {
     correctPunctuation,
     JavascriptKeywords,
     JavascriptUsualType,
-    JavascriptGlobalVariable,
-    getLineRangeOfInput
+    JavascriptGlobalVariable
 } from './tool/string.js'
 import {
     listenAttributeChange,
@@ -26,6 +25,9 @@ import {
 import {
     NonameCN
 } from './nonameCN.js'
+import { EditorInteraction } from './editor/interaction.mjs';
+import { TransCnText } from './editor/transCnText.mjs';
+import { EditorArrange } from './editor/arrange.mjs';
 window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
     window.XJB_EDITOR_LIST = {
         filter: [
@@ -116,9 +118,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             let eventModel = NonameCN.getVirtualEvent();
             let vStorage = NonameCN.getVirtualStorage();
             let backArr = ui.create.xjb_back()
-            let back = backArr[0]
+            const back = backArr[0]
             let close = backArr[1]
             back.close = close
+            back.classList.add("xjb-editor")
             back.ele = {}
             back.skill = get.copy(NonameCN.backSkillMap);
             back.pageNum = 0;
@@ -419,7 +422,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 if (back.skill.contentAsync) return;
                 if (back.skill.content.some(line => /\bawait\b/.test(line))) {
                     back.skill.contentAsync = true;
-                    back.stepIgnore = true;
                 }
             }
             //调整显示
@@ -431,7 +433,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     }
                     kindButton.style.backgroundColor = "#e4d5b7";
                 }
-                for (const typeButton of back.ele.types) {
+                for (const typeButton of [...back.ele.types, ...back.ele.phaseUseButton]) {
                     if (back.skill.type.includes(typeButton.type)) {
                         typeButton.style.backgroundColor = "red";
                         continue;
@@ -452,6 +454,13 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         continue;
                     }
                     modeButton.style.backgroundColor = "#e4d5b7";
+                }
+                for (const positionButton of back.ele.positions) {
+                    if (back.skill.position.includes(positionButton.position)) {
+                        positionButton.style.backgroundColor = "red";
+                        continue;
+                    }
+                    positionButton.style.backgroundColor = "#e4d5b7";
                 }
                 [...back.trigger, ...back.phaseUse, ...back.choose].forEach(i => {
                     i.style.display = 'none'
@@ -539,6 +548,12 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 if (enableSkillNeed.includes('.custom_selectedIsDifCard')) {
                     strParts.push(NonameCN.GenerateChooseDifCard_custom())
                 }
+                if (back.skill.custom.judgeCallback) {
+                    strParts.push(NonameCN.GenerateJudgeCallback(back));
+                }
+                if (back.skill.custom.cost) {
+                    strParts.push(NonameCN.GenerateCost(back));
+                }
                 //filter部分
                 strParts.push(filter);
                 strParts.push(enableSkillNeed)
@@ -575,13 +590,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 strParts.push(NonameCN.GenerateGroup(back));
                 strParts.push(NonameCN.GenerateEnding(back));
                 let str = strParts.join('')
-                if (back.adjust) {
-                    str = str.replace(/else\s*\n\s*{/g, "else{");
-                    /*匹配满足特定条件的点（.）字符，其前面必须是一个等号（=）或者行首，并且后面跟着一个小写字母。
-                    其用于匹配*/
-                    str = str.replace(/(?<=(\=|^)\s*)\.(?=[a-z])/img, "player.");
-                    str = str.replace(/([/][*])(.|\n)*([*][/])/g, "");
-                }
                 str = str.replaceAll('\\-skillID', back.getID());
                 str = str.replaceAll('\\skillID', `"${back.getID()}"`);
                 str = str.replace(/\.undefined/g, "");
@@ -597,51 +605,19 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 //tab处理
                 str = adjustTab(str, back.skill.mode === 'self' ? 1 : 0);
                 back.target.value = str;
+                NonameCN.deleteBlank2(back.target);
             }
             function dispose(str, number, directory = lib.xjb_translate) {
                 //初始化
-                let list1 = str.split('\n').filter(line => !line.startsWith("/*") && !line.endsWith("*/") && line.length),
-                    list2 = [],
-                    list3 = [],
-                    list4 = [];
-                //切割
+                let list1 = TransCnText.splitLine(str);
                 if (number === 1) return list1;
-                list1.forEach(i => {
-                    list2.push(i.split(/[ \t]/));
-                })
+                let list2 = TransCnText.splitWord(list1)
                 if (number === 2) return list2;
                 //翻译
+                let list3 = [],
+                    list4 = [];
+                list3 = TransCnText.translateLine(list2, directory)
                 const matchNotObjColon = /(?<!\{[ \w"']+):(?![ \w"']+\})/;
-                list2.forEach(i => {
-                    let list = [];
-                    const after = [];
-                    const before = [];
-                    i.forEach(a => {
-                        let d = a;
-                        //如果有对应的翻译,则翻译,否则,返回原文
-                        d = directory[d] || d
-                        if (/[:;]denyPrefix/.test(d)) {
-                            d = d.replace(/[:;]denyPrefix/, "")
-                            before.push("! ")
-                        }
-                        if (/[:;]intoFunctionWait/.test(d)) {
-                            d = d.replace(/[:;]intoFunctionWait/, "");
-                            d = d.includes(';') ? d.split(";") : d.split(matchNotObjColon);
-                            list.push(d[0])
-                            after.push(d.slice(1))
-                            return
-                        }
-                        //如果中含有intoFunction,则将其分割,并放置于参数位置
-                        if (/[:;]intoFunction/.test(d)) {
-                            d = d.replace(/[:;]intoFunction/, "");
-                            d = d.includes(';') ? d.split(";") : d.split(matchNotObjColon);
-                            list.push(...d);
-                            return
-                        }
-                        list.push(d)
-                    })
-                    list3.push([...before, ...list, ...after])
-                });
                 if (number === 3) return list3;
                 //组装
                 list3.forEach(i => {
@@ -983,111 +959,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 const button_giveSentence = ui.create.xjb_button(myContainer, '查询语句')
                 element().setTarget(button_giveSentence)
                     .listen(DEFAULT_EVENT, e => {
-                        game.xjb_create.seeDelete(
-                            NonameCN.giveSentence[giveSentenceType],
-                            '使用',
-                            '隐藏',
-                            function () {
-                                const id = this.container.dataset.xjb_id;
-                                if (myTarget.value.length) myTarget.value += '\n';
-                                const index = myTarget.lastPlaceIndex || myTarget.value.length;
-                                const pPart = myTarget.value.slice(0, index), lPart = myTarget.value.slice(index)
-                                myTarget.value = `${pPart}${id}${lPart}`;
-                                myTarget.arrange();
-                                myTarget.submit();
-                                myTarget.selectionStart = index + id.length;
-                            },
-                            function () {
-                            },
-                            function () {
-                            }
-                        )
+                        EditorInteraction.GivenSentenceDialog(myTarget);
                     })
-            }
-            function tabChange(type) {
-                let list = [];
-                let tabMode = false;
-                return function (e) {
-                    if (e.key != 'Tab') {
-                        if (!tabMode) return;
-                        if (e.key === 'Backspace') return;
-                        this.arrange();
-                        this.submit();
-                        tabMode = false;
-                        return;
-                    }
-                    if (!tabMode) tabMode = true;
-                    e.preventDefault();
-                    const range = getLineRangeOfInput(this);
-                    const start = range[0];
-                    const end = range[1];
-                    const content = this.value;
-                    const subStr = content.slice(start, end).replace('\t', '');
-                    if (this.selectionEnd == this.selectionStart) {
-                        list = [...Object.keys(NonameCN.giveSentence[type]), ...Object.keys(NonameCN.giveSentence['unshown_' + type])].filter(item => item.startsWith(subStr));
-                    }
-                    if (!list.length) {
-                        this.selectionStart = start;
-                        this.selectionEnd = end;
-                        return;
-                    }
-                    const replacer = list.shift();
-                    this.value = content.slice(0, start) + replacer + content.slice(end);
-                    this.selectionStart = start;
-                    this.selectionEnd = start + replacer.length;
-                }
-            }
-            const addCommonOrder = ele => {
-                textareaTool().setTarget(ele)
-                    .listen('blur', function () { this.lastPlaceIndex = this.selectionStart })
-                    .listen('keyup', function () {
-                        if (!this.value.includes('引入')) return;
-                        for (const [regexp, result] of NonameCN.editorInbuiltSkillMap.entries()) {
-                            if (!regexp.test(this.value)) continue;
-                            this.value = this.value.replace(regexp, '');
-                            back.skill.contentAsync = !(!result.contentAsync);
-                            if ('filter' in result) {
-                                back.ele.filter.value = result.filter;
-                                back.ele.filter.submit();
-                            }
-                            if ('content' in result) {
-                                back.ele.content.value = result.content;
-                                back.ele.content.submit();
-                            }
-                            if ('trigger' in result) {
-                                back.skill.kind = 'trigger';
-                                back.ele.trigger.value = result.trigger;
-                                back.ele.trigger.submit();
-                            }
-                            break;
-                        }
-                    })
-                    .replaceOrder(/(本|此|该)技能id/g, back.getID)
-                    .replaceOrder(/访\*(\d+)/g, (_, ...p) => {
-                        return '访  '.repeat(parseInt(p[0]))
-                    })
-                    .clearThenOrder("整理", ele.arrange)
-                    .replaceThenOrder('新长中文', '', () => NonameCN.moreSetDialog[6](back))
-                    .replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", ele.adjustTab)
-                    .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", ele.adjustTab)
-                    .replaceThenOrder(/^如果\*(\d+)/mg, (_, ...p) => {
-                        return "如果\n\n那么\n分支开始\n\n分支结束\n".repeat(parseInt(p[0])).slice(0, -1)
-                    }, ele.adjustTab)
-                    .replaceThenOrder('新默认', "默认 :\n分支开始\n\n分支结束\n打断", ele.adjustTab)
-                    .replaceOrder(/\bdo-while\b/g, "do{\n\n}\nwhile(  )")
-                    .replaceOrder(/\bwhile-/g, "while(  ){\n\n}")
-                    .replaceOrder(/\bfor-in\b/g, "for( 常量 k in  ){\n\n}")
-                    .replaceOrder(/\bfor-of\b/g, "for( 常量 k of  ){\n\n}")
-                    .replaceOrder(/\bfor-;;/g, "for( 块变 i 令为 0 ; i< ; i++ ){\n\n}")
-                    .replaceOrder(/\bswitch-case\*(\d+)/g, (_, ...p) => {
-                        return `switch (  ){\n${"case ():{\n\n}\nbreak;\n".repeat(parseInt(p[0]))}default:{\n\n}\nbreak;\n}`
-                    }, ele.adjustTab)
-                    .replaceThenOrder(
-                        /^新?花色分支$/mg,
-                        '变量 花色 令为 获取 花色 卡牌\n分岔 ( 花色 ) \n分支开始\n\t情况 红桃 :\n\t分支开始\n\t\t\n\t分支结束\n\t打断\n\t情况 方片 :\n\t分支开始\n\t\t\n\t分支结束\n\t打断\n\t情况 黑桃 :\n\t分支开始\n\t\t\n\t分支结束\n\t打断\n\t情况 梅花 :\n\t分支开始\n\t\t\n\t分支结束\n\t打断\n分支结束',
-                        ele.adjustTab
-                    )
-                    .replaceOrder("新虚拟牌", '变量 虚拟牌 令为\n{\n牌名 : 杀 ,\n花色 : 梅花 ,\n点数 : A点 ,\n属性 : 火属性\n}')
             }
             /**
              * @type {HTMLElement}
@@ -1282,6 +1155,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     "direct": "直接发动",
                     "sunbenSkill": "昂扬技",
                     //
+                    "forceDie": "亡语",
                     "chargeSkill": "蓄力技",
                     "chargingSkill": "蓄能技",
                 }
@@ -1502,6 +1376,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .exit()
             addSidebarButton(filterFree, filterContainer2, 'filter')
             back.ele.filter = filterFree;
+            filterFree.toPart = "filter";
             filterFree.changeWord = function (replaced, replacer) {
                 this.value = this.value.replace(replaced, replacer)
                 return true
@@ -1536,19 +1411,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 //处理game相关字符
                 that.changeWord(/游戏轮数/g, '游戏 轮数')
                 /*统一写法*/
-                for (let i = 999; i > 0; i--) {
-                    that.changeWord("加" + get.cnNumber(i), "+" + i)
-                    that.changeWord("减" + get.cnNumber(i), "-" + i)
-                    that.changeWord("乘" + get.cnNumber(i), "*" + i)
-                    that.changeWord("乘以" + get.cnNumber(i), "*" + i)
-                    that.changeWord("加" + (i), "+" + i)
-                    that.changeWord("减" + (i), "-" + i)
-                    that.changeWord("乘" + (i), "*" + i)
-                    that.changeWord("乘以" + (i), "*" + i)
-                    that.changeWord("*" + get.cnNumber(i), "*" + i)
-                    that.changeWord("+" + get.cnNumber(i), "+" + i)
-                    that.changeWord("-" + get.cnNumber(i), "-" + i)
-                }
+                EditorArrange.transCnCalculation(that);
                 that.value = suitSymbolToCN(that.value)
                 that.changeWord(/该回合/g, "本回合")
                 //处理一些特殊属性
@@ -1558,14 +1421,23 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 that.changeWord(/(?<!有)([红黑]色)/g, ' $1 ')
                 that.changeWord(/(?<!有)(红桃|方片|梅花|黑桃|无花色)/g, ' $1 ')
                 that.changeWord(/(武器牌|防具牌|\+1马牌|\-1马牌|宝物牌)/g, ' $1 ')
-                that.changeWord(/(?<!\n)(并且|或者)/g, '\n$1')
-                that.changeWord(/(并且|或者)(?!\n)/g, '$1\n')
-                NonameCN.standardFilter(that);
-                NonameCN.deleteBlank(that);
+                EditorArrange.makeOccupyLine(that, ["并且", "或者"])
                 that.adjustTab();
+                NonameCN.deleteBlank2(that);
             }
             back.ele.filter.submit = function (e) {
                 const _this = this
+                back.skill.filter = [];
+                filterFree.inherit();
+                const list = dispose(filterFree.value, void 0, NonameCN.FilterList);
+                const redispose = NonameCN.replace(list.join('\n')).map(t => {
+                    let result = t.replace(/trigger(?!name)/g, 'event');
+                    return result;
+                });
+                back.skill.filter.push(...redispose);
+                back.organize();
+            }
+            back.ele.filter.inherit = function () {
                 //继承指令
                 let wonderfulInherit = (filterFree.value.indexOf("继承") >= 0 && filterFree.value.match(/继承.+\n/) && filterFree.value.match(/继承.+\n/)[0]) || '';
                 if (wonderfulInherit && wonderfulInherit != '继承') {
@@ -1583,41 +1455,25 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     wonderfulInherit = wonderfulInherit.replace(/\s\s+/g, '\n')
                     wonderfulInherit = wonderfulInherit.replace(new RegExp(preSkill, 'g'), back.skill.id)
                     back.returnIgnore = true;
-                    back.FilterInherit = true
                     filterFree.changeWord(/继承.+\n/, wonderfulInherit);
-                    filterFree.value = `/*back.FilterInherit=true*/\n${filterFree.value}`;
+                    filterFree.value = `/*back.returnIgnore=true*/\n${filterFree.value}`;
+                    filterFree.adjustTab();
                 }
-                back.skill.filter = []
-                if (!filterFree.value || filterFree.value.length === 0) return back.skill.filter.push('true') && back.organize()
-                const list = dispose(
-                    filterFree.value,
-                    back.FilterInherit ? 1 : void 0,
-                    NonameCN.FilterList
-                )
-                const redispose = NonameCN.replace(list.join('\n')).map(t => {
-                    let result = t.replace(/trigger(?!name)/g, 'event')
-                    return result
-                });
-                back.skill.filter.push(...redispose);
-                back.organize()
             }
             back.ele.filter.adjustTab = function () {
                 const that = back.ele.filter;
                 that.changeWord(/\t/g, '')
                 that.value = adjustTab(that.value, 0, '分支开始', '分支结束')
+                that.value = adjustTab(that.value, 0, '{', '}', true)
             }
             listenAttributeChange(filterFree, 'selectionStart').start();
             textareaTool().setTarget(filterFree)
-                .clearOrder()
-                .dittoOrder()
-                .dittoUnderOrder()
                 .replaceThenOrder(/新变量[区域]/g, '#变量区头\n\n#变量区尾', () => { back.hasVariableArea = true })
-                .replaceThenOrder(/(?<![/][*])[ ]*back.FilterInherit[ ]*\=[ ]*true[ ]*(?![*][/])/g, "/*back.FilterInherit=true*/", () => { back.FilterInherit = true })
-                .clearThenOrder(/([/][*])[ ]*back.FilterInherit[ ]*\=false[ ]*[ ]*([*][/])/g, () => { back.FilterInherit = false })
+                .replaceThenOrder(/(?<![/][*])[ ]*back.returnIgnore[ ]*\=[ ]*true[ ]*(?![*][/])/g, "/*back.returnIgnore=true*/", () => { back.returnIgnore = true })
+                .clearThenOrder(/([/][*])[ ]*back.returnIgnore[ ]*\=false[ ]*[ ]*([*][/])/g, () => { back.returnIgnore = false })
                 .debounce('keyup', back.ele.filter.submit, 200)
                 .listen('keydown', deleteModule)
                 .listen('selectionStartChange', adjustSelection)
-                .listen('keydown', tabChange("filter"))
                 .style({
                     height: '11em',
                     fontSize: '0.75em',
@@ -1663,62 +1519,33 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .exit()
             addSidebarButton(contentFree, contentContainer2, "content")
             back.ele.content = contentFree;
+            contentFree.toPart = "content";
             contentFree.changeWord = function (replaced, replacer) {
                 this.value = this.value.replace(replaced, typeof replacer === 'function' ? replacer : '' + replacer)
                 return true
             };
             contentFree.arrange = function () {
-                if (back.stepIgnore) return false;
-                const that = contentFree
-                /**
-                 * This function is used to adjust a word to the end of its line
-                 * @param {String} str the word to adjust
-                 * @param {Function} hook 
-                 */
-                function update(str, hook) {
-                    /**
-                     * @type {string[]}
-                     */
-                    let wonder = that.value.split('\n')
-                    wonder = wonder.map(line => {
-                        let wonder1 = line.split(str).join('');
-                        let disposedString = (wonder1 + (line.includes(str) ? (' ' + str) : ''))
-                        if (typeof hook === 'function') {
-                            disposedString = hook(str, disposedString, line)
-                        }
-                        return disposedString;
-                    })
-                    that.value = wonder.join('\n')
-                }
-                /**
-                 * 该函数用于集中处理一类参数
-                 * @param  {...any} wonderA 
-                 */
-                function parameter(...wonderA) {
-                    let parameterWord = wonderA, hook;
-                    if (typeof wonderA[wonderA.length - 1] === 'function') {
-                        hook = parameterWord.splice(-1, 1)[0];
-                    }
-                    for (let i = 0; i < wonderA.length; i++) {
-                        update(wonderA[i], hook)
-                    };
-                }
-                //实例字符
-                function newLine() {
-                    that.changeWord(/，/g, '\n')
-                    that.changeWord(/然后/g, '\n');
-                    that.changeWord(/\s+\n/g, '\n');
-                }
-                //
-                newLine()
-                //卡牌处理
-                that.changeWord(/【([\u4e00-\u9fa5]+)】/g, function (match, ...p) {
-                    return p[0];
+                const that = contentFree;
+                //这部分用不可能出现的字符替换,然后再替换回来
+                const pureEnList = [], strings = [[], [], []];
+                that.changeWord(/(?<=').+?(?=')/g, match => {
+                    strings[0].push(match);
+                    return "*&dy".repeat(3)
+                });
+                that.changeWord(/(?<=").+?(?=")/g, match => {
+                    strings[1].push(match);
+                    return "*&sy".repeat(3)
+                });
+                that.changeWord(/(?<=`).+?(?=`)/g, match => {
+                    strings[2].push(match);
+                    return "*&fy".repeat(3)
+                });
+                that.changeWord(/^[^\u4e00-\u9fa5]+$/mg, match => {
+                    pureEnList.push(match)
+                    return "-&".repeat(6)
                 })
-                //处理角色称谓
-                textareaTool().setTarget(that)
-                    .replace(/(所|被)(选|选择)的?角色/g, '所选角色')
-                //处理变量词
+                //
+                that.changeWord(/【([\u4e00-\u9fa5]+)】/g, '$1')
                 NonameCN.standardShort(that)
                 NonameCN.standardBoolExpBefore(that)
                 NonameCN.standardModBefore(that)
@@ -1750,70 +1577,34 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     that.changeWord(new RegExp("任意" + i + '名', 'g'), get.cnNumber(i) + '名');
                     that.changeWord(new RegExp("任意" + get.cnNumber(i) + '名', 'g'), get.cnNumber(i) + '名');
                     that.changeWord(new RegExp(`可?以?令(至多|至少)*${i}名(其他)*角色`, 'g'), function (match, p1, p2) {
-                        return `选择${p1 ? p1 : ''}${i}名${p2 ? p2 : ''}角色然后所选角色`
+                        return `选择${p1 ? p1 : ''}${i}名${p2 ? p2 : ''}角色\n所选角色`
                     });
                     that.changeWord(new RegExp(`可?以?令(至多|至少)*${get.cnNumber(i)}名(其他)*角色`, 'g'), function (match, p1, p2) {
-                        return `选择${p1 ? p1 : ''}${get.cnNumber(i)}名${p2 ? p2 : ''}角色然后所选角色`
+                        return `选择${p1 ? p1 : ''}${get.cnNumber(i)}名${p2 ? p2 : ''}角色\n所选角色`
                     });
                 }
                 that.changeWord(new RegExp(`令任意名(其他)*角色`, 'g'), function (match, p1) {
-                    return `选择名${p1 ? p1 : ''}角色然后所选角色`
+                    return `选择名${p1 ? p1 : ''}角色\n所选角色`
                 });
-                newLine()
                 //数字参数处理
-                for (let i = 10; i >= 1; i--) {
-                    update(i + '张');
-                    update(get.cnNumber(i) + '张');
-                    update(i + '点');
-                    update(get.cnNumber(i) + '点');
-                    update(i + '名');
-                    update(get.cnNumber(i) + '名');
-                    update(i + '枚');
-                    update(get.cnNumber(i) + '枚');
-                }
-                "bcdefghlmnoprstuvwxyz".split('').forEach(i => {
-                    update(i + '点');
-                    update(i.toUpperCase() + '点');
-                    update(i + '名');
-                    update(i.toUpperCase() + '名');
-                    update(i + '张');
-                    update(i.toUpperCase() + '张');
-                    update(i + '枚');
-                    update(i.toUpperCase() + '枚');
-                });
+                EditorArrange.makeNumToEnd(that);
                 //统一写法
-                for (let i = 999; i > 0; i--) {
-                    that.changeWord("加" + get.cnNumber(i), "+" + i);
-                    that.changeWord("减" + get.cnNumber(i), "-" + i);
-                    that.changeWord("乘" + get.cnNumber(i), "*" + i);
-                    that.changeWord("乘以" + get.cnNumber(i), "*" + i);
-                    that.changeWord("加" + (i), "+" + i);
-                    that.changeWord("减" + (i), "-" + i);
-                    that.changeWord("乘" + (i), "*" + i);
-                    that.changeWord("乘以" + (i), "*" + i);
-                    that.changeWord("*" + get.cnNumber(i), "*" + i);
-                    that.changeWord("+" + get.cnNumber(i), "+" + i);
-                    that.changeWord("-" + get.cnNumber(i), "-" + i);
-                }
+                EditorArrange.transCnCalculation(that);
                 that.value = suitSymbolToCN(that.value);
-                update('其他', (disposing, disposed, previous) => {
-                    if (NonameCN.skillModMap.keys().some(regexp => regexp.test(previous))) return previous;
-                    if (/其他(.+?)势力角色/.test(previous)) return previous;
-                    if (/其他[男女双]性角色/.test(previous)) return previous;
-                    return disposed;
-                })
-                parameter("火属性", "冰属性", "雷属性");
-                parameter("任意张", "任意名", "从牌堆底");
-                parameter('魏势力', '蜀势力', '吴势力', '群势力', '晋势力', '神势力');
-                parameter("至多", "至少")
+                EditorArrange.makeOtherToEnd(that);
+                EditorArrange.makeWordsToEnd(that, ['魏势力', '蜀势力', '吴势力', '群势力', '晋势力', '神势力'])
+                EditorArrange.makeWordsToEnd(that, ["火属性", "冰属性", "雷属性"])
+                EditorArrange.makeWordsToEnd(that, ["任意张", "任意名", "从牌堆底"])
+                EditorArrange.makeWordsToEnd(that, ["至多", "至少"])
                 that.value = eachLine(contentFree.value, line => {
+                    if (/[ ]访[ ]/.test(line)) return;
+                    if (line.startsWith("返回")) return;
+                    if (/(变量|常量|块变|令为)/.test(line)) return;
+                    if (NonameCN.skillModMap.keys().some(regexp => regexp.test(line))) return;
                     const startsWithAwait = /^\s*等待 /.test(line)
                     if (startsWithAwait) line = line.slice(3)
                     let group = findWordsGroup(line, playerCN, "!的");
-                    if (/(变量|常量|块变|令为)/.test(line) || !group.length || line.startsWith("返回")) return;
-                    if (NonameCN.skillModMap.keys().some(regexp => regexp.test(line))) return;
-                    if (/[ ]访问?[ ]/.test(line)) return;
-                    if (/添单[ ]*你/.test(line)) return;
+                    if (!group.length) return; if (/添单[ ]*你/.test(line)) return;
                     if (/移除 你/.test(line)) return;
                     if (new RegExp(`^无视(${JOINED_PLAYAERCN})防具的牌`).test(line)) return;
                     if (/^选择结果目标[数组]/.test(line)) return;
@@ -1823,8 +1614,20 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 that.changeWord(new RegExp(`(?<!的)(${JOINED_PLAYAERCN})`, 'g'), ' $1 ');
                 NonameCN.standardEeffect(that);
                 NonameCN.standardEvent(that);
-                that.changeWord(/(?<!\n)(并且|或者)/g, '\n$1');
-                that.changeWord(/(并且|或者)(?!\n)/g, '$1\n');
+                EditorArrange.makeOccupyLine(that, ["并且", "或者"])
+                //这里就是上文说的替换回来
+                pureEnList.forEach(words => {
+                    that.changeWord("-&".repeat(6), words);
+                })
+                strings[0].forEach(words => {
+                    that.changeWord("*&dy".repeat(3), words);
+                })
+                strings[1].forEach(words => {
+                    that.changeWord("*&sy".repeat(3), words);
+                })
+                strings[2].forEach(words => {
+                    that.changeWord("*&fy".repeat(3), words);
+                })
                 that.adjustTab();
                 NonameCN.deleteBlank(that);
             }
@@ -1838,6 +1641,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 const that = back.ele.content;
                 that.changeWord(/\t/g, '');
                 that.value = adjustTab(that.value, 0, '分支开始', '分支结束');
+                that.value = adjustTab(that.value, 0, '函数开始', '函数结束', true);
+                that.value = adjustTab(that.value, 0, '{', '}', true);
             }
             back.ele.content.inherit = function () {
                 let wonderfulInherit = (contentFree.value.match(/继承.+\n/) && contentFree.value.match(/继承.+\n/)[0]) || '';
@@ -1857,40 +1662,31 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     wonderfulInherit = wonderfulInherit.replace(/\s\s+/g, '\n')
                     wonderfulInherit = wonderfulInherit.replace(new RegExp(preSkill, 'g'), back.skill.id)
                     contentFree.changeWord(/继承.+\n/, wonderfulInherit);
-                    contentFree.value = `/*back.stepIgnore = true*/\n/*back.ContentInherit = true*/\n${contentFree.value}`
-                    back.stepIgnore = true;
+                    contentFree.value = `${back.skill.contentAsync ? "/*back.skill.contentAsync=true*/\n" : ""
+                        }/*back.ContentInherit = true*/\n${contentFree.value}`
                     back.ContentInherit = true;
+                    contentFree.adjustTab();
                 }
             }
             back.ele.content.submit = function (bool = false) {
-                back.ele.content.inherit();
                 //清空content数组
                 back.skill.content = []
                 //数组为空则返回
+                back.ele.content.inherit();
                 if (contentFree.value.length === 0) {
                     if (bool !== true) back.organize()
                     return;
                 }
-                //后续处理，如果涉及到继承，则为数字1就返回
                 const implicitText = NonameCN.implicitText_content(contentFree.value);
-                const list = dispose(implicitText, back.ContentInherit ? 1 : void 0, NonameCN.ContentList)
+                const list = dispose(implicitText, void 0, NonameCN.ContentList)
                 const redispose = NonameCN.replace(list.join('\n'))
                 back.skill.content.push(...redispose);
                 if (bool !== true) back.organize()
             }
             listenAttributeChange(contentFree, 'selectionStart').start();
+            EditorInteraction.addContentOrder_setting(contentFree);
+            EditorInteraction.addContentOrder_area(contentFree);
             textareaTool().setTarget(contentFree)
-                .clearOrder()
-                .dittoOrder()
-                .dittoUnderOrder()
-                .replaceThenOrder(/(?<![/][*])back.adjust[ ]*\=[ ]*true[ ]*(?![*][/])/g, "/*back.adjust=true*/", () => { back.adjust = false })
-                .clearThenOrder(/([/][*])[ ]*back.adjust[ ]*\=[ ]*false[ ]*([*][/])/g, () => { back.adjust = false })
-                .replaceThenOrder(/(?<![/][*])[ ]*back.skill.contentAsync[ ]*\=[ ]*true[ ]*(?![*][/])/g, "/*back.skill.contentAsync=true*/", () => { back.skill.contentAsync = true; back.stepIgnore = true })
-                .clearThenOrder(/([/][*])[ ]*back.skill.contentAsync[ ]*\=false[ ]*[ ]*([*][/])/g, () => { back.skill.contentAsync = false })
-                .replaceThenOrder(/(?<![/][*])back.ContentInherit[ ]*\=[ ]*true[ ]*(?![*][/])/g, "/*back.ContentInherit=true*/", () => { back.ContentInherit = false })
-                .clearThenOrder(/([/][*])[ ]*back.ContentInherit[ ]*\=[ ]*false[ ]*([*][/])/g, () => { back.ContentInherit = false })
-                .replaceThenOrder(/(?<![/][*])[ ]*back.stepIgnore[ ]*\=[ ]*true[ ]*(?![*][/])/g, "/*back.stepIgnore=true*/", () => { back.stepIgnore = true })
-                .clearThenOrder(/([/][*])[ ]*back.stepIgnore[ ]*\=[ ]*false[ ]*([*][/])/g, () => { back.stepIgnore = false })
                 .replaceThenOrder('新选择如果', "如果\n有选择结果\n那么\n分支开始\n\n分支结束", back.ele.content.adjustTab)
                 .replaceThenOrder('新选择角色', '变量 选择事件 令为 你 选择角色 一名\n选择事件 设置角色限制条件\n选择事件 设置角色选择数量\n新步骤\n如果\n选择结果布尔\n那么\n分支开始\n\n分支结束', back.ele.content.adjustTab)
                 .replaceThenOrder('新选择选项', '变量 选项列表 令为 数组开始 %#&1 , %#&2  数组结束\n变量 选择事件 令为 你 选择选项 选项列表\n新步骤\n如果\n选择结果选项 为 %#&1\n那么\n分支开始\n\n分支结束\n如果\n选择结果选项 为 %#&2\n那么\n分支开始\n\n分支结束\n', back.ele.content.adjustTab)
@@ -1898,17 +1694,32 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .replaceThenOrder("新花色判定", '变量 判定事件 令为 你 进行判定\n新步骤\n分岔 ( 判定结果的花色 )\n分支开始\n情况 红桃 :\n分支开始\n\n分支结束\n打断\n情况 方片 :\n分支开始\n\n分支结束\n打断\n情况 黑桃 :\n分支开始\n\n分支结束\n打断\n情况 梅花 :\n分支开始\n\n分支结束\n打断\n分支结束', back.ele.content.adjustTab)
                 .replaceThenOrder("新颜色判定", '变量 判定事件 令为 你 进行判定\n新步骤\n如果\n判定结果的颜色 为 红色\n那么\n分支开始\n\n分支结束\n否则\n分支开始\n\n分支结束', back.ele.content.adjustTab)
                 .replaceThenOrder("新牌名判定", '变量 判定事件 令为 你 进行判定\n新步骤\n如果\n判定结果的牌名 为 桃\n那么\n分支开始\n\n分支结束\n否则\n分支开始\n\n分支结束', back.ele.content.adjustTab)
-                .replaceOrder('新目标过滤', '(card,player,target)=>{}')
-                .replaceOrder('新卡牌过滤', '(card)=>{}')
-                .replaceOrder(/^<([$_a-zA-Z0-9]+)[>]?->$/mg, '<$1>\n\n</$1>')
-                .replaceOrder(/^f-([$_a-zA-Z0-9]+)->$/mg, '$1( ){\n\n\n},')
-                .replaceOrder(/^f-+[>]/mg, 'function( ){\n\n\n}')
-                .replaceOrder(/^f-(卡牌)?可使?用性(模组)?->$/mg, 'cardEnabled(card){\n\n\n},')
-                .replaceOrder(/^(模组|mod)[区域]?->$/mg, '<mod>\n\n</mod>')
+                .replaceThenOrder(
+                    '新选择发动',
+                    '#选择发动区头\n异步 函数 (事件,触发,角色)  函数开始\n变量 选择事件 令为 你 $herePlaceTheCostWhatYouChosen\n变量 结果 令为 等待 选择事件 获取事件结果\n事件的结果 令为 {布尔:选择结果的布尔,花费的数据:{...结果}}\n函数结束\n#选择发动区尾\n',
+                    () => {
+                        back.ele.content.adjustTab();
+                        const list = [
+                            "选择牌",
+                            "选择弃置牌",
+                            "选择弃置手牌",
+                            "选择角色"
+                        ];
+                        game.xjb_create.chooseAnswer(
+                            "选择发动技能的花费",
+                            list,
+                            true,
+                            function () {
+                                back.ele.content.value = back.ele.content.value.replace("$herePlaceTheCostWhatYouChosen", list[this.resultIndex]);
+                                back.ele.content.arrange();
+                                back.ele.content.submit();
+                            }
+                        );
+                    }
+                )
                 .debounce('keyup', back.ele.content.submit, 200)
                 .listen('keydown', deleteModule)
                 .listen('selectionStartChange', adjustSelection)
-                .listen('keydown', tabChange("content"))
                 .style({
                     height: '11em',
                     fontSize: '0.75em',
@@ -1938,7 +1749,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     fontSize: '1.5em'
                 })
             const triggerFree = newElement('textarea', '')
-            back.ele.trigger = triggerFree;
+
             const triggerPage = element('div')
                 .father(subBack5)
                 .flexRow()
@@ -1966,6 +1777,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 })
                 .exit()
             addSidebarButton(triggerFree, triggerContainer2, "trigger")
+            back.ele.trigger = triggerFree;
+            triggerFree.toPart = "trigger";
             triggerFree.changeWord = function (replaced, replacer) {
                 this.value = this.value.replace(replaced, replacer)
                 return true
@@ -2133,17 +1946,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 back.organize()
             }
             textareaTool().setTarget(back.ele.trigger)
-                .clearOrder()
-                .dittoOrder()
-                .dittoUnderOrder()
-                .clearThenOrder("整理", back.ele.trigger.arrange)
-                .replaceOrder(/(本|此|该)技能id/g, back.getID)
-                .replaceOrder(/访\*(\d+)/g, (match, ...p) => {
-                    return '访  '.repeat(parseInt(p[0]))
-                })
-                .replaceThenOrder('新长中文', '', () => NonameCN.moreSetDialog[6](back))
                 .debounce('keyup', back.ele.trigger.submit, 200)
-                .listen('keydown', tabChange("trigger"))
                 .style({
                     height: '11em',
                     fontSize: '0.75em',
@@ -2160,7 +1963,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     + "最后输入整理即可\n"
                 );
             triggerAdd(triggerPage)
-            //
             let enableAdd = (who) => {
                 back.phaseUse.push(who)
                 who.style.display = 'none'
@@ -2174,7 +1976,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 })
                 let it = ui.create.xjb_button(rat, word)
                 ui.xjb_giveStyle(it, {
-                    float: "",
                     fontSize: '1em',
                     position: 'relative'
                 })
@@ -2201,6 +2002,32 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 position: "relative"
             });
             const filterCardSeter = enableButtonAdd('选择卡片', 'filterCard')
+            {
+                const h = ui.create.xjb_button(filterCardSeter, "手牌")
+                h.position = "h"
+                h.style.fontSize = "0.75em"
+                h.style.margin = "auto 10px"
+                const e = ui.create.xjb_button(filterCardSeter, "装备")
+                e.position = "e"
+                e.style.fontSize = "0.75em"
+                e.style.margin = "auto 10px"
+                const s = ui.create.xjb_button(filterCardSeter, "木牛流马")
+                s.position = "s"
+                s.style.fontSize = "0.75em"
+                s.style.margin = "auto 10px"
+                listener(filterCardSeter, e => {
+                    if (!e.target.position) return;
+                    if (back.skill.position.includes(e.target.position)) {
+                        back.skill.position.remove(e.target.position)
+                        e.target.style.backgroundColor = "#e4d5b7";
+                    } else {
+                        e.target.style.backgroundColor = "red";
+                        back.skill.position.push(e.target.position)
+                    }
+                    back.organize()
+                })
+                back.ele.positions = [h, e, s]
+            }
             const filterCardFree = newElement('textarea', '');
             const enablePage = element('div')
                 .father(subBack5)
@@ -2230,6 +2057,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     'backgroundColor': 'rgba(63,65,81,0.9)'
                 })
                 .exit()
+            filterTargetFree.toPart = "filterTarget";
             filterTargetFree.changeWord = function (replaced, replacer) {
                 this.value = this.value.replace(replaced, replacer)
                 return true
@@ -2263,6 +2091,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 let line = dispose(that.value);
                 let processLine = line.filter(line => {
                     let result = line
+                    if (/^[ \t]+$/.test(line)) return false;
                     if (line.includes('atLeast')) {
                         result = result.replace('atLeast', '')
                         result = `[${result},Infinity]`
@@ -2281,6 +2110,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         back.skill.selectTarget = result
                         return false;
                     }
+                    if (/^\[[0-9],Infinity\]$/.test(line)) {
+                        back.skill.selectTarget = result
+                        return false;
+                    }
                     if (Number(result) == result) {
                         back.skill.selectTarget = result
                         return false;
@@ -2290,6 +2123,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 back.skill.filterTarget.push(...processLine)
                 back.organize()
             }
+            //
+            filterCardFree.toPart = "filterCard";
             filterCardFree.changeWord = function (replaced, replacer) {
                 this.value = this.value.replace(replaced, replacer)
                 return true
@@ -2322,6 +2157,7 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 let line = dispose(implicitText);
                 let processLine = line.filter(line => {
                     let result = line
+                    if (/^[ \t]+$/.test(line)) return false;
                     if (line.includes('atLeast')) {
                         result = result.replace('atLeast', '')
                         result = `[${result},Infinity]`
@@ -2340,6 +2176,10 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                         back.skill.selectCard = result
                         return false;
                     }
+                    if (/^\[[0-9],Infinity\]$/.test(line)) {
+                        back.skill.selectCard = result
+                        return false;
+                    }
                     if (Number(result) == result) {
                         back.skill.selectCard = result
                         return false;
@@ -2352,9 +2192,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             back.ele.filterTarget = filterTargetFree
             back.ele.filterCard = filterCardFree
             textareaTool().setTarget(back.ele.filterTarget)
-                .clearOrder()
-                .dittoOrder()
-                .dittoUnderOrder()
                 .order(/.+/, e => { if (!back.skill.type.includes('filterTarget')) e.target.value = '' })
                 .clearThenOrder("整理", back.ele.filterTarget.arrange)
                 .replaceOrder(/(本|此|该)技能id/g, back.getID)
@@ -2362,7 +2199,6 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 .replaceThenOrder('新否则', "否则\n分支开始\n\n分支结束", back.ele.filterTarget.adjustTab)
                 .replaceThenOrder('新长中文', '', () => NonameCN.moreSetDialog[6](back))
                 .debounce('keyup', back.ele.filterTarget.submit, 200)
-                .listen('keydown', tabChange("filterTarget"))
                 .style({
                     marginTop: '10px',
                     marginLeft: '10px',
@@ -2383,12 +2219,8 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                     + "最后输入整理即可\n"
                 );
             textareaTool().setTarget(back.ele.filterCard)
-                .clearOrder()
-                .dittoOrder()
-                .dittoUnderOrder()
                 .order(/.+/, e => { if (!back.skill.type.includes('filterCard')) e.target.value = '' })
                 .clearThenOrder("整理", back.ele.filterCard.arrange)
-                .listen('keydown', tabChange("filterCard"))
                 .debounce('keyup', back.ele.filterCard.submit, 200)
                 .style({
                     marginTop: '10px',
@@ -2605,8 +2437,12 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
             }
             //给以上所有free绑定事件
             for (const eleToAdd of [filterFree, contentFree, filterCardFree, filterTargetFree]) {
-                addCommonOrder(eleToAdd);
+                EditorInteraction.addCommonOrder(eleToAdd);
             }
+            for (const eleToAdd of [filterFree, contentFree, filterCardFree, filterTargetFree, triggerFree]) {
+                EditorInteraction.addAllOrder(eleToAdd);
+            }
+            back.ele.phaseUseButton = [filterCardSeter.firstChild, filterTargetSeter.firstChild]
             //第四页
             let subBack4 = newPage()
             let skillSeter = newElement('h2', '技能', subBack4)
@@ -2686,14 +2522,12 @@ window.XJB_LOAD_EDITOR = function (_status, lib, game, ui, get, ai) {
                 try {
                     throwEditorResultErrow()
                     if (isOpenCnStr(back.target.value)) throw new Error("代码中含有未被引号包围的全中文段落！")
-                    if (back.skill.mode === 'mainCode') {
-                        let func = new Function('_status', 'lib', 'game', 'ui', 'get', 'ai', back.target.value)
-                        func(_status, lib, game, ui, get, ai);
-                        game.xjb_create.confirm('技能' + back.skill.id + "已生成(本局游戏内生效)!是否将该技能分配给玩家？", function () {
-                            game.me.addSkill(back.skill.id)
-                            if (back.skill.group) game.me.addSkill(back.skill.group)
-                        })
-                    }
+                    let func = new Function('_status', 'lib', 'game', 'ui', 'get', 'ai', NonameCN.TransToOtherModeCode({ code: back.target.value, from: back.skill.mode, to: "mainCode", id: back.skill.id }))
+                    func(_status, lib, game, ui, get, ai);
+                    game.xjb_create.confirm('技能' + back.skill.id + "已生成(本局游戏内生效)!是否将该技能分配给玩家？", function () {
+                        game.me.addSkill(back.skill.id)
+                        if (back.skill.group) game.me.addSkill(back.skill.group)
+                    })
                 }
                 catch (err) {
                     game.xjb_create.alert("！！！报错：<br>" + err)

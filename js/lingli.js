@@ -24,7 +24,7 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                     switch (event.triggername) {
                         case 'phaseBegin': {
                             ui.xjb_giveStyle(ui.background, {
-                                'background-image': "url('" + lib.xjb_src + "position/redSpace.jpg')"
+                                'background-image': "url('" + lib.xjb_src + "image/position/redSpace.jpg')"
                             })
                             player.addTempSkill("xin_guimeng_1")
                         }; break;
