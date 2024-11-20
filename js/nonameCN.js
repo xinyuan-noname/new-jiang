@@ -1034,17 +1034,24 @@ export class NonameCN {
             "有此技能的角色": `game.filterPlayer().find(cur=>cur.hasSkill(\\skillID,null,false,false))`,
         },
         player_attribute: {
-            '性别': 'sex',
-            '储存': 'storage',
-            '储存信息': 'storage',
-            '存储': 'storage',
-            '存储信息': 'storage',
+            //
             '体力': 'hp',
             '体力值': 'hp',
             '体力上限': 'maxHp',
             '护甲': 'hujia',
             '护甲值': 'hujia',
+            '剩余出局轮数': "outCount",
+            '进行的回合数': "phaseNumber",
+            //
             'id': 'name',
+            '性别': 'sex',
+            '身份': "identity",
+            "势力": "group",
+            //
+            '储存': 'storage',
+            '储存信息': 'storage',
+            '存储': 'storage',
+            '存储信息': 'storage',
         },
         player_method_hp: {
             '体力值为全场最少或之一': 'isMinHp',
@@ -1178,7 +1185,6 @@ export class NonameCN {
             '未受伤': 'isHealthy',
             '存活': 'isAlive',
             //牌类
-            '摸': 'draw',
             '给牌': "give",
             '给出牌': "give",
             '展示牌': "showCards",
@@ -1742,13 +1748,14 @@ export class NonameCN {
     static get ContentList() {
         const back = game.xjb_back
         let list = Object.assign({}, this.basicList);
-        const id = back.getID()
         for (let k in this.groupedList) {
             if (['filter_only'].includes(k)) continue;
             list = Object.assign(list, this.groupedList[k]);
         }
-        list["获取名为" + back.getSourceID() + "的父事件的名字"] = `getParent: "${back.getSourceID()}"://!?name`
-        list["获取名为" + id + "的父事件的名字"] = `getParent:"${id}"://!?name`
+        if (!back) return list;
+        const id = back.getID()
+        list["获取名为" + back.getSourceID() + "父事件名字"] = `getParent: "${back.getSourceID()}"://!?name`
+        list["获取名为" + id + "父事件名字"] = `getParent:"${id}"://!?name`
         list["此牌"] = NonameCN.analyzeThisCard(game.xjb_back.skill.trigger)
         list["这些牌"] = NonameCN.analyzeTheseCard(game.xjb_back.skill.trigger)
         return list
@@ -2733,7 +2740,7 @@ export class NonameCN {
         const { id, type, uniqueList, trigger, filter,
             filter_card, filter_suit, filter_color,
             uniqueTrigger, variableArea_filter, filter_ignoreIndex,
-            mod } = back.skill
+            mod } = back.skill;
         const boolZhuSkill = type.includes("zhuSkill");
         const boolGroupSkill = type.includes("groupSkill");
         const boolRespondNeed = (trigger.player.includes("chooseToRespondBegin")
@@ -2749,11 +2756,8 @@ export class NonameCN {
                 boolTri_filterCardNeed,
                 boolFilter_Card, boolFilter_Color, boolTri_filterCardNeed,
                 boolUniqueTrigger, boolfilterHasContent].every(bool => bool === false)
-        const logicWords = [" > ", " < ", " >= ", " <= ", " == ", " != ", " === ", " !== ", " || ", " && "]
         if (boolOnlyMod) return ''
         let result = '';
-        let IF = false;
-        let branch = 0
         result += 'filter:function(event,player,triggername){\n'
         if (variableArea_filter.length) result += variableArea_filter.join("\n") + "\n"
         //主公技
@@ -2799,10 +2803,10 @@ export class NonameCN {
         if (boolfilterHasContent) {
             const stack = [], subStack = [];
             for (const [k, i] of filter.entries()) {
-                if (filter_ignoreIndex.includes(k)) return;
+                if (filter_ignoreIndex.includes(k)) break;
                 //如果是空字符，则不处理
-                if (i === "") return;
-                if (/^[ ]+$/.test(i)) return;
+                if (i === "") break;
+                if (/^[ ]+$/.test(i)) break;
                 subStack.push(i)
                 const str = subStack.join("\n")
                 if (EditorOrganize.testSentenceIsOk(str)) {
@@ -2832,9 +2836,9 @@ export class NonameCN {
                     return line;
                 })
                     .join("\n")
-                    .replace(/\n (\|\||&&) \n/g," $1 ")
+                    .replace(/\n (\|\||&&) \n/g, " $1 ")
                     .replace(/^if\(\n(.+)\n\)\n{/mg, "if($1){")
-                    .replace(/else\n{/g,"else{")
+                    .replace(/else\n{/g, "else{")
             }
             result += "\n"
         }
@@ -3653,8 +3657,6 @@ export class NonameCN {
             }
         ]
     );
-
-
     modsMap.set(
         new RegExp(`^\s*(你|player)\s*不能使用(${matchCardName})\s*$`, 'm'),
         [
@@ -3705,7 +3707,6 @@ export class NonameCN {
             }
         ]
     );
-
 }
 //moreSetDialog
 {

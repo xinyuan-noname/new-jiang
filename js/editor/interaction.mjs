@@ -6,9 +6,13 @@ import {
     ai,
     _status
 } from "../../../../noname.js";
-import { textareaTool } from "../tool/ui.js";
+import { element, textareaTool } from "../tool/ui.js";
 import { NonameCN } from "../nonameCN.js";
 import { getLineRangeOfInput, pointInWhichLine } from "../tool/string.js";
+import { TransCnText } from "./transCnText.mjs";
+import { EditorParameterList, parameterJudge } from "./parameter.mjs";
+import { dispose } from "../editor.js";
+import { Player } from "../../../../noname/library/element/player.js";
 function tabChange(type) {
     let list = [];
     let tabMode = false;
@@ -50,13 +54,11 @@ export class EditorInteraction {
             '隐藏',
             function () {
                 const id = this.container.dataset.xjb_id;
-                if (node.value.length) node.value += '\n';
-                const index = node.lastPlaceIndex || node.value.length;
-                const pPart = node.value.slice(0, index), lPart = node.value.slice(index)
-                node.value = `${pPart}${id}${lPart}`;
+                EditorInteraction.insertPhrase(node, "\n");
+                EditorInteraction.insertPhrase(node, id);
+                EditorInteraction.insertPhrase(node, "\n");
                 node.arrange();
                 node.submit();
-                node.selectionStart = index + id.length;
             },
             function () {
             },
@@ -278,5 +280,297 @@ export class EditorInteraction {
             .replaceThenOrder(/^f-+[>]/mg, 'function( ){\n\n\n}', ele.adjustTab)
             .replaceThenOrder(/^f-(卡牌)?可使?用性(模组)?->$/mg, 'cardEnabled(card){\n\n\n},', ele.adjustTab)
             .replaceThenOrder('新判定回调', '#判定回调区头\n函数 参数表头 参数表尾 函数开始\n新步骤\n\n函数结束\n#判定回调区尾\n', ele.adjustTab)
+    }
+}
+function getVarOfTextarea(textarea, type, hook = str => str) {
+    const end = textarea.selectionEnd;
+    const str = hook(textarea.value.slice(0, end));
+    const vars = getVar(str);
+    return Object.entries(vars).map(arr => arr.join(":")).filter(actual => {
+        const isPlayer = parameterJudge.Player(actual.split(":").at(-1));
+        if (type === "Player") return isPlayer;
+        if (isPlayer) return false;
+        return true
+    });
+}
+/**
+ * 
+ * @param {HTMLTextAreaElement} textarea 
+ */
+function getVarOfContent(type) {
+    const content = game.xjb_back.querySelector(".xjb-Ed-contentTextarea");
+    return getVarOfTextarea(content, type, str => {
+        let result = str;
+        return result;
+    });
+}
+function getVar(str) {
+    const lines = dispose(str);
+    const result = {};
+    for (const line of lines) {
+        line.replace(findVarRegexp, function (...arr) {
+            result[arr[3].replace(/[ ]/g, "")] = arr[4].replace(/[ ]/g, "");
+        })
+    }
+    return result;
+}
+const playerList = ["你", "玩家", "当前回合角色"];
+const getPlayerList = () => {
+    const result = [...playerList];
+    result.push(...getVarOfContent("Player").map(str => str.split(":").at(0)));
+    return result;
+}
+const getBoolList = (cnTrue = "是", cnFalse = "无") => {
+    const result = [cnTrue, cnFalse];
+    result.push(...getVarOfContent("bool").map(str => str.split(":").at(0)));
+    return result;
+}
+const getNumberVarList = () => {
+    return getVarOfContent("number").map(str => str.split(":").at(0));
+}
+const methodsList = Object.keys(EditorParameterList).map(method => {
+    return Object.keys(NonameCN.ContentList).find(cn => NonameCN.ContentList[cn] === method);
+})
+const findVarRegexp = /(var|const|let)(\s)+(.+)\=\s*(.+)/;
+export class choiceMode {
+    static updateDataListRegular(datalist, getList, interval = 500) {
+        let lastToStr = '';
+        const timer = setInterval(() => {
+            if (!datalist) {
+                last = null;
+                clearInterval(timer)
+                return;
+            }
+            const list = getList();
+            const listToStr = list.toString();
+            if (listToStr === lastToStr) return;
+            let innerHTML = '';
+            for (const data of list) {
+                innerHTML += `<option value=${data}>`;
+            }
+            datalist.innerHTML = innerHTML;
+            lastToStr = listToStr;
+        }, interval)
+    }
+    static giveDataList(input, list, id, father) {
+        input.setAttribute("list", id);
+        let innerHTML = '';
+        for (const data of list) {
+            innerHTML += `<option value=${data}>`
+        }
+        const dataList = document.createElement("datalist");
+        dataList.setAttribute('id', id);
+        dataList.innerHTML = innerHTML;
+        father.append(dataList);
+        return dataList
+    }
+    /**
+     * 
+     * @param {HTMLElement} ele 
+     */
+    static reloadDataArea(ele) {
+        ele.replaceChildren();
+    }
+    /**
+     * @param {HTMLElement} ele 
+     */
+    static init(ele) {
+        const firstLine = element("div")
+            .setStyle("position", "relative")
+            .block()
+            .exit()
+        const DataArea = element("div")
+            .style({
+                "position": "relative",
+                "height": "165px",
+                "overflow": "auto"
+            })
+            .addClass("xjb-Ed-contentDataInput")
+            .block()
+            .exit()
+        const submitArea = element()
+            .setTarget(ui.create.xjb_button(void 0, "生成"))
+            .setStyle("position", "relative")
+            .listen(lib.config.touchscreen ? "touchend" : "click", () => {
+                const player = TransCnText.translate(firstLine.whoEle.value, NonameCN.ContentList);
+                const event = TransCnText.translate(firstLine.doWhatEle.value, NonameCN.ContentList);
+                const lefts = [];
+                const rights = [];
+                for (const node of DataArea.children) {
+                    const [left, right] = node.getData();
+                    if (Array.isArray(left)) lefts.push(...left);
+                    else lefts.push(left);
+                    if (Array.isArray(right)) rights.push(...right);
+                    else rights.push(right);
+                }
+                const sentence = `${player}.${event}(${rights})`;
+                const content = game.xjb_back.querySelector(".xjb-Ed-contentTextarea");
+                EditorInteraction.insertPhrase(content, "\n")
+                EditorInteraction.insertPhrase(content, sentence)
+                EditorInteraction.insertPhrase(content, "\n")
+                content.arrange();
+                content.submit();
+                {
+                    firstLine.whoEle.value = "";
+                    firstLine.doWhatEle.value = "";
+                    choiceMode.reloadDataArea(DataArea);
+                }
+            })
+            .exit();
+        const whoText = element("div").innerHTML("对象(谁)：").setStyle("position", "relative").block().exit();
+        const who = element("input").type("search")
+            .setStyle("position", "relative")
+            .block()
+            .addClass("xjb-Ed-contentWho")
+            .listen("change", () => {
+                doWhat.value = "";
+                choiceMode.reloadDataArea(DataArea);
+            })
+            .exit()
+        const doWhatText = element("div").block().setStyle("position", "relative").innerHTML("方法(干什么)：").exit();
+        const doWhat = element("input").block()
+            .setStyle("position", "relative")
+            .type("search")
+            .addClass("xjb-Ed-contentDoWhat")
+            .listen("change", () => {
+                choiceMode.reloadDataArea(DataArea);
+                const methodName = TransCnText.translate(doWhat.value, NonameCN.ContentList);
+                if (!(methodName in EditorParameterList)) return;
+                for (const data of EditorParameterList[methodName]) {
+                    if (data.type === "number") choiceMode.pushNumControl(DataArea, data.cn, data.value, data.max, data.min);
+                    if (data.type === "Player") choiceMode.pushPlayerControl(DataArea, data.cn, data.value);
+                    if (data.type === "boolean") choiceMode.pushBooleanControl(DataArea, data.cn, data.value, data.defaultValue, data.cnTrue, data.cnFalse);
+                    if (data.type === "otherArgs") choiceMode.pushOtherArgsControl(DataArea, data.cn, data.value, data.args);
+                }
+            })
+            .exit()
+        firstLine.whoEle = who;
+        firstLine.doWhatEle = doWhat;
+        firstLine.append(whoText, who, doWhatText, doWhat);
+        choiceMode.giveDataList(who, playerList, "xjb-Ed-contentWho-list", firstLine);
+        choiceMode.giveDataList(doWhat, methodsList, "xjb-Ed-contentDoWhat-list", firstLine);
+        ele.append(firstLine, DataArea, submitArea);
+    }
+    static pushNumControl(father, cn, value, max = Infinity, min = -Infinity) {
+        const controlNumContainer = element("div")
+            .block()
+            .setStyle("position", "relative")
+            .exit()
+        const controlNumText = element("div").block().innerHTML(`${cn}：<span></span>`).setStyle("position", "relative").exit();
+        const varButton = ui.create.xjb_button(controlNumText, "使用变量");
+        const controlNum = element("input")
+            .type("number")
+            .block()
+            .min(min)
+            .max(max)
+            .listen("change", e => {
+                const num = parseInt(e.target.value)
+                if (isNaN(num)) e.target.value = "";
+                if (num > e.target.max) e.target.value = e.target.max;
+                if (num < e.target.min) e.target.value = e.target.min;
+                const node = controlNumText.querySelector("span");
+                node.textContent = e.target.value;
+            })
+            .exit();
+        const controlNumVar = element("input")
+            .type("search")
+            .block()
+            .addClass("xjb_hidden")
+            .listen("change", e => {
+                const node = controlNumText.querySelector("span");
+                node.textContent = e.target.value.split(":").at(0);
+            })
+            .exit();
+        const datalist = choiceMode.giveDataList(controlNumVar, getNumberVarList(), `${cn}-${value}`, controlNumContainer);
+        choiceMode.updateDataListRegular(datalist, getNumberVarList);
+        varButton.addEventListener(lib.config.touchscreen ? "touchend" : "click", () => {
+            varButton.classList.toggle("xjb-chosen");
+            controlNum.classList.toggle("xjb_hidden");
+            controlNumVar.classList.toggle("xjb_hidden");
+            controlNumContainer.useVar = !controlNumContainer.useVar;
+            const node = controlNumText.querySelector("span");
+            node.textContent = (controlNumContainer.useVar ? controlNumVar : controlNum).value;
+        })
+        controlNumContainer.getData = () => {
+            return [value, (controlNumContainer.useVar ? controlNumVar : controlNum).value];
+        }
+        controlNumContainer.append(controlNumText, controlNum, controlNumVar);
+        father.appendChild(controlNumContainer);
+    }
+    static pushPlayerControl(father, cn, value) {
+        const controlPlayerContainer = element("div")
+            .block()
+            .setStyle("position", "relative")
+            .exit()
+        const controlPlayerText = element("div").block().innerHTML(cn).setStyle("position", "relative").exit();
+        const controlPlayer = element("input")
+            .type("search")
+            .block()
+            .exit();
+        const datalist = choiceMode.giveDataList(controlPlayer, getPlayerList(), `${cn}-${value}`, controlPlayerContainer);
+        choiceMode.updateDataListRegular(datalist, getPlayerList);
+        controlPlayerContainer.getData = () => {
+            return [value, TransCnText.translate(controlPlayer.value, NonameCN.ContentList)];
+        }
+        controlPlayerContainer.append(controlPlayerText, controlPlayer);
+        father.appendChild(controlPlayerContainer);
+    }
+    static pushBooleanControl(father, cn, value, defaultValue, cnTrue = "是", cnFalse = "否") {
+        const controlBoolContainer = element("div")
+            .block()
+            .setStyle("position", "relative")
+            .exit()
+        const controlBoolText = element("div").block().innerHTML(cn).setStyle("position", "relative").exit();
+        const controlBool = element("input")
+            .type("search")
+            .hook(ele => {
+                if (defaultValue === true) ele.value = cnTrue;
+                if (defaultValue === false) ele.value = cnFalse;
+            })
+            .block()
+            .exit();
+        const datalist = choiceMode.giveDataList(controlBool, getBoolList(cnTrue, cnFalse), `${cn}-${value}`, controlBoolContainer);
+        choiceMode.updateDataListRegular(datalist, () => getBoolList(cnTrue, cnFalse));
+        controlBoolContainer.getData = () => {
+            let data = controlBool.value
+            if (data === cnTrue) data = true;
+            if (data === cnFalse) data = false;
+            return [value, data];
+        }
+        controlBoolContainer.append(controlBoolText, controlBool);
+        father.appendChild(controlBoolContainer);
+    }
+    static pushOtherArgsControl(father, cn = "其他设置", value, args = []) {
+        const controlArgsContainer = element("div")
+            .block()
+            .setStyle("position", "relative")
+            .exit()
+        const controlArgsText = element("div").block().innerHTML(cn).setStyle("position", "relative").father(controlArgsContainer).exit();
+        for (const arg of args) {
+            const button = element()
+                .setTarget(ui.create.xjb_button(controlArgsContainer, arg.cn))
+                .style({
+                    margin: "",
+                    marginRight: "1em"
+                })
+                .exit();
+            button.value = arg.value;
+            if (arg.defaultValue) {
+                button.classList.addClass(".xjb-chosen");
+            }
+        }
+        controlArgsContainer.addEventListener(lib.config.touchscreen ? "touchend" : "click", e => {
+            if (!e.target.classList.contains("xjb_dialogButton")) return;
+            controlArgsContainer.values = [];
+            e.target.classList.toggle("xjb-chosen");
+            const nodes = controlArgsContainer.querySelectorAll(".xjb_dialogButton");
+            nodes.forEach((node, index) => {
+                if (node.classList.contains("xjb-chosen")) controlArgsContainer.values[index] = node.value;
+            })
+        })
+        controlArgsContainer.getData = () => {
+            return [controlArgsContainer.values, controlArgsContainer.values];
+        }
+        father.appendChild(controlArgsContainer);
     }
 }

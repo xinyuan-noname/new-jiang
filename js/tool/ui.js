@@ -104,7 +104,7 @@ class elementTool {
      * @returns {elementTool}
      */
     father(fatherEle) {
-        fatherEle.appendChild(this.ele);
+        if (fatherEle) fatherEle.appendChild(this.ele);
         return this;
     }
     child(childEle) {
@@ -132,6 +132,10 @@ class elementTool {
     clone(target, bool) {
         this.ele = target.cloneNode(bool);
         return this
+    }
+    id(id) {
+        this.ele = id;
+        return this;
     }
     /**
      * @param {Array<string>|string} toAddClass 
@@ -168,11 +172,11 @@ class elementTool {
         return this;
     }
     min(min) {
-        this.ele.min = min;
+        if (min) this.ele.min = min;
         return this;
     }
     max(max) {
-        this.ele.max = max;
+        if (max) this.ele.max = max;
         return this;
     }
     setAttribute(key, value) {

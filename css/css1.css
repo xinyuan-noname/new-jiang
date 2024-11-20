@@ -409,10 +409,36 @@ div.xjb_curtain {
   position: relative;
 }
 
+/*chosen*/
+.xjb_dialogButton.xjb-chosen {
+  background-color: red;
+}
+
 .xjb-dialog-prompt {
   position: relative;
   overflow: auto;
   font-size: 24px
+}
+
+/**/
+.xjb-Ed-contentChoiceContainer>* {
+  font-size: 0.8em;
+}
+
+.xjb-Ed-contentChoiceContainer .xjb_dialogButton{
+  font-size: 0.8em;
+}
+
+.xjb-Ed-contentDataInput {
+  margin-top: 1em;
+}
+
+.xjb-Ed-contentWho {
+  width: 10em;
+}
+
+.xjb-Ed-contentDoWhat {
+  width: 16em;
 }
 
 /*tetris*/
