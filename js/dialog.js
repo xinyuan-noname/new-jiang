@@ -149,9 +149,7 @@ window.XJB_LOAD_DIALOG = function (_status, lib, game, ui, get, ai) {
             .innerHTML(str)
             .father(length)
             .style({
-                margin: "auto",
-                marginLeft: "15px",
-                marginRight: "15px",
+                margin: "auto 15px",
             })
             .exit();
         if (remove && remove.length) {

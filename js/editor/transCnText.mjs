@@ -6,9 +6,16 @@ import {
     ai,
     _status
 } from "../../../../noname.js";
-import { textareaTool } from "../tool/ui.js";
 import { NonameCN } from "../nonameCN.js";
-import { getLineRangeOfInput, pointInWhichLine } from "../tool/string.js";
+export function dispose(str, number, directory = lib.xjb_translate) {
+    let list1 = TransCnText.splitLine(str);
+    if (number === 1) return list1;
+    let list2 = TransCnText.splitWord(list1)
+    if (number === 2) return list2;
+    let list3 = TransCnText.translateLine(list2, directory);
+    if (number === 3) return list3;
+    return TransCnText.linkWords(list3);
+}
 const matchNotObjColon = /(?<!\{[ \w"']+):(?![ \w"']+\})/;
 const vCardObject = NonameCN.getVirtualCard();
 const player = NonameCN.getVirtualPlayer();
@@ -61,7 +68,7 @@ export class TransCnText {
      * @param {object} directory 
      * @returns {string}
      */
-    static translate(word, directory) {
+    static translate(word, directory = {}) {
         if (typeof word != "string") return "";
         return directory[word] || directory[word.replaceAll(/[的]/g, "")] || word;
     }
@@ -238,4 +245,5 @@ export class TransCnText {
         });
         return result;
     }
+
 }

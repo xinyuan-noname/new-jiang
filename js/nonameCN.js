@@ -3,16 +3,12 @@ import {
     game,
     ui,
     get,
-    ai,
     _status
 } from "../../../noname.js"
 import {
     findPrefix,
-    eachLine,
     addPSFix,
     adjustTab,
-    JavascriptKeywords,
-    JavascriptOperators
 } from "./tool/string.js";
 import {
     textareaTool
@@ -21,6 +17,22 @@ import {
     editorInbuiltSkillMap
 } from './editor/skill.js'
 import { EditorOrganize } from "./editor/organize.mjs";
+export const playerList = {
+    '你': 'player',
+    '目标': 'target',
+    '玩家': 'game.me',
+    '主公': 'game.zhu',
+    '当前回合角色': '_status.currentPhase',
+    '触发事件的角色': 'trigger.player',
+    '触发事件的来源': 'trigger.source',
+    '触发事件的目标': 'trigger.target',
+    '伤害来源': 'trigger.source',
+    '受伤角色': 'trigger.player',
+    '受到伤害的角色': 'trigger.player',
+    '使用此牌的角色': "trigger.player",
+    '此牌的目标': "trigger.target",
+    '事件的目标': "event.target"
+}
 const phaseList = {
     "回合": "phase",
     "准备阶段": "phaseZhunbei",
@@ -64,21 +76,6 @@ const eventList = {
     '翻面': 'turnOver',
     '武将牌翻面': 'turnOver',
     '死亡': 'die'
-}
-const playerList = {
-    '你': 'player',
-    '目标': 'target',
-    '玩家': 'game.me',
-    '主公': 'game.zhu',
-    '当前回合角色': '_status.currentPhase',
-    '触发事件的角色': 'trigger.player',
-    '触发事件的来源': 'trigger.source',
-    '触发事件的目标': 'trigger.target',
-    '伤害来源': 'trigger.source',
-    '受伤角色': 'trigger.player',
-    '受到伤害的角色': 'trigger.player',
-    '使用此牌的角色': "trigger.player",
-    '此牌的目标': "trigger.target",
 }
 const cardNameList = (() => {
     return [].concat(...lib.config.cards.map(name => lib.cardPack[name]))
@@ -155,20 +152,18 @@ function getMapOfgetParent() {
 }
 function getMapOfTrigger() {
     const list = {}
-    let event = eventList;
+    let event = {
+        ...eventList,
+        "获得技能": "addSkills",
+        "失去技能": "removeSkills",
+    };
     for (let [i, k] of Object.entries(event)) {
-        list[i + "时"] = k + "Begin"
-        list[i + "开始"] = k + "Begin"
-        list[i + "开始时"] = k + "Begin"
-        list[i + "开始前"] = k + "Begin"
-        list[i + "结束"] = k + "End"
-        list[i + "结束时"] = k + "End"
-        list[i + "结束后"] = k + "End"
         list[i + "前"] = k + "Before"
+        list[i + "开始"] = k + "Begin"
+        if (["回合"].includes(i)) list[i + "时"] = k + "Begin"
+        list[i + "结束"] = k + "End"
         list[i + "后"] = k + "After"
         list[i + "结算后"] = k + "After"
-        list[i + "完成结算后"] = k + "After"
-        //
         list["令一名角色" + i + "时"] = "source:" + k + "Begin"
         list["令一名角色" + i + "结束"] = "source:" + k + "End"
         list["令一名角色" + i + "前"] = "source:" + k + "Before"
@@ -421,10 +416,11 @@ export class NonameCN {
         "伤害来源", "受伤角色",
         "触发事件的角色", "触发事件的来源",
         "触发事件的目标组",
+        "触发事件的目标",
         "事件的目标组",
+        "事件的目标",
         ...new Array(10).fill('目标组-').map((item, index) => item + index),
         "目标组",
-        "触发事件的目标",
         "目标"
     ]
     static backSkillMap = {
@@ -709,6 +705,7 @@ export class NonameCN {
             '火属性': 'fire',
             '雷属性': 'thunder',
             '冰属性': 'ice',
+            "神属性": "kami"
         },
         gender: {
             "男性": `male`,
@@ -857,6 +854,7 @@ export class NonameCN {
             '给牌式': '"giveAuto"',
             '从牌堆底': '"bottom"',
             '牌堆底': '"bottom"',
+            '无期': '"forever"',
         },
         array: {
             "无效的角色": `trigger.getParent("useCard",void 0,true).excluded`,
@@ -1042,6 +1040,7 @@ export class NonameCN {
             '护甲值': 'hujia',
             '剩余出局轮数': "outCount",
             '进行的回合数': "phaseNumber",
+            '座位号': "getSeatNum:",
             //
             'id': 'name',
             '性别': 'sex',
@@ -1159,6 +1158,7 @@ export class NonameCN {
             '可被获得的判定区的牌数': "countGainableCards;'j';intoFunctionWait",
         },
         player_method_phase: {
+            '跳过阶段': "skip",
             '跳过下一个准备阶段': 'skip:"phaseZhunbei"',
             '跳过下一个出牌阶段': 'skip:"phaseUse"',
             '跳过下一个判定阶段': 'skip:"phaseJudge"',
@@ -1224,17 +1224,23 @@ export class NonameCN {
             '清除技能': "clearSkills",
             '添加技能': 'addSkill',
             '获得技能': 'addSkill',
-            '移除技能': "removeSkill",
             '失去技能': "removeSkill",
+            '移除技能': "removeSkill",
             '添加技能并录入日志': 'addSkillLog',
             '获得技能并录入日志': 'addSkillLog',
             '移除技能并录入日志': "removeSkillLog",
             '失去技能并录入日志': "removeSkillLog",
             '拥有技能': 'hasSkill',
             '有技能': 'hasSkill',
+            '记录技能为已发动': "awakenSkill",
+            '重置技能': "restoreSkill",
+            "更换技能": "changeSkills",
             '能够拼点': "canCompare",
+            '获得技能(触发事件)': 'addSkill',
+            '失去技能(触发事件)': "removeSkill",
             //
             "临时获得技能": "addTempSkill",
+            "临时禁用技能": "tempBanSkill",
         },
         player_choose: {
             //
@@ -1342,7 +1348,7 @@ export class NonameCN {
             '此牌的所有目标': 'trigger.targets',
             '触发事件的目标组': "trigger.targets",
             '目标组': "targets",
-            '事件的目标组': "event.targets"
+            '事件的目标组': "event.targets",
         },
         event: {
             '触发': 'trigger',
@@ -1443,9 +1449,9 @@ export class NonameCN {
             "回合开始后7": "phaseBeginStart",
             "回合开始后9": "phaseBegin",
             "准备阶段": "phaseZhunbeiBegin",
-            "准备阶段开始时": "phaseZhunbeiBegin",
+            "准备阶段开始": "phaseZhunbeiBegin",
             "结束阶段": "phaseJieshuBegin",
-            "结束阶段开始时": "phaseJieshuBegin",
+            "结束阶段开始": "phaseJieshuBegin",
             "摸牌阶段2": "phaseDrawBegin2",
             "阶段改变时": "phaseChange",
             "阶段更改时": "phaseChange",
@@ -1464,10 +1470,8 @@ export class NonameCN {
             '成为牌的目标后': "target:useCardToTargeted",
             //拼点
             '亮出拼点牌前': 'compareCardShowBefore',
-            '亮出拼点牌之前': 'compareCardShowBefore',
             //
             '杀死一名角色后': 'source:dieAfter',
-            //濒死
             '令一名角色进入濒死状态': "source:dying",
             '进入濒死状态时': 'dying',
             '脱离濒死状态时': 'dyingAfter',

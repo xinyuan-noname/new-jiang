@@ -890,7 +890,7 @@ export function XJB_CONTENT(config, pack) {
                         lib.config[i] = data[i];
                         game.saveConfig(i, lib.config[i])
                     })
-                    game.xjb_create.alert("数据已载入，请重启", function () {
+                    game.xjb_create.alert("数据已导入，请重启", function () {
                         game.reload();
                     })
                 })

@@ -409,9 +409,22 @@ div.xjb_curtain {
   position: relative;
 }
 
+.xjb-button {
+  padding: 0 0;
+  text-align: center;
+  border-radius: 0.5em;
+  position: relative;
+  background-color: #e4d5b7;
+  margin-left: 3px;
+}
+
 /*chosen*/
 .xjb_dialogButton.xjb-chosen {
   background-color: red;
+}
+
+.xjb_dialogButton.xjb-chosen.xjb-isVar {
+  background-color: #7093DB;
 }
 
 .xjb-dialog-prompt {
@@ -425,9 +438,44 @@ div.xjb_curtain {
   font-size: 0.8em;
 }
 
-.xjb-Ed-contentChoiceContainer .xjb_dialogButton{
+.xjb-Ed-contentChoiceContainer ul {
+  max-height: 70px;
+  max-width: 100%;
+  margin: 7px 0;
+  overflow: auto;
+}
+
+.xjb-Ed-contentChoiceContainer ul li {
+  font-size: 12px;
+}
+
+.xjb-Ed-contentChoiceContainer datalist {
+  overflow: auto;
+  max-height: 200px;
+}
+
+.xjb-Ed-contentChoiceContainer ul li.xjb-chosen {
+  background-color: red;
+}
+
+.xjb-Ed-contentChoiceContainer ul li span {
+  background-color: yellow;
+}
+
+.xjb-Ed-contentChoiceContainer .xjb_dialogButton {
   font-size: 0.8em;
 }
+
+.xjb_dialogButton .xjb_dialogButton {
+  margin: 0 0.3em;
+  border-radius: 50%;
+  background-color: yellow;
+  top: -0.1em;
+  color: red;
+  position: relative;
+}
+
+
 
 .xjb-Ed-contentDataInput {
   margin-top: 1em;
