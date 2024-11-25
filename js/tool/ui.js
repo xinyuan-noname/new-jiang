@@ -185,7 +185,7 @@ class elementTool {
     shiftClassWhenWith(type, className, partners = [], className2 = className) {
         this.ele.addEventListener(type, function () {
             for (const partner of partners) {
-                partner.classList.toggle(className2)
+                if (partner && partner instanceof HTMLElement) partner.classList.toggle(className2)
             }
             this.classList.toggle(className);
         });

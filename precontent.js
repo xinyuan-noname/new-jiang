@@ -14,6 +14,8 @@ import {
 } from "./js/game/tetris.js"
 import {LOAD_HPCARD} from "./js/feature/hpCard.js";
 import { LOAD_REMNANT_AREA } from "./js/feature/remnantArea.js";
+import "./js/interact/dialog.mjs"
+import "./js/interact/ui.mjs"
 function provideFunction() {
     lib.xjb_dataGet = function () {
         return Object.keys(lib.config).filter(function (a) {
@@ -249,8 +251,7 @@ function way() {
 function importFile() {
     let count = 0;
     const files = ["event", "lingli", "skills", "card",
-        "project", "rpg", "translate", "character",
-        "dialog", "economy", "math", "raise"];
+        "project", "rpg", "translate", "character", "economy", "math", "raise"];
     function loadFiles(fileName) {
         let script = lib.init.js(lib.xjb_src + "js", fileName, () => {
             window[`XJB_LOAD_${fileName.toUpperCase()}`](_status, lib, game, ui, get, ai);

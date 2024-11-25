@@ -50,7 +50,6 @@ window["xjb_xyAPI_Directory_新将包"]={
     "js": [
         "card.js",
         "character.js",
-        "dialog.js",
         "economy.js",
         "editor.js",
         "event.js",
@@ -178,6 +177,10 @@ window["xjb_xyAPI_Directory_新将包"]={
     ],
     "js/game": [
         "tetris.js"
+    ],
+    "js/interact": [
+        "dialog.mjs",
+        "ui.mjs"
     ],
     "js/lingli": [
         "event.mjs",

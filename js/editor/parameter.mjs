@@ -87,6 +87,14 @@ export const EditorParameterList = {
     skip: [
         { cn: "跳过的阶段名", type: "phase", single: true, mission: "跳过阶段" }
     ],
+    changeGroup: [
+        { cn: "改为的势力", type: "group", value: "group", single: true, mission: "更改势力", order: true },
+        { cn: "是否录入游戏日志", type: "boolean" }
+    ],
+    gainMultiple: [
+        { cn: "获得牌的角色", type: "Players", value: "targets", mission: "获得多名角色指定区域的牌", order: true },
+        { cn: "可获得牌区域(默认为手牌区)", type: "position", value: "position", positionList: "hej" },
+    ],
     addSkill: [
         { cn: "获得的技能", type: "skill", mission: "获得技能", order: true },
         { cn: "是否检查禁用技能组目录", type: "boolean" },
@@ -94,7 +102,6 @@ export const EditorParameterList = {
     removeSkill: [
         { cn: "失去的技能", type: "skill", mission: "失去技能" },
     ],
-
     addSkills: [
         { cn: "获得的技能", type: "skill", value: "addSkill", mission: "获得技能(触发事件)" },
     ],
@@ -129,6 +136,7 @@ export const EditorParameterList = {
 }
 const PlayerVarName = ["player", "source", "target"];
 const PlayerVarValue = ['player', 'target', 'game.me', 'game.zhu', '_status.currentPhase', 'trigger.player', 'trigger.source', 'trigger.target', 'event.target']
+const CardVarNameREs = [/card(x)?/, /card\d/];
 const numberVarName = ["num", "number"];
 const numberVarValueOfPlayer = [
     'hp', 'maxHp', 'hujia', 'phaseNum', 'getSeatNum()', 'getDamagedHp()'
@@ -140,6 +148,10 @@ export const parameterJudge = {
     Player: (varName, varValue) => {
         if (PlayerVarName.includes(varName)) return true;
         if (PlayerVarValue.includes(varValue)) return true;
+        return false;
+    },
+    card: (varName, varValue) => {
+        if (CardVarNameREs.some(regexp => regexp.test(varName))) return true;
         return false;
     },
     number: (varName, varValue) => {
@@ -157,6 +169,14 @@ export const parameterJudge = {
     bool: (varName, varValue) => {
         if (booleanVarName.includes(varName)) return true;
         if (booleanVarValue.includes(varValue)) return true;
+        return false;
+    },
+    skill: (varName, varValue) => {
+        if (varName === "skill") return true;
+        return false;
+    },
+    skills: (varName, varValue) => {
+        if (varName === "skills") return true;
         return false;
     }
 }

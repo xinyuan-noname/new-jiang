@@ -1098,13 +1098,6 @@ export class NonameCN {
             "没有蓄力值": `hasMark:"charge":denyPrefix`,
             "无蓄力值": `hasMark:"charge":denyPrefix`,
         },
-        player_method_tempSkill: {
-            "本回合被破甲": `addTempSkill:"qinggang2"`,
-            "本回合非锁定技失效": `addTempSkill:"fengyin"`,
-            "获得技能直到下个出牌阶段结束": `addTempSkill;{player:"phaseUseEnd"}:intoFunctionWait`,
-            "获得技能直到下个回合结束": `addTempSkill;{player:"phaseEnd"}:intoFunctionWait`,
-            "获得技能直到下一轮开始时": `addTempSkill;"roundStart":intoFunctionWait`,
-        },
         player_method_solt: {
             '有未被废除的装备栏': "hasEnabledSlot",
             '没有未被废除的装备栏': "hasEnabledSlot:denyPrefix",
@@ -1169,9 +1162,9 @@ export class NonameCN {
         player_method: {
             "攻击范围内有": "inRange",
             '执行额外的回合': 'insertPhase',
-            "摸牌或回复体力值": "chooseDrawRecover",
             //判定区和装备栏
             '废除判定区': 'disableJudge',
+            "摸牌或回复体力值": "chooseDrawRecover",
             //性别类
             "拥有性别": "hasSex",
             "属于性别": "hasSex",
@@ -1181,6 +1174,7 @@ export class NonameCN {
             "将体力值回复至": "recoverTo",
             "体力值回复至": "recoverTo",
             '获得护甲': 'changeHujia',
+            //
             '已受伤': 'isDamaged',
             '未受伤': 'isHealthy',
             '存活': 'isAlive',
@@ -1191,6 +1185,7 @@ export class NonameCN {
             '随机获得牌': 'randomGain',
             '随机弃置手牌': 'randomDiscard',
             "获得多名角色手牌": `gainMultiple`,
+            "获得多名角色指定区域的牌": `gainMultiple`,
             '移动场上牌': 'moveCard',
             "观看手牌": "viewHandcards",
             '将手牌补至': 'drawTo',
@@ -1200,6 +1195,7 @@ export class NonameCN {
             '丢弃至弃牌堆': "loseToDiscardpile",
             //
             '更新状态': "update",
+            '更改势力': "changeGroup",
             //
             //宗族类
             "获取宗族": "getClans",
@@ -1219,6 +1215,8 @@ export class NonameCN {
             '未翻面': "isTurnedOver:denyPrefix",
             '判定区已废除': 'isDisabledJudge',
             '判定区未废除': 'isDisabledJudge:denyPrefix',
+        },
+        player_method_skill: {
             //
             '失去所有技能': "clearSkills",
             '清除技能': "clearSkills",
@@ -1241,6 +1239,12 @@ export class NonameCN {
             //
             "临时获得技能": "addTempSkill",
             "临时禁用技能": "tempBanSkill",
+            //
+            "本回合被破甲": `addTempSkill:"qinggang2"`,
+            "本回合非锁定技失效": `addTempSkill:"fengyin"`,
+            "获得技能直到下个出牌阶段结束": `addTempSkill;{player:"phaseUseEnd"}:intoFunctionWait`,
+            "获得技能直到下个回合结束": `addTempSkill;{player:"phaseEnd"}:intoFunctionWait`,
+            "获得技能直到下一轮开始时": `addTempSkill;"roundStart":intoFunctionWait`,
         },
         player_choose: {
             //

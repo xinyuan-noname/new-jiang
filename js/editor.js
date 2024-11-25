@@ -2,6 +2,7 @@ import {
     lib,
     game,
     ui,
+    ai,
     get,
     _status
 } from "./../../../noname.js"
