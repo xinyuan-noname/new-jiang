@@ -6,13 +6,14 @@ import {
     ai,
     _status
 } from "../../noname.js";
+import './js/skills.js';
 import {
     xjb_library
 } from "./js/library.js";
 import {
     LOAD_GAME_TETRIS
 } from "./js/game/tetris.js"
-import {LOAD_HPCARD} from "./js/feature/hpCard.js";
+import { LOAD_HPCARD } from "./js/feature/hpCard.js";
 import { LOAD_REMNANT_AREA } from "./js/feature/remnantArea.js";
 import "./js/interact/dialog.mjs"
 import "./js/interact/ui.mjs"
@@ -250,7 +251,7 @@ function way() {
 }
 function importFile() {
     let count = 0;
-    const files = ["event", "lingli", "skills", "card",
+    const files = ["event", "lingli", "card",
         "project", "rpg", "translate", "character", "economy", "math", "raise"];
     function loadFiles(fileName) {
         let script = lib.init.js(lib.xjb_src + "js", fileName, () => {
@@ -324,7 +325,6 @@ function importFile() {
             }
         );
     };
-    if (navigator.connection.type == 'wifi') game.xjb_loadAPI(void 0, () => { game.print("xjb_xyAPI未成功引入") });
 }
 function initialize() {
     //设置刘徽-祖冲之祖项目

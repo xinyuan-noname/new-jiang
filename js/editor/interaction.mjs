@@ -349,6 +349,14 @@ const getCardList = () => {
     result.push(...getVarOfContent("card"));
     return result;
 }
+const getCardsList = () => {
+    const result = [];
+    if (game.xjb_back.skill.kind === "trigger") {
+        result.push("触发事件的牌组")
+    }
+    result.push(...getVarOfContent("cards"));
+    return result;
+}
 const getBoolList = (cnTrue = "是", cnFalse = "无") => {
     const result = [cnTrue, cnFalse];
     result.push(...getVarOfContent("bool"));
@@ -540,13 +548,15 @@ export class choiceMode {
             case "Player": choiceMode.pushPlayerControl(DataArea, data); break;
             case "Players": choiceMode.pushPlayersControl(DataArea, data); break;
             case "card": choiceMode.pushCardControl(DataArea, data); break;
-            case "position": choiceMode.pushPositionControl(DataArea, data); break;
+            case "cards": choiceMode.pushCardsControl(DataArea, data); break;
             case "boolean": choiceMode.pushBooleanControl(DataArea, data); break;
             case "otherArgs": choiceMode.pushOtherArgsControl(DataArea, data); break;
             case "heArray": choiceMode.pushHeArrayControl(DataArea, data); break;
+            case "position": choiceMode.pushPositionControl(DataArea, data); break;
             case "nature": choiceMode.pushNartureControl(DataArea, data); break;
             case "phase": choiceMode.pushPhaseControl(DataArea, data); break;
             case "group": choiceMode.pushGroupControl(DataArea, data); break;
+            case "stringToChoose": choiceMode.pushStringChooseControl(DataArea, data); break;
             case "skill": choiceMode.pushSkillControl(DataArea, data); break;
             case "expire": choiceMode.pushExpireControl(DataArea, data); break;
             default: break;
@@ -617,24 +627,6 @@ export class choiceMode {
         controlPlayerContainer.append(controlPlayerText, controlPlayer);
         father.appendChild(controlPlayerContainer);
     }
-    static pushCardControl(father, { cn, value }) {
-        const controlContainer = element("div")
-            .block()
-            .setStyle("position", "relative")
-            .exit()
-        const controlText = element("div").block().innerHTML(cn).setStyle("position", "relative").exit();
-        const controlSearch = element("input")
-            .type("search")
-            .block()
-            .exit();
-        const datalist = choiceMode.giveDataList(controlSearch, getCardList(), `${cn}-${value}`, controlContainer);
-        choiceMode.updateDataListRegular(datalist, getCardList);
-        controlContainer.getData = () => {
-            return [value, TransCnText.translate(controlSearch.value, NonameCN.ContentList) || undefined];
-        }
-        controlContainer.append(controlText, controlSearch);
-        father.appendChild(controlContainer);
-    }
     static pushPlayersControl(father, { cn, value }) {
         const controlContainer = element("div")
             .block()
@@ -700,6 +692,91 @@ export class choiceMode {
             return [value, `[${playerArr},...${playersArr.join(",...")}]`];
         }
         controlContainer.append(controlText, playerContainer, playersContainer);
+        father.appendChild(controlContainer);
+    }
+    static pushCardControl(father, { cn, value }) {
+        const controlContainer = element("div")
+            .block()
+            .setStyle("position", "relative")
+            .exit()
+        const controlText = element("div").block().innerHTML(cn).setStyle("position", "relative").exit();
+        const controlSearch = element("input")
+            .type("search")
+            .block()
+            .exit();
+        const datalist = choiceMode.giveDataList(controlSearch, getCardList(), `${cn}-${value}`, controlContainer);
+        choiceMode.updateDataListRegular(datalist, getCardList);
+        controlContainer.getData = () => {
+            return [value, TransCnText.translate(controlSearch.value, NonameCN.ContentList) || undefined];
+        }
+        controlContainer.append(controlText, controlSearch);
+        father.appendChild(controlContainer);
+    }
+    static pushCardsControl(father, { cn, value }) {
+        const controlContainer = element("div")
+            .block()
+            .setStyle("position", "relative")
+            .exit()
+        const controlText = element("div").block().innerHTML(cn).setStyle("position", "relative").exit();
+        const cardContainer = element("div").block().innerHTML("选择卡牌").fontSize("0.8em").setStyle("position", "relative").exit();
+        const cardsContainer = element("div").block().innerHTML("选择卡牌组").fontSize("0.8em").addClass("xjb_hidden").setStyle("position", "relative").exit();
+        const cardInput = element("input").father(cardContainer).type("search").block().exit();
+        const cardsInput = element("input").father(cardsContainer).type("search").block().exit();
+        const addButton = (inner, buttonColor2) => {
+            const button = element()
+                .setTarget(ui.create.xjb_button(controlContainer, inner))
+                .setKey("Ptype", inner)
+                .style({
+                    margin: "",
+                    marginRight: "1em",
+                })
+                .exit();
+            element()
+                .setTarget(ui.create.xjb_button(button, "×", button, void 0, true))
+                .style({ margin: "0 0.3em" })
+                .exit();
+            button.classList.add(`xjb-button-color${buttonColor2 ? 2 : 1}`)
+            return button;
+        }
+        element()
+            .setTarget(ui.create.xjb_button(controlText, "切换"))
+            .shiftClassWhenWith(lib.config.touchscreen ? "touchend" : "click", "xjb-chosen",
+                [cardContainer, cardsContainer], "xjb_hidden")
+            .exit();
+        element().setTarget(cardInput)
+            .listenTransEvent("keydown", "change", function () {
+                if (!this.value) return;
+                if (document.activeElement !== this) return;
+                addButton(this.value).classList.add("xjb-chosen");
+                this.value = "";
+            }, e => e.key === "Enter")
+        element().setTarget(cardsInput)
+            .listenTransEvent("keydown", "change", function () {
+                if (!this.value) return;
+                if (document.activeElement !== this) return;
+                addButton(this.value, true).classList.add("xjb-chosen");
+                this.value = "";
+            }, e => e.key === "Enter")
+        const datalistP = choiceMode.giveDataList(cardInput, getCardList(), `${cn}-${value}-card`, cardContainer);
+        choiceMode.updateDataListRegular(datalistP, getCardList);
+        const datalistPs = choiceMode.giveDataList(cardsInput, getCardsList(), `${cn}-${value}-cards`, cardContainer);
+        choiceMode.updateDataListRegular(datalistPs, getCardsList);
+        controlContainer.addEventListener(lib.config.touchscreen ? "touchend" : "click", e => {
+            if (!e.target.classList.contains("xjb_dialogButton")) return;
+            e.target.Ptype && e.target.classList.toggle("xjb-chosen");
+        })
+        controlContainer.getData = () => {
+            const buttonsP = controlContainer.querySelectorAll(".xjb_dialogButton.xjb-chosen.xjb-button-color1");
+            const buttonsPs = controlContainer.querySelectorAll(".xjb_dialogButton.xjb-chosen.xjb-button-color2");
+            const cardArr = [...buttonsP].map(node => TransCnText.translate(node.Ptype, NonameCN.ContentList)).toUniqued();
+            const cardsArr = [...buttonsPs].map(node => TransCnText.translate(node.Ptype, NonameCN.ContentList)).toUniqued();
+            if (!cardArr.length && !cardsArr.length) return [value, void 0];
+            if (!cardsArr.length) return [value, cardArr];
+            if (!cardArr.length && cardsArr.length === 1) return [value, cardsArr[0]];
+            if (!cardArr.length) return [value, `[...${cardsArr.join(",...")}]`];
+            return [value, `[${cardArr},...${cardsArr.join(",...")}]`];
+        }
+        controlContainer.append(controlText, cardContainer, cardsContainer);
         father.appendChild(controlContainer);
     }
     static pushBooleanControl(father, { cn, value, defaultValue, cnTrue = "是", cnFalse = "否" }) {
@@ -843,8 +920,8 @@ export class choiceMode {
         })
         controlContainer.getData = () => {
             const nodes = controlContainer.querySelectorAll(".xjb_dialogButton.xjb-chosen");
-            const natures = [...nodes].map(node => node.value).join("|")
-            return [value, natures.length ? `"${natures}"` : void 0];
+            const natures = [...nodes].map(node => node.value);
+            return [value, natures.length ? `"${natures.join("|")}"` : void 0];
         }
         father.appendChild(controlContainer);
     }
@@ -1224,5 +1301,37 @@ export class choiceMode {
         if (defaultValue && defaultValue.length) {
             defaultValue.forEach(cn => addButton(interfaces[0], cn));
         }
+    }
+    static pushStringChooseControl(father, { cn, value, choices, defaultValue = [] }) {
+        const controlContainer = element("div")
+            .block()
+            .setStyle("position", "relative")
+            .exit()
+        const controlText = element("div").block().innerHTML(cn).setStyle("position", "relative").father(controlContainer).exit();
+        for (const [cn, StrValue] of choices) {
+            const button = element()
+                .setTarget(ui.create.xjb_button(controlContainer, cn))
+                .style({
+                    margin: "",
+                    marginRight: "1em"
+                })
+                .exit();
+            button.value = StrValue;
+            if (defaultValue.includes()) {
+                button.classList.add("xjb-chosen");
+            }
+        }
+        controlContainer.addEventListener(lib.config.touchscreen ? "touchend" : "click", e => {
+            if (!e.target.classList.contains("xjb_dialogButton")) return;
+            controlContainer.querySelectorAll(".xjb_dialogButton.xjb-chosen")
+                .forEach(node => e.target !== node && node.classList.remove("xjb-chosen"));
+            e.target.classList.toggle("xjb-chosen");
+        })
+        controlContainer.getData = () => {
+            const nodes = controlContainer.querySelectorAll(".xjb_dialogButton.xjb-chosen");
+            const chosen = [...nodes].map(node => node.value)
+            return [value, chosen.length ? `"${chosen}"` : void 0];
+        }
+        father.appendChild(controlContainer);
     }
 }

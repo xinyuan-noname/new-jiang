@@ -33,6 +33,34 @@ export const EditorParameterList = {
             ]
         }
     ],
+    gain: [
+        { cn: "获得的牌", type: "cards", value: "cards", mission: "获得牌" },
+        { cn: "来源(从谁那里获得了牌)", type: "Player", value: "source" },
+        {
+            cn: "获得牌动画", type: "stringToChoose", value: "animate",
+            choices: [
+                ["一般式获得", "gain2"],
+                ["涌出后获得", "gain"],
+                ["背面朝下", "draw"],
+                ["可见式给出牌",'give'],
+                ["不可见式给出牌",'giveAuto']
+            ]
+        },
+        { cn: "获得牌是否有延迟", type: "boolean", value: "delay" },
+        {
+            type: "otherArgs",
+            args: [
+                { cn: "录入游戏日志", value: 'log', type: "string" },
+                { cn: "从标记中牌", value: 'fromStorage', type: "string" },
+                { cn: "从仁库中获得牌", value: 'fromRenku', type: "string" },
+                { cn: "这是从自己这里获得的牌", value: 'log', type: "string" },
+            ]
+        }
+    ],
+    gainMultiple: [
+        { cn: "获得牌的角色", type: "Players", value: "targets", mission: "获得多名角色指定区域的牌", order: true },
+        { cn: "可获得牌区域(默认为手牌区)", type: "position", value: "position", positionList: "hej" },
+    ],
     link: [
         { cn: "指定重置/横置类型", type: "boolean", cnTrue: "横置", cnFalse: "重置", mission: "横置或重置" }
     ],
@@ -91,10 +119,6 @@ export const EditorParameterList = {
         { cn: "改为的势力", type: "group", value: "group", single: true, mission: "更改势力", order: true },
         { cn: "是否录入游戏日志", type: "boolean" }
     ],
-    gainMultiple: [
-        { cn: "获得牌的角色", type: "Players", value: "targets", mission: "获得多名角色指定区域的牌", order: true },
-        { cn: "可获得牌区域(默认为手牌区)", type: "position", value: "position", positionList: "hej" },
-    ],
     addSkill: [
         { cn: "获得的技能", type: "skill", mission: "获得技能", order: true },
         { cn: "是否检查禁用技能组目录", type: "boolean" },
@@ -137,6 +161,7 @@ export const EditorParameterList = {
 const PlayerVarName = ["player", "source", "target"];
 const PlayerVarValue = ['player', 'target', 'game.me', 'game.zhu', '_status.currentPhase', 'trigger.player', 'trigger.source', 'trigger.target', 'event.target']
 const CardVarNameREs = [/card(x)?/, /card\d/];
+const CardsVarName = ["cards", "Cards"];
 const numberVarName = ["num", "number"];
 const numberVarValueOfPlayer = [
     'hp', 'maxHp', 'hujia', 'phaseNum', 'getSeatNum()', 'getDamagedHp()'
@@ -152,6 +177,10 @@ export const parameterJudge = {
     },
     card: (varName, varValue) => {
         if (CardVarNameREs.some(regexp => regexp.test(varName))) return true;
+        return false;
+    },
+    card: (varName, varValue) => {
+        if (CardsVarName.includes(varName)) return true;
         return false;
     },
     number: (varName, varValue) => {
