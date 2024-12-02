@@ -1,3 +1,4 @@
+
 window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
     lib.skill.xjb_final = {
         RPG: function () {
@@ -295,13 +296,9 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
             })
         },
         "import": function () {
-            let script = lib.init.js(lib.xjb_src + "js", "editor", () => {
-                window.XJB_LOAD_EDITOR(_status, lib, game, ui, get, ai);
-            }, err => {
-                console.log("技能编辑器数据引入失败——新将包");
-                throw err;
-            });
-            script.type = "module";
+            import("./editor.js").then(() => {
+                ui.create.system("技能编辑", game.xjb_skillEditor);
+            })
             if (lib.xjb_yangcheng1) {
                 lib.xjb_yangcheng = lib.xjb_yangcheng1.onclick("other");
                 delete lib.xjb_yangcheng1
@@ -342,7 +339,7 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                         let target = lib.config.xjb_count[i].book
                         if (lib.translate[i].includes(author)) {
                             let list1 = target.filter(item1 => {
-                                return !books.includes(item1.headline) 
+                                return !books.includes(item1.headline)
                             })
                             target = [...list1]
                             books.forEach((item, index) => {

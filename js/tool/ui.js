@@ -45,6 +45,7 @@ class elementTool {
         this.ele.innerHTML += str;
         return this;
     }
+
     block() {
         this.ele.style.display = 'block';
         return this;
@@ -65,6 +66,10 @@ class elementTool {
     flexRow() {
         this.ele.style.display = "flex";
         this.ele.style.flexDirection = "row";
+        return this;
+    }
+    fontSize(size) {
+        this.ele.style.fontSize = size;
         return this;
     }
     /**
@@ -93,6 +98,18 @@ class elementTool {
      */
     listen(event, callback) {
         this.ele.addEventListener(event, callback)
+        return this;
+    }
+    listenTransEvent(preEvent, transEvent, listener, isOk = () => true) {
+        this.ele.addEventListener(preEvent, e => {
+            if (isOk(e)) e.target.dispatchEvent(new Event(transEvent, {
+                isTrusted: true,
+                bubbles: true,
+                cancelable: true,
+                composed: true
+            }))
+        })
+        this.ele.addEventListener(transEvent, listener)
         return this;
     }
     accesskey(key) {
@@ -155,6 +172,26 @@ class elementTool {
         return this;
     }
     /**
+     * @param {string} type 
+     * @param {string} className
+     * @returns {this}
+     */
+    shiftClassWhen(type, className) {
+        this.ele.addEventListener(type, function () {
+            this.classList.toggle(className);
+        });
+        return this;
+    }
+    shiftClassWhenWith(type, className, partners = [], className2 = className) {
+        this.ele.addEventListener(type, function () {
+            for (const partner of partners) {
+                if (partner && partner instanceof HTMLElement) partner.classList.toggle(className2)
+            }
+            this.classList.toggle(className);
+        });
+        return this;
+    }
+    /**
      * @param {string} key 
      * @param {string} value 
      * @returns {elementTool}
@@ -187,14 +224,14 @@ class elementTool {
         }
         return this;
     }
-    /**
-     * @param {object} attrs 
-     * @returns {elementTool}
-     */
     attributes(attrs) {
         for (let k in attrs) {
             this.setAttribute(k, attrs[k])
         }
+        return this;
+    }
+    setKey(key, value) {
+        this.ele[key] = value;
         return this;
     }
     /**
@@ -205,7 +242,6 @@ class elementTool {
         func(this.ele);
         return this;
     }
-
     /**
      * @param {String} name
      * @param {ang[]} args
@@ -316,13 +352,6 @@ class elementTool {
     * @returns {elementTool} 返回当前对象，支持链式调用。
     */
     debounce(event, func, wait) {
-        /**
-         * 创建一个防抖函数。
-         * 这个函数返回一个新的函数，该函数将在被调用后等待指定的等待时间后，再执行传入的函数。
-         * 
-         * @param {Function} func - 需要被延迟执行的函数。
-         * @returns {Function} 返回一个防抖后的函数。
-         */
         function debounce(func) {
             let timeout
             return function (...args) {

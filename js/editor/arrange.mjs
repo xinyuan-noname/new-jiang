@@ -6,10 +6,8 @@ import {
     ai,
     _status
 } from "../../../../noname.js";
-import { textareaTool } from "../tool/ui.js";
-import { NonameCN } from "../nonameCN.js";
-import { getLineRangeOfInput, moveWordToEnd, pointInWhichLine } from "../tool/string.js";
-const matchNotObjColon = /(?<!\{[ \w"']+):(?![ \w"']+\})/;
+import { moveWordToEnd } from "../tool/string.js";
+1;
 export class EditorArrange {
     static transCnCalculation(that) {
         for (let i = 10; i > 0; i--) {
@@ -61,7 +59,7 @@ export class EditorArrange {
         });
     }
     static makeOccupyLine(that, words) {
-        that.changeWord(new RegExp(`(?<!\n)(${words.join("|")})`,"g"), '\n$1');
-        that.changeWord(new RegExp(`(${words.join("|")})(?!\n)`,"g"), '$1\n');
+        that.changeWord(new RegExp(`(?<!\n)(${words.join("|")})`, "g"), '\n$1');
+        that.changeWord(new RegExp(`(${words.join("|")})(?!\n)`, "g"), '$1\n');
     }
 }

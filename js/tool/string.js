@@ -170,9 +170,9 @@ export function adjustTab(str, basic = 0, start = '{', end = '}', ingoreInitialT
             line.match(/^\t+/) ? line.match(/^\t+/)[0].length : 0;
         const bool = line.endsWith(start)
         let chars = line.match(new RegExp(`(${start.replace(/[-\/\\^$*+?.()|[\]{}]/, "\\$&")}|${end.replace(/[-\/\\^$*+?.()|[\]{}]/, "\\$&")})`, 'g'));
-        chars && chars.forEach(char => {
+        chars && chars.forEach((char, index) => {
             if (char == start) {
-                stack.push(bool)
+                stack.push(index === chars.length - 1 && bool);
             } else if (stack.length) {
                 if (stack.pop()) tabLevel--
             }

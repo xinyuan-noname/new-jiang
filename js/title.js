@@ -97,6 +97,7 @@ window.XJB_LOAD_title = function (_status, lib, game, ui, get, ai) {
                 trigger: {
                     player: ["damageZero"],
                 },
+                direct: true,
                 filter: function (event, player) {
                     if (!lib.config.xjb_hun) return false
                     if (!(event.source == game.me)) return false
@@ -208,10 +209,10 @@ window.XJB_LOAD_title = function (_status, lib, game, ui, get, ai) {
             game.xjb_countCharOne = function (playerName) {
                 let count = lib.config.xjb_count[playerName];
                 for (let k in count) {
-                    if (typeof count[k]==='number'&&isNaN(count[k])) count[k] = 0;
-                    if(k.includes('Rate')){
-                        let rateStr=k.replace(/[a-z]*Rate/,'');
-                        game.xjb_countCharWin(playerName,rateStr);
+                    if (typeof count[k] === 'number' && isNaN(count[k])) count[k] = 0;
+                    if (k.includes('Rate')) {
+                        let rateStr = k.replace(/[a-z]*Rate/, '');
+                        game.xjb_countCharWin(playerName, rateStr);
                     }
                 };
                 return count;
@@ -224,7 +225,7 @@ window.XJB_LOAD_title = function (_status, lib, game, ui, get, ai) {
             }
             game.xjb_countCharRate = function (playerName, rate) {
                 let count = game.xjb_countCharOne(playerName)
-                let rateNum=(count["win" + rate] * 100) / count["playedTimes" + rate]
+                let rateNum = (count["win" + rate] * 100) / count["playedTimes" + rate]
                 count["winRate" + rate] = rateNum.toFixed(2) + "%";
                 return count;
             }

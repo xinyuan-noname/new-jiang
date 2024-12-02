@@ -50,7 +50,6 @@ window["xjb_xyAPI_Directory_新将包"]={
     "js": [
         "card.js",
         "character.js",
-        "dialog.js",
         "economy.js",
         "editor.js",
         "event.js",
@@ -68,7 +67,6 @@ window["xjb_xyAPI_Directory_新将包"]={
         "Xskill.js"
     ],
     "json": [
-        ".json",
         "1.json"
     ],
     "lingli": [
@@ -166,8 +164,10 @@ window["xjb_xyAPI_Directory_新将包"]={
     ],
     "js/editor": [
         "arrange.mjs",
+        "implicitText.mjs",
         "interaction.mjs",
         "organize.mjs",
+        "parameter.mjs",
         "skill.js",
         "transCnText.mjs"
     ],
@@ -177,6 +177,10 @@ window["xjb_xyAPI_Directory_新将包"]={
     ],
     "js/game": [
         "tetris.js"
+    ],
+    "js/interact": [
+        "dialog.mjs",
+        "ui.mjs"
     ],
     "js/lingli": [
         "event.mjs",
@@ -201,9 +205,6 @@ window["xjb_xyAPI_Directory_新将包"]={
     "sink/xin_newCharacter/normal": [
         "xin_newCharacter.jpg"
     ],
-    "skin/image/xjb_chanter": [],
-    "skin/image/xjb_Fuaipaiyi": [],
-    "skin/image/xjb_timer": [],
     "skin/image/xjb_xuemo": [
         "xuemo1.jpg",
         "xuemo2.jpg",
