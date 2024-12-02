@@ -617,10 +617,12 @@ game.xjb_create.search = function (
         const hiddenLi = this.parentNode.querySelectorAll('.xjb_hidden');
         const content = this.value
         for (const item of hiddenLi) {
-            if (item.innerText.includes(content)) item.classList.toggle("xjb_hidden");
+            if (content.split(/[ +]/).every(keywords => item.innerText.includes(keywords)))
+                item.classList.toggle("xjb_hidden");
         }
         for (const item of shownLi) {
-            if (!item.innerText.includes(content)) item.classList.toggle("xjb_hidden");
+            if (!content.split(/[ +]/).every(keywords => item.innerText.includes(keywords)))
+                item.classList.toggle("xjb_hidden");
         }
         this.nextElementSibling.scrollTo({
             top: 0,
