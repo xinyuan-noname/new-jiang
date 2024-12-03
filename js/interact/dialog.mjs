@@ -831,9 +831,6 @@ game.xjb_create.seeDelete = function (map, seeStr = "查看", deleteStr = "删�
     if (game.xjb_create.baned) return;
     const dialog = game.xjb_create.search(prompt, func)
     const textarea = dialog.textarea;
-    /**
-     * @type {HTMLUListElement}
-     */
     const ul = dialog.ul;
     const listenType = lib.config.touchscreen ? "touchend" : "click";
     dialog.buttons[0].result = [];

@@ -192,7 +192,6 @@ const xjb_qimendunjia = CardCreater(
         }).setContent("chooseToCompareLose");
         event.type = type;
         'step 1'
-        console.log(event.type)
         event.type.forEach((color, i) => {
             if (color !== 'red') targets[i].getDebuff();
             if (color !== 'black') targets[i].getBuff();

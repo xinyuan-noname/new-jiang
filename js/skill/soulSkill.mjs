@@ -211,7 +211,7 @@ const xjb_soul_guifan = SkillCreater(
     enable: "chooseToUse",
     limited: true,
     content: function () {
-        player.awakenSkill("xjb_guifan")
+        player.awakenSkill("xjb_soul_guifan")
         player.xjb_readStorage()
     },
     ai: {

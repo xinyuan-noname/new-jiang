@@ -559,7 +559,7 @@ const xjb_yinlve = SkillCreater(
 const xin_huzhu = SkillCreater(
     "xin_huzhu", {
     translate: "护主",
-    description: "当一名其他角色使用【杀】指定目标时，你可以选择以下一项执行之：⑴弃置一张牌，目标角色摸两张牌;⑵失去一点体力，目标角色获得1个“护”。 ",
+    description: "当一名其他角色指定其他角色为【杀】目标时，你可以获得一张同属性的残【杀】令其获得一个“护”",
     derivation: ["xin_huzhu2"],
     audio: "ext:新将包:false",
     trigger: {
@@ -569,28 +569,18 @@ const xin_huzhu = SkillCreater(
         return get.attitude(player, event.target) > 0 && !event.target.hasSkill('xin_huzhu2');
     },
     filter: function (event, player) {
-        if (event.card.name == 'sha' && event.player != player) return true
-        return false
+        if (event.card.name !== 'sha') return false;
+        if (event.target === player) return false;
+        if (event.player === player) return false
+        return true;
     },
     prompt: function (event, player) {
         return '是否对' + get.translation(event.target) + '发动〖护主〗？'
     },
     content: function () {
-        'step 0'
-        player.chooseToDiscard('he', 1, '弃置一张牌，或点取消失去一点体力').set('ai', function (card) {
-            return 8 - get.value(card)
-        })
-        'step 1'
-        if (result.bool) {
-            trigger.target.draw(2)
-        }
-        else {
-            player.loseHp()
-            trigger.target.addTempSkill('xin_huzhu2', { player: 'dieAfter' })
-            trigger.target.storage.xin_huzhu2++
-        }
-        'step 2'
-        trigger.target.update();
+        player.xjb_gainRemnantCard(trigger.card, trigger.nature, 1)
+        trigger.target.addTempSkill('xin_huzhu2', { player: 'dieAfter' })
+        trigger.target.storage.xin_huzhu2++
     },
     ai: {
         threaten: 1.6,
@@ -647,16 +637,28 @@ const xin_xiongli = SkillCreater(
     multitarget: true,
     multiline: true,
     translate: "凶力",
-    description: "出牌阶段限一次，你可以对任意名其他角色造成一点破甲伤害，若此做，对自己使用等量张残【杀】。",
+    description: "出牌阶段限一次，你可以对任意名其他角色造成一点随机属性伤害，若此做，你获得等量张不定属性的残【杀】。",
     selectTarget: [1, Infinity],
     filterTarget: function (card, player, target) {
         return (target != player)
     },
-    qzj: true,
     usable: 1,
     content: function () {
-        player.fc_X(true, 54, { onlyme: targets })
-        player.fc_X(true, "残区", { remnant: 'sha' }, [targets.length])
+        "step 0"
+        const natureList = lib.inpile_nature.slice(0)
+        natureList.push(...lib.inpile_nature.map((nature, index, natures) =>
+            natures.slice(index + 1).map(i => `${nature}|${i}`)).flat())
+        event.remnantNatureList = {}
+        targets.forEach(targetx => {
+            targetx.damage(player, natureList.randomGet())
+            const nature = lib.inpile_nature.randomGet()
+            event.remnantNatureList[nature] ??= 0;
+            event.remnantNatureList[nature]++;
+        });
+        "step 1"
+        for (const nature in event.remnantNatureList) {
+            player.xjb_gainRemnantCard("sha", event.remnantNatureList[nature], nature)
+        }
     },
     ai: {
         damage: true,
