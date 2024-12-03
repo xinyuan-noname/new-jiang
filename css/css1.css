@@ -131,8 +131,6 @@
 }
 
 
-
-
 /*左浮动*/
 .xjb_floatRight {
   float: right;
@@ -446,7 +444,6 @@ div.xjb_curtain {
   font-size: 24px
 }
 
-
 /**/
 
 .xjb-Ed-contentDataInput {
@@ -474,7 +471,8 @@ div.xjb_curtain {
   top: 0;
   bottom: 0;
   margin: auto 0;
-  padding: 5px 5px;
+  padding: 4px;
+  padding-right:10px;
   background-color: rgb(51, 51, 128, 0.8);
   border: #e4d5b7 solid 4px;
   border-radius: 1px;
