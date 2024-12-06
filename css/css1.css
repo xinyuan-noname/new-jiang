@@ -514,10 +514,6 @@ div.xjb_curtain {
   position: relative;
 }
 
-
-div.xjb-interact-back.xjb-editor.xjb-chooseMode:not(:not(ul:not(:empty))){
-  margin-left:0 !important;
-}
 /*tetris*/
 .xjb_tetrisDialog {
   height: 90vh;

@@ -1174,6 +1174,14 @@ export class choiceMode {
                 return node;
             })
             controlSkillInfo.replaceChildren(...nodes);
+            if (nodes.length) ui.xjb_centerToLeft(game.xjb_back);
+        })
+        if (navigator.userAgent.includes("Android")) controlSearch.addEventListener("change", e => {
+            if (!e.target.value.length) {
+                ui.xjb_noStyle(game.xjb_back);
+            } else if (controlSkillInfo.childNodes.length) {
+                ui.xjb_centerToLeft(game.xjb_back)
+            }
         })
         controlContainer.getData = () => {
             const nodes = controlContainer.querySelectorAll(".xjb-Ed-skillControl>.xjb_dialogButton.xjb-chosen");

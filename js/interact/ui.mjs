@@ -371,3 +371,16 @@ ui.create.xjb_back = function (str) {
     //
     return [back, close]//设置返回值为数组
 }
+ui.xjb_centerToLeft = function (ele) {
+    if (ele.classList.contains("xjbToCenter")) {
+        ele.style.marginLeft = 0
+    }
+}
+ui.xjb_centerToRight = function (ele) {
+    if (ele.classList.contains("xjbToCenter")) {
+        ele.style.marginRight = 0
+    }
+}
+ui.xjb_noStyle = function (ele) {
+    ele.style.cssText = "";
+}
