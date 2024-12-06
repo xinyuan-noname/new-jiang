@@ -1392,6 +1392,7 @@ game.xjb_skillEditor = function () {
         contentContainer2.classList.toggle("xjb_hidden");
         contentContainer3.classList.toggle("xjb_hidden");
         this.classList.toggle("xjb-chosen");
+		back.classList.toggle("xjb-chooseMode")
     })
     back.ele.content = contentFree;
     contentFree.toPart = "content";

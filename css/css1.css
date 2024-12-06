@@ -515,7 +515,9 @@ div.xjb_curtain {
 }
 
 
-
+div.xjb-interact-back.xjb-editor.xjb-chooseMode:has(ul:not(:empty)){
+  right:10em;
+}
 /*tetris*/
 .xjb_tetrisDialog {
   height: 90vh;

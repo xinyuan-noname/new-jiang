@@ -108,7 +108,8 @@ export function XJB_CONTENT(config, pack) {
             update: '刷新工具',
             putout: '输出目录',
             download: '下载更新',
-            downloadSimply: '简易更新'
+            downloadSimply: '简易更新',
+			
         },
         visualMenu: function (node) {
             node.className = 'button controlbutton';
