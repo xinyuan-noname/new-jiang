@@ -32,7 +32,7 @@ import {
 } from './tool/ui.js'
 import {
 	NonameCN
-} from './nonameCN.js'
+} from './editor/nonameCN.js'
 import { choiceMode, EditorInteraction } from './editor/interaction.mjs';
 import { dispose } from './editor/transCnText.mjs';
 import { EditorArrange } from './editor/arrange.mjs';

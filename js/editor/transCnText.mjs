@@ -6,7 +6,7 @@ import {
     ai,
     _status
 } from "../../../../noname.js";
-import { NonameCN } from "../nonameCN.js";
+import { NonameCN } from "./nonameCN.js";
 export function dispose(str, number, directory = lib.xjb_translate) {
     let list1 = TransCnText.splitLine(str);
     if (number === 1) return list1;

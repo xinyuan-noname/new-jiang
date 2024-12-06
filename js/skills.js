@@ -1,5 +1,6 @@
 import './skill/raiseSkill.mjs'
 import { _status, lib, game, ui, get, ai } from "../../../noname.js"
+import { XJB_Math } from './tool/math.js';
 function SkillCreater(name, skill) {
     lib.skill[name] = { ...skill }
     delete lib.skill[name].translate;
@@ -581,7 +582,7 @@ lib.skill.xjb_3 = {
                 } else {
                     game.pause();
                     setTimeout(function () {
-                        event.input = lib._xjb['randomInt'](_status.xjb_level.min, _status.xjb_level.max)
+                        event.input = XJB_Math['randomInt'](_status.xjb_level.min, _status.xjb_level.max)
                         game.resume();
                     }, 1000)
                 };

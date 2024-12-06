@@ -7,7 +7,6 @@ import {
     _status
 } from "../../../../noname.js";
 import { moveWordToEnd } from "../tool/string.js";
-1;
 export class EditorArrange {
     static transCnCalculation(that) {
         for (let i = 10; i > 0; i--) {

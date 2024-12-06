@@ -1,3 +1,4 @@
+import { XJB_Math } from "./tool/math.js";
 import { element } from "./tool/ui.js"
 window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
     /*file*/
@@ -962,7 +963,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                     ui.xjb_giveStyle(element, { color: '#b0e0e6' });
                 }
                 const name = ['割圆术', '黄金分割', '自然常数']
-                const π = lib._xjb["Math_doPI"], e = lib._xjb["Math_doe"], Φ = lib._xjb["Math_doΦ"]
+                const π = XJB_Math["Math_doPI"], e = XJB_Math["Math_doe"], Φ = XJB_Math["Math_doΦ"]
                 const num = [π(lib.config.xjb_π), Φ(lib.config.xjb_Φ), e(lib.config.xjb_e)]
                 const acc = [π, Φ, e]
                 const project = ["xjb_π", "xjb_Φ", "xjb_e"]

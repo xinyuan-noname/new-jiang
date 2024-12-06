@@ -7,7 +7,7 @@ import {
 } from "../../../../noname.js";
 import { element, textareaTool } from "../tool/ui.js";
 import { getLineRangeOfInput, pointInWhichLine } from "../tool/string.js";
-import { NonameCN } from "../nonameCN.js";
+import { NonameCN } from "./nonameCN.js";
 import { TransCnText, dispose } from "./transCnText.mjs";
 import { EditorParameterList, parameterJudge } from "./parameter.mjs";
 function tabChange(type) {

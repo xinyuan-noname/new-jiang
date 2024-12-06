@@ -252,7 +252,7 @@ function way() {
 function importFile() {
 	let count = 0;
 	const files = ["event", "lingli", "card",
-		"project", "rpg", "translate", "character", "economy", "math", "raise"];
+		"project", "rpg", "translate", "character", "economy", "raise"];
 	function loadFiles(fileName) {
 		let script = lib.init.js(lib.xjb_src + "js", fileName, () => {
 			window[`XJB_LOAD_${fileName.toUpperCase()}`](_status, lib, game, ui, get, ai);
@@ -262,7 +262,7 @@ function importFile() {
 	}
 	new Promise(res => {
 		//引入css文件    
-		lib.init.css(lib.xjb_src + "css", "css1", () => {
+		lib.init.css(lib.xjb_src + "css", "main", () => {
 			game.print("样式表引入成功——新将包")
 		}, (err) => {
 			game.print("样式表引入失败——新将包");
