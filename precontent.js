@@ -327,7 +327,7 @@ function importFile() {
 	};
 	game.xjb_loadAPI_PR = function () {
 		game.xjb_loadAPI(() => {
-			window.xjb_xyAPI
+			game.print(window.xjb_xyAPI);
 		}, void 0, "PR-branch");
 	}
 }
