@@ -1,4 +1,4 @@
-
+import { importEditor } from "./import/importEditor.mjs"
 window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
     lib.skill.xjb_final = {
         RPG: function () {
@@ -296,9 +296,7 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
             })
         },
         "import": function () {
-            import("./editor.js").then(() => {
-                ui.create.system("技能编辑", game.xjb_skillEditor);
-            })
+            importEditor();
             if (lib.xjb_yangcheng1) {
                 lib.xjb_yangcheng = lib.xjb_yangcheng1.onclick("other");
                 delete lib.xjb_yangcheng1

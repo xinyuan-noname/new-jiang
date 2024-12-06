@@ -1,0 +1,58 @@
+.xjb-Ed-contentDataInput {
+    margin-top: 1em;
+    overflow: auto;
+}
+
+.xjb-Ed-contentWho {
+    width: 10em;
+}
+
+.xjb-Ed-contentDoWhat {
+    width: 16em;
+}
+
+.xjb-Ed-contentChoiceContainer>* {
+    font-size: 0.8em;
+}
+
+.xjb-Ed-contentChoiceContainer ul {
+    max-height: 360px;
+    max-width: 11em;
+    position: fixed;
+    overflow: auto;
+    top: 0;
+    bottom: 0;
+    margin: auto 0;
+    padding: 4px;
+    padding-right: 10px;
+    background-color: rgb(51, 51, 128, 0.8);
+    border: #e4d5b7 solid 4px;
+    border-radius: 1px;
+    right: 0;
+}
+
+.xjb-Ed-contentChoiceContainer ul:empty {
+    display: none;
+}
+
+.xjb-Ed-contentChoiceContainer ul li {
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+.xjb-Ed-contentChoiceContainer datalist {
+    overflow: auto;
+    max-height: 200px;
+}
+
+.xjb-Ed-contentChoiceContainer ul li.xjb-chosen {
+    background-color: red;
+}
+
+.xjb-Ed-contentChoiceContainer ul li span {
+    background-color: yellow;
+}
+
+.xjb-Ed-contentChoiceContainer .xjb_dialogButton {
+    font-size: 0.8em;
+}

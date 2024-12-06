@@ -245,5 +245,4 @@ export class TransCnText {
         });
         return result;
     }
-
 }

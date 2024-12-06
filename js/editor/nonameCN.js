@@ -2382,7 +2382,19 @@ export class NonameCN {
     }
     static getVirtualPlayer() {
         const player = ui.create.player();
-        player.init('xjb_caocao');
+        player.name = "name1";
+        player.name1 = "name1";
+        player.tempname = [];
+        player.skin = {
+            name: "name1",
+            name2: "name2",
+        };
+        player.sex = "unsure";
+        player.group = "unsure";
+        player.hp = 4;
+        player.maxHp = 4;
+        player.hujia = 4;
+        player.name2 = "name2";
         Object.values(this.groupedList.packed_playerCode).forEach(method => player[method] = () => { })
         return player;
     }

@@ -479,32 +479,6 @@ div.xjb_curtain {
   right: 0;
 }
 
-.xjb-Ed-contentChoiceContainer ul:empty {
-  display: none;
-}
-
-.xjb-Ed-contentChoiceContainer ul li {
-  margin-bottom: 10px;
-  font-size: 12px;
-}
-
-.xjb-Ed-contentChoiceContainer datalist {
-  overflow: auto;
-  max-height: 200px;
-}
-
-.xjb-Ed-contentChoiceContainer ul li.xjb-chosen {
-  background-color: red;
-}
-
-.xjb-Ed-contentChoiceContainer ul li span {
-  background-color: yellow;
-}
-
-.xjb-Ed-contentChoiceContainer .xjb_dialogButton {
-  font-size: 0.8em;
-}
-
 .xjb_dialogButton .xjb_dialogButton {
   margin: 0 0.3em;
   border-radius: 50%;

@@ -288,9 +288,10 @@ function importFile() {
 		}
 		setInterval(interval, 100)
 	}).then(() => {
-		lib.init.js(lib.xjb_src + "js", "final", () => {
+		const script = lib.init.js(lib.xjb_src + "js", "final", () => {
 			window.XJB_LOAD_FINAL(_status, lib, game, ui, get, ai)
 		})
+		script.type = module;
 	})
 	//引入api
 	game.xjb_loadAPI = function (suc = () => void 0, fail = () => void 0, branch = "master") {
