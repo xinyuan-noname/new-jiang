@@ -23,7 +23,8 @@ window["xjb_xyAPI_Directory_新将包"]={
         "fire1.mp3"
     ],
     "css": [
-        "css1.css"
+        "editor.css",
+        "main.css"
     ],
     "hpCard": [
         "1.jpg",
@@ -56,8 +57,6 @@ window["xjb_xyAPI_Directory_新将包"]={
         "final.js",
         "library.js",
         "lingli.js",
-        "math.js",
-        "nonameCN.js",
         "project.js",
         "raise.js",
         "rpg.js",
@@ -166,6 +165,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "arrange.mjs",
         "implicitText.mjs",
         "interaction.mjs",
+        "nonameCN.js",
         "organize.mjs",
         "parameter.mjs",
         "skill.js",
@@ -177,6 +177,10 @@ window["xjb_xyAPI_Directory_新将包"]={
     ],
     "js/game": [
         "tetris.js"
+    ],
+    "js/import": [
+        "importEditor.mjs",
+        "url.js"
     ],
     "js/interact": [
         "dialog.mjs",
@@ -197,6 +201,7 @@ window["xjb_xyAPI_Directory_新将包"]={
     ],
     "js/tool": [
         "canvas.js",
+        "math.js",
         "string.js",
         "ui.js"
     ],
