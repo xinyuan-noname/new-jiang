@@ -516,7 +516,7 @@ div.xjb_curtain {
 
 
 div.xjb-interact-back.xjb-editor.xjb-chooseMode:has(ul:not(:empty)){
-  margin-left:0;
+  margin-left:0 !important;
 }
 /*tetris*/
 .xjb_tetrisDialog {
