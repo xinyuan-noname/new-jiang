@@ -95,8 +95,8 @@ class elementTool {
      * @param {function} callback 
      * @returns {elementTool}
      */
-    listen(event, callback) {
-        this.ele.addEventListener(event, callback)
+    listen(event, callback, option) {
+        this.ele.addEventListener(event, callback, option)
         return this;
     }
     listenUnderCondition(condition, event, callback) {

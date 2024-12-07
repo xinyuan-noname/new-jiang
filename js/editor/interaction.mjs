@@ -1123,18 +1123,6 @@ export class choiceMode {
             toggleButtonStatus(button);
             controlSearch.value = "";
         })
-        const chosenItemCallback = function () {
-            this.classList.toggle("xjb-chosen");
-            if (this.button) {
-                this.button.remove();
-                this.button = null;
-                return;
-            }
-            const button = addButton(this.dataset.id);
-            button.li = this;
-            this.button = button;
-            toggleButtonStatus(button)
-        }
         controlSearch.addEventListener("change", e => {
             if (!e.target.value.length) return controlSkillInfo.replaceChildren();
             const keywords = e.target.value.split(" ");
@@ -1163,8 +1151,18 @@ export class choiceMode {
                 }
                 const node = element("li")
                     .innerHTML(inner)
-                    .listenUnderCondition(!lib.config.touchscreen, "click", chosenItemCallback)
-                    .listenTouchEndWithoutMove(chosenItemCallback, lib.config.touchscreen)
+                    .listen(lib.config.touchscreen ? "touchend" : "click", function (e) {
+                        this.classList.toggle("xjb-chosen");
+                        if (this.button) {
+                            this.button.remove();
+                            this.button = null;
+                            return;
+                        }
+                        const button = addButton(this.dataset.id);
+                        button.li = this;
+                        this.button = button;
+                        toggleButtonStatus(button)
+                    }, { passive: true })
                     .exit();
                 node.dataset.id = id;
                 const button = [...controlContainer.querySelectorAll(".xjb_dialogButton")].find(btn => btn.value === id)
