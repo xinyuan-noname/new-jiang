@@ -1123,6 +1123,18 @@ export class choiceMode {
             toggleButtonStatus(button);
             controlSearch.value = "";
         })
+        const chosenItemCallback = function () {
+            this.classList.toggle("xjb-chosen");
+            if (this.button) {
+                this.button.remove();
+                this.button = null;
+                return;
+            }
+            const button = addButton(this.dataset.id);
+            button.li = this;
+            this.button = button;
+            toggleButtonStatus(button)
+        }
         controlSearch.addEventListener("change", e => {
             if (!e.target.value.length) return controlSkillInfo.replaceChildren();
             const keywords = e.target.value.split(" ");
@@ -1151,18 +1163,8 @@ export class choiceMode {
                 }
                 const node = element("li")
                     .innerHTML(inner)
-                    .listen(lib.config.touchscreen ? "touchend" : "click", function () {
-                        this.classList.toggle("xjb-chosen");
-                        if (this.button) {
-                            this.button.remove();
-                            this.button = null;
-                            return;
-                        }
-                        const button = addButton(this.dataset.id);
-                        button.li = this;
-                        this.button = button;
-                        toggleButtonStatus(button)
-                    })
+                    .listenUnderCondition(!lib.config.touchscreen, "click", chosenItemCallback)
+                    .listenTouchEndWithoutMove(chosenItemCallback, lib.config.touchscreen)
                     .exit();
                 node.dataset.id = id;
                 const button = [...controlContainer.querySelectorAll(".xjb_dialogButton")].find(btn => btn.value === id)
@@ -1174,15 +1176,16 @@ export class choiceMode {
                 return node;
             })
             controlSkillInfo.replaceChildren(...nodes);
-            if (nodes.length) ui.xjb_centerToLeft(game.xjb_back);
         })
-        if (navigator.userAgent.includes("Android")) controlSearch.addEventListener("change", e => {
-            if (!e.target.value.length) {
-                ui.xjb_noStyle(game.xjb_back);
-            } else if (controlSkillInfo.childNodes.length) {
-                ui.xjb_centerToLeft(game.xjb_back)
-            }
-        })
+        if (lib.config.touchscreen) {
+            controlSearch.addEventListener("change", e => {
+                if (!e.target.value.length) {
+                    ui.xjb_noStyle(game.xjb_back);
+                } else if (controlSkillInfo.childNodes.length) {
+                    ui.xjb_centerToLeft(game.xjb_back)
+                }
+            })
+        }
         controlContainer.getData = () => {
             const nodes = controlContainer.querySelectorAll(".xjb-Ed-skillControl>.xjb_dialogButton.xjb-chosen");
             const skills = [];

@@ -45,7 +45,6 @@ class elementTool {
         this.ele.innerHTML += str;
         return this;
     }
-
     block() {
         this.ele.style.display = 'block';
         return this;
@@ -100,6 +99,10 @@ class elementTool {
         this.ele.addEventListener(event, callback)
         return this;
     }
+    listenUnderCondition(condition, event, callback) {
+        if (condition) this.ele.addEventListener(event, callback)
+        return this;
+    }
     listenTransEvent(preEvent, transEvent, listener, isOk = () => true) {
         this.ele.addEventListener(preEvent, e => {
             if (isOk(e)) e.target.dispatchEvent(new Event(transEvent, {
@@ -110,6 +113,19 @@ class elementTool {
             }))
         })
         this.ele.addEventListener(transEvent, listener)
+        return this;
+    }
+    listenTouchEndWithoutMove(callback, condition) {
+        if (!condition) return this;
+        let isMoving = false;
+        this.ele.addEventListener("touchmove", () => {
+            isMoving = true;
+        });
+        this.ele.addEventListener("touchend", function (e) {
+            isMoving = false;
+            if (isMoving) return;
+            callback.call(this, e)
+        });
         return this;
     }
     accesskey(key) {
