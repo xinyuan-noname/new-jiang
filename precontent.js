@@ -1,3 +1,4 @@
+"use script"
 import {
 	lib,
 	game,
@@ -291,7 +292,7 @@ function importFile() {
 		const script = lib.init.js(lib.xjb_src + "js", "final", () => {
 			window.XJB_LOAD_FINAL(_status, lib, game, ui, get, ai)
 		})
-		script.type = module;
+		script.type = "module";
 	})
 	//引入api
 	game.xjb_loadAPI = function (suc = () => void 0, fail = () => void 0, branch = "master") {
