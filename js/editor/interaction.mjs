@@ -1045,7 +1045,9 @@ export class choiceMode {
         const controlSearch = element("input").type("search").setKey("placeholder", "回车可搜索技能").setStyle("position", "relative").exit();
         const controlSearchSubmit = element("button").innerHTML("提交").addClass("xjb-button").exit();
         const controlSearch2 = element("input").type("search").addClass("xjb_hidden").width("12em").setKey("placeholder", "回车以增加变量").setStyle("position", "relative").exit();
-        const controlSkillInfo = element("ul").exit();
+        const controlSkillInfo = element("ul").hook(ele => {
+            if (lib.config.touchscreen) ele.classList.add("xjb-touch-screen")
+        }).exit();
         let controlVarTypeShift
         const addButton = (skill, deletable = true, isVar, isSkillsVar) => {
             const button = element()
