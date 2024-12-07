@@ -31,8 +31,8 @@
 }
 
 .xjb-Ed-contentChoiceContainer ul.xjb-touch-screen {
-    max-width: 9em;
-    padding-left: 2em;
+    max-width: 10em;
+    padding-left: 3em;
 }
 
 .xjb-Ed-contentChoiceContainer ul:empty {
@@ -41,7 +41,7 @@
 
 .xjb-Ed-contentChoiceContainer ul li {
     margin-bottom: 10px;
-    font-size: 14px;
+    font-size: 15px;
 }
 
 .xjb-Ed-contentChoiceContainer datalist {
