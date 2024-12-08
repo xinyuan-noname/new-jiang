@@ -1,5 +1,4 @@
 import { XJB_Math } from "./tool/math.js";
-import { element } from "./tool/ui.js"
 window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
     /*file*/
     game.xjb_transferFile = function (BLOB, fileWay, silent) {

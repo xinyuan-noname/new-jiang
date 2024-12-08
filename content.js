@@ -67,22 +67,27 @@ export function XJB_CONTENT(config, pack) {
         })
         //遍历这个数组，执行其中的函数
         arr.forEach(function (item) {
-            if (!this[item]) return false;
+            if (!this[item]) {
+                return false;
+            }
             for (let i in this[item]) {
-                (typeof this[item][i] === "function") && this[item][i]()
+                if (typeof this[item][i] === "function") this[item][i]();
             }
         }, lib.skill)
     })
     //这个是一定要放在最后处理的新将包数据
     lib.arenaReady.push(function () {
-        if (lib.skill.xjb_final) {
+        const loadFinal = () => {
+            if (!lib.skill.xjb_final) {
+                const timer = setTimeout(loadFinal, 100);
+                return;
+            };
             for (let k in lib.skill.xjb_final) {
-                window.requestAnimationFrame(function () {
-                    (typeof lib.skill.xjb_final[k] === "function") &&
-                        lib.skill.xjb_final[k]()
-                })
+                (typeof lib.skill.xjb_final[k] === "function") &&
+                    lib.skill.xjb_final[k]()
             }
         }
+        loadFinal()
     })
     lib.extensionMenu.extension_新将包.delete.name = '<img src="' + lib.xjb_src + 'image/trash.png" width="16">' + '删除'
     lib.extensionMenu.extension_新将包['Eplanation'] = {
@@ -109,7 +114,7 @@ export function XJB_CONTENT(config, pack) {
             putout: '输出目录',
             download: '下载更新',
             downloadSimply: '简易更新',
-			
+
         },
         visualMenu: function (node) {
             node.className = 'button controlbutton';

@@ -334,6 +334,7 @@ function importFile() {
 	}
 }
 function initialize() {
+	lib.xjb_skillsStore = [];
 	window.XJB_GLOBAL_VAR = {
 		lib,
 		game,
@@ -341,6 +342,9 @@ function initialize() {
 		_status,
 		ai,
 		ui
+	}
+	lib.element.XJB_CLASS = {
+
 	}
 	//设置刘徽-祖冲之祖项目
 	//设置参数π、e、Φ，这些参数越大越精确

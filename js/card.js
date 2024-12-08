@@ -2,6 +2,7 @@ import { clearBad } from "./card/clearBad.mjs";
 import { clearBadTranslate } from "./card/clearBad.mjs";
 import { soulStoreCard, soulStoreCardTranslate } from "./card/store.mjs";
 import { callFellow, callFellowCardSkill, callFellowTranslate } from "./card/callFellow.mjs"
+import { CardStoreGoods } from "./economy/product.mjs";
 window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
     game.import("card", function () {
         lib.config.all.cards.push("xjb_jizhuoyangqing");
@@ -115,108 +116,39 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
             }
         },
         CardStore: function () {
-            game.xjb_storeCard = [
-                "xjb_shenshapo",
-                "xjb_skill_off_card",
-                "xjb_zhihuan",
-                "xjb_penglai",
-                "xjb_skillCard",
-                "xjb_tianming_huobi2",
-                "xjb_tianming_huobi1",
-                "xjb_seizeHpCard",
-                "xjb_lingliCheck"
-            ]
-            class CardCreator {
-                constructor(num1 = 1, num2 = 1, num3 = 1, arr1, arr2) {
-                    this.content = {
-                        fivePoint: num1,
-                        minCost: num2,
-                        energyNeed: num3,
-                    }
-                    this.arr1 = arr1
-                    this.arr2 = arr2
-                }
-                get ok() {
-                    return lib.config.xjb_systemEnergy >= this.content.energyNeed;
-                }
-                get cost() {
-                    this.update();
-                    if (lib.translate[this.cardName]) lib.translate[this.cardName + "_info"] = this.description + "</br>价格:" + this.content.cost;
-                    return this.content.cost;
-                }
-                update() {
-                    if (lib.config.xjb_systemEnergy < this.content.fivePoint) {
-                        let Num1 = this.content.fivePoint - lib.config.xjb_systemEnergy
-                        this.content.cost = (Math.floor(Num1 / this.arr1[0]) * (this.arr1[1])) + 5
-                    } else if (lib.config.xjb_systemEnergy > this.content.fivePoint) {
-                        let Num2 = lib.config.xjb_systemEnergy - this.content.fivePoint
-                        this.content.cost = (-(Math.floor(Num2 / this.arr2[0]) * (this.arr2[1]))) + 5
-                    } else {
-                        this.content.cost = 5
-                    }
-                    this.content.cost = Math.round(this.content.cost * game.xjb_inflationRate())
-                    if (this.content.cost < this.content.minCost) this.content.cost = this.content.minCost
-                }
-                setName(cardName) {
-                    this.cardName = cardName
-                    this.description = lib.translate[cardName + "_info"]
-                    return this
-                }
-            }
             game.xjb_storeCard_information = {
-                xjb_skill_off_card: new CardCreator(580, 0, 25, [500, 1], [600, 1]).setName("xjb_skill_off_card"),
-                xjb_zhihuan: new CardCreator(150, 1, 53, [5, 1], [8, 1]).setName("xjb_zhihuan"),
-                xjb_penglai: new CardCreator(1230, 2, 90, [56, 1], [70, 1]).setName("xjb_penglai"),
-                xjb_skillCard: new CardCreator(1460, 2, 85, [56, 1], [100, 1]).setName("xjb_skillCard"),
-                xjb_tianming_huobi2: new CardCreator(9842, 0, 500, [24, 1], [26, 1]).setName("xjb_tianming_huobi2"),
-                xjb_tianming_huobi1: new CardCreator(1142, 0, 70, [84, 1], [96, 1]).setName("xjb_tianming_huobi1"),
-                xjb_shenshapo: new CardCreator(980, 1, 50, [254, 2], [220, 1]).setName("xjb_shenshapo"),
-                xjb_seizeHpCard: new CardCreator(3000, 4, 150, [61, 1], [10, 1]).setName("xjb_seizeHpCard"),
-                xjb_BScharacter: new CardCreator(10000, 8, 109, [1905, 1], [2300, 1]),
-                xjb_lingliCheck: new CardCreator(23000, 4, 1300, [2500, 1], [1500, 1]).setName("xjb_lingliCheck")
+                xjb_skill_off_card: new CardStoreGoods(580, 0, 25, [500, 1], [600, 1]).setName("xjb_skill_off_card"),
+                xjb_zhihuan: new CardStoreGoods(150, 1, 53, [5, 1], [8, 1]).setName("xjb_zhihuan"),
+                xjb_penglai: new CardStoreGoods(1230, 2, 90, [56, 1], [70, 1]).setName("xjb_penglai"),
+                xjb_skillCard: new CardStoreGoods(1460, 2, 85, [56, 1], [100, 1]).setName("xjb_skillCard"),
+                xjb_tianming_huobi2: new CardStoreGoods(9842, 0, 500, [24, 1], [26, 1]).setName("xjb_tianming_huobi2"),
+                xjb_tianming_huobi1: new CardStoreGoods(1142, 0, 70, [84, 1], [96, 1]).setName("xjb_tianming_huobi1"),
+                xjb_shenshapo: new CardStoreGoods(980, 1, 50, [254, 2], [220, 1]).setName("xjb_shenshapo"),
+                xjb_seizeHpCard: new CardStoreGoods(3000, 4, 150, [61, 1], [10, 1]).setName("xjb_seizeHpCard"),
+                xjb_BScharacter: new CardStoreGoods(10000, 8, 109, [1905, 1], [2300, 1], true),
+                xjb_lingliCheck: new CardStoreGoods(23000, 4, 1300, [2500, 1], [1500, 1]).setName("xjb_lingliCheck")
             }
+            lib.element.XJB_CLASS.CardStoreGoods = CardStoreGoods;
             lib.skill._xjb_cardStore = {
                 enable: ["chooseToUse"],
                 filter: function (event, player) {
                     if (!lib.config.xjb_hun || !lib.config.xjb_cardStore) return false
                     if (!(player == game.me || player.isUnderControl())) return false
                     if (event.type != 'dying' && event.parent.name != 'phaseUse') return false
-                    if (lib.config.xjb_systemEnergy < 0) return false
-                    let list = []
-                    game.xjb_storeCard.forEach(function (item, index) {
-                        const _this = game.xjb_storeCard_information[item];
-                        if (!_this) return;
-                        if (!_this.cost || !_this.ok) return;
-                        if (!game.xjb_condition(1, _this.cost)) return;
-                        list.push(item);
-                    })
-                    if (!list.length) return false
-                    return true
+                    const list = lib.element.XJB_CLASS.CardStoreGoods.canPurchaseList;
+                    if (!list.length) return false;
+                    return true;
                 },
-                content: function () {
-                    "step 0"
-                    let list = []
-                    game.xjb_storeCard.forEach(function (item, index) {
-                        const _this = game.xjb_storeCard_information[item];
-                        if (!_this) return;
-                        if (!_this.cost || !_this.ok) return;
-                        if (!game.xjb_condition(1, _this.cost)) return;
-                        list.push(["", "<font color=white>" + _this.cost + "魂币", item])
+                content: async function (event, trigger, player) {
+                    const list = lib.element.XJB_CLASS.CardStoreGoods.canPurchaseList.map((product) => {
+                        return ["", "<font color=white>" + product.cost + "魂币", product.cardName]
                     })
-                    if (list.length) {
-                        let dialog = ui.create.dialog("新将包魂市", [list, "vcard"])
-                        player.chooseButton(dialog)
-                    }
-                    "step 1"
+                    if (!list.length) return;
+                    let dialog = ui.create.dialog("新将包魂市", [list, "vcard"])
+                    const { result } = await player.chooseButton(dialog);
                     if (result.bool) {
-                        const cardName = result.links[0][2];
-                        const information = game.xjb_storeCard_information[cardName];
-                        let card = game.createCard(cardName, "", 1)
-                        player.gain(card, "draw")
-                        card.storage.xjb_allowed = true;
-                        card.dataset.cost = information.cost;
-                        game.cost_xjb_cost(1, information.cost, '在商店中购买');
-                        game.xjb_systemEnergyChange(-information.content.energyNeed);
+                        const card = lib.element.XJB_CLASS.CardStoreGoods.getGoods(result.links[0][2]).purchase();
+                        player.gain(card, "draw");
                     }
                 },
                 ai: {

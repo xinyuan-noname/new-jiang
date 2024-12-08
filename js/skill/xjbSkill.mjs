@@ -1,4 +1,4 @@
-import { lib, game, ui, get, ai, _status} from "../../../../noname.js";
+import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 export const xjbSkill = {};
 export const xjbTranslate = {};
 /**
@@ -23,12 +23,11 @@ const xin_yexi = SkillCreater(
         return player.countCards('h') > 0
     },
     filterTarget: function (card, player, target) {
-        game.print(get.itemtype(card))
         return target.countCards("he");
     },
     filterCard: function (card) {
         if (ui.selected.cards.length) {
-            return get.suit(card) == get.suit(ui.selected.cards[0])
+            return get.suit(card) === get.suit(ui.selected.cards[0])
         }
         return true
     },
@@ -40,9 +39,11 @@ const xin_yexi = SkillCreater(
     check: function (card) {
         return 6 - get.value(card)
     },
-    content: function () {
-        player.discardPlayerCard("he", cards.length);
-        if (cards.length > 1) player.useCard({ name: 'sha', nature: "thunder" }, target, false);
+    content: async function (event, trigger, player) {
+        await player.discardPlayerCard("he", event.target, event.cards.length);
+        if (event.cards.length > 1) {
+            await player.useCard({ name: 'sha', nature: "thunder" }, event.target, false);
+        }
     },
     translate: "夜袭",
     description: "出牌阶段，你可以弃置一种花色的所有手牌，然后你弃置一名角色等量张牌。若你以此弃置的牌数>1，你对其使用一张无距离限制的雷【杀】，此【杀】计入次数限制。",
