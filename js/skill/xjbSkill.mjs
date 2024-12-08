@@ -40,7 +40,7 @@ const xin_yexi = SkillCreater(
         return 6 - get.value(card)
     },
     content: async function (event, trigger, player) {
-        await player.discardPlayerCard("he", event.target, event.cards.length);
+        await player.discardPlayerCard("he", event.target, [1, event.cards.length]);
         if (event.cards.length > 1) {
             await player.useCard({ name: 'sha', nature: "thunder" }, event.target, false);
         }
@@ -124,18 +124,18 @@ const xin_shiyin = SkillCreater(
         return get.info("xin_shiyin").getType(event, player).length === 1;
     },
     async cost(event, trigger, player) {
-        let type = get.info("xin_shiyin").getType(trigger, player)[0];
-        let number = 0;
+        const type = get.info("xin_shiyin").getType(trigger, player)[0];
+        let chooseStr = "";
         switch (type) {
-            case 'basic': number = 11; break;
-            case 'trick': number = 12; break;
-            case 'equip': number = 4; break;
+            case 'basic': chooseStr = "你选择一名角色，令其回复一点体力"; break;
+            case 'trick': chooseStr = "你选择一名角色，令其失去一点体力"; break;
+            case 'equip': chooseStr = "你选择一名角色，对其造成一点伤害"; break;
         }
-        event.result = await player.chooseTarget(get.xjb_number(number, 1)).forResult();
+        event.result = await player.chooseTarget(chooseStr).forResult();
     },
     async content(event, trigger, player) {
-        let type = get.info("xin_shiyin").getType(trigger, player)[0];
-        let toDo = 0;
+        const type = get.info("xin_shiyin").getType(trigger, player)[0];
+        let toDo = "";
         switch (type) {
             case 'basic': toDo = "recover"; break;
             case 'trick': toDo = "loseHp"; break;
