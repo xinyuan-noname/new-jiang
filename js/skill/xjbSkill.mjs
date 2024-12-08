@@ -691,83 +691,35 @@ const xin_mousheng = SkillCreater(
     "_priority": 0,
 })
 
-const xin_bingjie = SkillCreater(
-    "xin_bingjie", {
+const xjb_bingjie = SkillCreater(
+    "xjb_bingjie", {
     translate: "秉节",
-    description: "1.一名角色准备阶段前，你可以弃置所有手牌，你令该角色将手牌调至体力上限<br>2.你受到一点伤害后，你可令一名角色将手牌调至体力上限。<br>因该技能获得的牌均记为\"留香\"。",
+    description: "每轮开始时/你受到一点伤害后，你可以弃置任意非“留香”牌，然后你令一名角色将手牌摸至体力上限，该角色以此法获得的牌称为“留香”",
     trigger: {
-        global: ["phaseZhunbeiBegin"],
-        player: "damageEnd",
+        global: "roundStart",
+        player: "damageEnd"
     },
-    filter: function (event, player) {
-        if (event.name == 'phaseZhunbei') {
-            return event.player.countCards("h") !== event.player.maxHp && player.countCards("h") > 0
-        }
-        return true;
+    getIndex: function (event) {
+        return event.num || 1;
     },
-    direct: true,
-    content: function () {
-        'step 0'
-        if (event.triggername == 'damageEnd') event.count = trigger.num
-        'step 1'
-        if (event.triggername == 'damageEnd') {
-            event.count--
-            player.chooseTarget('令一名角色将手牌数调至体力上限', true, function (card, player, target) {
-                return true
-            }).set('ai', function (target) {
-                var att = get.attitude(_status.event.player, target);
-                var draw = Math.min(5, target.maxHp) - target.countCards('h');
-                if (draw >= 0) {
-                    if (target.hasSkillTag('nogain')) att /= 6;
-                    if (att > 2) {
-                        return Math.sqrt(draw + 1) * att;
-                    }
-                    return att / 3;
-                }
-                if (draw < -1) {
-                    if (target.hasSkillTag('nogain')) att *= 6;
-                    if (att < -2) {
-                        return -Math.sqrt(1 - draw) * att;
-                    }
-                }
-                return 0;
-            });
-        }
-        else {
-            event.target = trigger.player
-            var a = event.target.maxHp
-            var n = a > 5 ? 5 : a
-            var next = player.chooseBool('是否令' + get.translation(event.target) + '将手牌调至' + n + '张牌，你弃置所有手牌？')
-            next.set('ai', function () {
-                var event = _status.event;
-                if (event.player.hp > 1) {
-                    if (event.source.countCards("h") < event.source.maxHp) return (get.attitude(event.player, event.source) > 0)
-                }
-                return false
-            });
-            next.set('source', event.target);
-        }
-        'step 2'
-        if (result.bool) {
-            if (event.triggername != 'damageEnd') player.discard(player.getCards("h"))
-            event.target = event.triggername == 'damageEnd' ? result.targets[0] : trigger.player
-            var num = event.target.maxHp > 20 ? 20 : event.target.maxHp
-            event.target.fc_X(true, 46, [num], { toTagCard: 'xin_liuxiang' })
-        }
-        else if (event.count > 0) event.goto(1)
-        else event.finish()
-        'step 3'
-        if (event.triggername != 'damageEnd') { }
-        else if (event.count > 0) event.goto(1)
-        else event.finish()
+    cost: async function (event, trigger, player) {
+        const { result: { bool } } = await player.chooseToDiscard([0, Infinity], "he", true, card => !card.hasGaintag("xjb_liuxiang"));
+        event.result = { bool }
     },
-    "_priority": 0,
+    content: async function (event, trigger, player) {
+        const { result: { targets } } = await player.chooseTarget()
+            .set("prompt2", "令角色将手牌摸至体力上限");
+        if (targets) {
+            const { result: cards } = await targets[0].drawTo(targets[0].maxHp);
+            if (cards.length) targets[0].addGaintag(cards, "xjb_liuxiang")
+        }
+    },
 })
-const xin_liuxiang = SkillCreater(
-    "xin_liuxiang", {
+const xjb_liuxiang = SkillCreater(
+    "xjb_liuxiang", {
     translate: "留香",
-    description: "一名角色每失去X次\"留香\"牌后，你可以令其恢复一点体力值。(X为其体力值)",
-    group: ["xin_liuxiang_xiang", "xin_liuxiang_aid"],
+    description: "一名角色每使用或打出“留香”牌的次数大于X后，你可以令其恢复一点体力值，然后重新计算失去次数。(X为其体力值，且至少为3)",
+    group: ["xjb_liuxiang_xiang", "xjb_liuxiang_aid"],
     subSkill: {
         xiang: {
             marktext: "香",
@@ -780,7 +732,7 @@ const xin_liuxiang = SkillCreater(
         },
         aid: {
             trigger: {
-                global: ["respondEnd", "useCardEnd", "discardEnd"],
+                global: ["respondEnd", "useCardEnd"],
             },
             forced: true,
             priority: -1,
@@ -788,10 +740,10 @@ const xin_liuxiang = SkillCreater(
                 return event.player.hasHistory('lose', function (evt) {
                     if (evt.getParent() != event) return false;
                     for (var i in evt.gaintag_map) {
-                        if (evt.gaintag_map[i].includes('xin_liuxiang')) {
-                            event.player.addMark('xin_liuxiang_xiang', 1)
+                        if (evt.gaintag_map[i].includes('xjb_liuxiang')) {
+                            event.player.addMark('xjb_liuxiang_xiang', 1)
                             event.player.update()
-                            return event.player.countMark('xin_liuxiang_xiang') >= player.hp && !player.isHealthy();
+                            return event.player.countMark('xjb_liuxiang_xiang') >= Math.max(player.hp, 3) && !event.player.isHealthy();
                         }
                     }
                     return false;
@@ -800,12 +752,11 @@ const xin_liuxiang = SkillCreater(
             content: function () {
                 'step 0'
                 event.target = trigger.player
-                var num = event.target.hp
                 player.chooseBool('对' + get.translation(event.target) + '是否令其恢复一点体力')
                 'step 1'
                 if (result.bool) {
-                    event.target.removeMark('xin_liuxiang_xiang', event.target.countMark('xin_liuxiang_xiang'));
-                    event.target.fc_X(true, "回血")
+                    event.target.removeMark('xjb_liuxiang_xiang', event.target.countMark('xjb_liuxiang_xiang'));
+                    event.target.recover()
                 }
             },
             sub: true,
@@ -815,8 +766,8 @@ const xin_liuxiang = SkillCreater(
     "_priority": 0,
 })
 
-const xin_zirou = SkillCreater(
-    "xin_ziruo", {
+const xjb_zirou = SkillCreater(
+    "xjb_ziruo", {
     translate: "自若",
     description: "当你成为其他角色的牌的目标时，你可为此牌减少任意名未横置的目标，然后这些目标横置。",
     trigger: {

@@ -57,7 +57,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     sex: "male",
                     group: "han",
                     hp: 3,
-                    skills: ["xin_bingjie", "xin_liuxiang"],
+                    skills: ["xjb_bingjie", "xjb_liuxiang"],
                     trashBin: []
                 },
                 "xjb_pangtong": {
