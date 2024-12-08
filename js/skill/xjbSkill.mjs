@@ -422,16 +422,19 @@ const xjb_zhijue = SkillCreater(
     translate: "智绝",
     description: "一名其他角色使用锦囊牌时，你可以弃置一张相同点数/颜色的牌(虚拟牌则改为任意一张)，取消此牌的所有目标。该角色获得X张残【杀】(X为此牌的目标数且至少为1)",
     cost: async function (event, trigger, player) {
-        const { bool } = await player.chooseToDiscard(
-            card => {
+        const next = player.chooseToDiscard(
+            'he',
+            "弃置一张相同点数/颜色的牌，取消此牌的所有目标。"
+        )
+        game.broadcastAll(() => {
+            next.set("filterCard", card => {
                 const cardx = event.getParent("useCard").card;
                 if (cardx.cards.length === 0) return true;
                 return get.color(card) === get.color(cardx)
                     || get.number(card) === get.number(cardx)
-            },
-            'he',
-            "弃置一张相同点数/颜色的牌，取消此牌的所有目标。"
-        ).forResult();
+            })
+        });
+        const { result: { bool } } = await next
         event.result = { bool, cost_data: { cards: event.cards } }
     },
     content: async function (event, trigger, player) {
