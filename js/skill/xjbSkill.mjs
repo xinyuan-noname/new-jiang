@@ -63,25 +63,18 @@ const xjb_jianxiong = SkillCreater(
     trigger: {
         player: "damageEnd"
     },
-    frequent: true,
     getIndex: function (event, player, triggername) {
         return event.num;
     },
     content: async function (event, trigger, player) {
-        const orderingCards = [...ui.ordering.children]
-        const num = orderingCards.length + 1
-        const dialog = ui.create.dialog(`请选择${get.cnNumber(num)}张牌获得之`)
-        dialog.add('<div class="text center" style="margin: 0px;">牌堆顶</div>')
-        dialog.add(get.cards(num))
-        if (orderingCards.length) {
-            dialog.add('<div class="text center" style="margin: 0px;">中央区</div>')
-            dialog.add(orderingCards)
-        }
-        const { links } = await player.chooseButton(dialog, num, true).forResult()
-        await player.gain(links, 'gain2')
+        if (!trigger.cards) trigger.cards = [];
+        const cards = trigger.cards.filterInD();
+        const num = Math.max(2 - cards.length, 0)
+        await player.draw(num);
+        await player.gain(cards, 'gain2')
     },
     translate: "奸雄",
-    description: "当你受到一点伤害后，你可以从牌堆顶的X张牌、此时中央区的牌中选择X张获得之(X为此时中央区的牌数+1)。",
+    description: "当你受到一点伤害后，你可以摸2-X张牌，然后你获得对你造成伤害的牌。(X为位于中央区的对你造成伤害的牌的数量且至多为2)",
     ai: {
         maixie: true,
         "maixie_hp": true,
@@ -310,7 +303,6 @@ const xin_zhibang = SkillCreater(
 });
 const xin_chuhui = SkillCreater(
     "xin_chuhui", {
-    audio: "ext:新将包:false",
     enable: "phaseUse",
     filter: function (event, player) {
         return player.getStorage('xin_zhibang').length >= 5;
@@ -563,7 +555,6 @@ const xin_huzhu = SkillCreater(
     translate: "护主",
     description: "当一名其他角色指定其他角色为【杀】目标时，你可以获得一张同属性的残【杀】令其获得一个“护”",
     derivation: ["xin_huzhu2"],
-    audio: "ext:新将包:false",
     trigger: {
         global: "useCardToTargeted",
     },
@@ -893,7 +884,6 @@ const xjb_fengchu = SkillCreater(
     "xjb_fengchu", {
     translate: "凤雏",
     description: "出牌阶段限一次，你若你手牌数为奇数，你可以回复一点体力并摸一张牌;手牌数为偶数，你可以失去一点体力并摸四张牌。",
-    audio: "ext:新将包:false",
     enable: "phaseUse",
     filter: function (event, player) {
         return true;
@@ -925,7 +915,6 @@ const xin_tianming = SkillCreater(
     "xin_tianming", {
     translate: "天命",
     description: "锁定技，当你失去一张区域的牌后，若你有未记录该牌的花色，你记录之并摸一张牌。",
-    audio: "ext:新将包:false",
     trigger: {
         player: ["loseAfter"],
     },
@@ -959,7 +948,6 @@ const xin_zulong = SkillCreater(
     "xin_zulong", {
     translate: "祖龙",
     description: "当你体力值减少后，可以你获得一个技能。若此技能为觉醒技，则无视发动条件。",
-    audio: "ext:新将包:false",
     trigger: {
         player: ["damageEnd", "loseHpEnd"],
         global: "xjb_bianshenEnd",
@@ -983,7 +971,6 @@ const xin_zaozhong = SkillCreater(
     "xin_zaozhong", {
     translate: "遗计",
     description: "当你受到一点伤害后，你选择一名角色，其使用一张残【兵粮寸断】然后摸三张牌。",
-    audio: "ext:新将包:false",
     frequent: true,
     trigger: {
         player: ["damageAfter"],
