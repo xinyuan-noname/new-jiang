@@ -1,3 +1,4 @@
+import { lib, game, ui, get, ai, _status} from "../../../../noname.js";
 export const clearBad = {};
 export const clearBadTranslate = {};
 function CardCreater(name, card) {

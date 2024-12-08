@@ -334,6 +334,14 @@ function importFile() {
 	}
 }
 function initialize() {
+	window.XJB_GLOBAL_VAR = {
+		lib,
+		game,
+		get,
+		_status,
+		ai,
+		ui
+	}
 	//设置刘徽-祖冲之祖项目
 	//设置参数π、e、Φ，这些参数越大越精确
 	if (!lib.config.xjb_π) {

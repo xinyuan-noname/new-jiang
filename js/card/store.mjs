@@ -1,3 +1,4 @@
+import { lib, game, ui, get, ai, _status} from "../../../../noname.js";
 export const soulStoreCard = {};
 export const soulStoreCardTranslate = {};
 function CardCreater(name, card) {

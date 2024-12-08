@@ -1,7 +1,7 @@
-import { clearBad } from "./card/clearBad.js";
-import { clearBadTranslate } from "./card/clearBad.js";
-import { soulStoreCard, soulStoreCardTranslate } from "./card/store.js";
-import { callFellow, callFellowCardSkill, callFellowTranslate } from "./card/callFellow.js"
+import { clearBad } from "./card/clearBad.mjs";
+import { clearBadTranslate } from "./card/clearBad.mjs";
+import { soulStoreCard, soulStoreCardTranslate } from "./card/store.mjs";
+import { callFellow, callFellowCardSkill, callFellowTranslate } from "./card/callFellow.mjs"
 window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
     game.import("card", function () {
         lib.config.all.cards.push("xjb_jizhuoyangqing");

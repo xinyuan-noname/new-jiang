@@ -14,7 +14,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
     game.import("character", () => {
         const result = {
             name: "XJB",
-            connect: false,
+            connect: true,
             character: {
                 "xin_fellow": {
                     sex: "male",
@@ -167,7 +167,9 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
             },
             characterReplace: {},
             card: {},
-            skill: { ...xjbSkill },
+            skill: { 
+                ...xjbSkill
+             },
             translate: {
                 "XJB": "新将包",
 

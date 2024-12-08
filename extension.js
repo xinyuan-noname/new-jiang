@@ -14,6 +14,7 @@ game.import("extension", function () {
         content: XJB_CONTENT,
         precontent: XJB_PRECONTENT,
         editable: false,
+        connect:false,
         help: {},
         config: {},
         package: {
