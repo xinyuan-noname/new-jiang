@@ -162,6 +162,9 @@ window["xjb_xyAPI_Directory_新将包"]={
         "clearBad.mjs",
         "store.mjs"
     ],
+    "js/economy": [
+        "product.mjs"
+    ],
     "js/editor": [
         "arrange.mjs",
         "implicitText.mjs",
