@@ -426,14 +426,14 @@ const xjb_zhijue = SkillCreater(
             'he',
             "弃置一张相同点数/颜色的牌，取消此牌的所有目标。"
         )
-        game.broadcastAll(() => {
-            next.set("filterCard", card => {
+        game.broadcastAll((nextX) => {
+            nextX.set("filterCard", card => {
                 const cardx = event.getParent("useCard").card;
                 if (cardx.cards.length === 0) return true;
                 return get.color(card) === get.color(cardx)
                     || get.number(card) === get.number(cardx)
             })
-        });
+        }, next);
         const { result: { bool } } = await next
         event.result = { bool, cost_data: { cards: event.cards } }
     },
