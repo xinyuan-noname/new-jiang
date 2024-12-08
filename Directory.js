@@ -17,6 +17,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_shenshapo.png",
         "xjb_tianming_huobi1.png",
         "xjb_tianming_huobi2.png",
+        "xjb_xyAPI.js",
         "xjb_zhihuan.png"
     ],
     "audio": [
@@ -157,9 +158,9 @@ window["xjb_xyAPI_Directory_新将包"]={
         "redSpace.jpg"
     ],
     "js/card": [
-        "callFellow.js",
-        "clearBad.js",
-        "store.js"
+        "callFellow.mjs",
+        "clearBad.mjs",
+        "store.mjs"
     ],
     "js/editor": [
         "arrange.mjs",
