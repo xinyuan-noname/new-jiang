@@ -298,10 +298,10 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 if (lib.skill[skill].limited) player.restoreSkill(skill)
                 if (num) {
                     if (lib.skill[skill].juexingji) {
-                        player.storage.addSkillrandom_filter = true
+                        player.addTip("addSkillrandom", "觉醒技无视条件")
                         if (!lib.skill[skill].addSkillrandom_filter) lib.skill[skill].addSkillrandom_filter = lib.skill[skill].filter
                         lib.skill[skill].filter = function (event, player) {
-                            if (player.storage.addSkillrandom_filter) return true
+                            if (player.tips && player.tips.get("addSkillrandom")) return true
                             return this.addSkillrandom_filter.apply(this, arguments);
                         }
                     }

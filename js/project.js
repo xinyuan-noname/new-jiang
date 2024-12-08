@@ -291,15 +291,6 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
             }
             lib.translate._xjb_bianshen = "魂将"
         },
-        group: function () {
-            lib.group.push('han');
-            lib.translate['han'] = '汉';
-            lib.groupnature.han = "fire";
-            //
-            lib.group.push("xjb_hun");
-            lib.translate['xjb_hun'] = '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="22">';
-            lib.groupnature.xjb_hun = "xjb_hun";
-        },
     }
     lib.skill.xjb_7 = {
         "ui_modify": function () {

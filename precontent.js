@@ -293,6 +293,18 @@ function importFile() {
 			window.XJB_LOAD_FINAL(_status, lib, game, ui, get, ai)
 		})
 		script.type = "module";
+	}).then(() => {
+		if (lib.skill.xjb_1) {
+			for (let k in lib.skill.xjb_1.player) {
+				lib.element.player[k] = lib.skill.xjb_1.player[k];
+			}
+		}
+		if (lib.skill.xjb_2) {
+			for (let k in lib.skill.xjb_2) {
+				lib.element.player[k] = lib.skill.xjb_2[k].player;
+				lib.element.content[k] = lib.skill.xjb_2[k].content;
+			}
+		}
 	})
 	//引入api
 	game.xjb_loadAPI = function (suc = () => void 0, fail = () => void 0, branch = "master") {

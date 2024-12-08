@@ -452,11 +452,11 @@ const xjb_qiongzhi = SkillCreater(
         return true;
     },
     content: async function (event, trigger, player) {
-        event.target.draw();
+        await event.target.draw();
         event.target.skip("phaseDraw");
         const hs = event.target.getCards('h', card => get.type2(card) === "trick")
         for (const card of hs) {
-            event.target.chooseUseTarget(card, true);
+            await event.target.chooseUseTarget(card, true);
         }
         if (hs.length === 0) player.addTempSkill("xjb_qiongzhi_useTrick")
     },
@@ -861,82 +861,68 @@ const xjb_fengchu = SkillCreater(
     },
     "_priority": 0,
 })
-
-const xin_tianming = SkillCreater(
-    "xin_tianming", {
-    translate: "天命",
-    description: "锁定技，当你失去一张区域的牌后，若你有未记录该牌的花色，你记录之并摸一张牌。",
-    trigger: {
-        player: ["loseAfter"],
-    },
-    marktext: "命",
-    init: function (player) {
-        if (!player.storage.xin_tianming) player.storage.xin_tianming = [];
-    },
-    intro: {
-        content: "你已有花色$",
-    },
-    charlotte: true,
-    forced: true,
-    content: function () {
-        player.storage._skill_xin_X[0] = 13
-        for (var i = 0; i < trigger.cards.length; i++) {
-            var suit = get.suit(trigger.cards[i])
-            if (!player.storage.xin_tianming.includes(suit)) {
-                player.storage.xin_tianming.add(suit);
-                player.draw()
-            }
-        }
-        player.markSkill('xin_tianming');
-
-    },
-    ai: {
-        threaten: 0.7,
-    },
-    "_priority": 0,
-})
-const xin_zulong = SkillCreater(
-    "xin_zulong", {
+const xjb_zulong = SkillCreater(
+    "xjb_zulong", {
     translate: "祖龙",
-    description: "当你体力值减少后，可以你获得一个技能。若此技能为觉醒技，则无视发动条件。",
+    description: "每回合限一次，一名角色减少一点体力后，可以你选择获得指定种类的一个技能。若此技能为觉醒技，则无视发动条件。",
     trigger: {
-        player: ["damageEnd", "loseHpEnd"],
-        global: "xjb_bianshenEnd",
+        global: ["damageEnd", "loseHpEnd"],
+    },
+    usable: 1,
+    getIndex(trigger) {
+        return trigger.num || 1;
+    },
+    skillMap: {
+        "转换技": "zhuanhuanji",
+        "觉醒技": "juexingji",
+        "主公技": "zhuSkill",
+        "锁定技": "locked",
+        "视为技": "viewAs"
     },
     frequent: true,
-    content: function () {
-        'step 0'
-        var objects = {
-            choice: ['转换技', '觉醒技', '主公技', '锁定技', '视为技'],
-            storage: "xin_zulong",
-        }
-        player.fc_X(true, 'choose', 'needResult', objects)
-        'step 1'
-        var string = get.xjb_translation(player.storage["xin_zulong"])
-        trigger.player.addSkillrandom(string, 1)
+    content: async function (event, trigger, player) {
+        const { result } = await player.chooseControl('转换技', '觉醒技', '主公技', '锁定技', '视为技')
+        const skillMap = get.info("xjb_zulong").skillMap;
+        const skillType = skillMap[result.control];
+        player.addSkillrandom(skillType, 1);
     },
-    "_priority": 0,
+    ai: {
+        threaten: 0.8
+    }
+});
+const xjb_longwei = SkillCreater(
+    "xjb_longwei", {
+    translate: "龙威",
+    description: "锁定技，你失去体力上限改为增加等量点体力上限,",
+    trigger: {
+        player: ["loseMaxHpBefore"]
+    },
+    forced: true,
+    content: async function (event, trigger, player) {
+        await player.gainMaxHp(event.num);
+        trigger.cancel()
+    }
 })
 
-const xin_zaozhong = SkillCreater(
-    "xin_zaozhong", {
+const xjb_yiji = SkillCreater(
+    "xjb_yiji", {
     translate: "遗计",
     description: "当你受到一点伤害后，你选择一名角色，其使用一张残【兵粮寸断】然后摸三张牌。",
     frequent: true,
     trigger: {
         player: ["damageAfter"],
     },
-    content: function () {
-        "step 0"
-        event.count = trigger.num;
-        "step 1"
-        player.fc_X(16, 1, "num_2", [1, 3], {
-            promptAdd: "令一名角色使用一张残【兵粮寸断】然后摸三张牌",
-            remnant: "bingliang"
-        });
-        event.count--
-        "step 2"
-        if (event.count > 0) event.goto(1)
+    getIndex: function (event) {
+        return event.num;
+    },
+    cost: async function (event, trigger, player) {
+        const { result: { bool, targets } } = await player.chooseTarget();
+        event.result = { bool, cost_data: { targets } }
+    },
+    content: async function (event, trigger, player) {
+        const target = event.cost_data.targets[0]
+        target.draw(3)
+        target.xjb_gainRemnantCard("bingliang");
     },
     ai: {
         maixie: true,
@@ -1132,42 +1118,4 @@ const xjb_guose = SkillCreater(
 })
 
 
-const xin_longpan = SkillCreater(
-    "xin_longpan", {
-    translate: "龙蟠",
-    description: "你的回合后，若你已有四种花色，你可以移去\"天命\"中的全部个花色，若此做，你令一名角色失去一点体力并摸四张牌。",
-    trigger: {
-        player: "phaseAfter",
-    },
-    filter: function (event, player) {
-        return player.storage.xin_tianming.length >= 4
-    },
-    frequent: true,
-    content: function () {
-        'step 0'
-        var list = []
-        var suit = player.storage.xin_tianming;
-        for (var i = 0; i < suit.length; i++) {
-            var cardname = 'xin_zhaoling_' + suit[i];
-            lib.card[cardname] = {
-                fullimage: true,
-                image: 'character:' + player.name1
-            }
-            lib.translate[cardname] = lib.translate[suit[i]];
-            list.push(game.createCard(cardname, suit[i], ''));
-        }
-        player.chooseButton(['龙蟠：选择移去的花色', list], suit.length)
-        'step 1'
-        if (result.bool) {
-            event.suit = []
-            for (var i = 0; i < result.links.length; i++) {
-                event.suit.push(get.suit(result.links[i]))
-                player.storage.xin_tianming.remove(get.suit(result.links[i]))
-                player.markSkill('xin_tianming');
-            }
-            var num = result.links.length
-            player.fc_X(12, 1, [1, 4], 'num_2', 'again', { promptAdd: "然后摸四张牌" })
-        }
-    },
-    "_priority": 0,
-})
+

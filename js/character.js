@@ -48,14 +48,14 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                 },
                 "xjbhan_caocao": {
                     sex: "male",
-                    group: "han",
+                    group: "xjb_han",
                     hp: 4,
                     skills: ["xin_zhibang", "xin_chuhui"],
                     trashBin: []
                 },
                 "xjbhan_xunyu": {
                     sex: "male",
-                    group: "han",
+                    group: "xjb_han",
                     hp: 3,
                     skills: ["xjb_bingjie", "xjb_liuxiang"],
                     trashBin: []
@@ -119,8 +119,9 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                 "xjb_yingzheng": {
                     sex: "male",
                     group: "shen",
-                    hp: 3,
-                    skills: ["xin_tianming", "xin_zulong", "xin_longpan"],
+                    hp: 1,
+                    hujia: 2,
+                    skills: ["xjb_zulong", "xjb_longwei"],
                     trashBin: []
                 },
             },
@@ -167,11 +168,13 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
             },
             characterReplace: {},
             card: {},
-            skill: { 
+            skill: {
                 ...xjbSkill
-             },
+            },
             translate: {
                 "XJB": "新将包",
+
+                'xjb_han': '汉',
 
                 "xin_fellow": "秦兵",
                 "xjb_daqiao": "大乔",
@@ -205,6 +208,8 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
             result.character[id].trashBin.push('ext:新将包/image/character_xjb/' + id + ".jpg")
         }
         lib.config.all.characters.push("XJB");
+        lib.group.push('xjb_han');
+        lib.groupnature.xjb_han = "fire";
         return result;
     });
     game.import("character", () => {
@@ -319,6 +324,8 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
             translate: {
                 xjb_soul: "soul",
 
+                'xjb_hun': '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="22">',
+
                 xjb_Fuaipaiyi: "芙艾派依",
                 xjb_xuemo: "布劳德",
                 xjb_timer: "泰穆尔",
@@ -344,7 +351,9 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
             if (get.mode() != "boss" && id.startsWith("xjb_SoulBoss")) result.character[id].isUnseen = true;
         }
         lib.config.all.characters.push("xjb_soul");
-        lib.config.characters.push('xjb_soul')
+        lib.config.characters.push('xjb_soul');
+        lib.group.push("xjb_hun");
+        lib.groupnature.xjb_hun = "xjb_hun";
         return result;
     })
 }

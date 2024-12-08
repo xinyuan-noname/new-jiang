@@ -39,23 +39,6 @@ export function XJB_CONTENT(config, pack) {
             Type: "normal"
         }
     });
-    //这个用于把xjb_1中的函数赋给角色
-    lib.arenaReady.push(function () {
-        if (lib.skill.xjb_1) {
-            for (let k in lib.skill.xjb_1.player) {
-                lib.element.player[k] = lib.skill.xjb_1.player[k];
-            }
-        }
-    });
-    //这个用于设置xjb_2的中的事件
-    lib.arenaReady.push(function () {
-        if (lib.skill.xjb_2) {
-            for (let k in lib.skill.xjb_2) {
-                lib.element.player[k] = lib.skill.xjb_2[k].player;
-                lib.element.content[k] = lib.skill.xjb_2[k].content;
-            }
-        }
-    })
     //这个把其他新将包的数据释放出来
     lib.arenaReady.push(function () {
         //这里会创建一个数组，该数组为xjb_3、xjb_4、...
