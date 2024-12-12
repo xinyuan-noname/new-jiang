@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status} from "../../../../noname.js";
 export const bossSkill = {};
 export const bossTranslate = {};
+/**
+ * 
+ * @param {*} name 
+ * @param {Skill} skill 
+ * @returns 
+ */
 function SkillCreater(name, skill) {
     bossSkill[name] = { ...skill }
     delete bossSkill[name].translate;
@@ -17,7 +23,7 @@ const _xjb_soulBoss_load = SkillCreater(
     },
     direct: true,
     charlotte: true,
-    filter: function (event, player) {
+    filter: function (event, player) {       
         return lib.translate[player.name1].includes("魂使");
     },
     content: function () {

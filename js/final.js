@@ -1,4 +1,5 @@
 import { importEditor } from "./import/importEditor.mjs"
+import { clearBadSettingList } from "./card/clearBad.mjs"
 window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
     lib.skill.xjb_final = {
         RPG: function () {
@@ -199,78 +200,7 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
             }
         },
         XJB_Card: function () {
-            let cardList = {
-                xjb_lijingtuzhi_1: {
-                    counterpart: "励精图治-红桃-7",
-                    min: 0,
-                    max: 3,
-                },
-                xjb_lijingtuzhi_2: {
-                    counterpart: "励精图治-黑桃-7",
-                    min: 0,
-                    max: 3,
-                },
-                xjb_lijingtuzhi_3: {
-                    counterpart: "励精图治-梅花-7",
-                    min: 0,
-                    max: 3,
-                },
-                xjb_xiugengxuzi_1: {
-                    counterpart: "修耕蓄资-黑桃-3",
-                    min: 0,
-                    max: 2,
-                },
-                xjb_xiugengxuzi_2: {
-                    counterpart: "修耕蓄资-梅花-9",
-                    min: 0,
-                    max: 2,
-                },
-                xjb_chucanquhui_1: {
-                    counterpart: "除残去秽-方片-9",
-                    min: 0,
-                    max: 5,
-                },
-                xjb_chucanquhui_2: {
-                    counterpart: "除残去秽-方片-5",
-                    min: 0,
-                    max: 5,
-                },
-                xjb_qimendunjia_1: {
-                    counterpart: "奇门遁甲-红桃-8",
-                    min: 0,
-                    max: 2
-                },
-                xjb_qimendunjia_2: {
-                    counterpart: "奇门遁甲-黑桃-8",
-                    min: 0,
-                    max: 2
-                },
-                xjb_qimendunjia_3: {
-                    counterpart: "奇门遁甲-梅花-8",
-                    min: 0,
-                    max: 2
-                },
-                xjb_qimendunjia_4: {
-                    counterpart: "奇门遁甲-方片-8",
-                    min: 0,
-                    max: 2
-                },
-                xjb_tianqian_1: {
-                    counterpart: "天谴-黑桃-9",
-                    min: 0,
-                    max: 1
-                },
-                xjb_fuci_1: {
-                    counterpart: "福赐-红桃-6",
-                    min: 0,
-                    max: 2
-                },
-                xjb_fuci_2: {
-                    counterpart: "福赐-红桃-8",
-                    min: 0,
-                    max: 2
-                }
-            };
+            let cardList = clearBadSettingList;
             window.addEventListener('hashchange', function () {
                 if (location.hash.indexOf('xjb_card') < 0) return false;
                 Object.keys(cardList).forEach(i => {

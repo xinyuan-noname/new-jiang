@@ -6,7 +6,7 @@ import {
     _status
 } from "../../../../noname.js";
 import { element, textareaTool } from "../tool/ui.js";
-import { getLineRangeOfInput, pointInWhichLine } from "../tool/string.js";
+import { arrayToString, getLineRangeOfInput, pointInWhichLine } from "../tool/string.js";
 import { NonameCN } from "./nonameCN.js";
 import { TransCnText, dispose } from "./transCnText.mjs";
 import { EditorParameterList, parameterJudge } from "./parameter.mjs";
@@ -344,6 +344,9 @@ const getPlayersList = () => {
     result.push(...getVarOfContent("Players"));
     return result;
 }
+const getCardNameList = () => {
+    return lib.inpile;
+}
 const getCardList = () => {
     const result = [];
     result.push(...getVarOfContent("card"));
@@ -357,13 +360,15 @@ const getCardsList = () => {
     result.push(...getVarOfContent("cards"));
     return result;
 }
+
 const getBoolList = (cnTrue = "是", cnFalse = "无") => {
     const result = [cnTrue, cnFalse];
     result.push(...getVarOfContent("bool"));
     return result;
 }
-const getNumberVarList = () => {
-    return getVarOfContent("number");
+const getNumberVarList = (...defaultValues) => {
+    const result = [...defaultValues, Infinity, NaN]
+    return result.concat(getVarOfContent("number"));
 }
 const getSkillList = () => {
     return getVarOfContent("skill");
@@ -391,8 +396,41 @@ const getTriggerList = (type) => {
     }
     return result.sort((a, b) => a.localeCompare(b, 'zh'));
 }
-const methodsList = Object.values(EditorParameterList).map(item => item[0].mission)
+const methodsList = Object.values(EditorParameterList).map(item => item[0].mission);
 const findVarRegexp = /(var|const|let)(\s)+(.+)\=\s*(.+)/;
+const isTemplateRegexp = /\$\{[^}]+\}/g
+class UlList {
+    /**
+     * @type {Map<HTMLElement,HTMLElement>}
+     */
+    map
+    constructor() {
+        this.map = new Map();
+    }
+    add(key, value) {
+        this.map.set(key, value);
+    }
+    call(key, callback, ...args) {
+        const item = this.map.get(key);
+        if (typeof callback === 'function' && item) {
+            callback.call(item, ...args);
+        }
+    }
+    showOnly(key) {
+        const target = this.map.get(key);
+        for (const ul of this.list) {
+            if (target === ul) ul.classList.remove("xjb_hidden");
+            else ul.classList.add("xjb_hidden");
+        }
+    }
+    get list() {
+        for (const [host, ul] of this.map.entries()) {
+            if (!document.contains(ul) || !document.contains(host)) this.map.delete(host);
+        }
+        return Array.from(this.map.values());
+    }
+}
+const ED_UlList = new UlList()
 export class choiceMode {
     static updateDataListRegular(datalist, getList, interval = 500) {
         let lastToStr = '';
@@ -424,16 +462,9 @@ export class choiceMode {
         father.append(dataList);
         return dataList
     }
-    /**
-     * 
-     * @param {HTMLElement} ele 
-     */
     static reloadDataArea(ele) {
         ele.replaceChildren();
     }
-    /*
-     * @param {HTMLElement} ele 
-     */
     static init(ele) {
         const firstLine = element("div")
             .setStyle("position", "relative")
@@ -455,7 +486,14 @@ export class choiceMode {
                 const event = TransCnText.translate(firstLine.doWhatEle.value, NonameCN.ContentList);
                 const lefts = [];
                 const rights = [];
-                for (const node of DataArea.children) {
+                const set = [];
+                for (const [index, node] of Array.from(DataArea.children).entries()) {
+                    if (submitArea.NaPIndex && submitArea.NaPIndex.includes(index)) {
+                        let [keySet, valueSet] = node.getData();
+                        if (Array.isArray(valueSet)) valueSet = arrayToString(valueSet)
+                        set.push(`.set("${keySet}",${valueSet})`);
+                        continue;
+                    }
                     const [left, right] = node.getData();
                     if (Array.isArray(left)) {
                         lefts.push(...left);
@@ -495,7 +533,7 @@ export class choiceMode {
                     if (!last) argsStr += ',';
                 }
                 rights.forEach((arg, index) => addToArgStr(arg, index === rights.length - 1));
-                const sentence = `${player}.${event}(${argsStr})`;
+                const sentence = `${player}.${event}(${argsStr})${set.join("")}`;
                 const content = game.xjb_back.querySelector(".xjb-Ed-contentTextarea");
                 EditorInteraction.insertPhrase(content, "\n")
                 EditorInteraction.insertPhrase(content, sentence)
@@ -529,6 +567,7 @@ export class choiceMode {
                 const methodName = TransCnText.translate(doWhat.value, NonameCN.ContentList);
                 if (!(methodName in EditorParameterList)) return;
                 if (EditorParameterList[methodName][0].order) submitArea.order = true;
+                if (EditorParameterList[methodName][0].NaPIndex) submitArea.NaPIndex = Array.from(EditorParameterList[methodName][0].NaPIndex)
                 for (const data of EditorParameterList[methodName]) {
                     choiceMode.pushControlOnData(DataArea, data);
                 }
@@ -544,25 +583,29 @@ export class choiceMode {
     }
     static pushControlOnData(DataArea, data = {}) {
         switch (data.type) {
-            case "number": choiceMode.pushNumControl(DataArea, data); break;
             case "Player": choiceMode.pushPlayerControl(DataArea, data); break;
             case "Players": choiceMode.pushPlayersControl(DataArea, data); break;
             case "card": choiceMode.pushCardControl(DataArea, data); break;
             case "cards": choiceMode.pushCardsControl(DataArea, data); break;
-            case "boolean": choiceMode.pushBooleanControl(DataArea, data); break;
-            case "otherArgs": choiceMode.pushOtherArgsControl(DataArea, data); break;
-            case "heArray": choiceMode.pushHeArrayControl(DataArea, data); break;
             case "position": choiceMode.pushPositionControl(DataArea, data); break;
             case "nature": choiceMode.pushNartureControl(DataArea, data); break;
             case "phase": choiceMode.pushPhaseControl(DataArea, data); break;
             case "group": choiceMode.pushGroupControl(DataArea, data); break;
-            case "stringToChoose": choiceMode.pushStringChooseControl(DataArea, data); break;
             case "skill": choiceMode.pushSkillControl(DataArea, data); break;
+            case "cardName": choiceMode.pushCardNameControl(DataArea, data); break;
             case "expire": choiceMode.pushExpireControl(DataArea, data); break;
+            case "number": choiceMode.pushNumControl(DataArea, data); break;
+            case "boolean": choiceMode.pushBooleanControl(DataArea, data); break;
+            case "string": choiceMode.pushStringControl(DataArea, data); break;
+            case "stringArray": choiceMode.pushStringArrayControl(DataArea, data); break;
+            case "stringToChoose": choiceMode.pushStringChooseControl(DataArea, data); break;
+            case "freeInput": choiceMode.pushFreeInputControl(DataArea, data); break;
+            case "otherArgs": choiceMode.pushOtherArgsControl(DataArea, data); break;
+            case "heArray": choiceMode.pushHeArrayControl(DataArea, data); break;
             default: break;
         }
     }
-    static pushNumControl(father, { cn, value, max = Infinity, min = -Infinity }) {
+    static pushNumControl(father, { cn, value, defaultVars = [], max = Infinity, min = -Infinity }) {
         const controlNumContainer = element("div")
             .block()
             .setStyle("position", "relative")
@@ -592,8 +635,8 @@ export class choiceMode {
                 node.textContent = e.target.value.split(":").at(0);
             })
             .exit();
-        const datalist = choiceMode.giveDataList(controlNumVar, getNumberVarList(), `${cn}-${value}`, controlNumContainer);
-        choiceMode.updateDataListRegular(datalist, getNumberVarList);
+        const datalist = choiceMode.giveDataList(controlNumVar, getNumberVarList(...defaultVars), `${cn}-${value}`, controlNumContainer);
+        choiceMode.updateDataListRegular(datalist, () => getNumberVarList(...defaultVars));
         varButton.addEventListener(lib.config.touchscreen ? "touchend" : "click", () => {
             varButton.classList.toggle("xjb-chosen");
             controlNum.classList.toggle("xjb_hidden");
@@ -779,6 +822,24 @@ export class choiceMode {
         controlContainer.append(controlText, cardContainer, cardsContainer);
         father.appendChild(controlContainer);
     }
+    static pushCardNameControl(father, { cn, value }) {
+        const controlContainer = element("div")
+            .block()
+            .setStyle("position", "relative")
+            .exit()
+        const controlText = element("div").block().innerHTML(cn).setStyle("position", "relative").exit();
+        const control = element("input")
+            .type("search")
+            .block()
+            .exit();
+        const datalist = choiceMode.giveDataList(control, getCardNameList(), `${cn}-${value}`, controlContainer);
+        choiceMode.updateDataListRegular(datalist, getCardNameList);
+        controlContainer.getData = () => {
+            return [value, TransCnText.translate(control.value, NonameCN.ContentList) || undefined];
+        }
+        controlContainer.append(controlText, control);
+        father.appendChild(controlContainer);
+    }
     static pushBooleanControl(father, { cn, value, defaultValue, cnTrue = "是", cnFalse = "否" }) {
         const controlBoolContainer = element("div")
             .block()
@@ -891,6 +952,101 @@ export class choiceMode {
         }
         father.appendChild(controlContainer);
     }
+    static pushFreeInputControl(father, { cn, value, choices = [] }) {
+        const controlContainer = element("div")
+            .block()
+            .setStyle("position", "relative")
+            .exit()
+        const controlText = element("div").block().innerHTML(cn).setStyle("position", "relative").exit();
+        const control = element("input")
+            .type("search")
+            .block()
+            .exit();
+        const getFreeInputList = () => {
+            return [...Object.keys(choices), ...getVarOfContent()];
+        }
+        const datalist = choiceMode.giveDataList(control, getFreeInputList(), `${cn}-${value}`, controlContainer);
+        choiceMode.updateDataListRegular(datalist, getFreeInputList);
+        controlContainer.getData = () => {
+            let trans = choices[control.value] || TransCnText.translate(control.value, NonameCN.ContentList);
+            return [value, trans || undefined];
+        }
+        controlContainer.append(controlText, control);
+        father.appendChild(controlContainer);
+    }
+    static pushStringControl(father, { cn, value, skillIdToList, stringDefaultList = [] }) {
+        const controlContainer = element("div")
+            .block()
+            .setStyle("position", "relative")
+            .exit()
+        const controlText = element("div").block().innerHTML(cn).setStyle("position", "relative").exit();
+        const control = element("input")
+            .type("search")
+            .block()
+            .exit();
+        const stringList = [...stringDefaultList]
+        if (skillIdToList) {
+            const sourceId = getSourceID(), id = getSkillID();
+            stringList.push(id);
+            if (sourceId !== id) stringList.push(sourceId);
+        }
+        choiceMode.giveDataList(control, stringList, `${cn}-${value}`, controlContainer);
+        controlContainer.getData = () => {
+            if (!control.value.length) return [value, void 0]
+            if (isTemplateRegexp.test(control.value)) return [value, `\`${control.value}\``]
+            return [value, `"${control.value}"`];
+        }
+        controlContainer.append(controlText, control);
+        father.appendChild(controlContainer);
+    }
+    static pushStringArrayControl(father, { cn, value, skillIdToList, stringDefaultList = [] }) {
+        const controlContainer = element("div")
+            .block()
+            .setStyle("position", "relative")
+            .exit()
+        const controlText = element("div").block().innerHTML(cn).setStyle("position", "relative").exit();
+        const control = element("input")
+            .type("search")
+            .block()
+            .exit();
+        const addButton = (inner) => {
+            const button = element()
+                .setTarget(ui.create.xjb_button(controlContainer, inner))
+                .setKey("value", inner)
+                .style({
+                    margin: "",
+                    marginRight: "1em",
+                })
+                .exit();
+            element()
+                .setTarget(ui.create.xjb_button(button, "×", button, void 0, true))
+                .style({ margin: "0 0.3em" })
+                .exit();
+            button.classList.add("xjb-chosen")
+            return button;
+        }
+        const stringList = [...stringDefaultList]
+        if (skillIdToList) {
+            const sourceId = getSourceID(), id = getSkillID();
+            stringList.push(id);
+            if (sourceId !== id) stringList.push(sourceId);
+        }
+        choiceMode.giveDataList(control, stringList, `${cn}-${value}`, controlContainer);
+        element().setTarget(control)
+            .listenTransEvent("keydown", "change", function () {
+                if (!this.value) return;
+                if (document.activeElement !== this) return;
+                addButton(this.value);
+                this.value = "";
+            }, e => e.key === "Enter")
+        controlContainer.getData = () => {
+            const nodes = controlContainer.querySelectorAll(".xjb_dialogButton.xjb-chosen");
+            const strings = [...nodes].map(node => isTemplateRegexp.test(node.value) ? `\`${node.value}\`` : `"${node.value}"`)
+            return [value, strings];
+        }
+        controlContainer.append(controlText, control);
+        father.appendChild(controlContainer);
+    }
     static pushNartureControl(father, { cn = "属性", value, single, defaultValue = [] }) {
         const controlContainer = element("div")
             .block()
@@ -925,7 +1081,7 @@ export class choiceMode {
         }
         father.appendChild(controlContainer);
     }
-    static pushPositionControl(father, { cn = "属性", value, single, defaultValue = [], positionList = "he" }) {
+    static pushPositionControl(father, { cn = "区域", value, single, defaultValue = [], positionList = "he" }) {
         const controlContainer = element("div")
             .block()
             .setStyle("position", "relative")
@@ -1048,6 +1204,7 @@ export class choiceMode {
         const controlSkillInfo = element("ul").hook(ele => {
             if (lib.config.touchscreen) ele.classList.add("xjb-touch-screen")
         }).exit();
+        ED_UlList.add(controlSearch, controlSkillInfo)
         let controlVarTypeShift
         const addButton = (skill, deletable = true, isVar, isSkillsVar) => {
             const button = element()
@@ -1127,6 +1284,7 @@ export class choiceMode {
         })
         controlSearch.addEventListener("change", e => {
             if (!e.target.value.length) return controlSkillInfo.replaceChildren();
+            ED_UlList.showOnly(controlSearch);
             const keywords = e.target.value.split(" ");
             const result = [];
             const firstturnWord = keywords.shift();

@@ -601,7 +601,6 @@ x++
 
 ---
 ## 技能效果输入框
-
 ### 私有指令
 |名称|作用|
 |:-:|:-:|
@@ -621,5 +620,17 @@ x++
 函数结束
 #判定回调区尾
 ```
+### 选择模式(开发)
+选择模式的有关数据存放在:新将包/js/editor/parameter.js中
+EditorParameterList为角色方法的参数表
+EditorParameter\[method\]是一个object数组 编辑器会逐个解析数组的每一项 生成对应的交互控件 
+该object属性用途如下:
+1. cn:string - 设置控件的中文
+2. type:string - 设置控件类型
+3. value:string - 该参数对应着事件的key
 
+一个方法的注意事项都在EditorParameList\[method\][0]标出
+1. mission:<methodCn> - 该方法的中文翻译
+2. order:true - 参数是有序的
+3. NapIndex:number[] - 非参数的索引 该值只能通过set设置
 

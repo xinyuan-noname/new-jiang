@@ -10,7 +10,78 @@ import {
     soulSkill,
     soulTranslate
 } from "./skill/soulSkill.mjs"
+import { dongzhouSkill, dongzhouTranslate } from "./skill/dongzhou.mjs";
 window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
+    game.import("character", () => {
+        const result = {
+            name: "xjb_easternZhou",
+            connect: true,
+            character: {
+                "xjb_jizi_shou": {
+                    sex: "male",
+                    group: "xjb_chunqiu_wei",
+                    hp: 3,
+                    skills: ["xjb_tongzhou", "xjb_fuwei", "xjb_taihuo"],
+                    trashBin: []
+                },
+                "xjb_qinshihuang": {
+                    sex: "male",
+                    group: "xjb_qin",
+                    hp: 1,
+                    hujia: 2,
+                    skills: ["xjb_zulong", "xjb_longwei"],
+                    trashBin: []
+                },
+            },
+            characterSort: {
+                xjb_easternZhou: {
+
+                },
+            },
+            characterFilter: {},
+            characterTitle: {},
+            dynamicTranslate: {
+                xjb_tongzhou(player){
+                    if(lib.skill.xjb_tongzhou.trigger.player === "phaseZhunbeiBegin") return "准备阶段,你可以摸两张牌"
+                    return "准备阶段和结束阶段,你可以摸两张牌"
+                }
+            },
+            characterIntro: {
+                xjb_jizi_shou: "卫太子伋，也称急子。卫宣公未即位时，与卫庄公妾室夷姜私通所生。宣公即位，遂立伋为太子。后太子娶齐女，未入室，宣公筑新台娶之。后来宣公派伋出使齐国，为宣公所害。<br>卫国公子寿，卫宣公与宣姜之子，宣公命边境强盗杀太子伋，公子寿劝止太子伋不成，遂灌醉太子伋，盗太子出使符节而替死。寿死后，伋又到边境处，见寿尸体，遂无生意，一心求死，强盗将其杀害。",
+                xjb_qinshihuang: "秦始皇，赵氏嬴姓，名政，是我国的第一位皇帝。"
+            },
+            characterReplace: {},
+            card: {},
+            skill: {
+                ...dongzhouSkill
+            },
+            translate: {
+                "xjb_easternZhou": "东周志",
+
+                'xjb_qin': '秦',
+                "xjb_chunqiu_wei": "卫",
+
+                "xjb_jizi_shou": "急子&寿",
+                "xjb_qinshihuang": "秦始皇",
+
+                ...dongzhouTranslate
+            },
+            pinyins: {},
+        }
+        const nameNatureMap = {
+            "xjb_qin": "thunder",
+            "xjb_chunqiu_wei": "fire"
+        }
+        lib.config.all.characters.push("xjb_easternZhou");
+        for (const [name, nature] of Object.entries(nameNatureMap)) {
+            lib.group.push(name);
+            lib.groupnature[name] = nature;
+        }
+        for (const id in result.character) {
+            result.character[id].trashBin.push('ext:新将包/image/character_dongzhou/' + id + ".jpg")
+        }
+        return result;
+    })
     game.import("character", () => {
         const result = {
             name: "XJB",
@@ -99,7 +170,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     sex: "male",
                     group: "wu",
                     hp: 4,
-                    skills: ["xin_yexi", "xin_ziruo"],
+                    skills: ["xjb_yexi", "xjb_ziruo"],
                     trashBin: []
                 },
                 "xjb_zhugeliang": {
@@ -116,18 +187,9 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     skills: ["xjb_xianmou", "xjb_yinlve"],
                     trashBin: []
                 },
-                "xjb_yingzheng": {
-                    sex: "male",
-                    group: "shen",
-                    hp: 1,
-                    hujia: 2,
-                    skills: ["xjb_zulong", "xjb_longwei"],
-                    trashBin: []
-                },
             },
             characterSort: {
                 XJB: {
-                    'xjb_fengyun': ["xjb_yingzheng"],
                     'xjb_chidan': ["xjb_ganning", "xjb_dianwei"],
                     'xjb_tiandu': ["xjb_sunce", "xjb_zhouyu", "xjb_pangtong", "xjb_guojia"],
                     'xjb_zaiwu': ["xjbhan_caocao", "xjbhan_xunyu", "xjb_caocao"],
@@ -164,7 +226,6 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
             },
             characterIntro: {
                 xjb_caocao: "操携樵沛诸夏侯曹氏，同汝颖荀之所进退，奋起于兖州之地。济天子，假天子之威，御天下之士。修政事，广屯田，缮水利。征伐四方，十战九胜，可抵其锋者，唯孙刘二者。以其功高，自比于周公，置魏国，修行宫，立太子，分香卖履，薄葬于高陵。观其平生则多杀戮，忿急至于过者亦多也。然其兴兴之政也广及率土三二，亦一世之雄也。",
-                xjb_yingzheng: "秦始皇，赵氏嬴姓，名政，是我国的第一位皇帝。"
             },
             characterReplace: {},
             card: {},
@@ -190,7 +251,6 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                 "xjb_ganning": "甘宁",
                 "xjb_zhugeliang": "诸葛亮",
                 "xjb_jin_simayi": "司马懿",
-                "xjb_yingzheng": "嬴政",
 
                 xjb_chidan: '赤胆忠心',
                 xjb_fengyun: '风云荟萃',
@@ -355,5 +415,5 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
         lib.group.push("xjb_hun");
         lib.groupnature.xjb_hun = "xjb_hun";
         return result;
-    })
+    });
 }

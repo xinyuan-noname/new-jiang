@@ -39,6 +39,18 @@ export function correctPunctuation(str) {
         .replace(/\,\}/g, '}')
         .replace(/\{\,/g, '{')
         .replace(/(?<!\.)\.{2}(?!\.)/, '.')
+        .replace(/,:/g,":")
+        .replace(/:,/g,":")
+}
+export function arrayToString(array) {
+    let result = '[';
+    for (const [index, item] of array.entries()) {
+        if (Array.isArray(item)) result += arrayToString(item);
+        result += item;
+        if (index + 1 < array.length) result += ','
+    }
+    result += "]";
+    return result;
 }
 /**
  * 生成一个随机的36进制字符串。

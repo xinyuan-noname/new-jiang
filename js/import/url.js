@@ -6,7 +6,7 @@ export const getURL = (extensionName) => {
     if (RootUrl.startsWith("https://")) {
         gameURL = `${RootUrl}/extension/${extensionName}/`;
         fileURL = `${initWay}extension/${extensionName}/`;
-    } else if (RootUrl.startsWith("file://") && initWay === "nodejs") {
+    } else if (RootUrl.startsWith("file://")) {
         gameURL = fileURL = `${RootUrl}${DirUrl.replace('index.html', '')}extension/${extensionName}/`;
     }
     return [gameURL, fileURL];
@@ -15,7 +15,7 @@ export const getGameURL = (extensionName) => {
     let gameURL = "";
     if (RootUrl.startsWith("https://")) {
         gameURL = `${RootUrl}/extension/${extensionName}/`;
-    } else if (RootUrl.startsWith("file://") && initWay === "nodejs") {
+    } else if (RootUrl.startsWith("file://")) {
         gameURL = `${RootUrl}${DirUrl.replace('index.html', '')}extension/${extensionName}/`;
     }
     return gameURL
@@ -24,7 +24,7 @@ export const getFileURL = (extensionName) => {
     let fileURL = "";
     if (RootUrl.startsWith("https://")) {
         fileURL = `${initWay}extension/${extensionName}/`;
-    } else if (RootUrl.startsWith("file://") && initWay === "nodejs") {
+    } else if (RootUrl.startsWith("file://")) {
         fileURL = `${RootUrl}${DirUrl.replace('index.html', '')}extension/${extensionName}/`;
     }
     return fileURL

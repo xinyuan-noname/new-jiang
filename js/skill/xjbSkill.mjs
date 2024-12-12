@@ -16,8 +16,8 @@ function SkillCreater(name, skill) {
     return xjbSkill[name];
 };
 
-const xin_yexi = SkillCreater(
-    "xin_yexi", {
+const xjb_yexi = SkillCreater(
+    "xjb_yexi", {
     enable: "phaseUse",
     filter: function (event, player) {
         return player.countCards('h') > 0
@@ -345,7 +345,7 @@ const xjb_fangquan = SkillCreater(
     selectCard: -1,
     discard: false,
     lose: false,
-    position: "he",
+    position: "h",
     filterTarget: function (card, player, target) {
         return target != player;
     },
@@ -355,7 +355,7 @@ const xjb_fangquan = SkillCreater(
         target.insertPhase();
     },
     translate: '放权',
-    description: "出牌阶段限一次，若你本回合未造成过伤害，你可以将所有的带有伤害标签的牌、武器牌、-1马牌，交给一名其他角色并令其进行一个额外的回合。",
+    description: "出牌阶段限一次，若你本回合未造成过伤害，你可以将手牌中所有带有伤害标签的牌、武器牌、-1马牌，交给一名其他角色并令其进行一个额外的回合。",
     ai: {
         order: 2,
         result: {
@@ -697,7 +697,7 @@ const xin_mousheng = SkillCreater(
 const xjb_bingjie = SkillCreater(
     "xjb_bingjie", {
     translate: "秉节",
-    description: "每轮开始时/你受到一点伤害后，你可以弃置任意非“留香”牌，然后你令一名角色将手牌摸至体力上限，该角色以此法获得的牌称为“留香”",
+    description: "每轮开始时/你受到一点伤害后，你可以弃置任意牌，然后你令一名角色将手牌摸至体力上限，该角色以此法获得的牌称为“留香”",
     trigger: {
         global: "roundStart",
         player: "damageEnd"
@@ -706,7 +706,7 @@ const xjb_bingjie = SkillCreater(
         return event.num || 1;
     },
     cost: async function (event, trigger, player) {
-        const { result: { bool } } = await player.chooseToDiscard([0, Infinity], "he", true, card => !card.hasGaintag("xjb_liuxiang"));
+        const { result: { bool } } = await player.chooseToDiscard([0, Infinity], "he", true);
         event.result = { bool }
     },
     content: async function (event, trigger, player) {
@@ -863,48 +863,6 @@ const xjb_fengchu = SkillCreater(
         },
     },
     "_priority": 0,
-})
-const xjb_zulong = SkillCreater(
-    "xjb_zulong", {
-    translate: "祖龙",
-    description: "每回合限一次，一名角色减少一点体力后，可以你选择获得指定种类的一个技能。若此技能为觉醒技，则无视发动条件。",
-    trigger: {
-        global: ["damageEnd", "loseHpEnd"],
-    },
-    usable: 1,
-    getIndex(trigger) {
-        return trigger.num || 1;
-    },
-    skillMap: {
-        "转换技": "zhuanhuanji",
-        "觉醒技": "juexingji",
-        "主公技": "zhuSkill",
-        "锁定技": "locked",
-        "视为技": "viewAs"
-    },
-    frequent: true,
-    content: async function (event, trigger, player) {
-        const { result } = await player.chooseControl('转换技', '觉醒技', '主公技', '锁定技', '视为技')
-        const skillMap = get.info("xjb_zulong").skillMap;
-        const skillType = skillMap[result.control];
-        player.addSkillrandom(skillType, 1);
-    },
-    ai: {
-        threaten: 0.8
-    }
-});
-const xjb_longwei = SkillCreater(
-    "xjb_longwei", {
-    translate: "龙威",
-    description: "锁定技，你失去体力上限改为增加等量点体力上限,",
-    trigger: {
-        player: ["loseMaxHpBefore"]
-    },
-    forced: true,
-    content: async function (event, trigger, player) {
-        await player.gainMaxHp(event.num);
-        trigger.cancel()
-    }
 })
 
 const xjb_yiji = SkillCreater(

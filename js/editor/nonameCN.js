@@ -1174,6 +1174,7 @@ export class NonameCN {
             "将体力值回复至": "recoverTo",
             "体力值回复至": "recoverTo",
             '获得护甲': 'changeHujia',
+            "改变护甲值": "changeHujia",
             //
             '已受伤': 'isDamaged',
             '未受伤': 'isHealthy',
@@ -1193,6 +1194,14 @@ export class NonameCN {
             '手牌补至': 'drawTo',
             '手牌摸至': 'drawTo',
             '丢弃至弃牌堆': "loseToDiscardpile",
+            "失去牌至弃牌堆": "loseToDiscardpile",
+            "失去牌至特殊区域": "loseToSpecial",
+            "重铸牌": "recast",
+            "随机弃置指定区域的牌": "randomDiscard",
+            "随机获得指定区域的牌": "randomGain",
+            //
+            "交换装备区": "swapEquip",
+            "交换手牌区": "swapHandcards",
             //
             '更新状态': "update",
             '更改势力': "changeGroup",
@@ -1236,6 +1245,11 @@ export class NonameCN {
             '能够拼点': "canCompare",
             '获得技能(触发事件)': 'addSkill',
             '失去技能(触发事件)': "removeSkill",
+            "获得衍生技能": "addAdditionalSkill",
+            "失去衍生技能": "removeAdditionalSkill",
+            "移去衍生技能": "removeAdditionalSkill",
+            "失去衍生技能(触发事件)": "removeAdditionalSkills",
+            "移去衍生技能(触发事件)": "removeAdditionalSkills",
             //
             "临时获得技能": "addTempSkill",
             "临时禁用技能": "tempBanSkill",

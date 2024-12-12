@@ -121,7 +121,14 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_lijingtuzhi.png",
         "xjb_qimendunjia.png",
         "xjb_tianqian.png",
-        "xjb_xiugengxuzi.png"
+        "xjb_xiugengxuzi.png",
+        "xjb_zhuqiang.png"
+    ],
+    "image/character_dongzhou": [
+        "xjb_jizi.png",
+        "xjb_jizi_shou.jpg",
+        "xjb_qinshihuang.jpg",
+        "xjb_shou.png"
     ],
     "image/character_soul": [
         "xjb_bat.jpg",
@@ -147,7 +154,6 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_machao.jpg",
         "xjb_pangtong.jpg",
         "xjb_sunce.jpg",
-        "xjb_yingzheng.jpg",
         "xjb_zhouyu.jpg",
         "xjb_zhugeliang.jpg"
     ],
@@ -199,6 +205,7 @@ window["xjb_xyAPI_Directory_新将包"]={
     ],
     "js/skill": [
         "bossSkill.mjs",
+        "dongzhou.mjs",
         "raiseSkill.mjs",
         "soulSkill.mjs",
         "xjbSkill.mjs"

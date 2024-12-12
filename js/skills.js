@@ -712,6 +712,7 @@ lib.skill.xjb_3 = {
             "xjb_JudgeReversal", {
             mod: {
                 judge: function (player, result) {
+                    if (!_status.event.card) return;
                     if (result.bool == false) result.bool = true;
                     else result.bool = false
                 }

@@ -1667,15 +1667,15 @@ game.xjb_skillEditor = function () {
 			return p[0];
 		})
 		//逻辑处理
-		that.changeWord(/(?<!使用)或(?!打出)/g, ' ')
+		that.changeWord(/(?<!使用)或(?!打出)/g, ' ');
 		//省略
 		that.changeWord(/一张/g, '');
 		that.changeWord(/^(.*?)(一点)(.*?)$/mg, '$1$3 $2')
 		//统一写法                    
 		that.changeWord(/红牌/g, '红色牌');
 		that.changeWord(/黑牌/g, '黑色牌');
-		that.value = suitSymbolToCN(that.value)
-		NonameCN.standardTriBefore(that)
+		that.value = suitSymbolToCN(that.value);
+		NonameCN.standardTriBefore(that);
 		//关于角色
 		that.changeWord(/^(你|每名角色|一名角色)/mg, "$1 ")
 		NonameCN.standardEvent(that);
@@ -1720,37 +1720,37 @@ game.xjb_skillEditor = function () {
 			if (cardsNames.includes(pending)) back.skill.filter_card.push(str + ':"' + pending + '"')
 			if (suits.includes(pending)) back.skill.filter_suit.push(str + ':"' + pending + '"')
 			if (colors.includes(pending)) back.skill.filter_color.push(str + ':"' + pending + '"')
-			return true
+			return true;
 		}
 		list.forEach(i => {
-			let a = i
+			let a = i;
 			if (i.includes("一点")) {
-				a.remove("一点")
-				back.skill.getIndex = true
+				a.remove("一点");
+				back.skill.getIndex = true;
 			}
 			if (i.includes("roundStart")) {
 				a.remove('roundStart');
 				tri_global.push("roundStart");
 			}
 			if (i.includes('player')) {
-				a.remove('player')
-				tri_players.push(...a)
+				a.remove('player');
+				tri_players.push(...a);
 			} else if (i.includes('global')) {
-				a.remove('global')
-				tri_global.push(...a)
+				a.remove('global');
+				tri_global.push(...a);
 			} else {
-				tri_players.push(...a)
+				tri_players.push(...a);
 			}
 		})
 		tri_players.forEach(i => {
-			let a = i
+			let a = i;
 			if (i === 'damageSource') tri_source.push(a)
 			else if (i.startsWith("source:")) {
-				a = a.slice(7)
-				tri_source.push(a)
+				a = a.slice(7);
+				tri_source.push(a);
 			}
 			else if (i.startsWith("target:")) {
-				a = a.slice(7)
+				a = a.slice(7);
 				if (strToArrayTarget(a, 'useCardToTargeted')) { }
 				else if (strToArrayTarget(a, 'useCardToTarget')) { }
 				else tri_target.push(a)
@@ -1761,7 +1761,7 @@ game.xjb_skillEditor = function () {
 				if (i !== 'loseAfter:discard') tri_global.push("equipAfter", "addJudgeAfter", "gainAfter", "addToExpansionAfter");
 			}
 			else if (i.startsWith("player:")) {
-				a = a.slice(7)
+				a = a.slice(7);
 				if (strToArrayPlayer(a, 'useCardToPlayered')) { }
 				else if (strToArrayPlayer(a, 'useCardToPlayer')) { }
 				else tri_player.push(a)
@@ -1909,7 +1909,7 @@ game.xjb_skillEditor = function () {
 		.flexRow()
 		.height("100%")
 		.width("100%")
-		.exit()
+		.exit();
 	const enableContainer1 = element('div')
 		.father(enablePage)
 		.child(filterTargetSeter)
@@ -1920,7 +1920,7 @@ game.xjb_skillEditor = function () {
 			position: 'relative',
 			'backgroundColor': 'rgba(60,65,81,0.7)'
 		})
-		.exit()
+		.exit();
 	const enableContainer2 = element('div')
 		.father(enablePage)
 		.child(filterCardSeter)
