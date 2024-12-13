@@ -37,12 +37,11 @@ const xjb_fuwei = SkillCreater(
 	translate: "赴危",
 	description: "限定技，当你受到致命伤害时，你可以防止此伤害，然后将同舟的触发时机改为准备阶段。",
 	trigger: {
-		player: ["damageBegin"],
+		player: ["damageBefore"],
 	},
 	limited: true,
 	filter: function (event, player, triggername) {
-		if (!(event.num >= player.hp)) return false;
-		return true;
+		return event.num >= player.hp;
 	},
 	content: async function (event, trigger, player) {
 		player.awakenSkill("xjb_fuwei");
@@ -56,17 +55,20 @@ const xjb_fuwei = SkillCreater(
 const xjb_taihuo = SkillCreater(
 	"xjb_taihuo", {
 	translate: "台祸",
-	description: "其他角色的出牌阶段限一次,其可以弃置X张牌,对你使用一张刺杀(X为你的体力值-1且至少为1)",
+	description: "其他角色的出牌阶段限一次,其可以弃置X张牌,对你使用一张刺杀(X为你的体力值)",
 	global: "xjb_taihuo_cisha",
 	subSkill: {
 		cisha: {
 			usable: 1,
 			enable: "phaseUse",
+			check: function (card) {
+				return 6 - get.value(card);
+			},
 			filter: function (event, player, triggername) {
 				return !player.hasSkill("xjb_taihuo", null, false, false);
 			},
 			filterTarget: function (card, player, target) {
-				return target.hasSkill("xjb_taihuo", null, false, false) && ui.selected.cards.length === Math.max(target.hp - 1, 1);
+				return target.hasSkill("xjb_taihuo", null, false, false) && ui.selected.cards.length === target.hp;
 			},
 			filterCard: true,
 			selectCard: [1, Infinity],
@@ -79,8 +81,6 @@ const xjb_taihuo = SkillCreater(
 				order: 2,
 				result: {
 					target: function (player, target, card) {
-						if (target.hp === 1) return -2;
-						if (player.countCards("h") - target.hp < 3) return 0;
 						return -2;
 					}
 				}

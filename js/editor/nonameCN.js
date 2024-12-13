@@ -1064,10 +1064,10 @@ export class NonameCN {
             '没有全场唯一最少的体力值': 'isMinHp;true:denyPrefix',
             '没有全场唯一最多的体力值': 'isMaxHp;true:denyPrefix',
             //
-            '已损失的体力值': "getDamgedHp;",
-            '已损失体力值': "getDamgedHp;",
-            '已损体力值': "getDamgedHp;",
-            '已失体力值': "getDamgedHp;",
+            '已损失的体力值': "getDamagedHp;",
+            '已损失体力值': "getDamagedHp;",
+            '已损体力值': "getDamagedHp;",
+            '已失体力值': "getDamagedHp;",
         },
         player_method_handcard: {
             '手牌数为全场最少或之一': 'isMinHandcard',
@@ -2395,8 +2395,7 @@ export class NonameCN {
         }
     }
     static getVirtualPlayer() {
-        const player = ui.create.player();
-        player.name = "name1";
+        const player = new lib.element.Player();
         player.name1 = "name1";
         player.tempname = [];
         player.skin = {
@@ -2873,6 +2872,8 @@ export class NonameCN {
                     .replace(/\n (\|\||&&) \n/g, " $1 ")
                     .replace(/^if\(\n(.+)\n\)\n{/mg, "if($1){")
                     .replace(/else\n{/g, "else{")
+                    .replace(/\n(?=[ ]*[><]=?[ ]*)/g,"")
+                    .replace(/(?<=[ ]*[><]=?[ ]*)\n/g,"")
             }
             result += "\n"
         }
