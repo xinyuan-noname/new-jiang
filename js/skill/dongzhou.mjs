@@ -19,7 +19,8 @@ function SkillCreater(name, skill) {
 const xjb_zhangwei = SkillCreater(
 	"xjb_zhangwei", {
 	translate: '张维',
-	description: "每轮开始时，你可以重置任意张牌，令至多等量名角色下个摸牌阶段多摸一张牌，这些角色本轮视为拥有〖货殖〗和〖尊攘〗",
+	description: "每轮开始时，你可以重置任意张牌，令至多等量名角色下个摸牌阶段多摸一张牌，这些角色本轮视为拥有〖货殖〗、〖仓实〗和〖尊攘〗",
+	derivation: ["xjb_huozhi", "xjb_cangshi", "xjb_zunrang"],
 	trigger: {
 		global: "roundStart"
 	},
@@ -36,7 +37,7 @@ const xjb_zhangwei = SkillCreater(
 			target.when({ player: "phaseDrawBegin2" }).then(() => {
 				trigger.num += 1;
 			});
-			target.addTempSkill("xjb_zunrang", { global: "roundStart" })
+			target.addTempSkill(["xjb_zunrang", "xjb_huozhi", "xjb_cangshi"], { global: "roundStart" })
 		}
 	}
 })
@@ -74,12 +75,66 @@ const xjb_zunrang = SkillCreater(
 const xjb_huozhi = SkillCreater(
 	"xjb_huozhi", {
 	translate: "货殖",
-	description: "出牌阶段限一次，你可与一名其他角色各展示一张手牌并置于武将牌上称为“货”，然后你与其拼点：双方获得对方的“货”，赢的角色获得拼点牌。若你赢，本回合你可多发动一次该技能。",
+	description: "出牌阶段限一次，你可与一名其他未发动过本技能的角色各展示一张手牌称为“货”，然后你与其用其他手牌拼点：双方获得对方的“货”，赢的角色获得拼点牌。若你赢，本回合你可多发动一次该技能。",
 	enable: "phaseUse",
+	usable: 1,
 	filterTarget: (card, player, target) => {
-		return player.canCompare(target);
+		const targets = player.getHistory("useSkill").map(evt => evt.targets).flat();
+		return !targets.includes(target) && player.canCompare(target) && target.countCards("h") >= 2 && player.countCards("h") >= 2;
 	},
-	
+	content: async function (event, trigger, player) {
+		for (const target of [player, event.target]) {
+			const { result: { cards } } = await target.chooseCard("h", true);
+			target.addGaintag(cards, "xjb_huozhi_huo");
+			await target.showCards(cards);
+		}
+		const next = player.chooseToCompare(event.target);
+		next.set("filterCard", (card) => {
+			return !card.hasGaintag("xjb_huozhi_huo");
+		})
+		const { result: { player: pCard, target: tCard, winner } } = await next;
+		const pExchange = player.getCards("h", (card) => card.hasGaintag("xjb_huozhi_huo"));
+		const tExchange = event.target.getCards("h", (card) => card.hasGaintag("xjb_huozhi_huo"));
+		await player.swapHandcards(event.target, pExchange, tExchange);
+		if (winner) {
+			await winner.gain([pCard, tCard], "gain2")
+		}
+		if (winner === player) player.getStat().skill[event.name]--;
+	},
+	ai: {
+		order: 6,
+		result: {
+			target: (player, target, card) => {
+				return -2;
+			}
+		}
+	}
+})
+const xjb_cangshi = SkillCreater(
+	"xjb_cangshi", {
+	translate: "仓实",
+	description: "出牌阶段，你可以弃置两张基本牌，令你手牌上限+1",
+	enable: "phaseUse",
+	filter: (event, player) => {
+		return player.countCards("h", { type: "basic" }) >= 2;
+	},
+	filterCard: card => {
+		return get.type(card) === "basic"
+	},
+	selectCard: 2,
+	content: async function (event, trigger, player) {
+		player.addMark("xjb_cangshi");
+	},
+	marktext: "仓",
+	intro: {
+		name: "仓廪",
+		content: "仓廪实而知礼节，衣食足而知荣辱。"
+	},
+	mod: {
+		maxHandcardBase(player, num) {
+			return num + player.countMark("xjb_cangshi")
+		}
+	}
 })
 
 const xjb_tongzhou = SkillCreater(
@@ -96,7 +151,6 @@ const xjb_tongzhou = SkillCreater(
 		threaten: 2,
 	}
 })
-
 const xjb_fuwei = SkillCreater(
 	"xjb_fuwei", {
 	translate: "赴危",
@@ -116,7 +170,6 @@ const xjb_fuwei = SkillCreater(
 		player.addSkillTrigger("xjb_tongzhou");
 	},
 })
-
 const xjb_taihuo = SkillCreater(
 	"xjb_taihuo", {
 	translate: "台祸",

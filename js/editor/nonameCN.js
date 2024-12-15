@@ -2676,60 +2676,7 @@ export class NonameCN {
         }
         return result;
     }
-    static GenerateTag(back) {
-        const { marktext, markName, markContent,
-            prompt, prompt2,
-            type, kind, filterTarget, filterCard,
-            uniqueList } = back.skill
-        let result = ''
-        if (marktext && marktext.length) {
-            result += `marktext:"${marktext}",\n`
-        };
-        if (markName && markContent) {
-            result += 'intro:{\n';
-            result += `name:"${markName}",\n`
-            result += `content:"${markContent}",\n`
-            result += '},\n';
-        }
-        if (prompt) {
-            result += `prompt:"${prompt}",\n`
-        }
-        if (prompt2) {
-            result += `prompt2:"${prompt2}",\n`
-        }
-        //遍历技能类别
-        type.forEach(i => {
-            if (i === 'filterTarget'
-                && (kind != 'enable:"phaseUse"' || filterTarget.length > 0)) return;
-            else if (i === 'filterCard'
-                && (kind != 'enable:"phaseUse"' || filterCard.length > 0)) return;
-            else if (i === 'groupSkill') {
-                const group = findPrefix(uniqueList, "group").map(k => k.slice(6))
-                if (group.length > 0) {
-                    result += `groupSkill:"${group[0]}",\n`;
-                    return;
-                }
-            }
-            else if (["usable", "round"].includes(i)) {
-                result += `${i}:1,\n`
-                return;
-            }
-            else if (["lose-false", "discard-false", "delay-false"].includes(i)) {
-                result += `${i.replace('-false', '')}:false,\n`
-                return;
-            }
-            result += `${i}:true,\n`;
-        })
-        if (type.includes("locked-false")) {
-            result = result.replaceAll('locked-false:true', "locked:false")
-            result = result.replaceAll('locked:true,\n', "")
-        }
-        if (uniqueList.some(tag => tag.includes("animation-"))) {
-            const animation = findPrefix(uniqueList, "animation").map(k => k.slice(10))
-            result += `animationColor:"${animation}",\n`
-        }
-        return result;
-    }
+    
     static GenerateGetIndex(back) {
         let result = ''
         const { getIndex } = back.skill;

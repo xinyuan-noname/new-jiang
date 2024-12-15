@@ -37,6 +37,7 @@ import { choiceMode, EditorInteraction } from './editor/interaction.mjs';
 import { dispose } from './editor/transCnText.mjs';
 import { EditorArrange } from './editor/arrange.mjs';
 import { ImplicitTextTool } from "./editor/implicitText.mjs";
+import { EditorOrganize } from "./editor/organize.mjs";
 window.XJB_EDITOR_LIST = {
 	filter: [
 		'你已受伤',
@@ -538,7 +539,7 @@ game.xjb_skillEditor = function () {
 		strParts.push(NonameCN.GenerateInit(back));
 		strParts.push(NonameCN.GenerateMod(back));
 		strParts.push(NonameCN.GenerateKind(back));
-		strParts.push(NonameCN.GenerateTag(back));
+		strParts.push(EditorOrganize.skillTag(back));
 		strParts.push(NonameCN.GenerateGetIndex(back));
 		if (content.includes('.custom_researchCardsDif')) {
 			strParts.push(NonameCN.GenerateResearchDifCards_custom())
@@ -947,7 +948,6 @@ game.xjb_skillEditor = function () {
 		.father(subBack)
 		.addClass("xjb-ED-skillTag-Container")
 		.exit()
-
 	back.ele.types = typeFree.children;
 	const TAG_TYPE_LIST = {
 		"发动": [
@@ -955,14 +955,15 @@ game.xjb_skillEditor = function () {
 			["frequent", "自动发动"],
 			["direct", "直接发动"],
 			["forceDie", "死亡可发动"],
-			["usable", "每回合一次"],
-			["round", "每轮一次"]
+			["usable-1", "每回合一次"],
+			["round-1", "每轮一次"]
 		],
-		"防封": [
+		"防封印": [
 			["locked", "锁定技"],
+			["locked-false", "非锁定技"],
 			["persevereSkill", "持恒技"],
-			["charlotte", "Charlotte技"],
-			["locked-false", "非锁定技"]
+			["charlotte", "Charlotte"],
+			["superCharlotte", "superCharlotte"],
 		],
 		"限定": [
 			["limited", "限定技"],
@@ -971,40 +972,41 @@ game.xjb_skillEditor = function () {
 			["skillAnimation", "技能动画"]
 		],
 		"标签": [
-			["zhuSkill", "主公"],
-			["zhuanhuanji", "转换"],
-			["hiddenSkill", "隐匿"],
-			["clanSkill", "宗族"],
-			["groupSkill", "势力"],
-			["sunbenSkill", "昂扬"],
-			["chargeSkill", "蓄力"],
-			["chargingSkill", "蓄能"]
+			["zhuSkill", "主公技"],
+			["zhuanhuanji", "转换技"],
+			["hiddenSkill", "隐匿技"],
+			["clanSkill", "宗族技"],
+			["groupSkill", "势力技"],
+			["sunbenSkill", "昂扬技"],
+			["chargeSkill", "蓄力技"],
 		],
 		"国战": [
 			["zhenfa", "阵法技"],
 			["mainSkill", "主将技"],
 			["viceSkill", "副将技"],
-			["preHidden", "预亮"]
+			["preHidden", "技能预亮"]
 		],
 		"选角色": [
-			["deadTarget", "死亡可选"],
-			["includeOut", "离场可选"],
-			["multitarget", "多角色"],
+			["deadTarget", "死亡角色可选"],
+			["includeOut", "离场角色可选"],
+			["multitarget", "多名角色"],
 			["complexTarget", "复合选角色"]
 		],
 		"选牌": [
-			["lose-false", "不失去"],
-			["discard-false", "不弃置"],
-			["complexCard", "复合选牌"],
-			["visible", "正面朝上"],
-			["loseDelay", "延迟失去"],
-			["toStorage", "记录"]
+			["lose-false", "不失去牌"],
+			["discard-false", "不弃置牌"],
+			["complexCard", "复合选卡牌"],
 		],
 		"其他": [
 			["mark", "标记持续显示"],
 			["multiline", "多指示线"],
-			["delay-false", "无延迟"]
-		]
+			['firstDo', '最先触发'],
+			["lastDo", "最后触发"]
+		],
+		"自定义": [
+			["usable-n", "每回合限n次"],
+			["round-n", "每n轮限一次"],
+		],
 	};
 	(() => {
 		const entriesObj = Object.entries(TAG_TYPE_LIST)
@@ -1015,11 +1017,17 @@ game.xjb_skillEditor = function () {
 			}
 			for (const [tagEn, tagCn] of tagArray) {
 				const node = ui.create.xjb_button(typeFree, tagCn)
-				ui.xjb_giveStyle(node, { margin: "auto 6px" })
+				ui.xjb_giveStyle(node, { margin: "auto" })
 				node.type = tagEn;
 				relatedNode.push(node);
 			}
-			if (index !== entriesObj.length - 1) relatedNode.push(ui.create.xjb_button(typeFree, ">>>"))
+			if (index !== entriesObj.length - 1) {
+				relatedNode.push(ui.create.xjb_button(typeFree, ">>>"))
+			}
+			else {
+				relatedNode.push(ui.create.xjb_button(typeFree, "重置"))
+				relatedNode.at(-1).diyTagNodes = relatedNode.slice(1, -1)
+			}
 			if (index !== 0) {
 				relatedNode.forEach(node => ui.xjb_hideElement(node))
 			}
@@ -1048,12 +1056,31 @@ game.xjb_skillEditor = function () {
 		if (!list.includes(e.target)) return;
 		if (e.target.innerText.includes('<<<')) {
 			element().setTarget(e.target.loyalTo.previousElementSibling)
-				.clickAndTouch("end")
+				.clickAndTouch()
 			return;
 		}
 		if (e.target.innerText.includes('>>>')) {
 			element().setTarget(e.target.loyalTo.nextElementSibling)
-				.clickAndTouch("end")
+				.clickAndTouch()
+			return;
+		}
+		if (["每回合限n次", "每n轮限一次"].includes(e.target.innerText)) {
+			const node = e.target
+			game.xjb_create.range(e.target.innerText, 1, 20, 1, function () {
+				node.innerText = node.innerText.replace("n", this.result);
+				node.type = node.type.replace(/\bn\b/, this.result);
+				back.skill.type.push(node.type);
+				back.organize();
+			})
+			return;
+		}
+		if (e.target.innerText === "重置") {
+			e.target.diyTagNodes.forEach(node => {
+				back.skill.type.remove(node.type);
+				node.innerText = node.innerText.replace(/\d+/, "n");
+				node.type = node.type.replace(/\d+/, "n");
+			});
+			back.organize();
 			return;
 		}
 		if (back.skill.type.includes(e.target.type)) {
@@ -1119,7 +1146,7 @@ game.xjb_skillEditor = function () {
 			let mapList = {};
 			if (back.skill.type.includes("mainSkill") || back.skill.type.includes("viceSkill")) {
 				mapList = Object.assign(mapList, {
-					"mainVice-remove1": "鱼减半个"
+					"mainVice-remove1": "阴阳鱼减半个"
 				})
 			}
 			if (back.skill.type.includes("groupSkill")) {
