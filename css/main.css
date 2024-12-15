@@ -472,7 +472,7 @@ div.xjb_curtain {
   bottom: 0;
   margin: auto 0;
   padding: 4px;
-  padding-right:10px;
+  padding-right: 10px;
   background-color: rgb(51, 51, 128, 0.8);
   border: #e4d5b7 solid 4px;
   border-radius: 1px;
@@ -519,40 +519,13 @@ div.xjb_curtain {
   background-color: aqua;
 }
 
-/*势力样式*/
-/*魂势力*/
-.player .identity[data-color='xjb_hun'],
-div[data-nature='xjb_hun'],
-span[data-nature='xjb_hun'],
-a[data-nature='xjb_hun'],
-div[data-nature='flower'],
-span[data-nature='flower'] {
-  text-decoration: none;
-  text-shadow: black 0 0 1px, #e75480 0 0 2px, #e75480 0 0 5px, #e75480 0 0 10px, #e75480 0 0 10px
-}
-
-div[data-nature='xjb_hunm'],
-span[data-nature='xjb_hunm'],
-div[data-nature='flowerm'],
-span[data-nature='flowerm'] {
-  text-shadow: black 0 0 1px, #e75480 0 0 2px, #e75480 0 0 5px, #e75480 0 0 5px, #e75480 0 0 5px, black 0 0 1px;
-}
-
-div[data-nature='xjb_hunmm'],
-span[data-nature='xjb_hunmm'],
-div[data-nature='flowermm'],
-span[data-nature='flowermm'] {
-  text-shadow: black 0 0 1px, #e75480 0 0 2px, #e75480 0 0 2px, #e75480 0 0 2px, #e75480 0 0 2px, black 0 0 1px;
-}
-
-div[data-nature='xjb_hunmm'],
-span[data-nature='xjb_hunmm'],
-div[data-nature='xjb_hunm'],
-span[data-nature='xjb_hunm'],
-.player .identity[data-color='xjb_hun'],
-div[data-nature='xjb_hun'],
-span[data-nature='xjb_hun'] {
-  animation: xjb_tran 7s infinite linear
+div.xjb_brightButton {
+  border: 2px solid white;
+  color: yellow;
+  border-radius: 200px;
+  font-size: 19px;
+  position: relative;
+  margin-left: 5px;
 }
 
 /*称号样式，去掉下划线*/

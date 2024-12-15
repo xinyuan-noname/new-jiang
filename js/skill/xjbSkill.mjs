@@ -16,6 +16,138 @@ function SkillCreater(name, skill) {
     return xjbSkill[name];
 };
 
+
+
+//吕蒙技能
+const xjb_xiaomeng = SkillCreater(
+    "xjb_xiaomeng", {
+    translate: "骁猛",
+    description: "你使用【杀】造成伤害时，你可弃置受到伤害的角色的一张牌。若此牌为【杀】，你可以使用之。",
+    trigger: {
+        source: "damageSource",
+    },
+    filter: function (event, player, name) {
+        return (event.card.name === "sha") && (event.player.countDiscardableCards(player, "he"));
+    },
+    content: async function (event, trigger, player) {
+        const { result: { cards } } = await player.discardPlayerCard(trigger.player, "he");
+        if (cards[0].name === "sha") {
+            await player.chooseUseTarget(cards[0], 1);
+        }
+    }
+})
+const xjb_shelie = SkillCreater(
+    "xjb_shelie", {
+    translate: "涉猎",
+    description: "摸牌阶段，你可改为翻出牌堆顶两张牌并获得之，若其中没有普通锦囊牌，你重复此流程。",
+    trigger: {
+        player: "phaseDrawBegin"
+    },
+    check: function (event, player) {
+        return get.attitude(player, event.player) <= 0;
+    },
+    content: async function (event, trigger, player) {
+        trigger.changeToZero();
+        let bool = true;
+        while (bool) {
+            const cards = get.cards(2);
+            await game.cardsGotoOrdering(cards);
+            await player.gain(cards, "gain2");
+            if (cards.some(card => get.type(card, null, false) === "trick")) bool = false;
+        }
+    }
+})
+const xjb_keji = SkillCreater(
+    "xjb_keji", {
+    translate: "克己",
+    description: "摸牌阶段结束后，你可以展示手牌中所有带有伤害标签的牌，这些牌本回合不计入手牌上限且不能被使用或打出",
+    trigger: {
+        player: "phaseDrawEnd"
+    },
+    marktext: "克",
+    intro: {
+        name: "克己",
+        content: "本技能已发动#次"
+    },
+    content: async function (event, trigger, player) {
+        const cards = player.getCards("h", (card) => get.tag(card, "damage"));
+        await player.showCards(cards);
+        player.addGaintag(cards, "xjb_keji");
+        player.when({ player: "phaseAfter" }).then(() => {
+            player.removeGaintag("xjb_keji");
+        })
+        player.addMark("xjb_keji");
+    },
+    mod: {
+        ignoredHandcard: function (card, player) {
+            if (card.hasGaintag("xjb_keji")) {
+                return true;
+            }
+        },
+        cardDiscardable: function (card, player, name) {
+            if (name == "phaseDiscard" && card.hasGaintag("xjb_keji")) return false;
+        },
+        cardEnabled2: function (card, player) {
+            if (card.hasGaintag("xjb_keji") && get.position(card) === "h") return false;
+        },
+    }
+})
+const xjb_guamu = SkillCreater(
+    "xjb_guamu", {
+    translate: "刮目",
+    description: "觉醒技，准备阶段，若你已使用三次〖克己〗，你减少一点体力上限，然后失去〖涉猎〗并获得〖攻心〗。",
+    juexingji: true,
+    animationColor: "wood",
+    skillAnimation: true,
+    forced: true,
+    trigger: {
+        player: "phaseZhunbeiBegin"
+    },
+    derivation: ["xjb_gongxin"],
+    filter: function (event, player, name) {
+        if (player.countMark("xjb_keji") >= 3) return true
+    },
+    content: async function (event, trigger, player) {
+        player.awakenSkill(event.name);
+        player.loseMaxHp();
+        player.addSkill("xjb_gongxin");
+        player.removeSkill("xjb_shelie");
+    }
+})
+const xjb_gongxin = SkillCreater(
+    "xjb_gongxin", {
+    translate: "攻心",
+    description: "出牌阶段限一次，你可以令一名其他角色将一张手牌标记为“心”，然后你观看其手牌并选择一张展示之。若为“心”，你获得之并令其失去一点体力，本回合你可多发动一次该技能。",
+    enable: "phaseUse",
+    usable: 1,
+    filterTarget: function (event, player, target) {
+        return target.countCards("h") > 0 && target != player;
+    },
+    content: async function (event, trigger, player) {
+        const { result: { bool, cards } } = await event.target.chooseCard("h", true).set("ai", card => Math.random() > 0.5);
+        if (bool) {
+            event.target.addGaintag(cards, "xjb_gongxin_xin")
+            const hs = event.target.getCards("h");
+            const { result: { links } } = await player.chooseCardButton("猜测哪张是“心”", hs, true);
+            await player.showCards(links[0], get.translation(player, "猜测", links[0], "是“心”"));
+            if (links[0] === cards[0]) {
+                event.target.loseHp();
+                player.gain(links[0], "gain2")
+                player.getStat().skill.xjb_gongxin--;
+            }
+        }
+    },
+    ai: {
+        order: 8,
+        result: {
+            target: function (player, target, card) {
+                if (target.countCards('h') === 1) return - 3
+                return -2;
+            }
+        }
+    }
+})
+
 const xjb_yexi = SkillCreater(
     "xjb_yexi", {
     enable: "phaseUse",
@@ -90,62 +222,7 @@ const xjb_jianxiong = SkillCreater(
         },
     },
 })
-const xin_shiyin = SkillCreater(
-    "xin_shiyin", {
-    trigger: {
-        player: ["loseAfter", "loseAsyncAfter"],
-    },
-    getType(event, player) {
-        let cards = [];
-        for (const target of [player, player.getPrevious()]) {
-            const evt = event.getl(target);
-            if (evt && evt.cards2 && evt.cards2.some(i => get.position(i) == "d")) {
-                if (
-                    target == player ||
-                    target
-                        .getHistory("lose", evt => {
-                            return evt.type == "discard" && evt.getlx !== false;
-                        })
-                        .indexOf(event) == 0
-                ) {
-                    cards.addArray(evt.cards2.filter(i => get.position(i) == "d"));
-                }
-            }
-        }
-        let types = [];
-        for (let each of cards) {
-            types.add(get.type2(each, player));
-        }
-        return types
-    },
-    filter(event, player) {
-        if (player !== _status.currentPhase) return false;
-        if (event.type != "discard" || event.getlx === false) return false;
-        return get.info("xin_shiyin").getType(event, player).length === 1;
-    },
-    async cost(event, trigger, player) {
-        const type = get.info("xin_shiyin").getType(trigger, player)[0];
-        let chooseStr = "";
-        switch (type) {
-            case 'basic': chooseStr = "你选择一名角色，令其回复一点体力"; break;
-            case 'trick': chooseStr = "你选择一名角色，令其失去一点体力"; break;
-            case 'equip': chooseStr = "你选择一名角色，对其造成一点伤害"; break;
-        }
-        event.result = await player.chooseTarget(chooseStr).forResult();
-    },
-    async content(event, trigger, player) {
-        const type = get.info("xin_shiyin").getType(trigger, player)[0];
-        let toDo = "";
-        switch (type) {
-            case 'basic': toDo = "recover"; break;
-            case 'trick': toDo = "loseHp"; break;
-            case 'equip': toDo = "damage"; break;
-        }
-        event.targets[0][toDo](toDo === "loseHp" ? void 0 : player, toDo === "damage" ? "fire" : void 0)
-    },
-    translate: "识音",
-    description: "你于回合内因弃置失去牌后，若你失去的牌均为：基本牌/锦囊牌/装备牌，你可以令场上一名角色：恢复1点体力/失去1点体力/受到一点火属性伤害。"
-})
+
 const xjb_qizuo = SkillCreater(
     "xjb_qizuo", {
     group: ["xjb_qizuo_gain"],
@@ -254,6 +331,7 @@ const xjb_qizuo = SkillCreater(
     }
 })
 
+//汉曹操技能
 const xin_zhibang = SkillCreater(
     "xin_zhibang", {
     init: function (player, skill) {
@@ -329,6 +407,7 @@ const xin_chuhui = SkillCreater(
     description: "出牌阶段，若你\"棒\"数量≥5，你可令一名角色获得全部的\"棒\",然后对其造成x点伤害(x为棒的数量,向下取整)。",
 })
 
+//刘禅技能
 const xjb_fangquan = SkillCreater(
     "xjb_fangquan", {
     enable: "phaseUse",
@@ -349,7 +428,7 @@ const xjb_fangquan = SkillCreater(
     filterTarget: function (card, player, target) {
         return target != player;
     },
-    prompt: "将带有伤害标签的牌、武器牌、-1马牌，交给一名其他角色并结束你的出牌阶段，令其额外进行一个回合",
+    prompt: "将带有伤害标签的牌、武器牌、-1马牌，交给一名其他角色，令其额外进行一个回合",
     content: function () {
         target.gain(cards, "giveAuto")
         target.insertPhase();
@@ -385,8 +464,8 @@ const xjb_xiangle = SkillCreater(
         if (result.bool) {
             let card = result.buttons[0].link;
             if (card.viewAs) player.addJudge({ name: card.viewAs }, [card])
-            else player.addJudge(card)
-            trigger.player.$give(card, player)
+            else player.addJudge(card);
+            trigger.player.$give(card, player);
         }
     },
     translate: "享乐",
@@ -408,7 +487,7 @@ const xjb_xiangle = SkillCreater(
     }
 })
 
-
+//诸葛亮技能
 const xjb_zhijue = SkillCreater(
     "xjb_zhijue", {
     trigger: {
@@ -438,9 +517,11 @@ const xjb_zhijue = SkillCreater(
         event.result = { bool, cost_data: { cards: event.cards } }
     },
     content: async function (event, trigger, player) {
-        const tl = Math.max(trigger.targets.length, 1)
-        trigger.targets.length = 0;
-        trigger.all_excluded = true;
+        const tl = Math.max(trigger.targets.length, 1);
+        game.broadcastAll(triggerX => {
+            triggerX.targets.length = 0;
+            triggerX.all_excluded = true;
+        }, trigger)
         trigger.player.xjb_gainRemnantCard('sha', tl)
     },
 })
@@ -507,7 +588,7 @@ const xjb_qiongzhi = SkillCreater(
     }
 })
 
-
+//司马懿技能
 const xjb_xianmou = SkillCreater(
     "xjb_xianmou", {
     trigger: {
@@ -553,6 +634,7 @@ const xjb_yinlve = SkillCreater(
     },
 })
 
+//典韦技能
 const xin_huzhu = SkillCreater(
     "xin_huzhu", {
     translate: "护主",
@@ -694,6 +776,7 @@ const xin_mousheng = SkillCreater(
     "_priority": 0,
 })
 
+//汉荀彧技能
 const xjb_bingjie = SkillCreater(
     "xjb_bingjie", {
     translate: "秉节",
@@ -907,6 +990,7 @@ const xjb_yiji = SkillCreater(
     "_priority": 0,
 })
 
+//孙策技能
 const xjb_taoni = SkillCreater(
     "xjb_taoni", {
     translate: "讨逆",
@@ -944,28 +1028,110 @@ const xjb_taoni = SkillCreater(
     }
 })
 
-const xin_yingfa = SkillCreater(
-    "xin_yingfa", {
+//周瑜技能
+const xjb_shiyin = SkillCreater(
+    "xjb_shiyin", {
+    trigger: {
+        player: ["loseAfter", "loseAsyncAfter"],
+    },
+    getType(event, player) {
+        let cards = [];
+        for (const target of [player, player.getPrevious()]) {
+            const evt = event.getl(target);
+            if (evt && evt.cards2 && evt.cards2.some(i => get.position(i) == "d")) {
+                if (
+                    target == player ||
+                    target
+                        .getHistory("lose", evt => {
+                            return evt.type == "discard" && evt.getlx !== false;
+                        })
+                        .indexOf(event) == 0
+                ) {
+                    cards.addArray(evt.cards2.filter(i => get.position(i) == "d"));
+                }
+            }
+        }
+        let types = [];
+        for (let each of cards) {
+            types.add(get.type2(each, player));
+        }
+        return types
+    },
+    filter(event, player) {
+        if (event.type != "discard" || event.getlx === false) return false;
+        console.log(get.info("xjb_shiyin").getType(event, player).length)
+        return get.info("xjb_shiyin").getType(event, player).length === 1;
+    },
+    async cost(event, trigger, player) {
+        const type = get.info("xjb_shiyin").getType(trigger, player)[0];
+        let chooseStr = "";
+        switch (type) {
+            case 'basic': chooseStr = "你选择一名角色，令其回复一点体力"; break;
+            case 'trick': chooseStr = "你选择一名角色，令其失去一点体力"; break;
+            case 'equip': chooseStr = "你选择一名角色，对其造成一点伤害"; break;
+        }
+        event.result = await player.chooseTarget(chooseStr, type === "basic" ? (card, player, target) => !target.isHealthy() : () => true).forResult();
+    },
+    async content(event, trigger, player) {
+        const type = get.info("xjb_shiyin").getType(trigger, player)[0];
+
+        switch (type) {
+            case 'basic': {
+                event.targets[0].recover();
+            }; break;
+            case 'trick': {
+                event.targets[0].loseHp();
+            }; break;
+            case 'equip': {
+                event.targets[0].damage("fire")
+            }; break;
+        }
+    },
+    translate: "识音",
+    description: "你因弃置失去牌后，若你失去的牌均为：基本牌/锦囊牌/装备牌，你可以令场上一名角色：恢复1点体力/失去1点体力/受到一点火焰伤害。"
+})
+const xjb_yingfa = SkillCreater(
+    "xjb_yingfa", {
+    description: "摸牌阶段，你可以多摸至多X张牌(X为你上一轮造成伤害的次数+1且至多为5)",
+    translate: "英发",
+    trigger: {
+        player: "phaseDrawBegin2"
+    },
+    content: async function (event, trigger, player) {
+        const max = Math.min(player.getRoundHistory("sourceDamage", () => true, 1).length + 1, 5);
+        const list = new Array(max + 1).fill().map((_, index) => index)
+        const next = player.chooseControl(list);
+        next.choice = max;
+        const { result: { control: num } } = await next;
+        if (num) {
+            trigger.num += num;
+        }
+    }
+})
+const xjb_ruijin = SkillCreater(
+    "xjb_ruijin", {
+    translate: "锐进",
+    description: "出牌阶段限X次，你可以失去一点体力，观看一名角色展示一种类型的所有牌，你弃置其中任意张。(X为你本回合造成伤害的次数+1)",
     enable: "phaseUse",
     filterTarget: true,
-    usable: 3,
-    content: function () {
-        "step 0"
-        player.loseHp()
-        player.chooseControl(["基本牌", "装备牌", "锦囊牌"]).set("prompt", "选择一种类别，令其将其区域内所有该类别的牌置入弃牌堆。")
-        "step 1"
+    filter: function (event, player) {
+        return player.countSkill("xjb_ruijin") <= player.getHistory("sourceDamage").length;
+    },
+    content: async function (event, trigger, player) {
+        await player.loseHp()
+        const { result } = await player.chooseControl(["基本牌", "装备牌", "锦囊牌"]).set("prompt", "选择一种类别，令其将其区域内所有该类别的牌置入弃牌堆。")
         const list = {
             "基本牌": "basic",
             "装备牌": "equip",
             "锦囊牌": ["trick", "delay"]
         }
-        const type = list[result.control]
-        const cards = target.getCards("hej", { type: type })
-        target.discard(cards)
-        event.cards = cards
-        "step 2"
-        var s = event.cards
-        if (s.length) player.gain(s.randomGet(), "gain2")
+        const type = list[result.control];
+        const hes = event.target.getCards("he", { type: type });
+        if (!hes) return;
+        const { result: { bool, links: cards } } = await player.chooseCardButton(hes, [1, Infinity]);
+        if (bool) {
+            event.target.discard(cards, player, ui.ordering)
+        }
     },
     ai: {
         order: 9,
@@ -980,8 +1146,6 @@ const xin_yingfa = SkillCreater(
         },
         threaten: 2,
     },
-    translate: "英发",
-    description: "出牌阶段限三次，你可以失去一点体力，令一名角色失去一种类型的所有牌，你随机获得其中一张牌。",
 })
 
 

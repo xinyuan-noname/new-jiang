@@ -1,3 +1,10 @@
+.xjb-ED-skillTag-Container>* {
+    font-size: 0.9em;
+}
+.xjb-ED-uniqueSetting-Container>* {
+    font-size: 0.9em;
+}
+
 .xjb-Ed-contentDataInput {
     margin-top: 1em;
     overflow: auto;

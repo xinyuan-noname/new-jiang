@@ -1,3 +1,13 @@
+/**
+ * @typedef {Object} SkillConfig
+ * @property {boolean} contentAsync
+ * @property {string} trigger
+ * @property {string} content
+ * @property {string} filter
+ */
+/**
+ * @type {Map<RegExp,SkillConfig>}
+ */
 export const editorInbuiltSkillMap = new Map()
 //曹操部分
 editorInbuiltSkillMap.set(
@@ -129,7 +139,7 @@ editorInbuiltSkillMap.set(
     /(?<!异步)引入[ ]*(标?制衡|zhiheng)\n/,
     {
         phaseUse: true,
-        position:["h","e"],
+        position: ["h", "e"],
         filter: "你 有牌",
         content: `你 摸牌 牌组 访 长度`,
         filterCard: "任意张",
@@ -140,9 +150,46 @@ editorInbuiltSkillMap.set(
     {
         contentAsync: true,
         phaseUse: true,
-        position:["h","e"],
+        position: ["h", "e"],
         filter: "你 有牌",
         content: `你 摸牌 事件的牌组 访 长度`,
         filterCard: "任意张",
     }
 );
+
+//孙策部分
+editorInbuiltSkillMap.set(
+    /(?<!异步)引入[ ]*(激昂|jiang)\n/,
+    {
+        trigger: [
+            "你 使用牌指定目标后",
+            "你 成为牌的目标后"
+        ].join("\n"),
+        filter: [
+            "此牌 为 决斗",
+            "或者",
+            "此牌 为 杀",
+            "并且",
+            "此牌 为 红色"
+        ].join("\n"),
+        content: `你 摸牌`
+    }
+)
+editorInbuiltSkillMap.set(
+    /(?<=异步)引入[ ]*(激昂|jiang)\n/,
+    {
+        contentAsync: true,
+        trigger: [
+            "你 使用牌指定目标后",
+            "你 成为牌的目标后"
+        ].join("\n"),
+        filter: [
+            "此牌 为 决斗",
+            "或者",
+            "此牌 为 杀",
+            "并且",
+            "此牌 为 红色"
+        ].join("\n"),
+        content: `你 摸牌`
+    }
+)

@@ -941,106 +941,119 @@ game.xjb_skillEditor = function () {
 		return list1
 	}
 	//
-	let typeSeter = newElement('div', '技能标签:', subBack).style1()
-	const TAG_TYPE_LIST = ['首页', '限定', '防封', '标签', '主动', '国战', '其他', '少用']
-	for (const innerHTML of TAG_TYPE_LIST) {
-		element("div")
-			.father(typeSeter)
-			.innerHTML(innerHTML)
-			.style({
-				border: "2px solid white",
-				color: "yellow",
-				"border-radius": "200px",
-				fontSize: "22px",
-				position: "relative",
-				marginLeft: "5px"
-			})
-	}
-	element().setTarget(typeSeter)
-		.listen(DEFAULT_EVENT, e => {
-			const target = e.target;
-			let list = Array.from(typeFree.children);
-			const index = TAG_TYPE_LIST.indexOf(target.innerText)
-			if (index === -1) return;
-			list.splice(index * 6, 6).forEach(ele => ui.xjb_showElement(ele))
-			list.forEach(ele => ui.xjb_hideElement(ele))
-			return;
-		})
-	let typeFree = element()
+	const typeSeter = newElement('div', '技能标签:', subBack).style1();
+	const typeFree = element()
 		.clone(buttonContainer)
 		.father(subBack)
+		.addClass("xjb-ED-skillTag-Container")
 		.exit()
-	back.ele.types = typeFree.children
-	{
-		const mapList = {
-			'zhuSkill': '主公技',
-			'forced': "强制发动",
-			"frequent": "自动发动",
-			'usable': '每回合一次',
-			'multitarget': "多角色",
-			//
-			"limited": "限定技",
-			"juexingji": "觉醒技",
-			"dutySkill": "使命技",
-			"skillAnimation": "技能动画",
-			//
-			"locked": "锁定技",
-			"persevereSkill": "持恒技",
-			"charlotte": "Charlotte技",
-			"locked-false": "非锁定技",
-			//
-			"zhuanhuanji": "转换技",
-			"hiddenSkill": "隐匿技",
-			"clanSkill": "宗族技",
-			"groupSkill": "势力技",
-			//
-			"multiline": "多指示线",
-			"lose-false": "不失去牌",
-			"discard-false": "不弃置牌",
-			"delay-false": "无延迟",
-			//
-			"zhenfa": "阵法技",
-			"mainSkill": "主将技",
-			"viceSkill": "副将技",
-			"preHidden": "预亮",
-			//
-			"mark": "标记持显",
-			'round': "每轮一次",
-			"direct": "直接发动",
-			"sunbenSkill": "昂扬技",
-			//
-			"forceDie": "亡语",
-			"chargeSkill": "蓄力技",
-			"chargingSkill": "蓄能技",
+
+	back.ele.types = typeFree.children;
+	const TAG_TYPE_LIST = {
+		"发动": [
+			["forced", "强制发动"],
+			["frequent", "自动发动"],
+			["direct", "直接发动"],
+			["forceDie", "死亡可发动"],
+			["usable", "每回合一次"],
+			["round", "每轮一次"]
+		],
+		"防封": [
+			["locked", "锁定技"],
+			["persevereSkill", "持恒技"],
+			["charlotte", "Charlotte技"],
+			["locked-false", "非锁定技"]
+		],
+		"限定": [
+			["limited", "限定技"],
+			["juexingji", "觉醒技"],
+			["dutySkill", "使命技"],
+			["skillAnimation", "技能动画"]
+		],
+		"标签": [
+			["zhuSkill", "主公"],
+			["zhuanhuanji", "转换"],
+			["hiddenSkill", "隐匿"],
+			["clanSkill", "宗族"],
+			["groupSkill", "势力"],
+			["sunbenSkill", "昂扬"],
+			["chargeSkill", "蓄力"],
+			["chargingSkill", "蓄能"]
+		],
+		"国战": [
+			["zhenfa", "阵法技"],
+			["mainSkill", "主将技"],
+			["viceSkill", "副将技"],
+			["preHidden", "预亮"]
+		],
+		"选角色": [
+			["deadTarget", "死亡可选"],
+			["includeOut", "离场可选"],
+			["multitarget", "多角色"],
+			["complexTarget", "复合选角色"]
+		],
+		"选牌": [
+			["lose-false", "不失去"],
+			["discard-false", "不弃置"],
+			["complexCard", "复合选牌"],
+			["visible", "正面朝上"],
+			["loseDelay", "延迟失去"],
+			["toStorage", "记录"]
+		],
+		"其他": [
+			["mark", "标记持续显示"],
+			["multiline", "多指示线"],
+			["delay-false", "无延迟"]
+		]
+	};
+	(() => {
+		const entriesObj = Object.entries(TAG_TYPE_LIST)
+		for (const [index, [innerHTML, tagArray]] of entriesObj.entries()) {
+			const relatedNode = [];
+			if (index !== 0) {
+				relatedNode.push(ui.create.xjb_button(typeFree, "<<<"));
+			}
+			for (const [tagEn, tagCn] of tagArray) {
+				const node = ui.create.xjb_button(typeFree, tagCn)
+				ui.xjb_giveStyle(node, { margin: "auto 6px" })
+				node.type = tagEn;
+				relatedNode.push(node);
+			}
+			if (index !== entriesObj.length - 1) relatedNode.push(ui.create.xjb_button(typeFree, ">>>"))
+			if (index !== 0) {
+				relatedNode.forEach(node => ui.xjb_hideElement(node))
+			}
+			const changePageNode = element("div")
+				.father(typeSeter)
+				.innerHTML(innerHTML)
+				.className("xjb_brightButton")
+				.setKey("relatedNode", relatedNode)
+				.exit();
+			relatedNode.at(0).loyalTo = changePageNode;
+			relatedNode.at(-1).loyalTo = changePageNode;
 		}
-		let list = xjb_formatting(Object.values(mapList));
-		let list1 = xjb_formatting(Object.keys(mapList));
-		list.forEach((i, k) => {
-			const en = list1[k];
-			let it;
-			it = ui.create.xjb_button(typeFree, i);
-			ui.xjb_giveStyle(it, {
-				fontSize: '1em'
-			});
-			if (k >= 6) ui.xjb_hideElement(it)
-			it.type = en;
-		});
-	}
+	})();
+	element().setTarget(typeSeter)
+		.listen(DEFAULT_EVENT, e => {
+			if (!e.target.relatedNode) return;
+			const target = e.target;
+			[...back.ele.types].forEach(node => {
+				if (!target.relatedNode.includes(node)) ui.xjb_hideElement(node)
+				else ui.xjb_showElement(node);
+			})
+			return;
+		})
 	listener(typeFree, e => {
 		let list = Array.from(typeFree.children)
 		if (!list.includes(e.target)) return;
-		if (e.target.innerText.includes('>>>')) {
-			const a = list.indexOf(e.target) + 1;
-			let b = Math.min((a + 5), (list.length - 1));
-			list.splice(a, (b - a + 1)).forEach(ele => ui.xjb_showElement(ele))
-			list.forEach(ele => ui.xjb_hideElement(ele))
+		if (e.target.innerText.includes('<<<')) {
+			element().setTarget(e.target.loyalTo.previousElementSibling)
+				.clickAndTouch("end")
 			return;
 		}
-		if (e.target.innerText.includes('<<<')) {
-			const a = list.indexOf(e.target) - 1;
-			let b = Math.max(0, (a - 5));
-			list.splice(b, (a - b + 1)).forEach(ele => ui.xjb_showElement(ele))
-			list.forEach(ele => ui.xjb_hideElement(ele))
+		if (e.target.innerText.includes('>>>')) {
+			element().setTarget(e.target.loyalTo.nextElementSibling)
+				.clickAndTouch("end")
 			return;
 		}
 		if (back.skill.type.includes(e.target.type)) {
@@ -1056,6 +1069,7 @@ game.xjb_skillEditor = function () {
 	let groupFree = element()
 		.clone(buttonContainer)
 		.father(subBack)
+		.addClass("xjb-ED-uniqueSetting-Container")
 		.exit()
 	back.ele.groupsContainer = groupFree;
 	back.ele.groups = groupFree.children;
@@ -1141,7 +1155,6 @@ game.xjb_skillEditor = function () {
 				 */
 				let it = ui.create.xjb_button(groupFree, i);
 				element().setTarget(it)
-					.setStyle('fontSize', '1em')
 					.hook(ele => {
 						if (k >= 6) ui.xjb_hideElement(ele)
 					}).
@@ -1283,9 +1296,10 @@ game.xjb_skillEditor = function () {
 		const _this = this
 		back.skill.filter = [];
 		filterFree.inherit();
-		const list = dispose(filterFree.value, void 0, NonameCN.FilterList);
+		const implicitText = ImplicitTextTool.content(filterFree.value);
+		const list = dispose(implicitText, void 0, NonameCN.FilterList);
 		const redispose = NonameCN.replace(list.join('\n')).map(t => {
-			let result = t.replace(/trigger(?!name)/g, 'event');
+			let result = t.replace(/\btrigger\b/g, 'event');
 			return result;
 		});
 		back.skill.filter.push(...redispose);

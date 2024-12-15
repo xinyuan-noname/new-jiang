@@ -11,12 +11,28 @@ import {
     soulTranslate
 } from "./skill/soulSkill.mjs"
 import { dongzhouSkill, dongzhouTranslate } from "./skill/dongzhou.mjs";
+/**
+ * 
+ * @param {Status} _status 
+ * @param {Library} lib 
+ * @param {Game} game 
+ * @param {UI} ui 
+ * @param {Get} get 
+ * @param {AI} ai 
+ */
 window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
     game.import("character", () => {
         const result = {
             name: "xjb_easternZhou",
             connect: true,
             character: {
+                "xjb_guanyiwu": {
+                    sex: "male",
+                    group: "xjb_qi",
+                    hp: 3,
+                    skills: ["xjb_zhangwei"],
+                    trashBin: []
+                },
                 "xjb_jizi_shou": {
                     sex: "male",
                     group: "xjb_chunqiu_wei",
@@ -24,6 +40,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     skills: ["xjb_tongzhou", "xjb_fuwei", "xjb_taihuo"],
                     trashBin: []
                 },
+
                 "xjb_qinshihuang": {
                     sex: "male",
                     group: "xjb_qin",
@@ -41,14 +58,16 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
             characterFilter: {},
             characterTitle: {},
             dynamicTranslate: {
-                xjb_tongzhou(player){
-                    if(lib.skill.xjb_tongzhou.trigger.player === "phaseZhunbeiBegin") return "准备阶段,你可以摸两张牌"
+                xjb_tongzhou(player) {
+                    if (lib.skill.xjb_tongzhou.trigger.player === "phaseZhunbeiBegin") return "准备阶段,你可以摸两张牌"
                     return "准备阶段和结束阶段,你可以摸两张牌"
                 }
             },
             characterIntro: {
                 xjb_jizi_shou: "卫太子伋，也称急子。卫宣公未即位时，与卫庄公妾室夷姜私通所生。宣公即位，遂立伋为太子。后太子娶齐女，未入室，宣公筑新台娶之。后来宣公派伋出使齐国，为宣公所害。<br>卫国公子寿，卫宣公与宣姜之子，宣公命边境强盗杀太子伋，公子寿劝止太子伋不成，遂灌醉太子伋，盗太子出使符节而替死。寿死后，伋又到边境处，见寿尸体，遂无生意，一心求死，强盗将其杀害。",
-                xjb_qinshihuang: "秦始皇，赵氏嬴姓，名政，是我国的第一位皇帝。"
+                xjb_guanyiwu: "管夷吾，姬姓管氏，名夷吾，字仲。管仲早年辅佐公子纠，于后来齐桓公的即位之争中时，险些射死桓公。公子纠落败后，鲍叔牙劝说桓公任用管仲，桓公不计前嫌，任命管仲为相国并拜为“仲父”。在管仲的辅佐下，齐国富强，打出了“尊王攘夷”的旗帜，“九合诸侯，一匡天下”，主持葵丘之盟，成为春秋首霸。管仲死前，推举公孙隰朋和鲍叔牙为相，而告诫齐桓公远离竖刁、易牙、开方三人。桓公终不能远离三人，落得凄惨下场。",
+                xjb_qihuangong: "齐桓公，姜姓吕氏，名小白，春秋时期第一位霸主。齐襄公在位之时，在身为公子的小白与鲍叔牙出逃莒国。齐襄公、公孙无知相继死于内乱之中，小白和公子纠争相回国即位。小白半路遭到管仲埋伏，射中衣带钩，随即诈死，使管仲和公子纠掉意轻心，率先回国即位。即位后，桓公遂与支持公子纠的鲁国开战，鲁国大败。鲁国人处死公子纠，之后又用囚车将管仲送至齐国。桓公不计前嫌，任命管仲为相国。在其辅佐下，齐国国力日渐强盛，桓公也成为春秋首位霸主。管仲死后，桓公任用公孙隰朋和鲍叔牙为相，不得长久。后来，易牙、竖刁、开方把持朝政，诸公子忙于争位，桓公死后六十七天才得以入殓。",
+                xjb_qinshihuang: "秦始皇，嬴姓赵氏，名政，是我国的第一位皇帝。"
             },
             characterReplace: {},
             card: {},
@@ -60,17 +79,19 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
 
                 'xjb_qin': '秦',
                 "xjb_chunqiu_wei": "卫",
+                "xjb_qi": "齐",
 
                 "xjb_jizi_shou": "急子&寿",
                 "xjb_qinshihuang": "秦始皇",
-
+                "xjb_guanyiwu": "管夷吾",
                 ...dongzhouTranslate
             },
             pinyins: {},
         }
         const nameNatureMap = {
-            "xjb_qin": "thunder",
-            "xjb_chunqiu_wei": "fire"
+            "xjb_qin": "black",
+            "xjb_chunqiu_wei": "fire",
+            "xjb_qi": "fire",
         }
         lib.config.all.characters.push("xjb_easternZhou");
         for (const [name, nature] of Object.entries(nameNatureMap)) {
@@ -105,9 +126,8 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                 "xjb_sunce": {
                     sex: "male",
                     group: "wu",
-                    hp: 3,
-                    maxHp: 4,
-                    skills: ["xjb_taoni", "jiang"],
+                    hp: 4,
+                    skills: ["xjb_taoni", "jiang", "xjb_yingfa"],
                     trashBin: []
                 },
                 "xjb_guojia": {
@@ -148,8 +168,8 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                 "xjb_zhouyu": {
                     sex: "male",
                     group: "wu",
-                    hp: 4,
-                    skills: ["xin_shiyin", "xin_yingfa"],
+                    hp: 3,
+                    skills: ["xjb_shiyin", "xjb_yingfa", "xjb_ruijin"],
                     trashBin: []
                 },
                 "xjb_liushan": {
@@ -185,6 +205,13 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     group: "jin",
                     hp: 3,
                     skills: ["xjb_xianmou", "xjb_yinlve"],
+                    trashBin: []
+                },
+                "xjb_lvmeng": {
+                    sex: "male",
+                    group: "wu",
+                    hp: 4,
+                    skills: ["xjb_xiaomeng", "xjb_shelie", "xjb_keji", "xjb_guamu"],
                     trashBin: []
                 },
             },
@@ -225,7 +252,6 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                 }
             },
             characterIntro: {
-                xjb_caocao: "操携樵沛诸夏侯曹氏，同汝颖荀之所进退，奋起于兖州之地。济天子，假天子之威，御天下之士。修政事，广屯田，缮水利。征伐四方，十战九胜，可抵其锋者，唯孙刘二者。以其功高，自比于周公，置魏国，修行宫，立太子，分香卖履，薄葬于高陵。观其平生则多杀戮，忿急至于过者亦多也。然其兴兴之政也广及率土三二，亦一世之雄也。",
             },
             characterReplace: {},
             card: {},
@@ -238,18 +264,24 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                 'xjb_han': '汉',
 
                 "xin_fellow": "秦兵",
-                "xjb_daqiao": "大乔",
-                "xjb_sunce": "孙策",
-                "xjb_guojia": "郭嘉",
+
                 "xjbhan_caocao": "曹操",
                 "xjbhan_xunyu": "荀彧",
-                "xjb_pangtong": "庞统",
+
                 "xjb_caocao": "曹操",
-                "xjb_zhouyu": "周瑜",
-                "xjb_liushan": "刘禅",
                 "xjb_dianwei": "典韦",
+                "xjb_guojia": "郭嘉",
+
+                "xjb_sunce": "孙策",
+                "xjb_zhouyu": "周瑜",
+                "xjb_lvmeng": "吕蒙",
                 "xjb_ganning": "甘宁",
+                "xjb_daqiao": "大乔",
+
+                "xjb_liushan": "刘禅",
                 "xjb_zhugeliang": "诸葛亮",
+                "xjb_pangtong": "庞统",
+
                 "xjb_jin_simayi": "司马懿",
 
                 xjb_chidan: '赤胆忠心',
@@ -260,7 +292,8 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                 xjb_guijin: '三分归晋',
                 xjb_huahao: '花好月圆',
 
-                ...xjbTranslate
+                ...xjbTranslate,
+                "xjb_gongxin_xin": "心"
             },
             pinyins: {},
         };
@@ -416,4 +449,5 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
         lib.groupnature.xjb_hun = "xjb_hun";
         return result;
     });
+    lib.init.css(lib.xjb_src + "css", "nature");
 }

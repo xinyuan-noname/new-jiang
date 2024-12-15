@@ -3,7 +3,7 @@ export const dongzhouSkill = {};
 export const dongzhouTranslate = {};
 /**
  * 
- * @param {*} name 
+ * @param {string} name 
  * @param {Skill} skill 
  * @returns 
  */
@@ -16,6 +16,71 @@ function SkillCreater(name, skill) {
 	return dongzhouSkill[name];
 };
 
+const xjb_zhangwei = SkillCreater(
+	"xjb_zhangwei", {
+	translate: '张维',
+	description: "每轮开始时，你可以重置任意张牌，令至多等量名角色下个摸牌阶段多摸一张牌，这些角色本轮视为拥有〖货殖〗和〖尊攘〗",
+	trigger: {
+		global: "roundStart"
+	},
+	cost: async function (event, trigger, player) {
+		const { result: { bool, cards } } = await player.chooseCard("he", [1, Infinity], card => player.canRecast(card))
+		if (bool) {
+			const { length: num } = cards;
+			player.recast(cards);
+			event.result = await player.chooseTarget([1, num]).forResult();
+		}
+	},
+	content: async function (event, trigger, player) {
+		for (const target of event.targets) {
+			target.when({ player: "phaseDrawBegin2" }).then(() => {
+				trigger.num += 1;
+			});
+			target.addTempSkill("xjb_zunrang", { global: "roundStart" })
+		}
+	}
+})
+const xjb_zunrang = SkillCreater(
+	"xjb_zunrang", {
+	translate: "尊攘",
+	description: "回合开始时，你可以获得一名其他角色一张牌，然后你令另一名其他角色摸一张牌",
+	trigger: {
+		player: 'phaseBegin'
+	},
+	content: async function (event, trigger, player) {
+		const next1 = player.chooseTarget("选择一名角色，你获得其一张牌");
+		next1.set("filterTarget", (card, player, target) => target.countGainableCards(player, "h") > 0 && target != player);
+		next1.set("ai", (target) => {
+			const playerx = _status.event.player;
+			return get.attitude(playerx, target) <= 0;
+		})
+		const { result: { targets: targets1, bool: bool1 } } = await next1;
+		if (!bool1) return;
+		await player.gainPlayerCard("he", targets1[0]);
+		const next2 = player.chooseTarget("选择一名角色，你令其摸一张牌", true);
+		next2.set("filterTarget", (card, player, target) => {
+			return target != player && target != _status.event.targetLast
+		})
+		next2.set("targetLast", targets1[0]);
+		next2.set("ai", (target) => {
+			const playerx = _status.event.player;
+			return get.attitude(playerx, target)
+		})
+		const { result: { targets: targets2, bool: bool2 } } = await next2;
+		if (!bool2) return;
+		targets2[0].draw();
+	}
+})
+const xjb_huozhi = SkillCreater(
+	"xjb_huozhi", {
+	translate: "货殖",
+	description: "出牌阶段限一次，你可与一名其他角色各展示一张手牌并置于武将牌上称为“货”，然后你与其拼点：双方获得对方的“货”，赢的角色获得拼点牌。若你赢，本回合你可多发动一次该技能。",
+	enable: "phaseUse",
+	filterTarget: (card, player, target) => {
+		return player.canCompare(target);
+	},
+	
+})
 
 const xjb_tongzhou = SkillCreater(
 	"xjb_tongzhou", {

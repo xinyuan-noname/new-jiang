@@ -682,7 +682,6 @@ export class NonameCN {
         "in": " in ",
         //
         "，": ',',
-        //注释
         "父元素": "parentNode",
         "子元素": "children",
         "牌堆": "ui.cardPile",
@@ -1455,11 +1454,14 @@ export class NonameCN {
             '一名角色': 'global',
             '一位角色': 'global',
         },
+        
         triggerList: {
             ...getMapOfTrigger(),
             ...getMapOfTri_Target(),
             ...getMapOfTri_Use(),
             //
+            "进入游戏时": "enterGame",
+            "游戏开始时": "gameStart",
             "每轮开始时": "roundStart",
             //phase类
             "回合开始后2": "phaseBeforeStart",
@@ -1468,34 +1470,49 @@ export class NonameCN {
             "回合开始后9": "phaseBegin",
             "准备阶段": "phaseZhunbeiBegin",
             "准备阶段开始": "phaseZhunbeiBegin",
+            "摸牌阶段2": "phaseDrawBegin2",
             "结束阶段": "phaseJieshuBegin",
             "结束阶段开始": "phaseJieshuBegin",
-            "摸牌阶段2": "phaseDrawBegin2",
             "阶段改变时": "phaseChange",
             "阶段更改时": "phaseChange",
             //伤害
+            "伤害开始时1": "damageBegin1",
+            "伤害开始时2": "damageBegin2",
+            "伤害开始时3": "damageBegin3",
+            "伤害开始时4": "damageBegin4",
             "受到伤害后": "damageEnd",
             '造成伤害': 'damageSource',
             '造成伤害时': 'damageSource',
             '造成伤害后': 'damageSource',
+            "造成零点伤害时": "damageZero",
+            "造成0点伤害时": "damageZero",
             //判定
             "判定牌生效前": "judge",
             "判定牌生效后": "judgeEnd",
-            //特殊时机
+            //牌事件
+            "使用卡牌0": "useCard0",
+            "使用卡牌1": "useCard1",
+            "使用卡牌2": "useCard2",
+            "使用技能时": "useSkill",
+            "洗牌时": "washCard",
+            "应变时": "yingbian",
             '使用牌指定目标时': "useCardToPlayer",
             '使用牌指定目标后': "useCardToPlayered",
             '成为牌的目标时': "target:useCardToTarget",
             '成为牌的目标后': "target:useCardToTargeted",
+            '牌被弃置后': 'loseAfter:discard',
+            //
+            "杀造成伤害时": "shaDamage",
+            "杀命中时": "shaHit",
+            "杀未命中时": "shaMiss",
             //拼点
             '亮出拼点牌前': 'compareCardShowBefore',
-            //
+            //死亡事件
             '杀死一名角色后': 'source:dieAfter',
             '令一名角色进入濒死状态': "source:dying",
             '进入濒死状态时': 'dying',
             '脱离濒死状态时': 'dyingAfter',
-            //牌类
-            '使用牌时': "useCard",
-            '牌被弃置后': 'loseAfter:discard',
+            //使用打出事件
             '需要打出闪时': 'chooseToRespondBefore:shan',
             '需要使用闪时': 'chooseToUseBefore:shan',
             '需要打出杀时': 'chooseToRespondBefore:sha',
@@ -2155,8 +2172,6 @@ export class NonameCN {
             .replace(/≯/g, '不大于')
             .replace(/≮/g, '不小于')
             .replace(/(?<=有标记)(?![ ])/g, ' ')
-            .replace(/^(.+?)[是为](男性|女性)$/mg, '$1 属于性别 $2')
-            .replace(/^(.+?)不[是为](男性|女性)$/mg, '$1 不属于性别 $2')
             .replace(/^场上有(其他)?(男性|女性)(性别)?(角色)?$/mg, '游戏 统计场上$1$2数量 \n大于\n0')
             .replace(/^场上有(其他)?(魏|蜀|吴|群|晋|西|键|神)势力角色$/mg, '游戏 统计场上$1$2势力角色数量 \n大于\n0')
             .replace(/(".+?")标记的?数量/g, '统计标记 $1\n')
@@ -2166,25 +2181,6 @@ export class NonameCN {
             .replace(/此牌(不?[是为])你使用的/g, '使用此牌的角色 $1 你')
             .replace(/此牌(为|是)其他角色使用的/g, '使用此牌的角色 不为 你')
             .replace(/(.+?)是此牌的目标/g, "此牌的目标包含 $1")
-            .replace(/^(.+?)(不?[为是])([冰火雷])杀$/mg, (match, ...p) => {
-                return `获取 属性 ${p[0]}\n ${p[1]} \n ${p[2]}属性 \n ${p[1].includes("不") ? "或者" : "并且"} \n 获取 牌名 ${p[0]} \n ${p[1]} \n 杀`
-            })
-            .replace(/(.+?)(颜色)?(不?[为是])(黑|红|无)色$/mg, '获取 颜色 $1 \n $3 \n $4色')
-            .replace(/(.+?)(花色)?(不?[为是])(梅花|黑桃|方片|红桃)$/mg, '获取 花色 $1 \n $3 \n $4')
-            .replace(/(.+?)(类别)?(不?[为是])(非延时锦囊牌|延时锦囊牌|普通锦囊牌|基本牌|装备牌)$/mg, '获取 类别 $1 \n $3 \n $4')
-            .replace(/(.+?)(类别)?(不?[为是])锦囊牌$/mg, '获取 广义类别 $1 \n $3 \n $4')
-            .replace(/(?<=点数不?[为是])(A|J|Q|K)$/g, function (match, ...p) {
-                const map = {
-                    A: 1,
-                    J: 11,
-                    Q: 12,
-                    K: 13
-                }
-                return `${map[p[0]]}`
-            })
-            .replace(/(.+?)点数(不?)(为|是|大于|小于|等于)(10|11|12|13|[1-9])$/mg, '获取 点数 $1\n $2$3 \n $4')
-            .replace(/(.+?)(牌名)?(不?[为是])(杀|闪|桃|酒|无懈可击|决斗|闪电|乐不思蜀|兵粮寸断|桃园结义|[南][蛮]入侵|万箭齐发)$/mg, '获取 牌名 $1 \n $3 \n $4')
-            .replace(/(.+?)(副类别)?(不?[为是])(武器牌|防具牌|\+1马牌|-1马牌|进攻马牌|防御马牌)$/mg, '获取 副类别 $1 \n $3 \n $4')
             .replace(/(.+?)在(.+?)的?攻击范围内$/mg, "$2 攻击范围内有 $1")
             .replace(/(没有)(.+?)标签/mg, "无$2标签")
             .replace(/(.+?)(有|无|带|不带)(伤害|多角色|多目标)标签/g, function (match, ...p) {
@@ -2248,7 +2244,6 @@ export class NonameCN {
             .replace(/(?<!不能使用|不能打出)(?<=使用|打出)(?=(杀|闪|桃|酒|无懈可击)[ ]*$)/mg, " ")
             .replace(/(.+?)展示牌堆顶的?(.+?张)牌(\(放回\))?$/g, "event.topCards = 获取 牌堆顶牌组$3 $2\n$1 展示牌 event.topCards")
             .replace(/(.+?)展示牌堆底的?(.+?张)牌(\(放回\))?$/g, "event.bottomCards = 获取 牌堆底牌组$3 $2\n $1 展示牌 event.bottomCards")
-            .replace(/^销毁(此牌|卡牌)/mg, '$1 修正\n$1 移除\n$1 已销毁 令为 真\n游戏 日志 $1 "已销毁"')
     }
     static standardEeffectMid(that) {
         textareaTool().setTarget(that)
@@ -2308,18 +2303,6 @@ export class NonameCN {
                 return `${p[0]}使用${p[1]} ${p[0]}打出${p[1]}`;
             })
     }
-    static implicitText_content(text) {
-        let result = text
-            .replace(/(.+?)[ ]*执行(一个)?额外的?(准备|判定|出牌|摸牌|弃牌|结束)阶段/g, `阶段列表 剪接 当前回合序号 0 $3阶段|\\-skillID`)
-        console.log("content", result);
-        return result;
-    }
-    static implicitText_filterCard(text) {
-        let result = text
-            .replace(/^卡牌(花色|点数|牌名|颜色|类型|副类别|类别)(相同|不同)$/mg, '获取 当前选择的卡牌$1是否$2')
-        console.log("filterCard", result);
-        return result;
-    }
     //处理模拟代码块
     static replace(undisposed) {
         let list = Object.keys(this.packedCodeRePlaceMap).filter(str => undisposed.includes(str));
@@ -2333,8 +2316,8 @@ export class NonameCN {
         if (List.length === 1) {
             const trigger = List[0]
             if (trigger.startsWith("judge")) return event ? `event.result.card` : `trigger.result.card`
-            return event ? `event.card` : `trigger.card`
         }
+        return event ? `event.card` : `trigger.card`
     }
     static analyzeTheseCard(triggerList, event) {
         const List = [...Object.values(triggerList)];
@@ -2872,8 +2855,12 @@ export class NonameCN {
                     .replace(/\n (\|\||&&) \n/g, " $1 ")
                     .replace(/^if\(\n(.+)\n\)\n{/mg, "if($1){")
                     .replace(/else\n{/g, "else{")
-                    .replace(/\n(?=[ ]*[><]=?[ ]*)/g,"")
-                    .replace(/(?<=[ ]*[><]=?[ ]*)\n/g,"")
+                    .replace(/\n(?=[ ]*[><]=?[ ]*)/g, "")
+                    .replace(/(?<=[ ]*[><]=?[ ]*)\n/g, "")
+                    .replace(/\n(?=[ ]*={2,3}[ ]*)/g, "")
+                    .replace(/(?<=[ ]*={2,3}[ ]*)\n/g, "")
+                    .replace(/\n(?=[ ]*\!={1,2}[ ]*)/g, "")
+                    .replace(/(?<=[ ]*\!={1,2}[ ]*)\n/g, "")
             }
             result += "\n"
         }
@@ -2906,7 +2893,7 @@ export class NonameCN {
                 result += `if(!(event.type==='discard'&&event.getl(player).cards2.length>0)) return false;\n`
             }
         }
-        if (!back.returnIgnore) result += 'return true;\n';
+        if (!back.returnIgnore && !result.split("\n").at(-2).startsWith("return")) result += 'return true;\n';
         result += '},\n';
         return result
     }
