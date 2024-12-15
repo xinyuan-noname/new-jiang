@@ -25,7 +25,8 @@ window["xjb_xyAPI_Directory_新将包"]={
     ],
     "css": [
         "editor.css",
-        "main.css"
+        "main.css",
+        "nature.css"
     ],
     "hpCard": [
         "1.jpg",
@@ -149,6 +150,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_jiaxu.jpg",
         "xjb_jin_simayi.jpg",
         "xjb_liushan.jpg",
+        "xjb_lvmeng.jpg",
         "xjb_machao.jpg",
         "xjb_pangtong.jpg",
         "xjb_sunce.jpg",
