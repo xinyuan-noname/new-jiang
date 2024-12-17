@@ -1,6 +1,29 @@
+/**
+ * @typedef {Object} XJB_NonameParam
+ * @property {string} cn -参数的中文名
+ * @property {string('number'|'boolean'|'string'|'stringToChoose'|'stringArray'|'heArray'|'otherArgs'|'freeInput'|'cardName'|'expire'|'skill'|'group'|'natrue'|'position'|'cards'|'Player'|'Players')} type -参数的类别
+ * @property {string} value -参数对应的用set函数设置的键
+ * @property {any} defaultValue -设置默认值
+ * @property {boolean} singer -设置为true表示这是一个单一参数
+ * @property {boolean} order -放在数组第一个，用于说明参数是否按顺序
+ * @property {string} mission -放在数组第一个，用于设置函数的中文名
+ * @property {number[]} NaPIndex -数组中不能作为参数而必须通过set设置的属性
+ * @property {number} min -type为number时，设置的最小值
+ * @property {number} max -type为number时，设置的最大值
+ * @property {string} cnTrue -type为boolean，为true值设置对应中文
+ * @property {string} cnFalse -type为boolean，为false值设置对应中文
+ * @property {(null)} key -type为otherArgs时，若设置为null表示无法用set设置该属性
+ * @property {XJB_NonameParam[]} args -type为otherArgs时有效，这个用于放置其他参数，生成一些按钮
+ * @property {XJB_NonameParam[]} eles -type为heArray时有效，这个用于放置数组
+ * 
+ */
+
 const judgeIsLimitSkill = (skill) => {
     return skill.limited || skill.juexingji || skill.dutySkill
 }
+/**
+ * @type {Object<string,XJB_NonameParam[]>}
+ */
 export const EditorParameterList = {
     draw: [
         { cn: "张数", type: "number", value: "num", min: 1, mission: "摸牌" },

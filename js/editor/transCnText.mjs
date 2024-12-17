@@ -23,6 +23,9 @@ const vPlayers = NonameCN.getVirtualPlayers();
 const vGame = NonameCN.getVirtualGame();
 const eventModel = NonameCN.getVirtualEvent();
 const vStorage = NonameCN.getVirtualStorage();
+const XJB_NEED_FOLLOW_PUNC = ['++', "--"]
+const XJB_NEED_FELLOW_PUNC = ['!', '~']
+const XJB_NEED_LINK_PUNC = [' || ', ' && ', ' ?? ', ' ? ', ' + ', ' - ', ' * ', ' ** ', ' / ', ' % ', ' += ', ' -= ', ' > ', ' < ', ' >= ', ' <= ', ' == ', ' === ', '(', '.']
 export class TransCnText {
     /**
     * @param {string} text 
@@ -74,11 +77,9 @@ export class TransCnText {
     }
     static translateLine(lines, directory) {
         if (!Array.isArray(lines)) return [[]];
-        /**
-         * @type {string[][]}
-         */
         const result = new Array(lines.length).fill().map(() => []);
         for (const [num, line] of lines.entries()) {
+            //判断该行词数是否为1，且第一行全为非中文
             if (line.length === 1 && /^[^\u4e00-\u9fa5]+$/.test(line[0])) {
                 result[num] = line;
                 continue;
@@ -200,36 +201,29 @@ export class TransCnText {
             }
             //填写参数
             if (index) {
-                let toOrder = i.splice(index);
-                let puncSwtich = false
-                let punc = window.XJB_PUNC;
-                toOrder.forEach((c, b) => {
-                    let string = '', a = c;
-                    //翻译n到m
-                    if (/到/.test(c)) {
-                        let arr = c.split('到');
-                        a = '[';
-                        a += lib.xjb_translate[arr[0]] || arr[0];
-                        a += ',';
-                        a += lib.xjb_translate[arr[1]] || arr[1];
-                        a += ']';
+                const stack = [];
+                const puncs = XJB_NEED_LINK_PUNC;
+                const fePuncs = XJB_NEED_FELLOW_PUNC;
+                const foPuncs = XJB_NEED_FOLLOW_PUNC;
+                let lastIsPunc = false;
+                const toOrder = i.splice(index).map(word => {
+                    if (word.includes(";")) return NonameCN.disposeWithQuo("ignore", word);
+                    return word;
+                }).filter(word => word);
+                for (const word of toOrder) {
+                    let param = word;
+                    if ((param.startsWith(".") || lastIsPunc || puncs.includes(param) || foPuncs.includes(param)) && stack.length) {
+                        let last = stack.pop();
+                        param = `${last}${param}`;
+                        lastIsPunc = false;
                     }
-                    if (a.includes(';')) {
-                        a = NonameCN.disposeWithQuo('ignore', a)
+                    if (puncs.some(punc => param.endsWith(punc) || fePuncs.includes(param))) {
+                        lastIsPunc = true;
                     }
-                    //非标点符号以,连接
-                    if (b > 0 && !punc.includes(a) && !puncSwtich) {
-                        string = ',' + a + ')';
-                    }
-                    //否则直接连接
-                    else {
-                        if (punc.includes(a)) puncSwtich = true;
-                        else if (puncSwtich) puncSwtich = false;
-                        string = a + ')';
-                    }
-                    //匹配最后一个括号以替换
-                    str2 = str2.replace(/\)(?=[^\)]*$)/, string);
-                })
+                    stack.push(param);
+                }
+                const parameters = stack.map(word => word.replace(/(?<!\.)\.\.(?!\.)/g, "."))
+                str2 = `(${parameters})`;
             }
             let sentence = str + str2;
             if (players && notice.includes('players')) {
