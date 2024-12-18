@@ -1182,13 +1182,23 @@ export class NonameCN {
             //牌类
             '给牌': "give",
             '给出牌': "give",
+            //
             '展示牌': "showCards",
+            '展示一些牌': "showCards",
+            '展示手牌': "showHandcards",
+            "观看牌":"viewCards",
+            "观看一些牌":"viewCards",
+            "观看手牌": "viewHandcards",
+            //
             '随机获得牌': 'randomGain',
+            "随机获得指定区域的牌": "randomGain",
             '随机弃置手牌': 'randomDiscard',
+            "随机弃置指定区域的牌": "randomDiscard",
             "获得多名角色手牌": `gainMultiple`,
             "获得多名角色指定区域的牌": `gainMultiple`,
+            "获得某名角色指定区域内牌":"gainPlayerCard",
+            "弃置某名角色指定区域内牌":"discardPlayerCard",
             '移动场上牌': 'moveCard',
-            "观看手牌": "viewHandcards",
             '将手牌补至': 'drawTo',
             '将手牌摸至': 'drawTo',
             '手牌补至': 'drawTo',
@@ -1197,8 +1207,10 @@ export class NonameCN {
             "失去牌至弃牌堆": "loseToDiscardpile",
             "失去牌至特殊区域": "loseToSpecial",
             "重铸牌": "recast",
-            "随机弃置指定区域的牌": "randomDiscard",
-            "随机获得指定区域的牌": "randomGain",
+            //
+            "给牌打标记":"addGaintag",
+            "给牌添加标记":"addGaintag",
+            "给牌移除标记":"removeGaintag",
             //
             "交换装备区": "swapEquip",
             "交换手牌区": "swapHandcards",

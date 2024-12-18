@@ -43,7 +43,7 @@ export class EditorOrganize {
                     return;
                 }
             }
-            else if (tagItem.endsWith("-n")) {
+            else if (/\-\d+$/.test(tagItem)) {
                 result += `${tagItem.replace("-", ":")},\n`
                 return;
             }

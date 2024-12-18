@@ -1,7 +1,10 @@
+"use script";
 export const PiChar = String.fromCharCode(960);
 export const degChar = String.fromCharCode(176);
 export const cnCharRange = '\u4e00-\u9fa5'
-export const JavascriptOperators = [" = ", " += ", " -= ", " /= ", " *= ", " %= ", " >>= ", " <<= ", " **= ", "++", "--"]
+export const JavascriptOperators = [
+    " = ", " += ", " -= ", " /= ", " *= ", " %= ", " >>= ", " <<= ", " **= ", "++", "--"
+]
 export const JavascriptKeywords = [
     'abstract', 'await', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'class', 'const',
     'continue', 'debugger', 'default', 'delete', 'do', 'double', 'else', 'enum', 'export', 'extends',
@@ -20,12 +23,26 @@ export const JavascriptUsualType = [
     'symbol', 'Symbol',
     'function', 'Function',
     'object', 'Object',
-    'Math', 'Array', 'Date', 'RegExp', 'Map', 'Set'
+    'Array', 'Date', 'RegExp', 'Map', 'Set'
 ]
 export const JavascriptGlobalVariable = [
     'NaN', 'Infinity', '-Infinity',
     'globalThis'
 ]
+export const JavascriptOperatorppsiting = {
+    "===": "!==",
+    "!==": "===",
+    "==": "!=",
+    ">": "<=",
+    "<=": ">",
+    "<": ">=",
+    ">=": "<",
+    "++": "--"
+}
+export function getOppositingOperator(operator) {
+    if (JavascriptOperatorppsiting[operator]) return JavascriptOperatorppsiting[operator];
+    return operator;
+}
 /**
  * 
  * @param {string} str - 需要修正的字符串
@@ -39,8 +56,8 @@ export function correctPunctuation(str) {
         .replace(/\,\}/g, '}')
         .replace(/\{\,/g, '{')
         .replace(/(?<!\.)\.{2}(?!\.)/, '.')
-        .replace(/,:/g,":")
-        .replace(/:,/g,":")
+        .replace(/,:/g, ":")
+        .replace(/:,/g, ":")
 }
 export function arrayToString(array) {
     let result = '[';
@@ -52,6 +69,13 @@ export function arrayToString(array) {
     result += "]";
     return result;
 }
+export function objectToString(object) {
+    if (typeof object === "object" && object.toString() === "[object Object]") {
+        return JSON.stringify(object).replace(/"([a-zA-Z_$][a-zA-Z0-9_$]*)"(?=:)/g, "$1");
+    }
+    return `${object}`;
+}
+
 /**
  * 生成一个随机的36进制字符串。
  * 

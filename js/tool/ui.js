@@ -179,6 +179,10 @@ class elementTool {
         else this.ele.classList.add(...arguments);
         return this;
     }
+    addClassUnder(condition, ...toAddClass) {
+        if (condition) this.ele.classList.add(toAddClass);
+        return this;
+    }
     /**
      * @param {string} name 
      * @returns {elementTool}
@@ -187,11 +191,6 @@ class elementTool {
         this.ele.className = name;
         return this;
     }
-    /**
-     * @param {string} type 
-     * @param {string} className
-     * @returns {this}
-     */
     shiftClassWhen(type, className) {
         this.ele.addEventListener(type, function () {
             this.classList.toggle(className);
@@ -218,6 +217,10 @@ class elementTool {
     }
     type(type) {
         this.ele.setAttribute(`type`, type);
+        return this;
+    }
+    seteTypeUnder(condition, type) {
+        if (condition) this.ele.setAttribute(`type`, type);
         return this;
     }
     value(value) {

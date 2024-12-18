@@ -1,26 +1,51 @@
 /**
  * @typedef {Object} XJB_NonameParam
  * @property {string} cn -参数的中文名
- * @property {string('number'|'boolean'|'string'|'stringToChoose'|'stringArray'|'heArray'|'otherArgs'|'freeInput'|'cardName'|'expire'|'skill'|'group'|'natrue'|'position'|'cards'|'Player'|'Players')} type -参数的类别
+ * @property {('number'|'numberArray'|'boolean'|'string'|'stringArray'|'stringToChoose'|'heArray'|'otherArgs'|'freeInput'|'cardName'|'expire'|'skill'|'group'|'nature'|'position'|'cards'|'Player'|'Players')} type -参数的类别
  * @property {string} value -参数对应的用set函数设置的键
  * @property {any} defaultValue -设置默认值
- * @property {boolean} singer -设置为true表示这是一个单一参数
+ * @property {boolean} single -设置为true表示这是一个单一参数
  * @property {boolean} order -放在数组第一个，用于说明参数是否按顺序
  * @property {string} mission -放在数组第一个，用于设置函数的中文名
  * @property {number[]} NaPIndex -数组中不能作为参数而必须通过set设置的属性
+ * @property {("h"|'e'|'j'|'x'|'s'|'he'|'ej'|'hes'|'hej'|'hejx'|'hejsx')} positionList -type为position时，可选的对应区域
  * @property {number} min -type为number时，设置的最小值
  * @property {number} max -type为number时，设置的最大值
+ * @property {boolean} select -type为numberArray时，表示这个是一个选择区间
+ * @property {boolean} autoDearray -type为(number|string)Array时，表示数组长度为1时,自动转为对应元素的类型
  * @property {string} cnTrue -type为boolean，为true值设置对应中文
  * @property {string} cnFalse -type为boolean，为false值设置对应中文
+ * @property {string} skillIdToList -type为string|stringArray，将技能id添加到字符串默认表中
+ * @property {(true|false)} uniqueElement -type为stringArray|numberArray，默认为true，可设置为false
+ * @property {Object<string,string>} stringMap -type为string|stringArray，设置映射，其key自动加入默认可选值
+ * @property {string[]} stringDefaultList -type为string|stringArray，设置默认的可选值
+ * @property {boolean} longStr -type为string,将输入框设置为长文本
  * @property {(null)} key -type为otherArgs时，若设置为null表示无法用set设置该属性
  * @property {XJB_NonameParam[]} args -type为otherArgs时有效，这个用于放置其他参数，生成一些按钮
  * @property {XJB_NonameParam[]} eles -type为heArray时有效，这个用于放置数组
- * 
+ * @property {("button"|"card")} funcType -type为filterCard时有效,为button时自动转为filterButton
+ * @property {XJB_NonameParam[]} filterCardSetting -type为filterCard时有效，这个用于筛选卡牌
  */
+
+
 
 const judgeIsLimitSkill = (skill) => {
     return skill.limited || skill.juexingji || skill.dutySkill
 }
+/**
+ * @type {XJB_NonameParam[]>}
+ */
+const filterCardSetting = [
+    { cn: "牌名", value: "cardName", type: "cardName" },
+    { cn: "颜色", value: "color", type: "color" },
+    { cn: "花色", value: "suit", type: "suit" },
+    { cn: "点数", value: "number", type: "numberArray", min: 1, max: 13, autoDearray: true },
+    { cn: "类别", value: "type", type: "type" },
+    { cn: "副类别", value: "subtype", type: "subtype" },
+    { cn: "标签", value: "tag", type: "stringArray", autoDearray: true, stringMap: { "伤害": "damage", "可对多角色使用": "multitarget" } },
+    { cn: "属性", value: "nature", type: "nature", single: true },
+    { cn: "标记", value: "gaintag", type: "stringArray", autoDearray: true, skillIdToList: true }
+]
 /**
  * @type {Object<string,XJB_NonameParam[]>}
  */
@@ -124,7 +149,7 @@ export const EditorParameterList = {
     ],
     loseToSpecial: [
         { cn: "失去的牌", type: "cards", value: "cards", order: true, mission: "失去牌至特殊区域" },
-        { cn: "特殊区域的名字(英文则自动翻译)", type: "string", value: "source", skillIdToList: true },
+        { cn: "特殊区域的名字", type: "string", value: "source", skillIdToList: true },
         { cn: "到谁的特殊区域(默认为你)", type: "Player", value: "target" },
     ],
     addToExpansion: [
@@ -182,27 +207,70 @@ export const EditorParameterList = {
         { cn: "弃置牌的区域", type: "position", value: "position", positionList: "he" },
         { cn: "是否有指示线", type: "boolean", value: "delay" }
     ],
-    //缺少后面两个函数参数 但是一般用不到
+    addGaintag: [
+        { cn: "打标记的牌", type: "cards", order: true, mission: "给牌打标记" },
+        { cn: "牌的记号", type: "string", skillIdToList: true }
+    ],
+    removeGaintag: [
+        { cn: "牌的记号", type: "string", skillIdToList: true, order: true, mission: "给牌移除标记" },
+        { cn: "移除标记的牌(不选默认为全部)", type: "cards" }
+    ],
+    gainPlayerCard: [
+        { cn: "获得谁的牌", type: "Player", value: "target", mission: "获得某名角色指定区域内的牌", NaPIndex: [4] },
+        { cn: "选择的张数", type: "numberArray", value: "select", autoDearray: true, select: true },
+        { cn: "指定的区域", type: "position", value: "position", positionList: "hej" },
+        { cn: "是否必须获得", type: "boolean", value: "forced" },
+        { cn: "筛选牌设置", type: "filterCard", filterCardSetting: filterCardSetting, value: "filterCard", funcType: "button" },
+        { cn: "获得牌时的提示", type: "string", longStr: true, value: "prompt" },
+        {
+            cn: "其他设置", type: "otherArgs", args: [
+                { cn: "该角色手牌可见", value: "visible", type: "string" }
+            ]
+        }
+    ],
+    discardPlayerCard: [
+        { cn: "获得谁的牌", type: "Player", value: "target", mission: "弃置某名角色指定区域内的牌", NaPIndex: [4] },
+        { cn: "选择的张数", type: "numberArray", value: "select", autoDearray: true, select: true },
+        { cn: "指定的区域", type: "position", value: "position", positionList: "hej" },
+        { cn: "是否必须弃置", type: "boolean", value: "forced" },
+        { cn: "筛选牌设置", type: "filterCard", filterCardSetting: filterCardSetting, value: "filterCard", funcType: "button" },
+        { cn: "获得牌时的提示", type: "string", longStr: true, value: "prompt" },
+        {
+            cn: "其他设置", type: "otherArgs", args: [
+                { cn: "该角色手牌可见", value: "visible", type: "string" }
+            ]
+        }
+    ],
+    /*缺少后面两个函数参数 但是一般用不到*/
     recast: [
         { cn: "重铸的牌", type: "cards", value: "cards", mission: "重铸牌" },
     ],
     swapHandcards: [
-        { mission: "交换手牌区", type: "Player", value: "target", cn: "交换的角色" },
+        { cn: "交换的角色", type: "Player", value: "target", mission: "交换手牌区" },
         { cn: "你用来交换的手牌", type: "cards", value: "cards1" },
         { cn: "目标用来交换的手牌", type: "cards", value: "cards2" }
     ],
     swapEquip: [
-        { mission: "交换装备区", type: "Player", value: "target", cn: "交换的角色" }
+        { cn: "交换的角色", type: "Player", value: "target", mission: "交换装备区" }
     ],
-    link: [
-        { cn: "指定重置/横置类型", type: "boolean", cnTrue: "横置", cnFalse: "重置", mission: "横置或重置" }
+    showHandcards: [
+        { cn: "展示牌时的提示语", type: "string", longStr: true, value: "prompt", mission: "展示手牌" }
     ],
-    turnOver: [
-        { cn: "指定翻面类型", type: "boolean", cnTrue: "翻至正面朝下", cnFalse: "翻至正面朝上", mission: "翻面" }
+    showCards: [
+        { cn: "展示的牌", type: "cards", value: "cards", order: true, mission: "展示一些牌" },
+        { cn: "展示牌时的提示语", type: "string", longStr: true, value: "str" }
     ],
+    viewHandcards: [
+        { cn: "观看手牌的角色", type: "Player", value: "target", mission: "观看手牌" }
+    ],
+    viewCards: [
+        { cn: "观看牌时的提示语", type: "string", value: "str", order: true, mission: "观看一些牌" },
+        { cn: "观看的牌", type: "cards", value: "cards" }
+    ],
+    //
     damage: [
         { cn: "伤害点数", type: "number", value: "num", min: 0, mission: "受到伤害" },
-        { cn: "伤害属性", type: "nature", value: "nature", singer: false },
+        { cn: "伤害属性", type: "nature", value: "nature", single: false },
         { cn: "伤害来源(选择了“没有伤害来源”则本设置失效)", value: "source", type: "Player" },
         {
             type: "otherArgs",
@@ -258,6 +326,13 @@ export const EditorParameterList = {
         },
         { cn: "护甲值上限(若设为true,则为5)", type: "number", value: "limit", defaultVars: ["true"] }
     ],
+    //
+    link: [
+        { cn: "指定重置/横置类型", type: "boolean", cnTrue: "横置", cnFalse: "重置", mission: "横置或重置" }
+    ],
+    turnOver: [
+        { cn: "指定翻面类型", type: "boolean", cnTrue: "翻至正面朝下", cnFalse: "翻至正面朝上", mission: "翻面" }
+    ],
     skip: [
         { cn: "跳过的阶段名", type: "phase", single: true, mission: "跳过阶段" }
     ],
@@ -265,6 +340,7 @@ export const EditorParameterList = {
         { cn: "改为的势力", type: "group", value: "group", single: true, mission: "更改势力", order: true },
         { cn: "是否录入游戏日志", type: "boolean" }
     ],
+    //
     addSkill: [
         { cn: "获得的技能", type: "skill", mission: "获得技能", order: true },
         { cn: "是否检查禁用技能组目录", type: "boolean" },
