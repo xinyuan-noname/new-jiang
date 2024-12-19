@@ -6,7 +6,31 @@ import {
     _status
 } from "../../../../noname.js"
 import { element, textareaTool } from '../tool/ui.js';
-//这是创建对话框
+const DEFAULT_EVENT = lib.config.touchscreen ? 'touchend' : 'click'
+class DialogEvent {
+    dialog;
+    promise;
+    constructor(dialog, noPromise) {
+        this.dialog = dialog;
+        if (this.dialog.buttons) {
+            this.promise = new Promise(res => {
+                for (const button of this.dialog.buttons) {
+                    button.addEventListener(DEFAULT_EVENT, function () {
+                        let bool = null;
+                        if (this.innerText === "确定") bool = true;
+                        if (this.innerText === "取消") bool = false;
+                        res({ result: this.result, chosen: this.innerText, bool });
+                    })
+                }
+            })
+        }
+        if (noPromise) return this;
+        return this.promise;
+    }
+}
+game.xjb_createDialogEvent = (dialog) => {
+    return new DialogEvent(dialog);
+}
 ui.create.xjb_dialogBase = function () {
     if (game.xjb_create.baned) return null;
     //这个是对话框
@@ -186,7 +210,7 @@ game.xjb_create.allow = function () {
 game.xjb_create.alert = function (str = "", func) {
     if (game.xjb_create.baned) return;
     var dialog = ui.create.xjb_dialogBase("确定")
-    dialog.innerHTML = str
+    dialog.innerHTML = str;
     if (func) dialog.buttons[0].addEventListener(lib.config.touchscreen ? 'touchend' : 'click', func)
     dialog.buttons[0].addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function () {
         if (dialog.next) {
@@ -569,21 +593,15 @@ game.xjb_create.search = function (
     func
 ) {
     if (game.xjb_create.baned) return;
-    let dialog = game.xjb_create.alert(str, func)
+    const dialog = game.xjb_create.alert(str, func)
     ui.xjb_giveStyle(dialog, {
         height: "318.4px",
         top: "-170px",
         overflow: ""
     })
-    /**
-     * @type {HTMLTextAreaElement}
-     */
     let textarea = dialog.addElement("textarea", void 0, lib.xjb_style.textarea1)
     textarea.placeholder = "输入关键词后，敲击回车以进行搜索,只显示前100条"
-    /**
-     * @type {HTMLUListElement}
-     */
-    let ul = dialog.addElement("ul", void 0, {
+    const ul = dialog.addElement("ul", void 0, {
         overflow: "auto",
         marginTop: "0px",
         "list-style": "none",
@@ -609,9 +627,6 @@ game.xjb_create.search = function (
         if (e.key !== "Enter") return;
         e.preventDefault();
         e.stopPropagation();
-        /**
-         * @type {NodeList}
-         */
         const shownLi = this.parentNode.querySelectorAll('li:not(.xjb_hidden)');
         const hiddenLi = this.parentNode.querySelectorAll('.xjb_hidden');
         const content = this.value
@@ -654,6 +669,19 @@ game.xjb_create.search = function (
     dialog.buttons[0].addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function (e) {
         this.observer.disconnect()
     });
+    dialog.appendLi = (Generator, obj, ...args) => {
+        const promises = Object.entries(obj).map(([key, value], index) => {
+            return new Promise(res => {
+                setTimeout(() => {
+                    const li = Generator(key, value, index, ...args);
+                    if (index > 100) li.classList.add("xjb_hidden");
+                    textarea.index.push(li);
+                    res(li);
+                }, 0)
+            })
+        });
+        Promise.all(promises).then(lis => ul.append(...lis));
+    }
     return dialog;
 }
 //数字调整型对话框
@@ -904,8 +932,71 @@ game.xjb_create.seeDelete = function (map, seeStr = "查看", deleteStr = "删�
         })
         ul.append(...textarea.index.slice(100));
     });
+    return dialog;
+}
+game.xjb_create.searchChoose = function (obj = {}, single, callback) {
+    if (game.xjb_create.baned) return;
+    const dialog = game.xjb_create.search()
+    const textarea = dialog.textarea;
+    const ul = element().setTarget(dialog.ul)
+        .setStyle('height', '210px')
+        .exit();
+    const chosen = [];
+    dialog.chosen = chosen;
+    dialog.appendLi((key, cn, index) => {
+        const li = element("li")
+            .setAttribute("value", key)
+            .innerHTML(cn)
+            .style({
+                marginBottom: "10px"
+            })
+            .exit();
+        return li
+    }, obj);
+    ul.addEventListener(DEFAULT_EVENT, (e) => {
+        if (textarea.index.includes(e.target)) e.target.classList.toggle("xjb-chosen");
+        if (e.target.classList.contains("xjb-chosen")) {
+            if (single) {
+                chosen.forEach(node => {
+                    node.classList.remove("xjb-chosen");
+                    chosen.remove(node);
+                })
+            }
+            chosen.add(e.target);
+        }
+        else chosen.remove(e.target);
+    })
+    dialog.buttons[0].addEventListener(DEFAULT_EVENT, function () {
+        this.result = chosen.map(node => node.getAttribute("data-value"));
+        if (single) this.result = this.result.at(0);
+    })
+    if (callback) dialog.buttons[0].addEventListener(DEFAULT_EVENT, callback);
     return dialog
 }
+game.xjb_create.UABobjectsToChange = function ({ object, num, free, list, previousPrice, objectName, changeFunc }) {
+    const energyConsume = previousPrice * game.xjb_currencyRate.CoinToEnergy
+    if (free === false) {
+        if (game.xjb_hasIt(object)) { }
+        else if (!game.xjb_purchaseIt(object, 1, previousPrice)) return game.xjb_create.alert(`购买${objectName}需要${game.xjb_goods[object].price}魂币，你的魂币不足!`)
+        var word = '请按以下规则输入:'
+        for (let i = 0; i < list.length; i++) {
+            word = word + '改为' + get.xjb_translation(list[i]) + '，请输入' + i + '，'
+        }
+        let dialog = game.xjb_create.prompt(word, void 0, function () {
+            var result = this.result
+            var newAttribute = list[result]
+            if (list.includes(newAttribute)) {
+                changeFunc(newAttribute)
+                game.xjb_getIt(object, -1)
+            } else game.xjb_create.alert("你的输入有误！")
+        }).inputSmall()
+        dialog.input.numberListButton(list.length)
+    } else {
+        game.xjb_getIt(object, num, energyConsume)
+        game.xjb_create.alert("你获得了" + num + `张${objectName}`)
+    }
+}
+
 game.xjb_create.range = function (str, min, max, value = 0, callback, changeValue = () => true) {
     if (game.xjb_create.baned) return;
     let dialog = game.xjb_create.confirm(void 0, callback);
@@ -951,30 +1042,6 @@ game.xjb_create.range = function (str, min, max, value = 0, callback, changeValu
     showValue.innerHTML = value;
     return dialog;
 }
-game.xjb_create.UABobjectsToChange = function ({ object, num, free, list, previousPrice, objectName, changeFunc }) {
-    const energyConsume = previousPrice * game.xjb_currencyRate.CoinToEnergy
-    if (free === false) {
-        if (game.xjb_hasIt(object)) { }
-        else if (!game.xjb_purchaseIt(object, 1, previousPrice)) return game.xjb_create.alert(`购买${objectName}需要${game.xjb_goods[object].price}魂币，你的魂币不足!`)
-        var word = '请按以下规则输入:'
-        for (let i = 0; i < list.length; i++) {
-            word = word + '改为' + get.xjb_translation(list[i]) + '，请输入' + i + '，'
-        }
-        let dialog = game.xjb_create.prompt(word, void 0, function () {
-            var result = this.result
-            var newAttribute = list[result]
-            if (list.includes(newAttribute)) {
-                changeFunc(newAttribute)
-                game.xjb_getIt(object, -1)
-            } else game.xjb_create.alert("你的输入有误！")
-        }).inputSmall()
-        dialog.input.numberListButton(list.length)
-    } else {
-        game.xjb_getIt(object, num, energyConsume)
-        game.xjb_create.alert("你获得了" + num + `张${objectName}`)
-    }
-}
-
 //能量不足提醒
 game.xjb_NoEnergy = function () {
     game.xjb_create.alert("系统能量不足！<br>请支持刘徽-祖冲之项目为系统供能！")
@@ -983,3 +1050,32 @@ game.xjb_NoEnergy = function () {
 game.xjb_systemUpdate = function () {
     game.xjb_create.alert('魂币系统已更新，重启即生效');
 }
+game.xjb_create.promise = {
+    alert: (message) => {
+        return game.xjb_createDialogEvent(game.xjb_create.alert(message));
+    },
+    confirm: (message) => {
+        return game.xjb_createDialogEvent(game.xjb_create.confirm(message));
+    },
+    prompt: (title, defaultValue, placeholder) => {
+        const dialog = game.xjb_create.prompt(title, defaultValue);
+        if (placeholder) dialog.prompt.placeholder = placeholder;
+        return game.xjb_createDialogEvent(dialog);
+    },
+    range: (title, { min, max, value }, changeValue) => {
+        const dialog = game.xjb_create.range(title, min, max, value, changeValue);
+        return game.xjb_createDialogEvent(dialog);
+    },
+    searchChoose: (title, map) => {
+        const dialog = game.xjb_create.searchChoose(map, single);
+        const titleNode = dialog.querySelector("div");
+        titleNode.innerHTML = title;
+        return game.xjb_createDialogEvent(dialog);
+    },
+    chooseSkill: (title = "选择一项技能", single) => {
+        const dialog = game.xjb_create.searchChoose(lib.xjb_skillDirectory, single);
+        const titleNode = dialog.querySelector("div");
+        titleNode.innerHTML = title;
+        return game.xjb_createDialogEvent(dialog);
+    }
+};

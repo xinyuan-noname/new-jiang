@@ -356,7 +356,7 @@ const xjb_skillCard = CardCreater(
         if (!lib.skill.global.includes("xjb_skillCardObserver")) {
             game.addGlobalSkill("xjb_skillCardObserver");
         }
-        lib.skill.xjb_skillCardObserver.observeList.add(id);
+        lib.skill.xjb_skillCardObserver.observeList.add(id + "_card");
     },
     skillLeadIn(id) {
         const skillCardName = id + "_card"
@@ -376,37 +376,25 @@ const xjb_skillCard = CardCreater(
         'xjb_xinsheng',
         'xjb_lunaticMasochist'
     ],
-    content() {
-        'step 0'
-        var list = ['输入id', '神圣技能']
-        player.chooseControl(list)
-        'step 1'
-        if (result.control == '输入id') event.goto(2);
-        else if (result.control == '神圣技能') event.goto(3)
-        'step 2'
-        game.pause()
-        game.xjb_create.prompt("请输入技能的id", "", function () {
-            game.resume()
-            var id = this.result;
-            if (id in lib.skill) {
+    async content(event, trigger, player) {
+        const { control } = await player.chooseControl(["输入id", "神圣技能"]).forResult();
+        if (control == '输入id') {
+            const { result: id, bool } = await game.xjb_create.promise.chooseSkill(void 0, true);
+            if (bool && id in lib.skill) {
                 const toGain = game.xjb_createSkillCard(id);
-                player.gain(toGain)
+                await event.target.gain(toGain);
             } else {
-                player.gain(cards)
-                game.xjb_create.alert("未找到该技能！")
+                await player.gain(event.cards)
+                if (bool) await game.xjb_create.promise.alert("不是合法技能！")
             }
-        }, function () {
-            game.resume()
-            player.gain(cards)
-        })
-        event.finish()
-        'step 3'
-        var list = lib.card.xjb_skillCard.SanSkill.map(id => game.xjb_createSkillCard(id))
-        player.chooseButton(['选择一张神圣技能牌', [list, "vcard"]])
-        'step 4'
-        if (result.bool) {
-            player.gain(result.links[0], "gain2")
-            lib.card.xjb_skillCard.skillLeadIn(result.links[0].name.slice(0, result.links[0].name.lastIndexOf('_card')))
+            return;
+        }
+        else if (control == '神圣技能') {
+            const list = lib.card.xjb_skillCard.SanSkill.map(id => game.xjb_createSkillCard(id))
+            const { bool, links } = await player.chooseButton(['选择一张神圣技能牌', [list, "vcard"]]).forResult();
+            if (bool) {
+                event.target.gain(links[0], "gain2")
+            }
         }
     },
     fullskin: true,

@@ -417,6 +417,7 @@ div.xjb_curtain {
 }
 
 /*chosen*/
+li.xjb-chosen,
 .xjb_dialogButton.xjb-chosen,
 .xjb-button.xjb-chosen {
   background-color: red;

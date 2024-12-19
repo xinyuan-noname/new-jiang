@@ -1,4 +1,19 @@
 export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
+    ; (() => {
+        const map = new Map();
+        map.set(1, { obv: 1, rev: 2 });
+        map.set(3, { obv: 3, rev: 4 });
+        map.set(5, { obv: 5, rev: 4 });
+        lib.xjb_cacheHpCardData = map;
+    })();
+    ; (() => {
+        const map = new Map()
+        map.set(2, [[1, 1]])
+        map.set(3, [[1, 1, 1], [1, 2]])
+        map.set(4, [[1, 1, 1, 1], [1, 1, 2], [1, 3], [2, 2]])
+        map.set(5, [[1, 1, 1, 1, 1], [1, 1, 1, 2], [1, 2, 2], [1, 1, 3], [2, 3], [1, 4]])
+        lib.xjb_splitHpCardMap = map;
+    })();
     lib.skill._xjb_UseHpCard = {
         trigger: {
             global: "gameStart"
@@ -41,8 +56,8 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
             }
         }
     }
-    lib.translate._xjb_UseHpCard= "<font color=gold>体力牌</font>"
-        
+    lib.translate._xjb_UseHpCard = "<font color=gold>体力牌</font>"
+
     lib.skill._xjb_changeHpCard = {
         trigger: {
             player: ["gainMaxHpAfter", "loseMaxHpAfter"],
@@ -72,8 +87,6 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
             `<img src="${lib.xjb_src}HpCard/${HpCard.number}.jpg" height =${num2}px>`
         return HpCard;
     }
-    if (!game.createHpCard) console.warn('已有game.createHpCard函数!将被新将包的同名函数替换!')
-    game.createHpCard = game.xjb_createHpCard;
 
     //统计体力牌张数
     game.xjb_countHpCard = function (arr) {
@@ -89,8 +102,6 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
         })
         return list
     }
-    if (!game.countHpCard) console.warn('已有game.countHpCard函数!将被新将包的同名函数替换!')
-    game.countHpCard = game.xjb_countHpCard;
 
     get.xjb_playerHpCardCount = function (player) {
         let name = '';
@@ -98,25 +109,8 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
         if (typeof player === "string") name = player
         if (!lib.config.xjb_count[name] || !lib.config.xjb_count[name].HpCard) return { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
         return game.xjb_countHpCard(lib.config.xjb_count[name].HpCard)
-    }
-
-
-    {
-        const map = new Map();
-        map.set(1, { obv: 1, rev: 2 });
-        map.set(3, { obv: 3, rev: 4 });
-        map.set(5, { obv: 5, rev: 4 });
-        lib.xjb_cacheHpCardData = map;
-    }
-    {
-        const map = new Map()
-        map.set(2, [[1, 1]])
-        map.set(3, [[1, 1, 1], [1, 2]])
-        map.set(4, [[1, 1, 1, 1], [1, 1, 2], [1, 3], [2, 2]])
-        map.set(5, [[1, 1, 1, 1, 1], [1, 1, 1, 2], [1, 2, 2], [1, 1, 3], [2, 3], [1, 4]])
-        lib.xjb_splitHpCardMap = map;
-    }
-
+    };
+    
     game.xjb_genHpCardData = function (value) {
         if (typeof value != "number") value = parseInt(value);
         /**
@@ -127,6 +121,7 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
         map.set(2, [{ obv: 2, rev: 3 }, { obv: 2, rev: 1 }].randomGet())
         return map.get(value)
     }
+
     game.xjb_addPlayerMethod('xjb_adjustHpCard', function () {
         const player = this;
         player.xjb_HpCardArea = [];
@@ -179,7 +174,6 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
         }).reduce((acc, now) => acc + now, 0)
         return lose;
     })
-
     //给出体力牌
     game.xjb_addPlayerMethod("$xjb_giveHpCard", function (num, target) {
         const theCard = game.xjb_createHpCard(num, 150)
@@ -199,7 +193,6 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
             setTimeout(() => { theCard.remove() }, 500)
         }, 300)
     })
-    game.xjb_addPlayerMethod("$giveHpCard", lib.element.player["$xjb_giveHpCard"])
     game.xjb_setEvent('xjb_giveHpCard',
         {
             player(target, num) {
@@ -231,11 +224,6 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
             }
         }
     )
-    game.xjb_setEvent('giveHpCard', {
-        player: lib.element.player['xjb_giveHpCard'],
-        content: lib.element.content['xjb_giveHpCard']
-    })
-
     //使用体力牌
     game.xjb_setEvent('xjb_useHpCard', {
         player: function (num, source, bool = true) {
@@ -273,8 +261,7 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
             game.saveConfig('xjb_count', lib.config.xjb_count);
         }
     })
-
-    //体力牌翻面
+    //体力牌翻面动画
     game.xjb_addPlayerMethod("$xjb_turnOverHpCard", function (obv, rev) {
         const player = this;
         const container = ui.create.div('.xjb-hpCard-container');
@@ -292,6 +279,7 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
             container.remove()
         }, 1100)
     })
+    //将体力牌翻面
     game.xjb_setEvent("xjb_turnOverHpCard", {
         player(index) {
             const player = this;
@@ -323,7 +311,6 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
             game.log(player, '将一张', event.obv, '点的体力牌', '翻面，', '成为', event.rev, '点的体力牌')
         }
     })
-
     //交换体力牌
     game.xjb_setEvent("xjb_swapHpCard", {
         player(target, num = 1) {
@@ -413,7 +400,7 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
             event.target.update();
         }
     })
-
+    //分割体力牌
     game.xjb_setEvent("xjb_splitHpCard", {
         player(index, forced) {
             const player = this;
@@ -452,4 +439,15 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
             }
         }
     })
+
+    //防止隐藏未改bug
+    if (game.createHpCard) console.warn('已有game.createHpCard函数!将被新将包的同名函数替换!')
+    game.createHpCard = game.xjb_createHpCard;
+    if (game.countHpCard) console.warn('已有game.countHpCard函数!将被新将包的同名函数替换!')
+    game.countHpCard = game.xjb_countHpCard;
+    game.xjb_setEvent('giveHpCard', {
+        player: lib.element.player['xjb_giveHpCard'],
+        content: lib.element.content['xjb_giveHpCard']
+    })
+    game.xjb_addPlayerMethod("$giveHpCard", lib.element.player["$xjb_giveHpCard"])
 }

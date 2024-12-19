@@ -417,11 +417,20 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
         skillsStore() {
             const array = []
             for (let k in lib.character) {
-                let skills = []
-                if (lib.character[k]) skills = lib.character[k][3]
-                array.push(...skills)
+                if (lib.character[k]) array.push(...lib.character[k][3])
             }
-            lib.xjb_skillsStore = array;
+            array.randomSort();
+            lib.xjb_skillList = lib.xjb_skillsStore = array;
+            setTimeout(() => {
+                lib.xjb_skillDirectory = {};
+                lib.xjb_skillNameMap = {};
+                for (const skill of lib.xjb_skillList) {
+                    if (!lib.translate[skill]) continue;
+                    if (!lib.translate[skill + "_info"]) continue;
+                    lib.xjb_skillNameMap[skill] = `〖${get.plainText(lib.translate[skill])}〗(${skill})`;
+                    lib.xjb_skillDirectory[skill] = `〖${get.plainText(lib.translate[skill])}〗(${skill})${lib.translate[skill + "_info"]}`;
+                }
+            })
         },
         choujiang: function () {
             {

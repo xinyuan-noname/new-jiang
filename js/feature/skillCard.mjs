@@ -41,22 +41,35 @@ const xjb_skillCardObserver = SkillCreater(
     forced: true,
     silent: true,
     observeList: [],
-    getHasntSkill: (player) => {
-        return get.info("xjb_skillCardObserver").observeList.filter(skillId => !player.hasSkill(skillId));
+    getSkill: (player, has) => {
+        return get.info("xjb_skillCardObserver").observeList.filter(skillId => {
+            if (has) return player.hasSkill(skillId)
+            return !player.hasSkill(skillId)
+        });
+    },
+    getCanLose: (player) => {
+        const result = [];
+        const list = get.info("xjb_skillCardObserver").getSkill(player, true);
+        for (const card of list) {
+            if (!player.countCards("hxs", card)) result.push(card);
+        }
+        return result;
     },
     getCanGet: (player) => {
         const result = [];
-        const list = get.info("xjb_skillCardObserver").getHasntSkill(player)
+        const list = get.info("xjb_skillCardObserver").getSkill(player)
         for (const card of list) {
-            if (player.countCards("hxs", card + "_card") < 1) continue;
-            result.push(card + "_card")
+            if (player.countCards("hxs", card)) result.push(card)
         }
         return result;
     },
     filter: (event, player) => {
-        return get.info("xjb_skillCardObserver").getCanGet(player).length;
+        return get.info("xjb_skillCardObserver").getCanGet(player).length || get.info("xjb_skillCardObserver").getCanLose(player).length;
     },
     content: async function (event, trigger, player) {
-        player.addInvisibleSkill([get.info("xjb_skillCardObserver").getCanGet(player)])
+        const adds = get.info("xjb_skillCardObserver").getCanGet(player);
+        const loses = get.info("xjb_skillCardObserver").getCanLose(player);
+        if (adds.length) player.addTempSkill(adds, { player: "dieAfter" });
+        if (loses.length) player.removeSkill(loses, { player: "dieAfter" });
     }
 })

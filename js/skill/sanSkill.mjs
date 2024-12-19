@@ -15,6 +15,7 @@ function SkillCreater(name, skill) {
 };
 const xjb_lunaticMasochist = SkillCreater(
     "xjb_lunaticMasochist", {
+    nobracket: true,
     translate: "疼痛敏感",
     description: "你弃牌、失去体力、恢复体力、失去体力上限、恢复体力上限、装备装备牌均视为受到伤害。",
     trigger: {
