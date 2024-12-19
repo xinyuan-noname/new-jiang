@@ -253,7 +253,7 @@ function way() {
 function importFile() {
 	let count = 0;
 	const files = ["event", "lingli", "card",
-		"project", "rpg", "translate", "character", "economy", "raise"];
+		"project", "rpg", "character", "economy", "raise"];
 	function loadFiles(fileName) {
 		let script = lib.init.js(lib.xjb_src + "js", fileName, () => {
 			window[`XJB_LOAD_${fileName.toUpperCase()}`](_status, lib, game, ui, get, ai);
@@ -263,12 +263,8 @@ function importFile() {
 	}
 	new Promise(res => {
 		//引入css文件    
-		lib.init.css(lib.xjb_src + "css", "main", () => {
-			game.print("样式表引入成功——新将包")
-		}, (err) => {
-			game.print("样式表引入失败——新将包");
-			game.print(err)
-		})
+		lib.init.css(lib.xjb_src + "css", "main");
+		lib.init.css(lib.xjb_src + "css", "nature");
 		//引入js文件
 		files.forEach(file => {
 			loadFiles(file)
@@ -288,6 +284,8 @@ function importFile() {
 			}
 		}
 		setInterval(interval, 100)
+	}).then(async () => {
+		await import("./js/feature/skillCard.mjs");
 	}).then(() => {
 		const script = lib.init.js(lib.xjb_src + "js", "final", () => {
 			window.XJB_LOAD_FINAL(_status, lib, game, ui, get, ai)

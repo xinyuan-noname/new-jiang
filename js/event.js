@@ -363,6 +363,58 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 game.saveConfig('xjb_count', lib.config.xjb_count);
                 return lib.config.xjb_count[target.name].HpCard
             },
+            "xjb_chooseAllCard": function () {
+                const player = this;
+                let select, forced, target, prompt
+                Array.from(arguments).forEach(function (arg) {
+                    if (typeof arg === "number") {
+                        select = arg;
+                    }
+                    else if (get.itemtype(arg) === "select") {
+                        select = arg;
+                    }
+                    else if (get.itemtype(arg) === "player") {
+                        target = arg;
+                    }
+                    else if (typeof arg === "boolean") {
+                        forced = arg
+                    }
+                    else if (typeof arg === "string") {
+                        prompt = arg
+                    }
+                })
+                if (!target) target = player;
+                if (!select) select = 1;
+                if (!prompt) prompt = "请选择卡牌"
+                const hs = target.getCards("h").randomSort(),
+                    es = target.getCards("e").randomSort(),
+                    js = target.getCards("j").randomSort(),
+                    xs = target.getCards("x").randomSort(),
+                    ss = target.getCards("s").randomSort();
+                const dialog = ui.create.dialog(prompt)
+                if (hs.length) {
+                    dialog.add("<div class=\"text center\" style=\"margin: 0px;\">手牌区</div>");
+                    dialog.add([hs, "vcard"]);
+                }
+                if (es.length) {
+                    dialog.add("<div class=\"text center\" style=\"margin: 0px;\">装备区</div>");
+                    dialog.add([es, "vcard"]);
+                }
+                if (js.length) {
+                    dialog.add("<div class=\"text center\" style=\"margin: 0px;\">判定区</div>");
+                    dialog.add([js, "vcard"]);
+                }
+                if (xs.length) {
+                    dialog.add("<div class=\"text center\" style=\"margin: 0px;\">武将牌上</div>");
+                    dialog.add([xs, "vcard"]);
+                }
+                if (ss.length) {
+                    dialog.add("<div class=\"text center\" style=\"margin: 0px;\">特殊区</div>");
+                    dialog.add([ss, "vcard"]);
+                }
+                dialog.hide();
+                return player.chooseButton(dialog, select, forced);
+            }
         },
     }
     lib.skill.xjb_2 = {
@@ -492,49 +544,6 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 }
             },
         },
-        "xjb_chooseHEJXS": {
-            player: function () {
-                let next = game.createEvent('xjb_chooseHEJXS')
-                next.player = this
-                Array.from(arguments).forEach(function (i) {
-                    if (typeof i === "number") {
-                        next.num = i
-                    } else if (typeof i === "boolean") {
-                        next.forced = i
-                    } else if (typeof i === "string") {
-                        next.todo = i
-                    }
-                })
-                if (!next.todo) next.todo = "discard"
-                if (!next.num) next.num = 1
-                next.setContent('xjb_chooseHEJXS');
-                return next
-            },
-            content: function () {
-                "step 0"
-                if (event.player.countCards("hejsx") < event.num) {
-                    event.player.discard(event.player.getCards("hejsx"))
-                    event.finish()
-                }
-                "step 1"
-                let dialog = ui.create.dialog("请选择" + event.num + "张牌")
-                dialog.add("<div class=\"text center\">手牌区</div>")
-                dialog.add([event.player.getCards("h"), "vcard"])
-                dialog.add("<div class=\"text center\">装备区</div>")
-                dialog.add([event.player.getCards("e"), "vcard"])
-                dialog.add("<div class=\"text center\">判定区</div>")
-                dialog.add([event.player.getCards("j"), "vcard"])
-                dialog.add("<div class=\"text center\">武将牌上</div>")
-                dialog.add([event.player.getCards("x"), "vcard"])
-                dialog.add("<div class=\"text center\">特殊区</div>")
-                dialog.add([event.player.getCards("s"), "vcard"])
-                event.player.chooseButton(dialog, event.num, event.forced)
-                "step 2"
-                if (result.links) {
-                    event.player[event.todo](result.links)
-                }
-            },
-        },
         "xjb_chooseSkillAll": {
             player: function (target) {
                 let next = game.createEvent('xjb_chooseSkillAll')
@@ -639,8 +648,10 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 let next = game.createEvent('xjb_bianshen');
                 next.player = this
                 Array.from(arguments).forEach(function (i) {
-                    if (typeof i === "object") {
-                        i.skill = "skill_X"
+                    const arg = i;
+                    if (Array.isArray(arg)) {
+                        next.toGenerateCards = arg
+                    } else if (typeof i === "object") {
                         i.onremove = function (player) {
                             delete player.storage[i.name];
                             player.removeMark("_xin_bianshen", 1)
@@ -659,31 +670,50 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 "step 1"
                 event.player.storage[event.call.name] = event.player.addSubPlayer(event.call);
                 event.player.callSubPlayer(event.call)
-                event.player.addMark('_xin_bianshen')
+                event.player.addMark('_xin_bianshen');
+                "step 2"
+                if (event.toGenerateCards) {
+                    const cards = game.xjb_cardFactory(...event.toGenerateCards);
+                    player.gain(cards, "gain2");
+                    event.cards = cards;
+                }
+                "step 3"
+                if (event.cards) {
+                    for (const card of event.cards) {
+                        if (get.type(card) === "equip") {
+                            if (!player.canEquip(card)) player.expandEquip(get.subtype(card));
+                            player.equip(card);
+                        }
+                    }
+                }
             },
         },
-        chooseLoseHpMaxHp: {
+        xjb_chooseLoseHpMaxHp: {
             player: function () {
-                let next = game.createEvent('chooseLoseHpMaxHp', false);
+                let next = game.createEvent('xjb_chooseLoseHpMaxHp', false);
                 next.player = this;
-                for (var i = 0; i < arguments.length; i++) {
-                    if (typeof arguments[i] == 'boolean') {
-                        next.forced = arguments[i];
+                for (const arg of arguments) {
+                    if (typeof arg == 'boolean') {
+                        next.forced = arg;
                     }
-                    else if (typeof arguments[i] == 'string') {
-                        next.prompt = arguments[i];
+                    else if (typeof arg == 'string') {
+                        next.prompt = arg;
                     }
-                    else if (typeof arguments[i] == 'function') {
-                        next.ai = arguments[i];
+                    else if (typeof arg == 'function') {
+                        next.ai = arg;
                     }
-                    else if (arguments[i] instanceof Array) {
-                        next.num1 = arguments[i][0]
-                        next.num2 = arguments[i][1]
+                    else if (Array.isArray(arg)) {
+                        next.num1 = arg[0]
+                        next.num2 = arg[1]
+                    }
+                    else if (typeof arg === "number") {
+                        if (!next.num1) next.num1 = arg
+                        else next.num2 = arg
                     }
                 }
                 if (!next.num1) next.num1 = 1;
                 if (!next.num2) next.num2 = 1;
-                next.setContent('chooseLoseHpMaxHp');
+                next.setContent('xjb_chooseLoseHpMaxHp');
                 return next;
             },
             content: function () {
@@ -698,7 +728,6 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 }
                 var next = player.chooseControl(controls);
                 next.set('prompt', prompt);
-                if (event.hsskill) next.setHiddenSkill(event.hsskill);
                 if (event.ai) {
                     next.set('ai', event.ai);
                 }
@@ -735,7 +764,6 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                     }
                 }
                 event.result = result;
-
             },
         }
     }

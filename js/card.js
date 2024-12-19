@@ -22,6 +22,11 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
     game.import("card", function () {
         lib.config.all.cards.push("xjb_hunbiStore");
         lib.config.cards.push("xjb_hunbiStore");
+        lib.cardType['xjb_unique'] = 0.5
+        lib.cardType['xjb_unique_skill'] = 0.35
+        lib.cardType['xjb_unique_talent'] = 0.4
+        lib.cardType['xjb_unique_reusable'] = 0.45
+        lib.cardType['xjb_unique_money'] = 0.46
         return {
             name: "xjb_hunbiStore",
             connect: false,
@@ -31,6 +36,7 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
             skill: {},
             translate: {
                 "xjb_hunbiStore_card_config": "魂市",
+                _xjb_cardStore: "魂市",
                 xjb_unique: '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="24">',
                 xjb_unique_SanSkill: "🐉神圣技能🐉",
                 xjb_unique_talent: "💡天赋卡💡",
@@ -58,47 +64,44 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
             }
         };
     })
+    if (lib.config.cards.includes("xjb_jizhuoyangqing")) {
+        lib.inpile.push(...lib.cardPack["xjb_jizhuoyangqing"])
+        lib.cardPack["xjb_jizhuoyangqing"].forEach(i => {
+            lib.translate[i + "_info"] += `<br><a onclick="location.hash='#xjb_card${i}'">※点此将该牌加入牌堆</a>`
+        })
+    }
+    get.xjb_enFromCn = function (cn) {
+        return Object.entries(lib.translate).find(item => {
+            return item[1] === cn;
+        })[0]
+    }
+    //创建卡牌并返回数组
+    game.xjb_cardFactory = function () {
+        var cards = []
+        for (var i = 0; i < arguments.length; i++) {
+            let card = lib.card[arguments[i][0]] && game.createCard2(...arguments[i])
+            card.storage = arguments[i][5]
+            card.gaintag = arguments[i][4]
+            cards.push(card)
+        }
+        return cards
+    };
+    //检测卡牌是否可被添加
+    game.xjb_checkCardCanAdd = function (cardName) {
+        return lib.inpile.includes(cardName)
+    };
+    //
+    game.xjb_cardAddToCardPile = function (card) {
+        let Acard = card
+        if (get.itemtype(card) !== "card") {
+            Acard = game.createCard2(...card);
+        }
+        let cardPileItems = ui.cardPile.children;
+        let randomIndex = Math.floor(Math.random() * (cardPileItems.length + 1));
+        ui.cardPile.insertBefore(Acard, cardPileItems[randomIndex]);
+    };
     lib.skill.xjb_4 = {
-        XJBCard: function () {
-            if (lib.config.cards.includes("xjb_jizhuoyangqing")) {
-                lib.inpile.push(...lib.cardPack["xjb_jizhuoyangqing"])
-                lib.cardPack["xjb_jizhuoyangqing"].forEach(i => {
-                    lib.translate[i + "_info"] += `<br><a onclick="location.hash='#xjb_card${i}'">※点此将该牌加入牌堆</a>`
-                })
-            }
-        },
         CardFunction: function () {
-            get.xjb_enFromCn = function (cn) {
-                return Object.entries(lib.translate).find(item => {
-                    return item[1] === cn
-                })[0]
-            }
-            //创建卡牌并返回数组
-            game.xjb_cardFactory = function () {
-                var cards = []
-                for (var i = 0; i < arguments.length; i++) {
-                    let card = lib.card[arguments[i][0]] && game.createCard2(...arguments[i])
-                    card.storage = arguments[i][5]
-                    card.gaintag = arguments[i][4]
-                    cards.push(card)
-                }
-                return cards
-            };
-            //检测卡牌是否可被添加
-            game.xjb_checkCardCanAdd = function (cardName) {
-                return lib.inpile.includes(cardName)
-            };
-            //
-            game.xjb_cardAddToCardPile = function (card) {
-                let Acard = card
-                if (get.itemtype(card) !== "card") {
-                    Acard = game.createCard2(...card);
-                }
-                let cardPileItems = ui.cardPile.children;
-                let randomIndex = Math.floor(Math.random() * (cardPileItems.length + 1));
-                ui.cardPile.insertBefore(Acard, cardPileItems[randomIndex]);
-            };
-
             //获取可以加入牌堆的牌的信息
             game.xjb_getCardToAdd = function (step) {
                 const firstList = Object.entries(lib.config.xjb_cardAddToPile).filter(i => i[1] !== "0");
@@ -180,12 +183,6 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
                     }
                 }
             }
-            lib.translate._xjb_cardStore = "魂市"
-            lib.cardType['xjb_unique'] = 0.5
-            lib.cardType['xjb_unique_skill'] = 0.35
-            lib.cardType['xjb_unique_talent'] = 0.4
-            lib.cardType['xjb_unique_reusable'] = 0.45
-            lib.cardType['xjb_unique_money'] = 0.46
         },
         CardSkills: function () {
             //蓬莱卡

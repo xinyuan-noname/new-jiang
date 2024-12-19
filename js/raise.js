@@ -2,7 +2,8 @@ window.XJB_LOAD_RAISE = function (_status, lib, game, ui, get, ai) {
     lib.xjb_hunList.skill = {
         first: ["xjb_juanqu", "xjb_lunhui", "xjb_hanhua", "xjb_bingdi"],
         second: ["xjb_leijue", "xjb_bingjue", "xjb_jinghua",
-             "xjb_wei_fengtian","xjb_wei_fayi", "xjb_wu_yushou","xjb_shu_nufa"],
+             "xjb_wei_fengtian","xjb_wei_fayi", "xjb_wu_yushou","xjb_shu_nufa",
+            "xjb_tianfa"],
         third: ["xjb_pomie", "xjb_huojue"],
     }
     get.xjb_raiseCharSkills = function () {

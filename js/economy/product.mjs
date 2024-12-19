@@ -32,15 +32,20 @@ export class CardStoreGoods {
         this.description = lib.translate[cardName + "_info"]
         return this
     }
+    canPurchase() {
+        if (!this.ok) return false;
+        if (!this.cost) return false;
+        return game.xjb_canPayWithB(this.cost);
+    }
     //调用此方法产生一张牌,但是不会直接获得
     purchase() {
+        game.xjb_costHunbi(this.cost, '在商店中购买')
+        game.xjb_systemEnergyChange(-this.content.energyNeed);
         if (!this.cardName) return;
         if (!(this.cardName in lib.card)) return;
         const cardProduct = game.createCard(this.cardName, "", 1);
         cardProduct.storage.xjb_allowed = true;
         cardProduct.dataset.cost = this.cost;
-        game.xjb_costHunbi(this.cost, '在商店中购买')
-        game.xjb_systemEnergyChange(-this.content.energyNeed);
         return cardProduct;
     }
     get ok() {
@@ -51,15 +56,14 @@ export class CardStoreGoods {
         if (lib.translate[this.cardName]) lib.translate[this.cardName + "_info"] = this.description + "</br>价格:" + this.content.cost;
         return this.content.cost;
     }
+    /**
+     * @type {CardStoreGoods[]}
+     */
     static productList = []
     static getGoods(cardName) {
         return CardStoreGoods.productList.find(product => product.cardName === cardName);
     }
     static get canPurchaseList() {
-        return CardStoreGoods.productList.filter(product => {
-            if (!product.ok) return false;
-            if (!product.cost) return false;
-            return game.xjb_canPayWithB(product.cost);
-        })
+        return CardStoreGoods.productList.filter(product => product.canPurchase())
     }
 }

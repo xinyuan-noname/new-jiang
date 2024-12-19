@@ -1,4 +1,10 @@
 import { _status, lib, ui, game, ai, get } from "../../../../noname.js"
+/**
+ * 
+ * @param {*} name 
+ * @param {Skill} skill 
+ * @returns 
+ */
 function SkillCreater(name, skill) {
     lib.skill[name] = { ...skill }
     delete lib.skill[name].translate;
@@ -447,6 +453,12 @@ const xjb_jinghua = SkillCreater(
     },
     translate: "镜花",
     description: "出牌阶段限三次，你可以选择一张非梅花牌并复制之（花色改为♣）。",
+    ai: {
+        order: 5,
+        result: {
+            player: 1,
+        }
+    },
 })
 const xjb_bingdi = SkillCreater(
     'xjb_bingdi', {
@@ -476,30 +488,48 @@ const xjb_leijue = SkillCreater(
     filterCard: {
         suit: "spade",
     },
+    position: "he",
     filter: function (event, player) {
-        return player.hasCard({suit:"spade"},"he")
+        return player.hasCard({ suit: "spade" }, "he")
     },
     filterTarget: true,
     content: function () {
         target.damage('thunder');
+    },
+    ai: {
+        order: 5,
+        result: {
+            target(player, target) {
+                return get.damageEffect(target, player, null, "thunder")
+            }
+        }
     },
 })
 const xjb_tianfa = SkillCreater(
-    "xjb_leijue", {
+    "xjb_tianfa", {
     translate: "天罚",
-    description: "限定技，你可以令一名角色进行一次【天谴】判定。",
-    enable: "phaseUse",
+    description: "出牌阶段，你可以你可以交给一名角色一张黑桃牌，你执行一次目标角色为其的【天谴】效果。",
     filterCard: {
         suit: "spade",
     },
-    filter: function (event, player) {
-        return true
-    },
+    position: "he",
+    enable: "phaseUse",
+    lose: false,
+    discard: false,
     filterTarget: true,
-    content: function () {
-        target.damage('thunder');
+    filter: function (event, player) {
+        return player.hasCard({ suit: "spade" }, "he")
     },
-    "_priority": 0,
+    content: async function (event, trigger, player) {
+        await event.player.give(event.cards, event.target)
+        event.target.executeDelayCardEffect("xjb_tianqian", player)
+    },
+    ai: {
+        order: 5,
+        result: {
+            target: -2,
+        }
+    },
 })
 
 const xjb_huojue = SkillCreater(
@@ -563,6 +593,27 @@ const xjb_pomie = SkillCreater(
     }
 })
 
+const xjb_lunhui = SkillCreater(
+    "xjb_lunhui", {
+    translate: "轮回",
+    description: "当你濒死时，你可以弃置全区域内三张牌并重铸剩余的牌。若此做，你将体力至恢复三点体力。",
+    trigger: {
+        player: ["dying"],
+    },
+    filter(event, player) {
+        return player.countDiscardableCards(player, "hejsx") >= 3
+    },
+    cost: async function (event, trigger, player) {
+        const { result: { bool, links } } = await player.xjb_chooseAllCard(3);
+        event.result = { bool, cost_data: { cards: links } };
+    },
+    content: async function (event, trigger, player) {
+        await player.discard(event.cost_data.cards, ui.discardPile);
+        const toRecast = player.getCards("hejxs", card => player.canRecast(card));
+        if (toRecast.length) player.recast(toRecast)
+        player.recoverTo(3);
+    },
+})
 const xjb_juanqu = SkillCreater(
     "xjb_juanqu", {
     enable: "phaseUse",

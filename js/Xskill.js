@@ -199,7 +199,6 @@ window.XJB_LOAD_Xskill = function (_status, lib, game, ui, get, ai) {
                                 case 52: {
                                     targets[i].loseHp(num).source = player
                                 }; break;
-                                case 62: targets[i].xjb_chooseHEJXS(num, true); break;
                                 case 72: case 113: targets[i].getDebuff(); break;
                                 //特殊事件    
                                 case 3: {

@@ -1,4 +1,4 @@
-import { lib, game, ui, get, ai, _status} from "../../../../noname.js";
+import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 export const soulStoreCard = {};
 export const soulStoreCardTranslate = {};
 function CardCreater(name, card) {
@@ -9,6 +9,19 @@ function CardCreater(name, card) {
     soulStoreCardTranslate[name + "_info"] = card.description
     return soulStoreCard[name];
 };
+/**
+ * @param {string} name 
+ * @param {Skill} skill 
+ */
+function SkillCreater(name, skill) {
+    callFellowCardSkill[name] = { ...skill };
+    callFellowTranslate[name] = skill.translate;
+    delete callFellowCardSkill[name].transalte;
+    if (skill.description) {
+        callFellowTranslate[name + "_info"] = skill.description;
+        delete callFellowCardSkill[name].description;
+    }
+}
 const xjb_penglai = CardCreater(
     "xjb_penglai", {
     type: "xjb_unique",
@@ -307,7 +320,6 @@ const xjb_tianming_huobi1 = CardCreater(
 })
 const xjb_skillCard = CardCreater(
     "xjb_skillCard", {
-    audio: "ext:新将包",
     type: "xjb_unique",
     subtype: "xjb_unique_talent",
     enable: true,
@@ -319,7 +331,7 @@ const xjb_skillCard = CardCreater(
         return card.storage.xjb_allowed == true;;
     },
     cardConstructor(id, boolean) {
-        var it = lib.card[id + "_card"] = {
+        const it = lib.card[id + "_card"] = {
             enable: function (event, player) {
                 return false
             },
@@ -339,49 +351,30 @@ const xjb_skillCard = CardCreater(
         if (boolean === true) {
             it.subtype = "xjb_unique_SanSkill";
         }
-        if (["xin_guimeng_1"].includes(id)) {
-            it.debuff = true
-            it.ai.basic.value = 0
-            it.ai.basic.useful = 0
-        }
         lib.translate[id + "_card"] = lib.translate[id]
-        lib.translate[id + "_card_info"] = "当你持有或武将牌上存在" + get.translation(id) + "时，你视为拥有技能:【" + get.translation(id) + "】<br><ins><i>" + lib.translate[id + "_info"] + "</i></ins>"
-
-    },
-    skillLeadIn(id, fatherName) {
-        if (!fatherName) fatherName = id
-        var skill = game.xjb_EqualizeSkillObject(id + "_card", lib.skill[id])
-        if (skill.init) skill.init = function (player, skill) { player.storage[skill] = false }
-        if (!skill.filter) {
-            skill.filter = function () { return true }
+        lib.translate[id + "_card_info"] = "当你持有或武将牌上存在" + get.translation(id) + "时，你视为拥有技能:【" + get.translation(id) + "】<br><ins><i>" + lib.translate[id + "_info"] + "</i></ins>";
+        if (!lib.skill.global.includes("xjb_skillCardObserver")) {
+            game.addGlobalSkill("xjb_skillCardObserver");
         }
-        skill.filter2 = skill.filter
+        lib.skill.xjb_skillCardObserver.observeList.add(id);
+    },
+    skillLeadIn(id) {
+        const skillCardName = id + "_card"
+        const skill = get.copy(lib.skill[id])
+        if (!skill.filter) skill.filter = () => true;
+        skill.filter2 = skill.filter;
+        skill.skillCardName = skillCardName;
         skill.filter = function (event, player) {
-            if (player.countCards("hxs", { name: fatherName + "_card" }) < 1) return false;
+            const name = this.skillCardName;
+            if (player.countCards("hxs", { name }) < 1) return false;
             return this.filter2.apply(this, arguments);
         }
-        if (skill.group) {
-            if (typeof skill.group == "string") {
-                this.skillLeadIn(skill.group, id)
-                skill.group = skill.group + "_card"
-                lib.translate[skill.group + '_card'] = lib.translate[skill.group]
-            }
-            else if (Array.isArray(skill.group)) {
-                skill.group.forEach((item, index) => {
-                    this.skillLeadIn(item, id)
-                    skill.group[index] = item + "_card"
-                    lib.translate[item + "_card"] = lib.translate[item]
-
-                })
-            }
-        }
-        game.addGlobalSkill(id + "_card")
+        lib.skill[skillCardName] = skill;
+        return skill;
     },
     SanSkill: [
-        'xin_zulong',
         'xjb_xinsheng',
-        'lunaticMasochist',
-        'xjb_sicuan'
+        'xjb_lunaticMasochist'
     ],
     content() {
         'step 0'
@@ -395,12 +388,9 @@ const xjb_skillCard = CardCreater(
         game.xjb_create.prompt("请输入技能的id", "", function () {
             game.resume()
             var id = this.result;
-            if (Object.keys(lib.skill).includes(id)) {
-                if (lib.skill[id].mod) {
-                    player.gain(cards)
-                    return game.xjb_create.alert("该技能不在合法技能名录中！")
-                }
-                game.xjb_createSkillCard(id, target)
+            if (id in lib.skill) {
+                const toGain = game.xjb_createSkillCard(id);
+                player.gain(toGain)
             } else {
                 player.gain(cards)
                 game.xjb_create.alert("未找到该技能！")
@@ -411,14 +401,10 @@ const xjb_skillCard = CardCreater(
         })
         event.finish()
         'step 3'
-        var list = []
-        for (let i = 0; i < lib.card.xjb_skillCard.SanSkill.length; i++) {
-            lib.card.xjb_skillCard.cardConstructor(lib.card.xjb_skillCard.SanSkill[i], true)
-            list.push(game.createCard(lib.card.xjb_skillCard.SanSkill[i] + '_card'))
-        }
-        player.chooseButton(['选择一张神圣技能牌', list], true)
+        var list = lib.card.xjb_skillCard.SanSkill.map(id => game.xjb_createSkillCard(id))
+        player.chooseButton(['选择一张神圣技能牌', [list, "vcard"]])
         'step 4'
-        if (result.links) {
+        if (result.bool) {
             player.gain(result.links[0], "gain2")
             lib.card.xjb_skillCard.skillLeadIn(result.links[0].name.slice(0, result.links[0].name.lastIndexOf('_card')))
         }

@@ -532,20 +532,6 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                 flower: size => createLogo("lingli/flower.jpg", size),
             }
         },
-        card: function () {
-            //技能卡彩框
-            lib.element.card.xjb_Becolorful = function () {
-                this.style.border = "1.5px solid black"
-                this.classList.add("xjb_color_circle")
-            }
-            game.xjb_createSkillCard = function (id, target) {
-                lib.card.xjb_skillCard.cardConstructor(id)
-                lib.card.xjb_skillCard.skillLeadIn(id)
-                var card = game.createCard(id + "_card")
-                target.gain(card)
-                card.xjb_Becolorful()
-            }
-        },
         Marks: function () {
             xjb_lingli.daomo.type.forEach(i => {
                 lib.skill["_xjb_daomo_" + i] = {

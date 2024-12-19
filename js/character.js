@@ -454,5 +454,4 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
         lib.groupnature.xjb_hun = "xjb_hun";
         return result;
     });
-    lib.init.css(lib.xjb_src + "css", "nature");
 }

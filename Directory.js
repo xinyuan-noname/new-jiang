@@ -1,7 +1,6 @@
 window["xjb_xyAPI_Directory_新将包"]={
     "main": [
         ".gitignore",
-        "card_lw.jpg",
         "content.js",
         "Directory.js",
         "extension.js",
@@ -64,7 +63,6 @@ window["xjb_xyAPI_Directory_新将包"]={
         "rpg.js",
         "skills.js",
         "title.js",
-        "translate.js",
         "Xskill.js"
     ],
     "json": [
@@ -110,6 +108,7 @@ window["xjb_xyAPI_Directory_新将包"]={
     ],
     "image/card_callFellow": [
         "xjb_baiyin.png",
+        "xjb_card_lw.png",
         "xjb_chitu.png",
         "xjb_hutou.png",
         "xjb_qinglong.png",
@@ -126,6 +125,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_zhuqiang.png"
     ],
     "image/character_dongzhou": [
+        "xjb_guanyiwu.jpg",
         "xjb_jizi_shou.jpg",
         "xjb_qinshihuang.jpg"
     ],
@@ -183,7 +183,8 @@ window["xjb_xyAPI_Directory_新将包"]={
     ],
     "js/feature": [
         "hpCard.js",
-        "remnantArea.js"
+        "remnantArea.js",
+        "skillCard.mjs"
     ],
     "js/game": [
         "tetris.js"
@@ -207,6 +208,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "bossSkill.mjs",
         "dongzhou.mjs",
         "raiseSkill.mjs",
+        "sanSkill.mjs",
         "soulSkill.mjs",
         "xjbSkill.mjs"
     ],
