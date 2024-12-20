@@ -589,68 +589,16 @@ export function XJB_CONTENT(config, pack) {
                         if (!lib.config.xjb_jnc) lib.config.xjb_jnc = 0
                         obj["changeSkill" + abcde]()
                     }
-                    var sinks = function (str1) {
+                    const sinks = async function () {
                         if (!lib.config.xjb_newcharacter.sink) lib.config.xjb_newcharacter.sink = []
-                        const downloadByCordova = function () {
-                            const that = this;
-                            var Myalert = game.xjb_create.alert("正在导入中...");
-                            const sucCallback = () => {
-                                Myalert.innerHTML = "导入成功！"
-                                ui.xjb_toBeVisible(Myalert.buttons[0])
-                                lib.config.xjb_newcharacter.sink.add(that.result + that.file.type)
-                                game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                            }
-                            const failCallback = err => {
-                                Myalert.innerHTML = "导入失败！<br>" + err
-                                ui.xjb_toBeVisible(Myalert.buttons[0])
-                            }
-                            const downloadWay = lib.config.xjb_fileURL + "sink/xin_newCharacter/normal/" + that.result + that.file.type;
-                            ui.xjb_toBeHidden(Myalert.buttons[0])
-                            var fileTransfer = new FileTransfer();
-                            fileTransfer.download(
-                                that.file.result,
-                                downloadWay,
-                                sucCallback,
-                                failCallback
-                            )
-                        };
-                        const downloadByNode = function () {
-                            const that = this;
-                            var Myalert = game.xjb_create.alert("正在导入中...");
-                            const sucCallback = () => {
-                                Myalert.innerHTML = "导入成功！"
-                                ui.xjb_toBeVisible(Myalert.buttons[0])
-                                lib.config.xjb_newcharacter.sink.add(that.result + that.file.type)
-                                game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                            }
-                            const failCallback = err => {
-                                Myalert.innerHTML = "导入失败！<br>" + err
-                                ui.xjb_toBeVisible(Myalert.buttons[0])
-                            }
-                            const downloadWay = lib.config.xjb_fileURL + "sink/xin_newCharacter/normal/" + that.result + that.file.type;
-                            ui.xjb_toBeHidden(Myalert.buttons[0])
-                            lib.node.fs.writeFile(
-                                window.decodeURIComponent(new URL(downloadWay).pathname).substring(1),
-                                Buffer.from(new Uint8Array(that.file.result)),
-                                err => {
-                                    if (err) return failCallback(err);
-                                    sucCallback();
-                                }
-                            )
+                        const { fileData, result } = await game.xjb_create.promise.readImg("请输入你的皮肤名，并选定图片，待确定出现后按确定即可。");
+                        if (lib.config.xjb_newcharacter.sink.includes(result)) {
+                            const { bool } = await game.xjb_create.promise.confirm("你已有该同名的皮肤，是否覆盖？");
+                            if (bool) return sinks()
                         }
-                        game.xjb_create.file(
-                            "请输入你的皮肤名，并选定图片，待确定出现后按确定即可。",
-                            str1,
-                            function () {
-                                const theDownload = lib.node ? downloadByNode : downloadByCordova
-                                if (lib.config.xjb_newcharacter.sink.includes(this.result)) {
-                                    game.xjb_create.confirm("你已有该同名的皮肤，是否覆盖？", theDownload, function () { sinks("img") })
-                                }
-                                else theDownload.apply(this, [])
-                            },
-                            () => { },
-                            lib.node ? true : false
-                        )
+                        await game.xjb_create.promise.download(fileData, lib.config.xjb_fileURL + "skin/image/xjb_newCharacter/" + result);
+                        lib.config.xjb_newcharacter.sink.add(result);
+                        game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter);
                     }
                     var object = {
                         other: _ => 1,

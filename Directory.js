@@ -82,10 +82,12 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xuemo.jpg"
     ],
     "log": [
+        "empty.text",
         "log.txt"
     ],
     "md": [
-        "skillEditor.md"
+        "skillEditor.md",
+        "usual.md"
     ],
     "node": [
         "gen_dir.js"
@@ -228,6 +230,9 @@ window["xjb_xyAPI_Directory_新将包"]={
         "寿2.png",
         "急子1.png",
         "急子2.png"
+    ],
+    "skin/image/xjb_newCharacter": [
+        "initial.jpg"
     ],
     "skin/image/xjb_xuemo": [
         "xuemo1.jpg",

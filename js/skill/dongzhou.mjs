@@ -75,11 +75,11 @@ const xjb_zunrang = SkillCreater(
 const xjb_huozhi = SkillCreater(
 	"xjb_huozhi", {
 	translate: "货殖",
-	description: "出牌阶段限一次，你可与一名其他未发动过本技能的角色各展示一张手牌称为“货”，然后你与其用其他手牌拼点：双方获得对方的“货”，赢的角色获得拼点牌。若你赢，本回合你可多发动一次该技能。",
+	description: "出牌阶段限一次，你可与一名本回合未发动过本技能的其他角色各展示一张手牌称为“货”，然后你与其用其他手牌拼点：双方获得对方的“货”，赢的角色获得拼点牌。若你赢，本回合你可多发动一次该技能。",
 	enable: "phaseUse",
 	usable: 1,
 	filterTarget: (card, player, target) => {
-		const targets = player.getHistory("useSkill").map(evt => evt.targets).flat();
+		const targets = player.getHistory("useSkill", evt => evt.skill === "xjb_huozhi").map(evt => evt.targets).flat();
 		return !targets.includes(target) && player.canCompare(target) && target.countCards("h") >= 2 && player.countCards("h") >= 2;
 	},
 	content: async function (event, trigger, player) {

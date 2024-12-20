@@ -305,6 +305,9 @@ function importFile() {
 		}
 	})
 	//引入api
+	/**
+	 * @property {function} xjb_loadAPI
+	 */
 	game.xjb_loadAPI = function (suc = () => void 0, fail = () => void 0, branch = "master") {
 		if (window.xjb_xyAPI) {
 			alert('工具已引入,无需重新引入!');

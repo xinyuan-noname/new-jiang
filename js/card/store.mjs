@@ -9,19 +9,6 @@ function CardCreater(name, card) {
     soulStoreCardTranslate[name + "_info"] = card.description
     return soulStoreCard[name];
 };
-/**
- * @param {string} name 
- * @param {Skill} skill 
- */
-function SkillCreater(name, skill) {
-    callFellowCardSkill[name] = { ...skill };
-    callFellowTranslate[name] = skill.translate;
-    delete callFellowCardSkill[name].transalte;
-    if (skill.description) {
-        callFellowTranslate[name + "_info"] = skill.description;
-        delete callFellowCardSkill[name].description;
-    }
-}
 const xjb_penglai = CardCreater(
     "xjb_penglai", {
     type: "xjb_unique",

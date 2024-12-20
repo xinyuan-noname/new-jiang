@@ -33,7 +33,7 @@ const xjb_skillCardObserver = SkillCreater(
     "xjb_skillCardObserver", {
     trigger: {
         player: ["phaseBefore"],
-        global: ["loseAfter", "loseAsyncAfter", "gainAfter", "roundStart"]
+        global: ["loseAfter", "loseAsyncAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter","roundStart"]
     },
     charlotte: true,
     superCharlotte: true,

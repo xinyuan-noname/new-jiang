@@ -12,24 +12,47 @@ class DialogEvent {
     promise;
     constructor(dialog, noPromise) {
         this.dialog = dialog;
-        if (this.dialog.buttons) {
-            this.promise = new Promise(res => {
-                for (const button of this.dialog.buttons) {
-                    button.addEventListener(DEFAULT_EVENT, function () {
-                        let bool = null;
-                        if (this.innerText === "确定") bool = true;
-                        if (this.innerText === "取消") bool = false;
-                        res({ result: this.result, chosen: this.innerText, bool });
-                    })
-                }
-            })
-        }
-        if (noPromise) return this;
-        return this.promise;
+        if (!this.dialog.buttons) return noPromise ? this : this.promise;
+        this.promise = new Promise(res => {
+            for (const button of this.dialog.buttons) {
+                button.addEventListener(DEFAULT_EVENT, function () {
+                    const output = {
+                        result: this.result,
+                        index: this.resultIndex,
+                        chosen: this.innerText,
+                        bool: this.innerText === "确定" ? true : this.innerText === false ? false : null
+                    }
+                    if (this.file) {
+                        output.fileData = {}
+                        const fileData = [];
+                        if (this.file.result) {
+                            fileData.push(this.file.result)
+                        };
+                        if (this.fileOtherData) {
+                            fileData.push(this.fileOtherData)
+                        };
+                        if (this.file.self) {
+                            output.file = this.file.self;
+                        }
+                        if (this.file.extn) {
+                            output.fileData.extn = this.file.extn;
+                            output.fileData.name = this.result;
+                            output.result = [this.result, this.file.extn].join(".");
+                        }
+                        fileData.forEach(data => {
+                            if (data instanceof ArrayBuffer) output.fileData.buffer = data;
+                            if (typeof data === "string") output.fileData.url = data;
+                        })
+                    }
+                    res(output);
+                })
+            }
+        })
+        return noPromise ? this : this.promise;
     }
 }
-game.xjb_createDialogEvent = (dialog) => {
-    return new DialogEvent(dialog);
+game.xjb_createDialogEvent = (dialog, noPromise) => {
+    return new DialogEvent(dialog, noPromise);
 }
 ui.create.xjb_dialogBase = function () {
     if (game.xjb_create.baned) return null;
@@ -455,25 +478,23 @@ game.xjb_create.chooseAnswer = function (str, choicesList, single, func, src) {
 //文件交互对话框
 game.xjb_create.file = function (str, type, func1, func2, needBuffer) {
     if (game.xjb_create.baned) return;
-    var dialog = game.xjb_create.prompt(str, "", func1, func2)
+    const dialog = game.xjb_create.prompt(str, "", func1, func2)
     dialog.Mysize()
     ui.xjb_toBeHidden(dialog.buttons[0]);
-    let file = document.createElement("input")
+    const file = document.createElement("input")
     file.type = "file"
     ui.xjb_giveStyle(file, {
         display: "block",
     })
     dialog.appendChild(file)
-    var obj = {
+    const obj = {
         json: function () {
-            var json = document.createElement("div")
-            json.xjb_check = function () {
-                if (this.xjb_type != ".json") return ui.xjb_toBeHidden(dialog.buttons[0])
-            }
-            return json
+            file.accept = "application/json,.json"
+            return document.createElement("div");
         },
         img: function () {
-            var img = document.createElement("img")
+            const img = document.createElement("img")
+            file.accept = "image/*"
             ui.xjb_giveStyle(img, {
                 width: "var(--xjb-file-width)",
                 "object-fit": "fill"
@@ -481,7 +502,8 @@ game.xjb_create.file = function (str, type, func1, func2, needBuffer) {
             return img
         },
         video: function () {
-            var video = document.createElement("video")
+            file.accept = "video/*"
+            const video = document.createElement("video");
             ui.xjb_giveStyle(video, {
                 width: "var(--xjb-file-width)",
                 "object-fit": "fill"
@@ -491,45 +513,68 @@ game.xjb_create.file = function (str, type, func1, func2, needBuffer) {
             return video
         },
         audio: function () {
-            var audio = document.createElement("audio")
+            file.accept = "audio/*"
+            const audio = document.createElement("audio");
             ui.xjb_giveStyle(audio, {
                 width: "var(--xjb-file-width)",
                 "object-fit": "fill"
             })
             audio.controls = true
             audio.autoplay = true
-            return audio
+            return audio;
         },
         all: function () {
             return document.createElement('span')
         }
     }
-    var target = obj[type]()
-    dialog.appendChild(target)
-    target.onerror = function () {
-        ui.xjb_toBeHidden(dialog.buttons[0])
-    }
+    const showFile = obj[type]();
+    dialog.appendChild(showFile);
+    showFile.addEventListener('error', function () {
+        ui.xjb_toBeHidden(dialog.buttons[0]);
+    });
     file.onchange = function () {
         const readingFile = this.files[0];
+        if (!readingFile) {
+            showFile.src = "";
+            return;
+        }
         ui.xjb_toBeHidden(dialog.buttons[0])
-        var reader = new FileReader()
-        if (needBuffer) reader.readAsArrayBuffer(readingFile)
-        else reader.readAsDataURL(readingFile, "UTF-8")
+        const reader = new FileReader(), reader2 = new FileReader();
+        let flag1, flag2;
+        if (needBuffer) {
+            reader.readAsArrayBuffer(readingFile);
+            reader2.readAsDataURL(readingFile, "UTF-8");
+        }
+        else {
+            reader2.readAsArrayBuffer(readingFile);
+            reader.readAsDataURL(readingFile, "UTF-8");
+        }
         reader.onload = function () {
             const fileData = this.result;
             //文件类型
-            let lastnamefortype = file.value.slice(file.value.lastIndexOf("."))
-            target.src = URL.createObjectURL(readingFile)
-            target.xjb_type = lastnamefortype
-            ui.xjb_toBeVisible(dialog.buttons[0])
+            let extn = file.value.split(".").at(-1);
+            showFile.src = URL.createObjectURL(readingFile);
+            showFile.xjb_type = "." + extn;
             const fileResult = {
                 self: readingFile,
                 result: fileData,
-                type: lastnamefortype,
+                type: "." + extn,
+                extn
             }
             dialog.buttons[0].file = fileResult;
             dialog.buttons[1].file = fileResult;
-            if (target.xjb_check) target.xjb_check()
+            flag1 = true;
+            if(flag2){
+                ui.xjb_toBeVisible(dialog.buttons[0]);
+            }
+        }
+        reader2.onload = function () {
+            dialog.buttons[0].fileOtherData = this.result;
+            dialog.buttons[1].fileOtherData = this.result;
+            flag2 = true;
+            if(flag1){
+                ui.xjb_toBeVisible(dialog.buttons[0]);
+            }
         }
     }
     return dialog
@@ -1050,6 +1095,7 @@ game.xjb_NoEnergy = function () {
 game.xjb_systemUpdate = function () {
     game.xjb_create.alert('魂币系统已更新，重启即生效');
 }
+
 game.xjb_create.promise = {
     alert: (message) => {
         return game.xjb_createDialogEvent(game.xjb_create.alert(message));
@@ -1077,5 +1123,80 @@ game.xjb_create.promise = {
         const titleNode = dialog.querySelector("div");
         titleNode.innerHTML = title;
         return game.xjb_createDialogEvent(dialog);
+    },
+    chooseAnswer: (title, choices, single) => {
+        return game.xjb_createDialogEvent(game.xjb_create.chooseAnswer(title, choices, single))
+    },
+    readFile: (title, type = "all") => {
+        return game.xjb_createDialogEvent(game.xjb_create.file(title, type, void 0, void 0));
+    },
+    readImg: (title) => {
+        return game.xjb_create.promise.readFile(title, "img");
+    },
+    readJson: (title) => {
+        return game.xjb_create.promise.readFile(title, "json");
+    },
+    readVideo: (title) => {
+        return game.xjb_create.promise.readFile(title, "video");
+    },
+    readAudio: (title) => {
+        return game.xjb_create.promise.readFile(title, "audio");
     }
 };
+if ("cordova" in window && "FileTransfer" in window) {
+    game.xjb_create.promise.download = async (fileData, path, { wait = "正在导入中...", suc = "导入成功！", fail = "导入失败。" }) => {
+        let url;
+        const dialog = game.xjb_create.alert(wait);
+        ui.xjb_hideElement(dialog.buttons[0]);
+        if (typeof fileData === "string") {
+            url = fileData;
+        } else if (typeof fileData === "string") {
+            url = fileData.url
+        }
+        const transfer = new FileTransfer();
+        transfer.download(
+            fileData.url,
+            path,
+            () => {
+                dialog.innerHTMl = suc;
+                ui.xjb_showElement(dialog.buttons[0]);
+            },
+            (err) => {
+                dialog.innerHTML = [fail, err].join("</br>");
+                ui.xjb_showElement(dialog.buttons[0]);
+                dialog.buttons[0].error = err;
+            }
+        );
+        return game.xjb_createDialogEvent(dialog);
+    }
+}
+if (lib.node.fs.writeFile) {
+    game.xjb_create.promise.download = (fileData, path, messages = {}) => {
+        let buffer;
+        const { wait = "正在导入中...", suc = "导入成功！", fail = "导入失败。" } = messages;
+        const dialog = game.xjb_create.alert(wait);
+        ui.xjb_hideElement(dialog.buttons[0]);
+        if (path.startsWith("file:")) {
+            path = window.decodeURIComponent(new URL(path).pathname).substring(1)
+        }
+        if (fileData instanceof ArrayBuffer) {
+            buffer = Buffer.from(new Uint8Array(fileData));
+        } else if (fileData.buffer instanceof ArrayBuffer) {
+            buffer = Buffer.from(new Uint8Array(fileData.buffer))
+        }
+        lib.node.fs.writeFile(
+            path,
+            buffer,
+            err => {
+                ui.xjb_showElement(dialog.buttons[0]);
+                if (err) {
+                    dialog.innerHTML = [fail, err].join("</br>");
+                    dialog.buttons[0].error = err;
+                }
+                dialog.innerHTML = suc;
+                return;
+            }
+        )
+        return game.xjb_createDialogEvent(dialog);
+    }
+}
