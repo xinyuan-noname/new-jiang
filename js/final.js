@@ -1,3 +1,4 @@
+"use script";
 import { importEditor } from "./import/importEditor.mjs"
 import { clearBadSettingList } from "./card/clearBad.mjs"
 window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {

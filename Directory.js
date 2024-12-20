@@ -16,7 +16,6 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_shenshapo.png",
         "xjb_tianming_huobi1.png",
         "xjb_tianming_huobi2.png",
-        "xjb_xyAPI.js",
         "xjb_zhihuan.png"
     ],
     "audio": [
