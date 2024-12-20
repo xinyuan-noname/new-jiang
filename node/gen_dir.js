@@ -141,6 +141,7 @@ fsPromise.showDirFilter(
     (file, index) => {
         if (file === 'Thumbs.db') return false;
         if (file === 'xjb_xyAPI.js') return false;
+        if (file === 'Directory.js') return false;
         return true;
     },
     false

@@ -2,7 +2,6 @@ window["xjb_xyAPI_Directory_新将包"]={
     "main": [
         ".gitignore",
         "content.js",
-        "Directory.js",
         "extension.js",
         "info.json",
         "LICENSE",
