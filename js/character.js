@@ -365,7 +365,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                         return lib.config.xjb_newCharacter_hide == 1
                     },
                     get trashBin() {
-                        return [lib.config.xjb_newcharacter.selectedSink]
+                        return [lib.config.xjb_newcharacter.selectedSkin]
                     }
                 },
                 xjb_SoulBoss_zhankuang: {

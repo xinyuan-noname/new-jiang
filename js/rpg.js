@@ -138,7 +138,7 @@ window.XJB_LOAD_RPG = function (_status, lib, game, ui, get, ai) {
             }
         },
         level: function () {
-            let LH = lib.xjb_src + lib.config.xjb_newcharacter.selectedSink.slice(8)
+            let LH = lib.xjb_src + lib.config.xjb_newcharacter.selectedSkin.slice(8)
             let LHName = lib.config.xjb_newcharacter.name2 || ''
             let azureSky = lib.xjb_src + "position/azureSky.jpg"
             let lake = lib.xjb_src + "position/lake.jpg"

@@ -1,7 +1,8 @@
 "use script";
 import { importEditor } from "./import/importEditor.mjs"
 import { clearBadSettingList } from "./card/clearBad.mjs"
-window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
+import { _status, lib, game, ui, get, ai } from "../../../noname.js";
+window.XJB_LOAD_FINAL = function () {
     lib.skill.xjb_final = {
         RPG: function () {
             {
@@ -200,7 +201,7 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                 obj.dialog.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', fc)
             }
         },
-        XJB_Card: function () {
+        CardSetting: function () {
             let cardList = clearBadSettingList;
             if (lib.config.cards.includes("xjb_jizhuoyangqing")) {
                 lib.inpile.push(...lib.cardPack["xjb_jizhuoyangqing"])
@@ -506,5 +507,42 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
                 }
             }
         },
+        compatible: function () {
+            game.checkDir("extension/新将包/sink/xin_newCharacter/normal", async (code) => {
+                if (code === -1) return;
+                lib.config.xjb_newcharacter.selectedSkin = lib.config.xjb_newcharacter.selectedSink;
+                delete lib.config.xjb_newcharacter.selectedSink;
+                lib.config.xjb_newcharacter.skin = lib.config.xjb_newcharacter.sink;
+                game.xjb_saveRaise();
+                await game.xjb_create.promise.alert("注意！由于之前笨蛋作者将文件单词拼写错误，现在重命名并更改了文件路径，图片文件将全部迁移到新的文件夹下！！！");
+                const fileList = await new Promise(res => {
+                    game.getFileList("extension/新将包/sink/xin_newCharacter/normal", (folders, files) => {
+                        res(files);
+                    })
+                });
+                const promisesData = fileList.map(file => {
+                    return new Promise((res, rej) => {
+                        game.readFile(
+                            "extension/新将包/sink/xin_newCharacter/normal/" + file,
+                            res,
+                            rej
+                        )
+                    })
+                });
+                const data = await Promise.all(promisesData);
+                const promisesWrite = data.map((dataOne, index) => {
+                    return new Promise((res) => {
+                        game.writeFile(
+                            dataOne,
+                            "extension/新将包/skin/image/xjb_newCharacter/",
+                            fileList[index],
+                            res
+                        )
+                    })
+                });
+                await Promise.all(promisesWrite);
+                game.removeDir("extension/新将包/sink")
+            })
+        }
     }
 }

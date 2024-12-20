@@ -538,9 +538,9 @@ export function XJB_CONTENT(config, pack) {
                     skill1: '技能槽↑',
                     skill2: '技能回收',
                     skill3: '技能学习',
-                    sink1: '皮肤导入',
-                    sink3: '原皮更改',
-                    sink4: '恢复初始',
+                    skin1: '皮肤导入',
+                    skin3: '原皮更改',
+                    skin4: '恢复初始',
                 },
                 visualMenu: function (node) {
                     node.className = 'button controlbutton';
@@ -589,15 +589,16 @@ export function XJB_CONTENT(config, pack) {
                         if (!lib.config.xjb_jnc) lib.config.xjb_jnc = 0
                         obj["changeSkill" + abcde]()
                     }
-                    const sinks = async function () {
-                        if (!lib.config.xjb_newcharacter.sink) lib.config.xjb_newcharacter.sink = []
-                        const { fileData, result } = await game.xjb_create.promise.readImg("请输入你的皮肤名，并选定图片，待确定出现后按确定即可。");
-                        if (lib.config.xjb_newcharacter.sink.includes(result)) {
+                    const skins = async function () {
+                        if (!lib.config.xjb_newcharacter.skin) lib.config.xjb_newcharacter.skin = []
+                        const { fileData, result, bool } = await game.xjb_create.promise.readImg("请输入你的皮肤名，并选定图片，待确定出现后按确定即可。");
+                        if (bool === false) return;
+                        if (lib.config.xjb_newcharacter.skin.includes(result)) {
                             const { bool } = await game.xjb_create.promise.confirm("你已有该同名的皮肤，是否覆盖？");
-                            if (bool) return sinks()
+                            if (bool) return skins()
                         }
                         await game.xjb_create.promise.download(fileData, lib.config.xjb_fileURL + "skin/image/xjb_newCharacter/" + result);
-                        lib.config.xjb_newcharacter.sink.add(result);
+                        lib.config.xjb_newcharacter.skin.add(result);
                         game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter);
                     }
                     var object = {
@@ -670,37 +671,25 @@ export function XJB_CONTENT(config, pack) {
                         skill3: function () {
                             changeSkill(3)
                         },
-                        sink1: function () {
-                            sinks("img")
+                        skin1: function () {
+                            skins("img")
                         },
-                        sink3: function () {
-                            game.xjb_create.button("未选中皮肤", lib.xjb_src + "sink/xin_newCharacter/normal/", lib.config.xjb_newcharacter.sink, function () {
-                                lib.config.xjb_newcharacter.selectedSink = "ext:新将包/sink/xin_newCharacter/normal/" + this.result
-                                game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                                game.xjb_create.alert('更改皮肤为' + this.result + '，重启即生效');
-                                if (lib.character.xjb_newCharacter) {
-                                    lib.character.xjb_newCharacter[4] = [lib.config.xjb_newcharacter.selectedSink];
-                                }
-                            }, () => {
-                                game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                            }, function () {
-                                if (this.src) {
-                                    const src = this.src.replace(lib.xjb_src, lib.xjb_fileURL)
-                                    if (lib.node && lib.node.fs.promises) {
-                                        const path = window.decodeURIComponent(new URL(src).pathname).substring(1)
-                                        lib.node.fs.promises.unlink(path)
-                                    } else {
-                                        game.removeFile('extension/新将包/' + src.replace(lib.xjb_fileURL, ''))
-                                    }
-                                }
-                            })
+                        skin3: async function () {
+                            const { result, bool, rmImgs } = await game.xjb_create.promise.chooseImage("", lib.xjb_raiseCharSkinFolder, lib.config.xjb_newcharacter.skin);
+                            if (bool) {
+                                game.xjb_raiseCharChangeSkin(result);
+                                await game.xjb_create.promise.alert('更改皮肤为' + result + '，重启即生效');
+                            }
+                            if (rmImgs && rmImgs.length) {
+                                rmImgs.forEach(file => game.removeFile('extension/新将包/skin/image/xjb_newCharacter/' + file))
+                            }
                         },
-                        sink4: function () {
-                            lib.config.xjb_newcharacter.selectedSink = "ext:新将包/xin_newCharacter.jpg"
+                        skin4: function () {
+                            lib.config.xjb_newcharacter.selectedSkin = "ext:新将包/xin_newCharacter.jpg"
                             game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
                             game.xjb_create.alert('已恢复至原皮，重启即生效');
                             if (lib.character.xjb_newCharacter) {
-                                lib.characterPack["xjb_soul"].xjb_newCharacter = lib.character.xjb_newCharacter[4] = [lib.config.xjb_newcharacter.selectedSink]
+                                lib.characterPack["xjb_soul"].xjb_newCharacter = lib.character.xjb_newCharacter[4] = [lib.config.xjb_newcharacter.selectedSkin]
                             }
                         },
                     }

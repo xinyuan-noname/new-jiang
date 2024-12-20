@@ -415,6 +415,9 @@ div.xjb_curtain {
   background-color: #e4d5b7;
   margin-left: 3px;
 }
+.xjb_ImgButton{
+  position: relative;
+}
 
 /*chosen*/
 li.xjb-chosen,

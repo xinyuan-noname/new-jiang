@@ -20,7 +20,8 @@ class DialogEvent {
                         result: this.result,
                         index: this.resultIndex,
                         chosen: this.innerText,
-                        bool: this.innerText === "确定" ? true : this.innerText === false ? false : null
+                        bool: this.innerText === "确定" ? true : this.innerText === "取消" ? false : null,
+                        rmImgs: this.rmImgs,
                     }
                     if (this.file) {
                         output.fileData = {}
@@ -580,15 +581,12 @@ game.xjb_create.file = function (str, type, func1, func2, needBuffer) {
     return dialog
 }
 //图片选择型对话框
-game.xjb_create.button = function (str1, str2, arr2, func, func2, removeCallBack) {
+game.xjb_create.button = function (str1 = "未选择", str2, arr2, func, func2, removeCallBack) {
     if (game.xjb_create.baned) return;
     const dialog = game.xjb_create.confirm(`
-            <div>
-            单击以选中图片，双击以删除图片。
-            </div>
-            <p id=xjb_dialog_p>
-            ${str1}
-            </p>
+            <div></div>
+            <div>单击以选中图片，双击以删除图片。</div>
+            <p>${str1}</p>
             <hr>`, func, func2);
     ui.xjb_toBeHidden(dialog.buttons[0])
     ui.xjb_giveStyle(dialog, {
@@ -596,28 +594,25 @@ game.xjb_create.button = function (str1, str2, arr2, func, func2, removeCallBack
         top: "-170px"
     })
     for (var i = 0; i < arr2.length; i++) {
-        const img = dialog.addElement("div", void 0, {
-            "background-image": `url(${str2 + arr2[i]})`,
-        });
-        img.name = arr2[i];
-        img.src = `${str2 + arr2[i]}`
-        element().setTarget(img)
+        const img = element("div")
+            .father(dialog)
+            .setKey("name", arr2[i])
             .addClass('xjb_ImgButton')
-            .innerHTML(img.name)
-            .listen(lib.config.touchscreen ? 'touchend' : 'click', function (e) {
-                document.getElementById("xjb_dialog_p").innerHTML = this.name
-                ui.xjb_toBeVisible(dialog.buttons[0])
+            .setStyle("background-image", `url(${str2 + arr2[i]})`)
+            .innerHTML(arr2[i])
+            .listen(DEFAULT_EVENT, function (e) {
+                dialog.querySelector("p").innerHTML = this.name;
+                ui.xjb_toBeVisible(dialog.buttons[0]);
                 const colorfulButton = dialog.querySelector(".xjb_color_circle")
-                colorfulButton && colorfulButton.classList.remove("xjb_color_circle")
-                element().setTarget(this)
-                    .addClass("xjb_color_circle")
-                    .setTarget(dialog.buttons[0])
-                    .hook(ele => {
-                        ele.result = this.name;
-                    })
+                colorfulButton && colorfulButton.classList.remove("xjb_color_circle");
+                img.classList.add("xjb_color_circle")
+                dialog.buttons[0].result = img.name;
             })
+            .exit()
         img.ondblclick = function () {
-            this.remove()
+            this.remove();
+            dialog.rmImgs.push(this.name);
+            dialog.buttons[0].rmImgs = dialog.buttons[1].rmImgs = dialog.rmImgs;
             ui.xjb_toBeHidden(dialog.buttons[0])
             if (arr2 && arr2.includes(this.name)) {
                 arr2.remove(this.name);
@@ -627,7 +622,8 @@ game.xjb_create.button = function (str1, str2, arr2, func, func2, removeCallBack
             }
         }
     }
-    dialog.imgs = dialog.getElementsByTagName("div")
+    dialog.rmImgs = [];
+    dialog.imgs = dialog.querySelectorAll("div.xjb_ImgButton")
     return dialog
 }
 
@@ -1127,6 +1123,12 @@ game.xjb_create.promise = {
     chooseAnswer: (title, choices, single) => {
         return game.xjb_createDialogEvent(game.xjb_create.chooseAnswer(title, choices, single))
     },
+    chooseImage: (title = "", folder, images) => {
+        const dialog = game.xjb_create.button(void 0, folder, images, void 0, void 0);
+        const titleNode = dialog.querySelector("div");
+        titleNode.innerHTML = title;
+        return game.xjb_createDialogEvent(dialog);
+    },
     readFile: (title, type = "all") => {
         return game.xjb_createDialogEvent(game.xjb_create.file(title, type, void 0, void 0));
     },
@@ -1141,12 +1143,12 @@ game.xjb_create.promise = {
     },
     readAudio: (title) => {
         return game.xjb_create.promise.readFile(title, "audio");
-    }
+    },
 };
 if ("cordova" in window && "FileTransfer" in window) {
-    game.xjb_create.promise.download = async (fileData, path , messages = {}) => {
+    game.xjb_create.promise.download = async (fileData, path, messages = {}) => {
         let url;
-        const { wait = "正在导入中...", suc = "导入成功！", fail = "导入失败。" } = messages;        
+        const { wait = "正在导入中...", suc = "导入成功！", fail = "导入失败。" } = messages;
         const dialog = game.xjb_create.alert(wait);
         ui.xjb_hideElement(dialog.buttons[0]);
         if (typeof fileData === "string") {
@@ -1159,7 +1161,7 @@ if ("cordova" in window && "FileTransfer" in window) {
             fileData.url,
             path,
             () => {
-                dialog.innerHTMl = suc;
+                dialog.innerHTML = suc;
                 ui.xjb_showElement(dialog.buttons[0]);
             },
             (err) => {

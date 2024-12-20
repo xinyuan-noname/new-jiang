@@ -411,8 +411,8 @@ function initialize() {
 	if (lib.config.xjb_newcharacter.hp > 8) lib.config.xjb_newcharacter.hp = 8
 	if (!lib.config.xjb_newcharacter.skill) lib.config.xjb_newcharacter.skill = [];
 	if (!lib.config.xjb_newcharacter.intro) lib.config.xjb_newcharacter.intro = '';
-	if (!lib.config.xjb_newcharacter.sink) lib.config.xjb_newcharacter.sink = [];
-	if (!lib.config.xjb_newcharacter.selectedSink) lib.config.xjb_newcharacter.selectedSink = "ext:新将包/xin_newCharacter.jpg"
+	if (!lib.config.xjb_newcharacter.skin) lib.config.xjb_newcharacter.skin = [];
+	if (!lib.config.xjb_newcharacter.selectedSkin) lib.config.xjb_newcharacter.selectedSkin = "ext:新将包/xin_newCharacter.jpg"
 	//设置存档
 	if (!lib.config.xjb_myStorage) {
 		lib.config.xjb_myStorage = {

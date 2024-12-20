@@ -1,8 +1,9 @@
 window.XJB_LOAD_RAISE = function (_status, lib, game, ui, get, ai) {
+    lib.xjb_raiseCharSkinFolder = `${lib.xjb_src}/skin/image/xjb_newCharacter/`
     lib.xjb_hunList.skill = {
         first: ["xjb_juanqu", "xjb_lunhui", "xjb_hanhua", "xjb_bingdi"],
         second: ["xjb_leijue", "xjb_bingjue", "xjb_jinghua",
-             "xjb_wei_fengtian","xjb_wei_fayi", "xjb_wu_yushou","xjb_shu_nufa",
+            "xjb_wei_fengtian", "xjb_wei_fayi", "xjb_wu_yushou", "xjb_shu_nufa",
             "xjb_tianfa"],
         third: ["xjb_pomie", "xjb_huojue"],
     }
@@ -42,6 +43,17 @@ window.XJB_LOAD_RAISE = function (_status, lib, game, ui, get, ai) {
         if (typeof skillList === "string") skillList = [skillList];
         if (!game.xjb_condition('jnc', skillList.length)) return false;
         return true;
+    }
+    game.xjb_saveRaise = () => {
+        game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter);
+    }
+    game.xjb_raiseCharChangeSkin = function (name) {
+        const bg = `ext:新将包/skin/image/xjb_newCharacter/${name}`
+        lib.config.xjb_newcharacter.selectedSkin = bg;
+        if (lib.character.xjb_newCharacter) {
+            lib.character.xjb_newCharacter[4] = [bg];
+        }
+        game.xjb_saveRaise();
     }
     game.xjb_raiseCharGainSkill = function (skillList, free = false, connectDia) {
         if (typeof skillList === "string") skillList = [skillList];
