@@ -201,6 +201,12 @@ window.XJB_LOAD_FINAL = function (_status, lib, game, ui, get, ai) {
         },
         XJB_Card: function () {
             let cardList = clearBadSettingList;
+            if (lib.config.cards.includes("xjb_jizhuoyangqing")) {
+                lib.inpile.push(...lib.cardPack["xjb_jizhuoyangqing"])
+                lib.cardPack["xjb_jizhuoyangqing"].forEach(i => {
+                    lib.translate[i + "_info"] += `<br><a onclick="location.hash='#xjb_card${i}'">※点此将该牌加入牌堆</a>`
+                })
+            }
             window.addEventListener('hashchange', function () {
                 if (location.hash.indexOf('xjb_card') < 0) return false;
                 Object.keys(cardList).forEach(i => {

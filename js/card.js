@@ -64,12 +64,6 @@ window.XJB_LOAD_CARD = function (_status, lib, game, ui, get, ai) {
             }
         };
     })
-    if (lib.config.cards.includes("xjb_jizhuoyangqing")) {
-        lib.inpile.push(...lib.cardPack["xjb_jizhuoyangqing"])
-        lib.cardPack["xjb_jizhuoyangqing"].forEach(i => {
-            lib.translate[i + "_info"] += `<br><a onclick="location.hash='#xjb_card${i}'">※点此将该牌加入牌堆</a>`
-        })
-    }
     get.xjb_enFromCn = function (cn) {
         return Object.entries(lib.translate).find(item => {
             return item[1] === cn;
