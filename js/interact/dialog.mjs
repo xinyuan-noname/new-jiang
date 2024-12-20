@@ -1144,8 +1144,9 @@ game.xjb_create.promise = {
     }
 };
 if ("cordova" in window && "FileTransfer" in window) {
-    game.xjb_create.promise.download = async (fileData, path, { wait = "正在导入中...", suc = "导入成功！", fail = "导入失败。" }) => {
+    game.xjb_create.promise.download = async (fileData, path , messages = {}) => {
         let url;
+        const { wait = "正在导入中...", suc = "导入成功！", fail = "导入失败。" } = messages;        
         const dialog = game.xjb_create.alert(wait);
         ui.xjb_hideElement(dialog.buttons[0]);
         if (typeof fileData === "string") {
