@@ -564,7 +564,7 @@ game.xjb_create.file = function (str, type, func1, func2, needBuffer) {
             dialog.buttons[0].file = fileResult;
             dialog.buttons[1].file = fileResult;
             flag1 = true;
-            if(flag2){
+            if (flag2) {
                 ui.xjb_toBeVisible(dialog.buttons[0]);
             }
         }
@@ -572,7 +572,7 @@ game.xjb_create.file = function (str, type, func1, func2, needBuffer) {
             dialog.buttons[0].fileOtherData = this.result;
             dialog.buttons[1].fileOtherData = this.result;
             flag2 = true;
-            if(flag1){
+            if (flag1) {
                 ui.xjb_toBeVisible(dialog.buttons[0]);
             }
         }
@@ -1170,7 +1170,7 @@ if ("cordova" in window && "FileTransfer" in window) {
         return game.xjb_createDialogEvent(dialog);
     }
 }
-if (lib.node.fs.writeFile) {
+if (lib.node && lib.node.fs && lib.node.fs.writeFile) {
     game.xjb_create.promise.download = (fileData, path, messages = {}) => {
         let buffer;
         const { wait = "正在导入中...", suc = "导入成功！", fail = "导入失败。" } = messages;
