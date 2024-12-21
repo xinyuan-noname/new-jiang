@@ -440,7 +440,7 @@ export function LOAD_HPCARD(lib, game, ui, get, ai, _status) {
         }
     })
 
-    //防止隐藏未改bug
+    //防止一些未修改到的地方
     if (game.createHpCard) console.warn('已有game.createHpCard函数!将被新将包的同名函数替换!')
     game.createHpCard = game.xjb_createHpCard;
     if (game.countHpCard) console.warn('已有game.countHpCard函数!将被新将包的同名函数替换!')

@@ -124,7 +124,7 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         var list1 = Object.keys(hunbilist[x])
         var list2 = Object.values(hunbilist[x])
         list1.forEach((k, i) => {
-            let a = get.xjb_number(list2[i]);
+            let a = parseInt(list2[i]);
             let addList = new Array();
             addList.length = a;
             addList.fill(list1[i]);
@@ -139,8 +139,8 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
         let list = Object.keys(hunbilist[num])
         for (let i = 0; i < list.length; i++) {
             const before = hunbilist[num][list[i]]
-            let number = get.xjb_number(before) + game.xjb_getCurrentDate(true)
-            if (i === list.length - 1) number = get.xjb_number(before) - i * game.xjb_getCurrentDate(true)
+            let number = parseInt(before) + game.xjb_getCurrentDate(true)
+            if (i === list.length - 1) number = parseInt(before) - i * game.xjb_getCurrentDate(true)
             hunbilist[num][list[i]] = number + '*100'
         }
     }

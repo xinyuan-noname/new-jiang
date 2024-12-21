@@ -442,7 +442,6 @@ window.XJB_LOAD_FINAL = function () {
         },
         choujiang: function () {
             {
-                if (!get.xjb_number) return false
                 if (!lib.config.xjb_hun) return false
             }
             lib.config.xjb_list_hunbilist.choujiang = {

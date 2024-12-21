@@ -704,7 +704,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 //引入存档信息
                 for (var i in lib.config.xjb_myStorage) {
                     if (typeof lib.config.xjb_myStorage[i] === "object") {
-                        var thelist = ui.create.xjb_theStorage(storage.div_1, get.xjb_number(i))//storage.div_1，即放存档的地方
+                        var thelist = ui.create.xjb_theStorage(storage.div_1, parseInt(i))//storage.div_1，即放存档的地方
                         var target = lib.config.xjb_myStorage[i]
                         const eachPartSet = [
                             { target: thelist.theTime, innerHTML: target.date },

@@ -166,6 +166,67 @@ function provideFunction() {
 			uniqueSkill: []
 		}
 	}
+	get.xjb_number = function (number, tarlen1, num1) {
+		var tarlen = tarlen1
+		if (!number) return ''
+		if (typeof number === 'string') {
+			return parseInt(number, 10)
+		}
+		if (!tarlen1) tarlen = 1
+		var numobj = {}, name = '选择' + get.cnNumber(tarlen) + '名角色，你'
+		var num2 = num1 || 1
+		for (var i = 0; i < arguments.length; i++) {
+			if (typeof arguments[i] === 'object') {
+				numobj = arguments[i]
+			}
+		}
+		var words1 = tarlen === 1 ? '其' : '这些角色各',
+			words2 = tarlen === 1 ? '其' : '这些角色分别',
+			wordsAdd = numobj.wordsAdd || ''
+		if (tarlen === -1) {
+			words1 = '所有角色'
+			words2 = '所有角色'
+			name = '你'
+		}
+		if (![2, 32, 183].includes(number) && number % 10 !== 4) {
+			name += '令'
+		} else if (number % 10 === 4) {
+			name += '对' + words1 + '造成' + get.cnNumber(num2)
+		}
+		switch (number) {
+			case 1: name += words1 + '摸' + get.cnNumber(num2) + '张牌'; break;
+			case 11: name += words1 + '恢复' + get.cnNumber(num2) + '点体力'; break;
+			case 21: name += words1 + '加' + get.cnNumber(num2) + '点体力上限'; break;
+			case 41: case 123: name += words2 + '获得一个Buff'; break;
+			case 2: name += '弃置' + words1 + get.cnNumber(num2) + '张牌'; break;
+			case 12: case 52: name += words1 + '失去' + get.cnNumber(num2) + '点体力'; break;
+			case 22: name += words1 + '减' + get.cnNumber(num2) + '点体力上限'; break;
+			case 32: name += '获得' + words1 + get.cnNumber(num2) + '张牌'; break;
+			case 42: name += words1 + '弃置' + get.cnNumber(num2) + '张牌'; break;
+			case 62: name += words1 + '弃置全域内' + get.cnNumber(num2) + '张牌'; break;
+			case 72: case 113: name += words2 + '获得一个Debuff'; break;
+			case 3: name += words2 + '重置之'; break;
+			case 13: name += words2 + '横置之'; break;
+			case 23: name += words2 + '获得技能' + get.translation(numobj.skills); break;
+			case 33: name += words2 + '获得技能' + get.translation(numobj.skills); break;
+			case 83: {
+				name += words2 + '视为拥有技能' + get.translation(numobj.skills)
+			}; break;
+			case 153: name += words2 + '正面朝上'; break;
+			case 163: name += words2 + '背面朝上'; break;
+			case 173: name += words2 + '翻面'; break;
+			case 183: name += '对' + words2 + '使用' + get.translation(numobj.toUseCard); break;
+			case 4: name += '点火属性伤害'; break;
+			case 14: name += '点雷属性伤害'; break;
+			case 24: name += '点冰属性伤害'; break;
+			case 34: name += '点神属性伤害'; break;
+			case 44: {
+				name += wordsAdd + '点伤害'
+			}; break;
+			case 54: name += wordsAdd + '点伤害(此伤害无视护甲)'; break;
+		}
+		return name
+	}
 
 
 	//技能=object(强制技恢复)
@@ -252,7 +313,7 @@ function way() {
 }
 function importFile() {
 	let count = 0;
-	const files = ["event", "lingli", "card",
+	const files = ["event", "lingli", "card","title",
 		"project", "rpg", "character", "economy", "raise"];
 	function loadFiles(fileName) {
 		let script = lib.init.js(lib.xjb_src + "js", fileName, () => {
@@ -269,16 +330,8 @@ function importFile() {
 		files.forEach(file => {
 			loadFiles(file)
 		})
-		lib.init.js(lib.xjb_src + "js", "Xskill", () => {
-			window.XJB_LOAD_Xskill(_status, lib, game, ui, get, ai)
-			count++;
-		})
-		lib.init.js(lib.xjb_src + "js", "title", () => {
-			window.XJB_LOAD_title(_status, lib, game, ui, get, ai)
-			count++;
-		})
 		function interval() {
-			if (count >= files.length + 2) {
+			if (count >= files.length) {
 				res()
 				clearInterval(interval)
 			}
@@ -528,47 +581,52 @@ function initialize() {
 				next.player = game.me;
 				_status.event.next.remove(next);
 				_status.event.getParent().next.push(next);
-				next.setContent(function () {
-					"step 0"
-					let list1 = ["流失", "火焰", "雷电", "冰冻", "破甲", "神袛"],
-						list2 = ["1次", "2次", "3次", "4次", "5次"]
-					var next = player.chooseButton([
-						'请选择击杀方式',
-						[list1, 'tdnodes'],
-						'请选择重复次数',
-						[list2, 'tdnodes'],
-					], 2);
-					event.list1 = list1
-					event.list2 = list2
-					event.selected1 = 0
-					event.selected2 = 0
-					next.set('filterButton', function (button) {
-						ui.selected.buttons.forEach(i => {
-							event.selected1 = 0
-							event.selected2 = 0
-							if (list1.includes(i.innerText)) event.selected1 = 1
-							if (list2.includes(i.InnerText)) event.selected2 = 1
-						})
-						if (event.selected1 === 1 && list1.includes(button.link)) return false
-						return !(list2.includes(button.link) && (event.selected1 === 0 || event.selected2 === 1))
-					});
-					"step 1"
-					if (result.links) {
-						let times, activity
-						result.links.forEach(i => {
-							activity = (event.list1.includes(i) && i) || activity
-							times = (event.list2.includes(i) && i) || times
-						})
-						let e = new Array(parseInt(times)).fill(activity)
-						player.fc_X(...e, [game.players.length])
-						game.xjb_systemEnergyChange(-parseInt(times) * 30)
+				next.setContent(async function (event, trigger, player) {
+					const eventList1 = [
+						[["loseHp", false], "流失体力"],
+						[["damage", false, player], "普通伤害"],
+						[["damage", false, "fire", player], "火焰伤害"],
+						[["damage", false, "thunder", player], "雷电伤害"],
+						[["damage", false, "ice", player], "冰冻伤害"],
+						[["damage", false, "kami", player], "神袛伤害"],
+					];
+					const eventList2 = [
+						[["useCard", true, { name: "sha" }], "杀"],
+						[["useCard", true, { name: "sha", nature: "fire" }], "火杀"],
+						[["useCard", true, { name: "sha", nature: "thunder" }], "雷杀"],
+						[["useCard", true, { name: "sha", nature: "ice" }], "冰杀"],
+						[["useCard", true, { name: "juedou" }], "决斗"],
+						[["executeDelayCardEffect", false, "shandian"], "闪电"],
+						[["executeDelayCardEffect", false, "xjb_tianqian"], "天谴"],
+					];
+					const eventList3 = [
+						[["useSkill", true, "fangzhu"], '放逐'],
+						[["useSkill", true, "xinfu_guolun"], '过论'],
+					]
+					const { bool, links } = await player.chooseButton([
+						'请选择一种连点方式',
+						[eventList1, 'tdnodes'],
+						[eventList2, 'tdnodes'],
+						[eventList3, 'tdnodes'],
+					]).forResult();
+					if (bool) {
+						const toDo = links[0].shift();
+						const toTarget = links[0].shift();
+						while (true) {
+							
+							const { result } = await player.chooseTarget();
+							if (!result.bool) break;
+							for (const target of result.targets) {
+								if (toTarget) await player[toDo](...links[0], target, [target])
+								else await target[toDo](...links[0]);
+								await game.xjb_systemEnergyChange(-5)
+							}
+						}
 					}
-					"step 2"
 					ui.xjb_chupingjisha.show();
 				})
 				//如果是你的出牌阶段发动此技能
 				if (_status.event.name == 'chooseToUse' && _status.event.player) {
-					//这个设置是关键的一步，说明本次chooseToUse是发动了技能，以让phaseUse转起来
 					_status.event.result = {
 						bool: true,
 						skill: 'xjb_updateStrategy'

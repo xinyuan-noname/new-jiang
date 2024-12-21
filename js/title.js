@@ -1,4 +1,4 @@
-window.XJB_LOAD_title = function (_status, lib, game, ui, get, ai) {
+window.XJB_LOAD_TITLE = function (_status, lib, game, ui, get, ai) {
     lib.skill.xjb_5 = {
         titleSet: function () {
             for (let i = 0; i < 15; i++) {

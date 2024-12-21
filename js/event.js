@@ -1,38 +1,6 @@
 window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
     lib.skill.xjb_1 = {
         player: {
-            "fc_X": function () {
-                //这是对fc_X2先做一遍预处理，将文字转化为数字
-                let Arr = [], obj = {
-                    '摸牌': 1, 'draw': 1,
-                    '牌堆底摸牌': 51,
-                    '恢复体力': 11, '回复体力': 11, '回血': 11, 'recover': 11,
-                    '失去体力': 12,
-                    '加体力上限': 21, 'gainMaxHp': 21,
-                    '获得Buff': 41,
-                    '获得其牌': 32,
-                    '再动': 31, "insertPhase": 31,
-                    '置于牌堆顶': 26,
-                    '获得技能': 5,
-                    '残区': 16,
-                    '弃牌': 36,
-                    '旋转': 7,
-                    '流失': 52,
-                    '破甲': 54,
-                    '火焰': 4,
-                    '冰冻': 24,
-                    '雷电': 14,
-                    '神袛': 34
-                }
-                Array.from(arguments).forEach(i => {
-                    if (typeof i === 'string') {
-                        let a = obj[i] || i
-                        Arr.push(a)
-                    }
-                    else Arr.push(i)
-                })
-                return this.fc_X2(...Arr)
-            },
             "xjb_zeroise": function (name) {
                 name = name || this.name;
                 let player = this;
@@ -436,56 +404,6 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 "step 1"
                 ui.updatehl();
             }
-        },
-        "fc_X2": {
-            player: function () {
-                let next = game.createEvent('fc_X2')
-                var player = this
-                if (!player.storage._skill_xin_X) player.storage._skill_xin_X = [1, 1, 1, [], [], [], []]
-                var boolean, Array1 = [], object = {}, Array2 = [1], Array3 = []
-                for (var i = 0; i < arguments.length; i++) {
-                    if (Array.isArray(arguments[i])) Array2 = arguments[i]
-                    else if (typeof arguments[i] == 'number') {
-                        if (arguments[i] === 0) { }
-                        else Array1.push(arguments[i])
-                    }
-                    else if (typeof arguments[i] === 'string') Array3.push(arguments[i])
-                    else if (typeof arguments[i] === 'boolean') boolean = arguments[i]
-                    else if (typeof arguments[i] === 'object') object = arguments[i]
-                }
-                next.boolean = boolean
-                next.Array1 = Array1
-                next.Array2 = Array2
-                next.Array3 = Array3
-                next.object = object
-                next.setContent('fc_X2');
-                next.player = this
-                return next
-            },
-            content: function () {
-                'step 0'
-                var boolean = event.boolean,
-                    Array1 = event.Array1,
-                    object = event.object,
-                    Array2 = event.Array2,
-                    Array3 = event.Array3
-                //onlyme检测
-                player.storage._skill_xin_X[4] = [...Array3, "again"]
-                if (boolean == true) player.storage._skill_xin_X[4].push('onlyme', 'num_2')
-                //1区设置(event.do)
-                player.storage._skill_xin_X[0] = Array1.shift()
-                //2区设置(event.num)
-                player.storage._skill_xin_X[1] = Array2.shift()
-                //7区设置(event.else)
-                player.storage._skill_xin_X[7] = object
-                player.storage._skill_xin_X[7].redo = [...Array1]
-                player.storage._skill_xin_X[7].redo2 = Array2
-                'step 1'
-                player.update()
-                //使用X技
-                'step 2'
-                player.useSkill('skill_X')
-            },
         },
         "xjb_cardBirth": {
             player: function (num = 1) {

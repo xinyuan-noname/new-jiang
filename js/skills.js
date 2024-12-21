@@ -470,8 +470,7 @@ lib.skill.xjb_3 = {
                 game.players.forEach(function (current) {
                     //灵力设置
                     player.storage.xjb_daomoMax = 1
-                    //建X_skill区，[0]代表执行项目，[1]代表角色数目，[2]代表执行次数，[3]代表禁止武将，[4]代表限制条件，[5]修改其他五区，[6]控制[5]区(套娃)        
-                    current.storage._skill_xin_X = [1, 1, 1, [], [], [], []]
+                   
                     current.storage.xjb_card_allow = {}
                     current.noskill = {}
                     current.noskill_translate = {}

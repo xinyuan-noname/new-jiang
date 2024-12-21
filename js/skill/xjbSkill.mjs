@@ -1163,9 +1163,8 @@ const xjb_liuli = SkillCreater(
         return player.countCards('hes', { suit: 'diamond' }) > 0
     },
     direct: true,
-    content: function () {
-        "step 0"
-        player.chooseCardTarget({
+    content: async function (event, trigger, player) {
+        const { result } = await player.chooseCardTarget({
             filterCard: {
                 suit: "diamond",
             },
@@ -1187,18 +1186,12 @@ const xjb_liuli = SkillCreater(
             },
             prompt: '交给另一名其他角色一张♦️牌，你令伤害来源改为这名角色并令其重新分配伤害'
         });
-        "step 1"
         if (result.bool) {
-            var num = trigger.num
-            result.targets[0].gain(result.cards, player, 'giveAuto');
-            var daqiao = {}
-            if (trigger.nature) {
-                daqiao.nature = [trigger.nature]
-                daqiao.wordsAdd = get.translation(trigger.nature) + '属性'
-            }
-            result.targets[0].fc_X(44, [num], daqiao)
-            trigger.cancel()
+            player.give(result.cards, result.targets[0]);
+            trigger.cancel();
         }
+        const { targets, bool } = await result.targets[0].chooseTarget([1, trigger.num], "你对其造成一点伤害").forResult();
+        if (bool) targets.forEach(target => target.damage(trigger.nature));
     },
     ai: {
         "maixie_defend": true,
