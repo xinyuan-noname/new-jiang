@@ -372,7 +372,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     sex: "none",
                     group: "xjb_hun",
                     hp: 6,
-                    skills: ["xin_htzjq2", "xin_fengtian", "xindangxian", "xinkuanggu"],
+                    skills: ["xjb_htzjq", "xjb_huibian", "xindangxian", "xinkuanggu"],
                     get trashBin() {
                         return ["ext:新将包/image/god.jpg"]
                     },

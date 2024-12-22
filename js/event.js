@@ -248,8 +248,8 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                     else if (typeof arguments[i] == 'number') var num = arguments[i]
                 }
                 for (var a = 0; a < list.length; a++) {
-                    var info = lib.skill[list[a]]
-                    if (list[a].endsWith('_roundcount')) list.splice(a--, 1)
+                    const info = get.info(list[a])
+                    if (!list[a] || list[a].endsWith('_roundcount')) list.splice(a--, 1)
                     else if (!info || info.sub || info.hiddenSkill) list.splice(a--, 1)
                     else if (!lib.translate[list[a]]) list.splice(a--, 1)
                     else if (!lib.translate[list[a] + '_info']) list.splice(a--, 1)

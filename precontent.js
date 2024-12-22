@@ -600,6 +600,7 @@ function initialize() {
 						[["executeDelayCardEffect", false, "xjb_tianqian"], "天谴"],
 					];
 					const eventList3 = [
+						[["fanjian", true, "fanjian"], '反间'],
 						[["useSkill", true, "fangzhu"], '放逐'],
 						[["useSkill", true, "xinfu_guolun"], '过论'],
 						[["sbliegong", true, { name: "sha" }], "烈弓"],
@@ -615,14 +616,14 @@ function initialize() {
 					]).forResult();
 					const uniqueEventPre = {
 						"zhuandui": (player) => {
-							player.addTempSkill(["zhuandui", "tianbian"], { player: "xjb-chupingjishaAfter" })
+							player.addTempSkill(["zhuandui", "tianbian"], { global: "phaseAfter", player: "xjb-chupingjishaAfter" })
 							return "useCard";
 						},
 						"repojun": (player) => {
 							const card = game.createCard("guding", "spade", 1);
 							player.chooseUseTarget(card);
 							card.storage.cpjs = true;
-							player.addTempSkill(["repojun"], { player: "xjb-chupingjishaAfter" });
+							player.addTempSkill(["repojun"], { global: "phaseAfter", player: "xjb-chupingjishaAfter" });
 							player.when("xjb-chupingjishaAfter").then(() => {
 								const guding = player.getCards("e", item => item.name == "guding" && item.storage.cpjs === true);
 								if (guding) player.discard(guding, ui.ordering);
@@ -631,13 +632,20 @@ function initialize() {
 							return "useCard";
 						},
 						"retieji": (player) => {
-							player.addTempSkill(["retieji"], { player: "xjb-chupingjishaAfter" })
+							player.addTempSkill(["retieji"], { global: "phaseAfter", player: "xjb-chupingjishaAfter" })
 							return "useCard";
 						},
 						"sbliegong": (player) => {
-							player.addTempSkill(["sbliegong"], { player: "xjb-chupingjishaAfter" })
+							player.addTempSkill(["sbliegong"], { global: "phaseAfter", player: "xjb-chupingjishaAfter" });
+							player.when({ global: "phaseAfter", player: "xjb-chupingjishaAfter" }).then(() => {
+								delete player.storage.sbliegong;
+								player.removeTip("sbliegong");
+							})
 							return "useCard";
 						},
+						"fanjian": (player) => {
+							return "useSkill"
+						}
 					}
 					const uniqueEventEveryTurn = {
 						"repojun": (player, target) => {
@@ -649,6 +657,9 @@ function initialize() {
 							player.addTip("sbliegong", get.translation("sbliegong") + player.getStorage("sbliegong").reduce((str, suit) => str + get.translation(suit), ""));
 							return;
 						},
+						"fanjian": (player) => {
+							return player.draw();
+						}
 					}
 					if (bool) {
 						const wayName = links[0].shift();
@@ -657,19 +668,18 @@ function initialize() {
 						if (wayName in uniqueEventPre) {
 							toDo = uniqueEventPre[wayName](player);
 						}
-						while (true) {
+						while (_status.event === event) {
 							const chooseEvent = player.chooseTarget();
 							if (!get.xjb_haveEnergy()) chooseEvent.set("filterTarget", () => false)
 							const { result } = await chooseEvent;
-							if (!result.bool) break;
-							for (const target of result.targets) {
-								if (wayName in uniqueEventEveryTurn) {
-									await uniqueEventEveryTurn[wayName](player, target)
-								}
-								if (toTarget) await player[toDo](...links[0], target, [target])
-								else await target[toDo](...links[0]);
-								await game.xjb_systemEnergyChange(-5)
+							if (!result || !result.bool) break;
+							const target = result.targets[0]
+							if (wayName in uniqueEventEveryTurn) {
+								await uniqueEventEveryTurn[wayName](player, target)
 							}
+							if (toTarget) await player[toDo](...links[0], target, [target])
+							else await target[toDo](...links[0]);
+							await game.xjb_systemEnergyChange(-5)
 						}
 					}
 					ui.xjb_chupingjisha.show();

@@ -39,7 +39,7 @@ const _xjb_soulBoss_load = SkillCreater(
             ],
         }
         list[lib.translate[player.name1]][1](player)
-        player.xjb_addSkillCard("xin_ziruo")
+        player.xjb_addSkillCard("xjb_ziruo")
         player.xjb_addSkillCard("xjb_lingpiao")
         game.countPlayer(function (current) {
             if (current != player) {
