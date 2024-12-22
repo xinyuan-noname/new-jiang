@@ -230,6 +230,105 @@ window.XJB_LOAD_RAISE = function (_status, lib, game, ui, get, ai) {
         game.xjb_saveRaise();
         game.xjb_systemEnergyChange(-1);
     }
+    game.xjb_newCharacterGetTitle = function (num = 1) {
+        let list2 = new Array()
+        for (let b = 0; b < num; b++) {
+            list2.push(Math.round(Math.random() * (lib.config.xjb_title.length - 1)))
+        }
+        let str = '恭喜' + get.translation('xjb_newCharacter') + '解锁了称号:<br>'
+        for (let c = 0; c < list2.length; c++) {
+            str += lib.config.xjb_title[list2[c]][0]
+            if (!lib.config.xjb_title[list2[c]][1].includes('xjb_newCharacter')) {
+                game.xjb_getHunbi(50, void 0, void 0, void 0, '抽奖获取称号')
+                lib.config.xjb_title[list2[c]][1].push('xjb_newCharacter')
+                game.saveConfig('xjb_title', lib.config.xjb_title);
+            }
+        }
+        game.xjb_create.alert(str)
+        game.xjb_systemEnergyChange(-5 * num)
+    }
+    game.xjb_newCharacterChangeName = function (num = 1, free) {
+        game.xjb_create.prompt("请输入你更改后的姓名:", lib.config.xjb_newcharacter.name2, function () {
+            if (this.result !== "") {
+                lib.config.xjb_newcharacter.name2 = this.result
+                game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
+                game.xjb_create.alert("你已更名为:<br>" + lib.config.xjb_newcharacter.name2 + "。<br>重启即更新数据");
+                game.xjb_systemEnergyChange(-5)
+            }
+        }).inputOneLine()
+    }
+    game.xjb_newCharacterChangeSex = function (num = 1, free) {
+        const informationList = {
+            object: "changeSexCard",
+            num: num,
+            free: free,
+            list: ['male', 'female', 'none', 'unknown', 'double'],
+            previousPrice: 5,
+            objectName: '性转卡',
+            changeFunc: function (newAttribute) {
+                lib.config.xjb_newcharacter.sex = newAttribute
+                game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
+                game.xjb_create.alert("已更改为:" + get.xjb_translation(lib.config.xjb_newcharacter.sex) + "，<br>重启即更新数据");
+            }
+        }
+        game.xjb_create.UABobjectsToChange(informationList)
+    }
+    game.xjb_newCharacterChangeGroup = function (num = 1, free) {
+        const informationList = {
+            object: "changeGroupCard",
+            num: num,
+            free: free,
+            list: ["key", "western"].concat(lib.group),
+            previousPrice: 4,
+            objectName: '择木卡',
+            changeFunc: function (newAttribute) {
+                lib.config.xjb_newcharacter.group = newAttribute
+                game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
+                game.xjb_create.alert("已更改为:" + get.xjb_translation(lib.config.xjb_newcharacter.group) + "，<br>重启即更新数据");
+            }
+        }
+        game.xjb_create.UABobjectsToChange(informationList)
+    }
+    game.xjb_newCharacterAddJnc = function (num = 1) {
+        lib.config.xjb_jnc += num
+        game.saveConfig('xjb_jnc', lib.config.xjb_jnc);
+        game.xjb_create.alert('你当前技能槽数量为:<br>' + lib.config.xjb_jnc)
+        game.xjb_systemEnergyChange(-50 * num)
+    }
+    game.xjb_newCharacterAddHp = function (num = 1, free) {
+        var hp = lib.config.xjb_newcharacter.hp
+        var countCost = function () {
+            let count = 0, i = 0
+            while (i < num) {
+                count += (hp + i) * (hp + i) * 2
+                i++
+            }
+            return count
+        }
+        function addHp(func) {
+            lib.config.xjb_newcharacter.hp += num
+            game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
+            var hp_str = '你现在体力值为:<br>' + lib.config.xjb_newcharacter.hp + '<br>重启即更新数据'
+            game.xjb_create.alert(hp_str, func)
+            game.xjb_systemEnergyChange(-countCost())
+        }
+        if (free === false) {
+            game.cost_xjb_cost("B", countCost())
+            game.xjb_systemEnergyChange(-countCost() - 100)
+        }
+        addHp()
+    }
+    game.xjb_newCharacterGetSkill = function (skillName) {
+        if (Object.keys(lib.skill).includes(skillName)) {
+            if (game.xjb_condition(3, 1)) { }
+            if (game.xjb_condition(3, 1)) {
+                game.xjb_create.alert(`你获得了技能${get.translation(skillName)} `)
+                lib.config.xjb_newcharacter.skill.add(skillName)
+                game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
+                game.xjb_systemEnergyChange(-20)
+            }
+        }
+    }
 
     game.xjb_saveRaise = () => {
         game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter);

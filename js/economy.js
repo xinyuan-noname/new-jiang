@@ -103,6 +103,9 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
             game.xjb_systemEnergyChange(game.xjb_currencyRate.firstRate * over)
         }
     }
+    get.xjb_haveEnergy = function () {
+        return lib.config.xjb_systemEnergy > 0
+    }
     game.xjb_systemEnergyChange = function (num = 0) {
         lib.config.xjb_systemEnergy += Math.round(num);
         game.saveConfig('xjb_systemEnergy', lib.config.xjb_systemEnergy);
@@ -196,7 +199,7 @@ window.XJB_LOAD_ECONOMY = function (_status, lib, game, ui, get, ai) {
             game.xjb_writeHunbiLog(logString);
         }
     }
-    
+
     //计算乘以浮流率后的价格
     game.xjb_howMuchIsIt = function (value, min, max) {
         let price = Math.round(value * game.xjb_inflationRate());

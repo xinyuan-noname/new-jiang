@@ -859,12 +859,14 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
         },
         math: function () {
             game.xjb_LZ_project = function () {
-                var obj = ui.create.xjb_storage("点击投资区按钮可以选择投资的魂币额度，我们将考虑反馈打卡点！")
-                obj.back.removeChild(obj.ul)
-                var list = [ui.create.xjb_theStorage(obj.div_1),
-                ui.create.xjb_theStorage(obj.div_1),
-                ui.create.xjb_theStorage(obj.div_1)]
-                var addP = function (element, str1, str2) {
+                const { back, div_1, ul } = ui.create.xjb_storage("点击投资区按钮可以选择投资的魂币额度，我们将考虑反馈打卡点！")
+                back.removeChild(ul);
+                const list = [
+                    ui.create.xjb_theStorage(div_1),
+                    ui.create.xjb_theStorage(div_1),
+                    ui.create.xjb_theStorage(div_1)
+                ]
+                const addP = function (element, str1, str2) {
                     element.innerHTML = `<b>${str1}</b>`;
                     const p = document.createElement("p");
                     p.innerHTML = str2;
@@ -875,8 +877,9 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 const π = XJB_Math["Math_doPI"], e = XJB_Math["Math_doe"], Φ = XJB_Math["Math_doΦ"]
                 const num = [π(lib.config.xjb_π), Φ(lib.config.xjb_Φ), e(lib.config.xjb_e)]
                 const acc = [π, Φ, e]
-                const project = ["xjb_π", "xjb_Φ", "xjb_e"]
-                for (var i = 0; i < list.length; i++) {
+                const project = ["xjb_π", "xjb_Φ", "xjb_e"];
+                const backNum = 7;
+                for (let i = 0; i < list.length; i++) {
                     const { ul, theNum, theCharacter, theLevel, theTime } = list[i];
                     ul.onclick = void 0;
                     ul.classList.add("xjb_ul_storage");
@@ -890,6 +893,7 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                         <span class=216_xjb_touzi>216</span>
                         <span class=withdraw_xjb_touzi>取</span>`)
                     ul.addEventListener(lib.config.touchscreen ? "touchend" : "click", function (e) {
+                        if (!e.target.className.endsWith("xjb_touzi")) return;
                         const number = parseInt(e.target.className);
                         const that = this;
                         const type = this.id;
@@ -904,19 +908,23 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                             }
                             else game.xjb_create.alert('今日你所捐的，于你亦是有益的，数学会让你见识它的伟大力量。');
                         } else if (e.target.className === "withdraw_xjb_touzi") {
-                            if (lib.config[type] <= 100) game.xjb_create.alert(`你当前投资额为:${lib.config[type]}点，需达到100点我们才会给予反馈服务哦！`)
+                            if (lib.config[type] < 100) game.xjb_create.alert(`你当前投资额为:${lib.config[type]}点，需达到100点我们才会给予反馈服务哦！`)
+                            else if (lib.config[type] < 100 + backNum) {
+                                game.xjb_create.alert(`你当前投资额为:${lib.config[type]}点，从100点起，每${backNum}点投资我们反1点魂币，还差一点点哟！`)
+                            }
                             else {
-                                const max = parseInt((lib.config[type] - 100) / 7)
+                                const max = parseInt((lib.config[type] - 100) / backNum)
+                                console.log(max)
                                 game.xjb_create.range(`你当前投资额为:${lib.config[type]}点，可提取${max} 个魂币`,
                                     0, max, 0,
                                     function () {
-                                        lib.config[type] -= this.result * 7;
+                                        lib.config[type] -= this.result * backNum;
                                         game.saveConfig(type, lib.config[type]);
                                         game.xjb_getHunbi(this.result, 1, true, true, '投资反馈');
                                         that.querySelectorAll('p')[1].innerHTML = that.acc(lib.config[type]);
                                     },
                                     function () {
-                                        this.prompt.innerHTML = `你当前投资额为:${lib.config[type]}点，可提取${parseInt((lib.config[type] - 100) / 7)} 个魂币`
+                                        this.prompt.innerHTML = `你当前投资额为:${lib.config[type]}点，可提取${parseInt((lib.config[type] - 100) / backNum)} 个魂币`
                                     }
                                 )
                             }
@@ -941,110 +949,6 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                 if (lib.config.xjb_chupingjisha === 2 || lib.config.xjb_systemEnergy < 0) {
                     ui.xjb_chupingjisha && ui.xjb_chupingjisha.remove && ui.xjb_chupingjisha.remove();
                 };
-            }
-        }
-    }
-    lib.skill.xjb_12 = {
-        sub: function () {
-            //养成类
-            game.xjb_newCharacterGetTitle = function (num = 1) {
-                let list2 = new Array()
-                for (let b = 0; b < num; b++) {
-                    list2.push(Math.round(Math.random() * (lib.config.xjb_title.length - 1)))
-                }
-                let str = '恭喜' + get.translation('xjb_newCharacter') + '解锁了称号:<br>'
-                for (let c = 0; c < list2.length; c++) {
-                    str += lib.config.xjb_title[list2[c]][0]
-                    if (!lib.config.xjb_title[list2[c]][1].includes('xjb_newCharacter')) {
-                        game.xjb_getHunbi(50, void 0, void 0, void 0, '抽奖获取称号')
-                        lib.config.xjb_title[list2[c]][1].push('xjb_newCharacter')
-                        game.saveConfig('xjb_title', lib.config.xjb_title);
-                    }
-                }
-                game.xjb_create.alert(str)
-                game.xjb_systemEnergyChange(-5 * num)
-            }
-            game.xjb_newCharacterChangeName = function (num = 1, free) {
-                game.xjb_create.prompt("请输入你更改后的姓名:", lib.config.xjb_newcharacter.name2, function () {
-                    if (this.result !== "") {
-                        lib.config.xjb_newcharacter.name2 = this.result
-                        game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                        game.xjb_create.alert("你已更名为:<br>" + lib.config.xjb_newcharacter.name2 + "。<br>重启即更新数据");
-                        game.xjb_systemEnergyChange(-5)
-                    }
-                }).inputOneLine()
-            }
-            game.xjb_newCharacterChangeSex = function (num = 1, free) {
-                const informationList = {
-                    object: "changeSexCard",
-                    num: num,
-                    free: free,
-                    list: ['male', 'female', 'none', 'unknown', 'double'],
-                    previousPrice: 5,
-                    objectName: '性转卡',
-                    changeFunc: function (newAttribute) {
-                        lib.config.xjb_newcharacter.sex = newAttribute
-                        game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                        game.xjb_create.alert("已更改为:" + get.xjb_translation(lib.config.xjb_newcharacter.sex) + "，<br>重启即更新数据");
-                    }
-                }
-                game.xjb_create.UABobjectsToChange(informationList)
-            }
-            game.xjb_newCharacterChangeGroup = function (num = 1, free) {
-                const informationList = {
-                    object: "changeGroupCard",
-                    num: num,
-                    free: free,
-                    list: ["key", "western"].concat(lib.group),
-                    previousPrice: 4,
-                    objectName: '择木卡',
-                    changeFunc: function (newAttribute) {
-                        lib.config.xjb_newcharacter.group = newAttribute
-                        game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                        game.xjb_create.alert("已更改为:" + get.xjb_translation(lib.config.xjb_newcharacter.group) + "，<br>重启即更新数据");
-                    }
-                }
-                game.xjb_create.UABobjectsToChange(informationList)
-            }
-            game.xjb_newCharacterAddJnc = function (num = 1) {
-                lib.config.xjb_jnc += num
-                game.saveConfig('xjb_jnc', lib.config.xjb_jnc);
-                game.xjb_create.alert('你当前技能槽数量为:<br>' + lib.config.xjb_jnc)
-                game.xjb_systemEnergyChange(-50 * num)
-            }
-            game.xjb_newCharacterAddHp = function (num = 1, free) {
-                var hp = lib.config.xjb_newcharacter.hp
-                var countCost = function () {
-                    let count = 0, i = 0
-                    while (i < num) {
-                        count += (hp + i) * (hp + i) * 2
-                        i++
-                    }
-                    return count
-                }
-                function addHp(func) {
-                    lib.config.xjb_newcharacter.hp += num
-                    game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                    var hp_str = '你现在体力值为:<br>' + lib.config.xjb_newcharacter.hp + '<br>重启即更新数据'
-                    game.xjb_create.alert(hp_str, func)
-                    game.xjb_systemEnergyChange(-countCost())
-                }
-                if (free === false) {
-                    game.cost_xjb_cost("B", countCost())
-                    game.xjb_systemEnergyChange(-countCost() - 100)
-                }
-                addHp()
-            }
-            game.xjb_newCharacterGetSkill = function (skillName) {
-                if (Object.keys(lib.skill).includes(skillName)) {
-                    if (game.xjb_condition(3, 1)) { }
-                    if (game.xjb_condition(3, 1)) {
-                        game.xjb_create.alert(`你获得了技能${get.translation(skillName)} `)
-                        lib.config.xjb_newcharacter.skill.add(skillName)
-                        game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                        game.xjb_systemEnergyChange(-20)
-                    }
-                }
             }
         }
     }

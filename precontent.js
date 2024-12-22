@@ -602,6 +602,10 @@ function initialize() {
 					const eventList3 = [
 						[["useSkill", true, "fangzhu"], '放逐'],
 						[["useSkill", true, "xinfu_guolun"], '过论'],
+						[["sbliegong", true, { name: "sha" }], "烈弓"],
+						[["repojun", true, { name: "sha" }], "破军"],
+						[["retieji", true, { name: "sha" }], "铁骑"],
+						[["zhuandui", true, { name: "sha" }], "专对"],
 					]
 					const { bool, links } = await player.chooseButton([
 						'请选择一种连点方式',
@@ -609,14 +613,59 @@ function initialize() {
 						[eventList2, 'tdnodes'],
 						[eventList3, 'tdnodes'],
 					]).forResult();
+					const uniqueEventPre = {
+						"zhuandui": (player) => {
+							player.addTempSkill(["zhuandui", "tianbian"], { player: "xjb-chupingjishaAfter" })
+							return "useCard";
+						},
+						"repojun": (player) => {
+							const card = game.createCard("guding", "spade", 1);
+							player.chooseUseTarget(card);
+							card.storage.cpjs = true;
+							player.addTempSkill(["repojun"], { player: "xjb-chupingjishaAfter" });
+							player.when("xjb-chupingjishaAfter").then(() => {
+								const guding = player.getCards("e", item => item.name == "guding" && item.storage.cpjs === true);
+								if (guding) player.discard(guding, ui.ordering);
+								guding.remove();
+							})
+							return "useCard";
+						},
+						"retieji": (player) => {
+							player.addTempSkill(["retieji"], { player: "xjb-chupingjishaAfter" })
+							return "useCard";
+						},
+						"sbliegong": (player) => {
+							player.addTempSkill(["sbliegong"], { player: "xjb-chupingjishaAfter" })
+							return "useCard";
+						},
+					}
+					const uniqueEventEveryTurn = {
+						"repojun": (player, target) => {
+							return player.chooseUseTarget({ name: "jiu" }, true, false);
+						},
+						"sbliegong": (player) => {
+							player.markAuto("sbliegong", lib.suits.slice(0));
+							player.storage.sbliegong.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
+							player.addTip("sbliegong", get.translation("sbliegong") + player.getStorage("sbliegong").reduce((str, suit) => str + get.translation(suit), ""));
+							return;
+						},
+					}
 					if (bool) {
-						const toDo = links[0].shift();
+						const wayName = links[0].shift();
 						const toTarget = links[0].shift();
+						let toDo = wayName;
+						if (wayName in uniqueEventPre) {
+							toDo = uniqueEventPre[wayName](player);
+						}
 						while (true) {
-
-							const { result } = await player.chooseTarget();
+							const chooseEvent = player.chooseTarget();
+							if (!get.xjb_haveEnergy()) chooseEvent.set("filterTarget", () => false)
+							const { result } = await chooseEvent;
 							if (!result.bool) break;
 							for (const target of result.targets) {
+								if (wayName in uniqueEventEveryTurn) {
+									await uniqueEventEveryTurn[wayName](player, target)
+								}
 								if (toTarget) await player[toDo](...links[0], target, [target])
 								else await target[toDo](...links[0]);
 								await game.xjb_systemEnergyChange(-5)
@@ -633,7 +682,7 @@ function initialize() {
 					};
 					game.resume();
 				}
-			}
+			},
 		}
 	}
 }
