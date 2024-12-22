@@ -449,7 +449,13 @@ lib.skill.xjb_3 = {
             }
         }
     },
+    method: function () {
+        get.xjb_skillDescription = (skill) => {
+            return `【${get.translation(skill)}】(${skill})${lib.translate[skill + "_info"]}`
+        }
+    },
     uniqueSkill: function () {
+
         //游戏初始化
         lib.skill._xjb_tianxing = {
             trigger: {
@@ -470,7 +476,7 @@ lib.skill.xjb_3 = {
                 game.players.forEach(function (current) {
                     //灵力设置
                     player.storage.xjb_daomoMax = 1
-                   
+
                     current.storage.xjb_card_allow = {}
                     current.noskill = {}
                     current.noskill_translate = {}
@@ -516,18 +522,5 @@ lib.skill.xjb_3 = {
             translate: '强制空白',
             description: '锁定技,你的所有技能被封印'
         })
-        //受到伤害无视护甲
-        lib.skill["xjb_pojia"] = {
-            trigger: {
-                player: "damageEnd"
-            },
-            direct: true,
-            content: function () {
-                player.removeSkill(event.name)
-            },
-            ai: {
-                nohujia: true,
-            }
-        }
     },
 }

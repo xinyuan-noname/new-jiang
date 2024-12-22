@@ -62,7 +62,7 @@ export function XJB_CONTENT(config, pack) {
     lib.arenaReady.push(function () {
         const loadFinal = () => {
             if (!lib.skill.xjb_final) {
-                const timer = setTimeout(loadFinal, 100);
+                setTimeout(loadFinal, 100);
                 return;
             };
             for (let k in lib.skill.xjb_final) {
@@ -550,57 +550,6 @@ export function XJB_CONTENT(config, pack) {
                     if (lib.config.xjb_systemEnergy < 0) {
                         return game.xjb_NoEnergy()
                     }
-                    function changeSkill(abcde) {
-                        var obj = {}
-                        obj.changeSkill1 = function () {
-                            let num = lib.config.xjb_jnc;
-                            let max = 0;
-                            function apSum(first, endIndex, difference) {
-                                const last = first + (endIndex - 1) * difference
-                                return (first + last) * endIndex / 2
-                            }
-                            for (let add = 0; add < 15; add++) {
-                                let first = game.xjb_goods.jnc.price
-                                let cost = apSum(first, add, 5)
-                                if (lib.config.xjb_hunbi < cost) break;
-                                max = add;
-                            }
-                            game.xjb_create.range('你当前有' + num + '个技能槽，开启0个技能槽,共需0个魂币', 0, max, 0, function () {
-                                let add = this.result
-                                let first = game.xjb_goods.jnc.price
-                                let cost = apSum(first, add, 5)
-                                if (lib.config.xjb_hunbi >= cost) {
-                                    game.cost_xjb_cost("B", cost)
-                                    game.xjb_newCharacterAddJnc(add)
-                                }
-                            }, function () {
-                                let add = this.value;
-                                let first = game.xjb_goods.jnc.price
-                                let cost = apSum(first, add, 5)
-                                this.prompt.innerHTML = '你当前有' + num + '个技能槽，开启' + add + '个技能槽,共需' + cost + '个魂币'
-                            })
-                        }
-                        obj.changeSkill2 = function () {
-                            game.xjb_raiseCharRemoveUpdateSkillsDia();
-                        }
-                        obj.changeSkill3 = function () {
-                            game.xjb_addHunSkillsDia();
-                        }
-                        if (!lib.config.xjb_jnc) lib.config.xjb_jnc = 0
-                        obj["changeSkill" + abcde]()
-                    }
-                    const skins = async function () {
-                        if (!lib.config.xjb_newcharacter.skin) lib.config.xjb_newcharacter.skin = []
-                        const { fileData, result, bool } = await game.xjb_create.promise.readImg("请输入你的皮肤名，并选定图片，待确定出现后按确定即可。");
-                        if (bool === false) return;
-                        if (lib.config.xjb_newcharacter.skin.includes(result)) {
-                            const { bool } = await game.xjb_create.promise.confirm("你已有该同名的皮肤，是否覆盖？");
-                            if (!bool) return skins()
-                        }
-                        await game.xjb_create.promise.download(fileData, lib.config.xjb_fileURL + "skin/image/xjb_newCharacter/" + result);
-                        lib.config.xjb_newcharacter.skin.add(result);
-                        game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter);
-                    }
                     switch (layout) {
                         case 'name2': game.xjb_gainJP("免费更改姓名"); break;
                         case 'sex': {
@@ -644,15 +593,8 @@ export function XJB_CONTENT(config, pack) {
                                 let cost = getCost(add);
                                 this.prompt.innerHTML = '你已有' + hp + '点体力。增加' + add + '点体力需要' + cost + '个魂币。';
                             });
-                        }
-                            break;
-                        case 'intro':
-                            game.xjb_create.prompt('请输入该角色的背景信息', lib.config.xjb_newcharacter.intro, function () {
-                                lib.config.xjb_newcharacter.intro = this.result;
-                                game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter);
-                                game.xjb_systemEnergyChange(-1);
-                            }).higher();
-                            break;
+                        };break;
+                        case 'intro': game.xjb_setInfoDia(); break;
                         case 'unique':
                             game.xjb_create.configList({
                                 xjb_newCharacter_isZhu: "设置为常备主公",
@@ -660,29 +602,41 @@ export function XJB_CONTENT(config, pack) {
                                 xjb_newCharacter_addGuoZhan: "加入国战模式",
                             });
                             break;
-                        case 'skill1':changeSkill(1);break;
-                        case 'skill2':changeSkill(2);break;
-                        case 'skill3':changeSkill(3);break;
-                        case 'skin1':skins();break;
-                        case 'skin3': (async () => {
-                            const { result, bool, rmImgs } = await game.xjb_create.promise.chooseImage("", lib.xjb_raiseCharSkinFolder, lib.config.xjb_newcharacter.skin);
-                            if (bool) {
-                                game.xjb_raiseCharChangeSkin(result);
-                                await game.xjb_create.promise.alert('更改皮肤为' + result + '，重启即生效');
+                        case 'skill1': {
+                            let num = lib.config.xjb_jnc;
+                            let max = 0;
+                            function apSum(first, endIndex, difference) {
+                                const last = first + (endIndex - 1) * difference
+                                return (first + last) * endIndex / 2
                             }
-                            if (rmImgs && rmImgs.length) {
-                                rmImgs.forEach(file => game.removeFile('extension/新将包/skin/image/xjb_newCharacter/' + file));
+                            for (let add = 0; add < 15; add++) {
+                                let first = game.xjb_goods.jnc.price
+                                let cost = apSum(first, add, 5)
+                                if (lib.config.xjb_hunbi < cost) break;
+                                max = add;
                             }
-                        })(); break;
-                        case 'skin4': {
-                            lib.config.xjb_newcharacter.selectedSkin = "ext:新将包/xin_newCharacter.jpg";
-                            game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter);
-                            game.xjb_create.alert('已恢复至原皮，重启即生效');
-                            if (lib.character.xjb_newCharacter) {
-                                lib.characterPack["xjb_soul"].xjb_newCharacter = lib.character.xjb_newCharacter[4] = [lib.config.xjb_newcharacter.selectedSkin];
-                            }
+                            game.xjb_create.range('你当前有' + num + '个技能槽，开启0个技能槽,共需0个魂币', 0, max, 0, function () {
+                                let add = this.result
+                                let first = game.xjb_goods.jnc.price
+                                let cost = apSum(first, add, 5)
+                                if (lib.config.xjb_hunbi >= cost) {
+                                    game.cost_xjb_cost("B", cost)
+                                    game.xjb_newCharacterAddJnc(add)
+                                }
+                            }, function () {
+                                let add = this.value;
+                                let first = game.xjb_goods.jnc.price
+                                let cost = apSum(first, add, 5)
+                                this.prompt.innerHTML = '你当前有' + num + '个技能槽，开启' + add + '个技能槽,共需' + cost + '个魂币'
+                            })
+                            if (!lib.config.xjb_jnc) lib.config.xjb_jnc = 0;
                         } break;
-                        default:break;
+                        case 'skill2': game.xjb_raiseCharRemoveUpdateSkillsDia(); break;
+                        case 'skill3': game.xjb_addHunSkillsDia(); break;
+                        case 'skin1': game.xjb_importSkinDia(); break;
+                        case 'skin3': game.xjb_changePreSkinDia(); break;
+                        case 'skin4': game.xjb_changeToInitialSkinDia(); break;
+                        default: break;
                     }
                 }
             }

@@ -313,7 +313,7 @@ function way() {
 }
 function importFile() {
 	let count = 0;
-	const files = ["event", "lingli", "card","title",
+	const files = ["event", "lingli", "card", "title",
 		"project", "rpg", "character", "economy", "raise"];
 	function loadFiles(fileName) {
 		let script = lib.init.js(lib.xjb_src + "js", fileName, () => {
@@ -613,7 +613,7 @@ function initialize() {
 						const toDo = links[0].shift();
 						const toTarget = links[0].shift();
 						while (true) {
-							
+
 							const { result } = await player.chooseTarget();
 							if (!result.bool) break;
 							for (const target of result.targets) {
