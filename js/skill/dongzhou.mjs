@@ -16,6 +16,249 @@ function SkillCreater(name, skill) {
 	return dongzhouSkill[name];
 };
 
+
+//急子&寿
+const xjb_tongzhou = SkillCreater(
+	"xjb_tongzhou", {
+	translate: "同舟",
+	description: "准备阶段和结束阶段,你可以摸两张牌",
+	trigger: {
+		player: ["phaseZhunbeiBegin", "phaseJieshuBegin"],
+	},
+	content: async function (event, trigger, player) {
+		player.draw(2);
+	},
+	ai: {
+		threaten: 2,
+	}
+})
+const xjb_fuwei = SkillCreater(
+	"xjb_fuwei", {
+	translate: "赴危",
+	description: "限定技，当你受到致命伤害时，你可以防止此伤害，然后将同舟的触发时机改为准备阶段。",
+	trigger: {
+		player: ["damageBefore"],
+	},
+	limited: true,
+	filter: function (event, player, triggername) {
+		return event.num >= player.hp;
+	},
+	content: async function (event, trigger, player) {
+		player.awakenSkill("xjb_fuwei");
+		trigger.cancel()
+		lib.skill.xjb_tongzhou.trigger.player = "phaseZhunbeiBegin"
+		player.removeSkillTrigger("xjb_tongzhou");
+		player.addSkillTrigger("xjb_tongzhou");
+	},
+})
+const xjb_taihuo = SkillCreater(
+	"xjb_taihuo", {
+	translate: "台祸",
+	description: "其他角色的出牌阶段限一次,其可以弃置X张牌,对你使用一张刺杀(X为你的体力值)",
+	global: "xjb_taihuo_cisha",
+	subSkill: {
+		cisha: {
+			usable: 1,
+			enable: "phaseUse",
+			check: function (card) {
+				return 6 - get.value(card);
+			},
+			filter: function (event, player, triggername) {
+				return !player.hasSkill("xjb_taihuo", null, false, false);
+			},
+			filterTarget: function (card, player, target) {
+				return target.hasSkill("xjb_taihuo", null, false, false) && ui.selected.cards.length === target.hp;
+			},
+			filterCard: true,
+			selectCard: [1, Infinity],
+			selectTarget: 1,
+			content: function () {
+				"step 0"
+				player.useCard({ name: "sha", nature: "stab" }, target)
+			},
+			ai: {
+				order: 2,
+				result: {
+					target: function (player, target, card) {
+						return -2;
+					}
+				}
+			}
+		}
+	}
+})
+
+//诸儿
+const xjb_xionghu = SkillCreater(
+	"xjb_xionghu", {
+	translate: "雄狐",
+	description: "出牌阶段限一次，若你已受伤，你可以令一名女性角色弃置两张牌，你与其各回复一点体力",
+	enable: "phaseUse",
+	usable: 1,
+	filterTarget: (card, player, target) => {
+		return target.hasSex("female") && target.countDiscardableCards(target, "he") >= 2;
+	},
+	filter: (event, player) => {
+		if (player.isHealthy()) return false
+		return game.filterPlayer(curr => get.info("xjb_xionghu").filterTarget(void 0, player, curr)).length > 0;
+	},
+	content: async function (event, trigger, player) {
+		await event.target.chooseToDiscard(2, "he", true);
+		await player.recover();
+		await event.target.recover();
+	}
+})
+const xjb_yanshi = SkillCreater(
+	"xjb_yanshi", {
+	translate: "宴弑",
+	description: "当一名女性角色回复一点体力时，你可以失去一点体力，对其距离为1一名角色使用一张刺【杀】。",
+	trigger: {
+		global: "recoverAfter"
+	},
+	filter: (event, player) => {
+		return event.player.hasSex("female") && event.num != 0
+	},
+	getIndex: (event, player) => {
+		return event.num;
+	},
+	cost: async function (event, trigger, player) {
+		event.result = await player.chooseTarget("是否失去一点体力，然后对选择的角色使用一张刺【杀】？")
+			.set("filterTarget", (_, player, target) => {
+				const { sister } = _status.event;
+				return get.distance(sister, target) === 1;
+			}).set("sister", trigger.player).forResult();
+	},
+	content: async function (event, trigger, player) {
+		await player.loseHp();
+		await player.useCard({ name: "sha", nature: "stab" }, event.targets[0], false);
+	}
+})
+const xjb_xuechou = SkillCreater(
+	"xjb_xuechou", {
+	translate: "雪仇",
+	description: "限定技，出牌阶段，你可以选择一名上下位均阵亡的其他角色，你依次将手牌视为【决斗】对其使用。此过程中，你对其造成伤害后，你获得其一张牌；你受到伤害后，你摸一张牌。",
+	limited: true,
+	enable: "phaseUse",
+	skillAnimation: true,
+	animationColor: "fire",
+	filterTarget: (card, player, target) => {
+		return target.previousSeat.isDead() && target.nextSeat.isDead() && target != player;
+	},
+	filter: (event, player) => {
+		if (!player.countCards("h")) return false;
+		return game.hasPlayer(curr => get.info("xjb_xuechou").filterTarget(void 0, player, curr))
+	},
+	content: async function (event, trigger, player) {
+		player.awakenSkill(event.name)
+		player.addTempSkill(event.name + "_gain", { player: event.name + "After" })
+		player.addTempSkill(event.name + "_draw", { player: event.name + "After" })
+		while (event.target.isAlive() && player.countCards("h")) {
+			const { result: { bool } } = await player.chooseUseTarget(event.target, { name: "juedou" }, [player.getCards("h").at(0)], false, "九世之仇，今日报之！")
+				.set("prompt2", "将第一张手牌视为【决斗】对" + get.translation(event.target) + "使用");
+			if (!bool) return;
+		}
+	},
+	subSkill: {
+		draw: {
+			trigger: {
+				player: "damageEnd"
+			},
+			forced: true,
+			content: function () {
+				player.draw()
+			}
+		},
+		gain: {
+			trigger: {
+				source: 'damageSource'
+			},
+			forced: true,
+			filter: (event, player) => {
+				return event.player.countGainableCards(player, "he")
+			},
+			content: function () {
+				console.log(trigger)
+				player.gainPlayerCard(trigger.player, "he");
+			}
+		}
+	}
+})
+const xjb_guaqi = SkillCreater(
+	"xjb_guaqi", {
+	global: "xjb_guaqi_shubian",
+	translate: "瓜期",
+	description: "出牌阶段限一次，你可以将一张牌交给一名其他角色，称为“瓜”。手牌中拥有瓜的角色：1.回合开始时，失去一点体力；2.回合内使用牌无次数限制；3.其本轮获得的牌不计入手牌上限；4.不能使用瓜。",
+	enable: "phaseUse",
+	position:"he",
+	usable: 1,
+	filterCard: true,
+	lose: false,
+	discard: false,
+	delay: false,
+	filterTarget: lib.filter.notMe,
+	content: async function (event, trigger, player) {
+		await player.give(event.cards, event.targets[0], true);
+		event.targets[0].addGaintag(event.cards, "xjb_guaqi_gua");
+	},
+	subSkill: {
+		shubian: {
+			trigger: {
+				player: "phaseBegin"
+			},
+			filter: (event, player) => {
+				return player.getCards("h").some(card => card.hasGaintag("xjb_guaqi_gua"));
+			},
+			forced: true,
+			content: async function (event, trigger, player) {
+				player.loseHp();
+			},
+			mod: {
+				cardUsable: function (card, player, num) {
+					if (player.getCards("h").every(card => !card.hasGaintag("xjb_guaqi_gua"))) return;
+					return Infinity;
+				},
+				ignoredHandcard: function (card, player) {
+					if (player.getCards("h").every(card => !card.hasGaintag("xjb_guaqi_gua"))) return;
+					if (player.getRoundHistory("gain", lib.filter.all).map(evt => evt.cards).flat().includes(card)) return true;
+				},
+				cardDiscardable: function (card, player, name) {
+					if (player.getCards("h").every(card => !card.hasGaintag("xjb_guaqi_gua"))) return;
+					if (name == "phaseDiscard" && player.getRoundHistory("gain", lib.filter.all).map(evt => evt.cards).flat().includes(card)) return false;
+				},
+				cardEnabled2: function (card, player) {
+					if (card.hasGaintag("xjb_guaqi_gua") && get.position(card) === "h") return false;
+				},
+			},
+		}
+	}
+})
+const xjb_daigua = SkillCreater(
+	"xjb_daigua", {
+	translate: "代瓜",
+	description: "每轮开始时，你可以获得场上所有瓜。",
+	trigger: {
+		global: "roundStart"
+	},
+	filter: (event, player) => {
+		return game.players.some(curr => curr.countCards("h", card => card.hasGaintag("xjb_guaqi_gua")))
+	},
+	content: async function (event, trigger, player) {
+		const record = [], allCards = [];
+		for (const target of game.players) {
+			const cards = target.getCards("he", card => card.hasGaintag("xjb_guaqi_gua"))
+			if (cards.length) {
+				record.push([target, cards]);
+				allCards.push(...cards);
+			}
+		}
+		await game.loseAsync({
+			lose_list: record
+		}).setContent("chooseToCompareLose");
+		await player.gain(allCards, "gain2");
+	}
+})
+
+//管仲
 const xjb_zhangwei = SkillCreater(
 	"xjb_zhangwei", {
 	translate: '张维',
@@ -137,77 +380,7 @@ const xjb_cangshi = SkillCreater(
 	}
 })
 
-const xjb_tongzhou = SkillCreater(
-	"xjb_tongzhou", {
-	translate: "同舟",
-	description: "准备阶段和结束阶段,你可以摸两张牌",
-	trigger: {
-		player: ["phaseZhunbeiBegin", "phaseJieshuBegin"],
-	},
-	content: async function (event, trigger, player) {
-		player.draw(2);
-	},
-	ai: {
-		threaten: 2,
-	}
-})
-const xjb_fuwei = SkillCreater(
-	"xjb_fuwei", {
-	translate: "赴危",
-	description: "限定技，当你受到致命伤害时，你可以防止此伤害，然后将同舟的触发时机改为准备阶段。",
-	trigger: {
-		player: ["damageBefore"],
-	},
-	limited: true,
-	filter: function (event, player, triggername) {
-		return event.num >= player.hp;
-	},
-	content: async function (event, trigger, player) {
-		player.awakenSkill("xjb_fuwei");
-		trigger.cancel()
-		lib.skill.xjb_tongzhou.trigger.player = "phaseZhunbeiBegin"
-		player.removeSkillTrigger("xjb_tongzhou");
-		player.addSkillTrigger("xjb_tongzhou");
-	},
-})
-const xjb_taihuo = SkillCreater(
-	"xjb_taihuo", {
-	translate: "台祸",
-	description: "其他角色的出牌阶段限一次,其可以弃置X张牌,对你使用一张刺杀(X为你的体力值)",
-	global: "xjb_taihuo_cisha",
-	subSkill: {
-		cisha: {
-			usable: 1,
-			enable: "phaseUse",
-			check: function (card) {
-				return 6 - get.value(card);
-			},
-			filter: function (event, player, triggername) {
-				return !player.hasSkill("xjb_taihuo", null, false, false);
-			},
-			filterTarget: function (card, player, target) {
-				return target.hasSkill("xjb_taihuo", null, false, false) && ui.selected.cards.length === target.hp;
-			},
-			filterCard: true,
-			selectCard: [1, Infinity],
-			selectTarget: 1,
-			content: function () {
-				"step 0"
-				player.useCard({ name: "sha", nature: "stab" }, target)
-			},
-			ai: {
-				order: 2,
-				result: {
-					target: function (player, target, card) {
-						return -2;
-					}
-				}
-			}
-		}
-	}
-})
-
-
+//嬴政
 const xjb_zulong = SkillCreater(
 	"xjb_zulong", {
 	translate: "祖龙",
