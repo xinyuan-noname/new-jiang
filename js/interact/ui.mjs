@@ -67,6 +67,9 @@ ui.xjb_addElement = function ({ target, tag, innerHTML,
     };
     return ele;
 }
+ui.xjb_setStyle = (node, key, value) => {
+    node.style[key] = value;
+}
 ui.xjb_giveStyle = function (target, styleList) {
     if (typeof styleList === "object" && styleList != null) {
         for (let k in styleList) {

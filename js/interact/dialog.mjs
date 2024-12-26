@@ -68,14 +68,14 @@ game.xjb_createDialogEvent = (dialog, ...subs) => {
 ui.create.xjb_dialogBase = function () {
     if (game.xjb_create.baned) return null;
     //这个是对话框
-    var div = element('div')
+    const div = element('div')
         .addClass("xjb_dialogBase")
         .addClass("xjbToCenter")
         .father(ui.window)
         .exit();
     //这里写幕布
-    var back = ui.create.xjb_curtain()
-    var length = element("div")
+    const back = ui.create.xjb_curtain()
+    const buttonContainer = element("div")
         .style({
             "z-index": "8",
             width: "100%",
@@ -86,13 +86,29 @@ ui.create.xjb_dialogBase = function () {
         .addClass("xjbToCenter")
         .father(back)
         .exit();
-    var buttons = [];
-    for (var i = 0; i < arguments.length; i++) {
-        var button = ui.create.xjb_button(length, arguments[i], [div, back])
+    const buttons = [];
+    for (const arg of arguments) {
+        const button = ui.create.xjb_button(buttonContainer, arg, [div, back])
         buttons.push(button)
     }
     div.back = back
     div.buttons = buttons;
+    //
+    div.appeadButton = function (str, addButtons = true, closable = true) {
+        const button = ui.create.xjb_button(buttonContainer, str);
+        if (closable) button.removeEle = [div, div.back]
+        if (addButtons) buttons.push(button);
+        return button;
+    }
+    div.replaceButton = function (node, index = 0, closable = true) {
+        if (!this.buttons[index]) return;
+        this.buttons[index].parentNode.insertBefore(node, this.buttons[index]);
+        this.buttons[index].remove();
+        this.buttons.splice(0, 1, node);
+        node.removeEle = [];
+        if (closable) node.removeEle = [this, this.back]
+        delete node.result;
+    }
     //
     div.addElement = function (tag, innerHTML, style) {
         let ele = ui.xjb_addElement({
@@ -132,7 +148,6 @@ ui.create.xjb_dialogBase = function () {
         ele.addElement = this.addElement;
         return ele
     }
-    //
     div.higher = function () {
         ui.xjb_giveStyle(div, {
             height: "308.4px",
@@ -175,6 +190,11 @@ ui.create.xjb_dialogBase = function () {
         ui.xjb_showElement(this.back)
         return this;
     }
+    div.close = function () {
+        this.remove();
+        this.back.remove()
+        return this;
+    }
     div.insertDialog = function (dialog) {
         if (!dialog || !dialog.buttons || !Array.isArray(dialog.buttons)) return this;
         dialog.hide();
@@ -199,24 +219,27 @@ ui.create.xjb_dialogBase = function () {
     return div
 };
 //创建按钮
-ui.create.xjb_button = function (length, str, remove, removeCallBack, removeSelf) {
+ui.create.xjb_button = function (length, str, remove = [], removeCallBack, removeSelf) {
     if (remove instanceof HTMLElement) remove = [remove];
     const button = element("div")
         .addClass("xjb_dialogButton")
         .innerHTML(str)
         .father(length)
+        .setKey("removeEle", remove)
         .style({
             margin: "auto 15px",
         })
         .exit();
-    if (remove && remove.length) {
+    if (removeSelf) {
+        remove.push(button);
+    }
+    if (remove.length) {
         if (removeCallBack && typeof removeCallBack === "function") button.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', removeCallBack)
         button.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function (e) {
             e.stopPropagation();
-            for (const item of remove) {
+            for (const item of this.removeEle) {
                 item.remove();
             }
-            if (removeSelf) this.remove();
         })
     }
     button.activate = function () {
@@ -589,6 +612,109 @@ game.xjb_create.file = function (str, type, func1, func2, needBuffer) {
     }
     dialog.setReconstruct(game.xjb_create.file, ...arguments)
     return dialog
+}
+game.xjb_create.dir = function (str = '', path = '', func, config = {}, button) {
+    let { showFile = true, showDir = true, single = true } = config;
+    const getOrder = (value) => {
+        if (value.startsWith("🖼️")) return 1;
+        if (value.startsWith("🎵")) return 2;
+        if (value.startsWith("📽️")) return 3;
+        if (value.startsWith("📄")) return 4;
+    }
+    const dialog = game.xjb_create.search(str, func);
+    const ul = dialog.ul;
+    const textarea = dialog.textarea;
+    const nextButton = dialog.appeadButton("上一页", false, false);
+    const chosen = [];
+    dialog.chosen = chosen;
+    ui.xjb_setStyle(ul, 'height', '250px');
+    if (button) {
+        dialog.replaceButton(button);
+    }
+    dialog.buttons[0].result = [];
+    new Promise((res, rej) => {
+        game.getFileList(path, (folders, files) => {
+            res([folders, files]);
+        }, rej)
+    }).then(([dirNames, fileNames]) => {
+        let dirTexts = dirNames, fileTexts = fileNames;
+        if (showDir) {
+            dirTexts = dirNames.map((dirName) => {
+                return `\u{1F4C1}${dirName}`
+            })
+            dialog.appendLi((_, value, index) => {
+                const li = document.createElement("li");
+                li.innerHTML = value;
+                li.isDir = true;
+                li.dirName = dirNames[index];
+                li.itemName = dirNames[index];
+                return li;
+            }, dirTexts)
+        }
+        if (showFile) {
+            fileTexts = fileNames.map(fileName => {
+                if (["jpg", "png", "gif", "ico"].some(etn => fileName.endsWith(etn))) return `🖼️${fileName}`
+                else if (["mp3", "wav", "flac", "m4a", "ogg"].some(etn => fileName.endsWith(etn))) return `🎵${fileName}`
+                else if (["mp4", 'mov'].some(etn => fileName.endsWith(etn))) return `📽️${fileName}`
+                else return `📄${fileName}`
+            }).sort((a, b) => {
+                const orderA = getOrder(a)
+                const orderB = getOrder(b)
+                if (orderA !== orderB) return orderA - orderB;
+                else {
+                    const extA = a.split('.').pop().toLowerCase();
+                    const extB = b.split('.').pop().toLowerCase();
+                    if (extA === extB) {
+                        return a.toLowerCase().localeCompare(b.toLowerCase());
+                    }
+                    return extA.localeCompare(extB);
+                };
+            })
+            dialog.appendLi((_, value, index) => {
+                const li = document.createElement("li");
+                li.innerHTML = value;
+                li.isFile = true;
+                li.fileName = fileNames[index];
+                li.itemName = fileNames[index];
+                return li;
+            }, fileTexts)
+        }
+    });
+    ul.addEventListener(DEFAULT_EVENT, (e) => {
+        if (textarea.index.includes(e.target)) e.target.classList.toggle("xjb-chosen");
+        if (e.target.classList.contains("xjb-chosen")) {
+            if (single) {
+                chosen.forEach(node => {
+                    node.classList.remove("xjb-chosen");
+                    chosen.remove(node);
+                    dialog.buttons[0].result.remove(e.target.itemName)
+                })
+            }
+            chosen.add(e.target);
+            dialog.buttons[0].result.add(e.target.itemName)
+        }
+        else {
+            chosen.remove(e.target);
+            dialog.buttons[0].result.remove(e.target.itemName)
+        }
+    })
+    ul.addEventListener("dblclick", (e) => {
+        if (!e.target.isDir) return;
+        dialog.close();
+        if (!path.endsWith("/")) path += "/"
+        game.xjb_create.dir(str, path + e.target.dirName + '/', func, config, dialog.buttons[0])
+    })
+    nextButton.addEventListener(DEFAULT_EVENT, function (e) {
+        if (path === '') {
+            game.xjb_create.alert("暂不支持访问该上级文件夹！").insertDialog(dialog);
+            return;
+        }
+        dialog.close();
+        if (path.endsWith('/')) path = path.slice(0, -1);
+        path = path.split("/").slice(0, -1).join("/");
+        game.xjb_create.dir(str, path, func, config, dialog.buttons[0]);
+    })
+    return dialog;
 }
 //图片选择型对话框
 game.xjb_create.button = function (str1 = "未选择", str2, arr2, func, func2, removeCallBack) {
@@ -1165,6 +1291,9 @@ game.xjb_create.promise = {
     },
     chooseAnswer: (title, choices, single) => {
         return game.xjb_createDialogEvent(game.xjb_create.chooseAnswer(title, choices, single))
+    },
+    chooseFile: (title, path, config) => {
+        return game.xjb_createDialogEvent(game.xjb_create.dir(title, path, void 0, config));
     },
     chooseImage: (title = "", folder, images, rmCallBack) => {
         const dialog = game.xjb_create.button(void 0, folder, images, void 0, void 0, rmCallBack);

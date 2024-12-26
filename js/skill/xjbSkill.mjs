@@ -503,7 +503,7 @@ const xjb_zhijue = SkillCreater(
             'he',
             "弃置一张相同点数/颜色的牌，取消此牌的所有目标。"
         ).set("filterCard", (card, player) => {
-            const cardx = event.getParent("useCard").card;
+            const cardx = _status.event.getParent("useCard").card;
             if (cardx.cards.length === 0) return true;
             return get.color(card, false) === get.color(cardx, false)
                 || get.number(card, false) === get.number(cardx, false)
