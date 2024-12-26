@@ -1,6 +1,7 @@
 import "./lingli/event.mjs"
 import './lingli/gSkill.mjs'
 window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
+    lib.xjb_lingliUser = ["xjb_chanter", "xjb_xuemo", "xjb_Fuaipaiyi"];
     lib.skill.xjb_11 = {
         saturation: function () {
             //血色空间   
@@ -182,6 +183,7 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
             lib.translate.xin_guimeng_info = "你使用牌时，该牌效果变为【杀】【桃】【决斗】【火攻】【过河拆桥】【无中生有】中的一种"
             lib.skill.xjb_soul_lingqiang = {
                 enable: "phaseUse",
+                audio: "ext:新将包/audio/fire1.mp3",
                 filter: function (event, player) {
                     return player.countMark("_xjb_moli") > 0
                 },
@@ -193,7 +195,6 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                 content: function () {
                     "step 0"
                     player.removeMark("_xjb_moli")
-                    game.playAudio().src = lib.xjb_src + "audio/fire1.mp3"
                     let next = game.createEvent('xjb_lingHit');
                     next.player = player;
                     next.target = target
@@ -266,7 +267,7 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                         "dragon": "xjb_thunder",//龙女
                         "blood": "loseHp",//杜鹃
                         "tear": "xjb_ice",//雪女
-                        "taoyao": "xjb_recover",//桃妖
+                        "taoyao": "recover",//桃妖
                         "xuemo": "giveHpCard2",//血魔
                         "flower": "xjb_flower",//百花
                     },
@@ -296,7 +297,6 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                 },
                 event: {
                     "+2": ["loseHp", "loseMaxHp",
-                        "xjb_recover",
                         "xjb_fire", "xjb_ice", "xjb_thunder",
                         "giveHpCard2"],
                     "-2": ["recover", "gainMaxHp"],
@@ -308,7 +308,6 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                         eventLine.push(this[now].randomGet())
                         now = Number(now)
                         while (now != num) {
-                            if (eventLine.includes('xjb_recover')) eventLine.remove("xjb_recover")
                             if (eventLine.length > 3) return this.match(num)
                             let add = list.randomGet()
                             let get = this[add].randomGet();

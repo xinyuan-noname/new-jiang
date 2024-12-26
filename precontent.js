@@ -14,8 +14,6 @@ import {
 import {
 	LOAD_GAME_TETRIS
 } from "./js/game/tetris.js"
-import { LOAD_HPCARD } from "./js/feature/hpCard.js";
-import { LOAD_REMNANT_AREA } from "./js/feature/remnantArea.js";
 import "./js/interact/dialog.mjs"
 import "./js/interact/ui.mjs"
 function provideFunction() {
@@ -313,7 +311,7 @@ function way() {
 }
 function importFile() {
 	let count = 0;
-	const files = ["event", "lingli", "card", "title",
+	const files = ["lingli", "card", "title",
 		"project", "rpg", "character", "economy", "raise"];
 	function loadFiles(fileName) {
 		let script = lib.init.js(lib.xjb_src + "js", fileName, () => {
@@ -338,24 +336,15 @@ function importFile() {
 		}
 		setInterval(interval, 100)
 	}).then(async () => {
+		await import("./js/event.js");
+		await import("./js/feature/remnantArea.js");
+		await import("./js/feature/hpCard.js");
 		await import("./js/feature/skillCard.mjs");
 	}).then(() => {
 		const script = lib.init.js(lib.xjb_src + "js", "final", () => {
 			window.XJB_LOAD_FINAL(_status, lib, game, ui, get, ai)
 		})
 		script.type = "module";
-	}).then(() => {
-		if (lib.skill.xjb_1) {
-			for (let k in lib.skill.xjb_1.player) {
-				lib.element.player[k] = lib.skill.xjb_1.player[k];
-			}
-		}
-		if (lib.skill.xjb_2) {
-			for (let k in lib.skill.xjb_2) {
-				lib.element.player[k] = lib.skill.xjb_2[k].player;
-				lib.element.content[k] = lib.skill.xjb_2[k].content;
-			}
-		}
 	})
 	//引入api
 	/**
@@ -409,9 +398,7 @@ function initialize() {
 		ai,
 		ui
 	}
-	lib.element.XJB_CLASS = {
-
-	}
+	lib.element.XJB_CLASS = {}
 	//设置刘徽-祖冲之祖项目
 	//设置参数π、e、Φ，这些参数越大越精确
 	if (!lib.config.xjb_π) {
@@ -697,10 +684,6 @@ function initialize() {
 		}
 	}
 }
-function LOAD_FEATURE() {
-	LOAD_HPCARD(lib, game, ui, get, ai, _status);
-	LOAD_REMNANT_AREA(lib, game, ui, get, ai, _status);
-}
 function LOAD_SMALL_GAME() {
 	LOAD_GAME_TETRIS(lib, game, ui, get, ai, _status)
 }
@@ -709,7 +692,6 @@ export function XJB_PRECONTENT() {
 	way();
 	initialize();
 	importFile();
-	LOAD_FEATURE();
 	LOAD_SMALL_GAME();
 	window.xjb_library = xjb_library;
 	//折头折百花联动

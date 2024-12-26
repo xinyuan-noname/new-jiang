@@ -31,4 +31,7 @@ const {result,bool,chosen} = await game.xjb_create.promise.alert(message);
   - Key `id`
   - Val `〖中文名〗(id)`
 - `lib.xjb_skillList(string[])`：技能id集，所有武将技能id的集合
+
+### 灵力相关
+- `xjb_lingliUser`：默认灵力使用者。
 ## 配置

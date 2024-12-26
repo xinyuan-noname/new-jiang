@@ -393,8 +393,6 @@ const xjb_cangshi = SkillCreater(
 	}
 })
 
-//曹刿
-
 
 //嬴政
 const xjb_zulong = SkillCreater(

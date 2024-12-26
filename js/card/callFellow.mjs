@@ -172,7 +172,7 @@ const xjb_qinglong = CardCreater(
             equipValue: 4.5,
         },
     },
-    skills: ["xjb_yanyue", "xjb_hlyyd"],
+    skills: ["xjb_yanyue"],
     translate: "黄龙偃月刀",
     description: "<br>偃月:当你对一名角色造成伤害前，你可以弃置两张牌令此伤害+1，你令其获得一个\"梦魇\"标记。<br>二龙互化：你失去此牌时你立即销毁之，你装备【青龙偃月刀】。",
 })
@@ -520,38 +520,6 @@ const xjb_zhuihun = SkillCreater(
         if (trigger.source.countCards('h') > 0) trigger.source.chooseToDiscard('h', 1, true);
         if (trigger.source) trigger.source.addMark('new_wuhun_mark', 1);
         player.insertPhase();
-    },
-});
-const xjb_hlyyd = SkillCreater(
-    "xjb_hlyyd", {
-    translate: "武圣",
-    description: "你可以将一张红色牌当做【杀】使用或打出，你以此法使用或打出最后手牌时，你从牌堆中获得一张带伤害标签的牌。你对有“梦魇”标记的角色使用牌无次数限制。",
-    locked: false,
-    enable: ["chooseToRespond", "chooseToUse"],
-    filterCard(card, player) {
-        if (get.zhu(player, 'shouyue')) return true;
-        return get.color(card) == 'red';
-    },
-    position: "hes",
-    viewAs: {
-        name: "sha",
-    },
-    viewAsFilter(player) {
-        if (get.zhu(player, 'shouyue')) {
-            if (!player.countCards('hes')) return false;
-        }
-        else {
-            if (!player.countCards('hes', { color: 'red' })) return false;
-        }
-    },
-    onuse(event, player) {
-        if (player.countCards("h") == 1) player.seekTag('damage');
-    },
-    prompt: "将一张红色牌当杀使用或打出",
-    check(card) {
-        var val = get.value(card);
-        if (_status.event.name == 'chooseToRespond') return 1 / Math.max(0.1, val);
-        return 5 - val;
     },
 });
 
