@@ -22,6 +22,7 @@ const {result,bool,chosen} = await game.xjb_create.promise.alert(message);
 
 
 
+
 ## 常用量
 ### 技能相关
 - `lib.xjb_skillDirectory(Object<string,string>)`：技能信息表。
