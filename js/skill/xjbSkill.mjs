@@ -455,12 +455,10 @@ const xjb_xiangle = SkillCreater(
         return event.player.countCards('j') > 0 && player != event.player
     },
     prompt2: "是否将其判定区内一张牌移至你的判定区?",
-    content: function () {
-        "step 0"
-        player.choosePlayerCard("j", trigger.player).set("filterButton", function (button) {
-            if (player.canAddJudge(button.link)) return true
+    content: async function (event, trigger, player) {
+        const { result } = await player.choosePlayerCard("j", trigger.player).set("filterButton", function (button) {
+            if (_status.event.player.canAddJudge(button.link)) return true;
         })
-        "step 1"
         if (result.bool) {
             let card = result.buttons[0].link;
             if (card.viewAs) player.addJudge({ name: card.viewAs }, [card])
@@ -501,28 +499,23 @@ const xjb_zhijue = SkillCreater(
     translate: "智绝",
     description: "一名其他角色使用锦囊牌时，你可以弃置一张相同点数/颜色的牌(虚拟牌则改为任意一张)，取消此牌的所有目标。该角色获得X张残【杀】(X为此牌的目标数且至少为1)",
     cost: async function (event, trigger, player) {
-        const next = player.chooseToDiscard(
+        const { result: { bool } } = await player.chooseToDiscard(
             'he',
             "弃置一张相同点数/颜色的牌，取消此牌的所有目标。"
-        )
-        game.broadcastAll((nextX) => {
-            nextX.set("filterCard", card => {
-                const cardx = event.getParent("useCard").card;
-                if (cardx.cards.length === 0) return true;
-                return get.color(card) === get.color(cardx)
-                    || get.number(card) === get.number(cardx)
-            })
-        }, next);
-        const { result: { bool } } = await next
+        ).set("filterCard", (card, player) => {
+            const cardx = event.getParent("useCard").card;
+            if (cardx.cards.length === 0) return true;
+            return get.color(card, false) === get.color(cardx, false)
+                || get.number(card, false) === get.number(cardx, false)
+        })
         event.result = { bool, cost_data: { cards: event.cards } }
     },
     content: async function (event, trigger, player) {
-        const tl = Math.max(trigger.targets.length, 1);
         game.broadcastAll(triggerX => {
             triggerX.targets.length = 0;
             triggerX.all_excluded = true;
         }, trigger)
-        trigger.player.xjb_gainRemnantCard('sha', tl)
+        trigger.player.xjb_gainRemnantCard('sha', Math.max(trigger.targets.length, 1))
     },
 })
 const xjb_qiongzhi = SkillCreater(

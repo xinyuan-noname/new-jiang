@@ -281,11 +281,10 @@ const xjb_zhangwei = SkillCreater(
 		global: "roundStart"
 	},
 	cost: async function (event, trigger, player) {
-		const { result: { bool, cards } } = await player.chooseCard("he", [1, Infinity], card => player.canRecast(card))
+		const { result: { bool, cards } } = await player.chooseCard("he", [1, Infinity], (card, player) => player.canRecast(card))
 		if (bool) {
-			const { length: num } = cards;
 			player.recast(cards);
-			event.result = await player.chooseTarget([1, num]).forResult();
+			event.result = await player.chooseTarget([1, cards.length]).forResult();
 		}
 	},
 	content: async function (event, trigger, player) {

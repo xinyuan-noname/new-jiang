@@ -60,8 +60,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "raise.js",
         "rpg.js",
         "skills.js",
-        "title.js",
-        "Xskill.js"
+        "title.js"
     ],
     "json": [
         "1.json"
@@ -90,7 +89,6 @@ window["xjb_xyAPI_Directory_新将包"]={
     "node": [
         "gen_dir.js"
     ],
-    "sink": [],
     "skin": [],
     "title": [
         "xjb_boss1.png",
@@ -127,7 +125,8 @@ window["xjb_xyAPI_Directory_新将包"]={
     "image/character_dongzhou": [
         "xjb_guanyiwu.jpg",
         "xjb_jizi_shou.jpg",
-        "xjb_qinshihuang.jpg"
+        "xjb_qinshihuang.jpg",
+        "xjb_qixianggong.jpg"
     ],
     "image/character_soul": [
         "xjb_bat.jpg",
@@ -218,11 +217,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "string.js",
         "ui.js"
     ],
-    "sink/xin_newCharacter": [],
     "skin/image": [],
-    "sink/xin_newCharacter/normal": [
-        "xin_newCharacter.jpg"
-    ],
     "skin/image/xjb_jizi_shou": [
         "寿1.png",
         "寿2.png",

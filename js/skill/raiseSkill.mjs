@@ -153,7 +153,8 @@ const xjb_wei_fengtian = SkillCreater(
                 .set("ai", get.attitude(player, event.target) > 0 ? card => {
                     if (card.name === "sha") return get.value(card) + 2
                     return 8 - get.value(card)
-                } : get.unuseful3).forResult();
+                } : get.unuseful3)
+                .forResult();
             event.target.give(cards, player, false)
         }
         if (control === "选项二") {
