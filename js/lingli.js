@@ -185,15 +185,14 @@ window.XJB_LOAD_LINGLI = function (_status, lib, game, ui, get, ai) {
                 filter: function (event, player) {
                     return player.countMark("_xjb_moli") > 0
                 },
-                filterTarget: function (card, player, current) {
-                    return player != current
+                filterTarget: function (card, player, target) {
+                    return player != target
                 },
                 position: "he",
                 filterCard: true,
                 content: function () {
                     "step 0"
                     player.removeMark("_xjb_moli")
-                    target.coordinate = undefined
                     game.playAudio().src = lib.xjb_src + "audio/fire1.mp3"
                     let next = game.createEvent('xjb_lingHit');
                     next.player = player;

@@ -601,6 +601,7 @@ function initialize() {
 					];
 					const eventList3 = [
 						[["fanjian", true, "fanjian"], '反间'],
+						[["useSkill", true, "releiji"], '雷击'],
 						[["useSkill", true, "fangzhu"], '放逐'],
 						[["useSkill", true, "xinfu_guolun"], '过论'],
 						[["sbliegong", true, { name: "sha" }], "烈弓"],

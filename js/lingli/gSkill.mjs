@@ -55,7 +55,9 @@ const _xjb_soul_xue_jiezhen = SkillCreater(
     description: "出牌阶段限一次，你失去一点体力，从牌堆顶及牌堆底各获得一张牌。若这两张牌花色相同或点数相同，你销毁这对牌并将牌堆中一张放入阵法区。",
     enable: "phaseUse",
     filter: function (_, player) {
-        if (!lib.config.xjb_lingli_Allallow && !lib.characterPack['xjb_soul'][player.name]) return false;
+        if (!lib.config.xjb_lingli_Allallow){
+            return false;
+        } 
         if (player.getHistory("custom", evt => evt.name === "xjb_addZhenFa").length) return false;
         return true;
     },

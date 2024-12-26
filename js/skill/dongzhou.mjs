@@ -11,8 +11,14 @@ function SkillCreater(name, skill) {
 	dongzhouSkill[name] = { ...skill }
 	delete dongzhouSkill[name].translate;
 	delete dongzhouSkill[name].description;
+	delete dongzhouSkill[name].$audio;
 	dongzhouTranslate[name] = skill.translate;
 	dongzhouTranslate[name + "_info"] = skill.description
+	if (skill.$audio && skill.$audio.length) {
+		for (const [i, audioWords] of skill.$audio.entries()) {
+			dongzhouTranslate[`#${name}${i + 1}`] = audioWords;
+		}
+	}
 	return dongzhouSkill[name];
 };
 
@@ -137,6 +143,10 @@ const xjb_xuechou = SkillCreater(
 	"xjb_xuechou", {
 	translate: "雪仇",
 	description: "限定技，出牌阶段，你可以选择一名上下位均阵亡的其他角色，你依次将手牌视为【决斗】对其使用。此过程中，你对其造成伤害后，你获得其一张牌；你受到伤害后，你摸一张牌。",
+	$audio: [
+		"家国之仇，岂在五世!",
+		"九世之仇，犹可报之!"
+	],
 	limited: true,
 	enable: "phaseUse",
 	skillAnimation: true,
@@ -187,9 +197,9 @@ const xjb_guaqi = SkillCreater(
 	"xjb_guaqi", {
 	global: "xjb_guaqi_shubian",
 	translate: "瓜期",
-	description: "出牌阶段限一次，你可以将一张牌交给一名其他角色，称为“瓜”。手牌中拥有瓜的角色：1.回合开始时，失去一点体力；2.回合内使用牌无次数限制；3.其本轮获得的牌不计入手牌上限；4.不能使用瓜。",
+	description: "出牌阶段限一次，你可以将一张牌交给一名其他角色，称为“瓜”。手牌中拥有瓜的角色：1.回合开始时，失去一点体力并摸一张牌；2.回合内使用牌无次数限制；3.其本轮获得的牌不计入手牌上限；4.不能使用瓜。每轮开始时，你可以获得场上的所有瓜。",
 	enable: "phaseUse",
-	position:"he",
+	position: "he",
 	usable: 1,
 	filterCard: true,
 	lose: false,
@@ -200,6 +210,7 @@ const xjb_guaqi = SkillCreater(
 		await player.give(event.cards, event.targets[0], true);
 		event.targets[0].addGaintag(event.cards, "xjb_guaqi_gua");
 	},
+	group: "xjb_guaqi_daigua",
 	subSkill: {
 		shubian: {
 			trigger: {
@@ -210,7 +221,8 @@ const xjb_guaqi = SkillCreater(
 			},
 			forced: true,
 			content: async function (event, trigger, player) {
-				player.loseHp();
+				await player.loseHp();
+				player.draw()
 			},
 			mod: {
 				cardUsable: function (card, player, num) {
@@ -229,32 +241,29 @@ const xjb_guaqi = SkillCreater(
 					if (card.hasGaintag("xjb_guaqi_gua") && get.position(card) === "h") return false;
 				},
 			},
-		}
-	}
-})
-const xjb_daigua = SkillCreater(
-	"xjb_daigua", {
-	translate: "代瓜",
-	description: "每轮开始时，你可以获得场上所有瓜。",
-	trigger: {
-		global: "roundStart"
-	},
-	filter: (event, player) => {
-		return game.players.some(curr => curr.countCards("h", card => card.hasGaintag("xjb_guaqi_gua")))
-	},
-	content: async function (event, trigger, player) {
-		const record = [], allCards = [];
-		for (const target of game.players) {
-			const cards = target.getCards("he", card => card.hasGaintag("xjb_guaqi_gua"))
-			if (cards.length) {
-				record.push([target, cards]);
-				allCards.push(...cards);
+		},
+		daigua: {
+			trigger: {
+				global: "roundStart"
+			},
+			filter: (event, player) => {
+				return game.players.some(curr => curr.countCards("h", card => card.hasGaintag("xjb_guaqi_gua")))
+			},
+			content: async function (event, trigger, player) {
+				const record = [], allCards = [];
+				for (const target of game.players) {
+					const cards = target.getCards("he", card => card.hasGaintag("xjb_guaqi_gua"))
+					if (cards.length) {
+						record.push([target, cards]);
+						allCards.push(...cards);
+					}
+				}
+				await game.loseAsync({
+					lose_list: record
+				}).setContent("chooseToCompareLose");
+				await player.gain(allCards, "gain2");
 			}
 		}
-		await game.loseAsync({
-			lose_list: record
-		}).setContent("chooseToCompareLose");
-		await player.gain(allCards, "gain2");
 	}
 })
 
@@ -264,6 +273,10 @@ const xjb_zhangwei = SkillCreater(
 	translate: '张维',
 	description: "每轮开始时，你可以重置任意张牌，令至多等量名角色下个摸牌阶段多摸一张牌，这些角色本轮视为拥有〖货殖〗、〖仓实〗和〖尊攘〗",
 	derivation: ["xjb_huozhi", "xjb_cangshi", "xjb_zunrang"],
+	$audio: [
+		"仓廪实则知礼节，衣食足则知荣辱，上服度则六亲固。",
+		"守国之度，在饰四维。"
+	],
 	trigger: {
 		global: "roundStart"
 	},
@@ -380,11 +393,18 @@ const xjb_cangshi = SkillCreater(
 	}
 })
 
+//曹刿
+
+
 //嬴政
 const xjb_zulong = SkillCreater(
 	"xjb_zulong", {
 	translate: "祖龙",
 	description: "每回合每种类别限一次，一名角色减少一点体力后，可以你选择获得指定种类的一个技能。若此技能为觉醒技，则无视发动条件。",
+	$audio: [
+		"朕为始皇帝，后世以计数，二世、三世至于万世，传之无穷。",
+		"受命于天，既寿永昌。"
+	],
 	trigger: {
 		global: ["damageEnd", "loseHpEnd"],
 	},

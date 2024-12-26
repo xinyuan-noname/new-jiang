@@ -46,7 +46,7 @@ const eventList = {
     ...phaseList,
     //
     '摸牌': 'draw',
-    "判定牌生效": "judge",
+    "判定": "judge",
     "响应牌": "respond",
     "打出牌": "respond",
     "使用牌": "useCard",

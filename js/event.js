@@ -35,21 +35,6 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                 var card = game.createCard2(name + "_card");
                 this.xjb_addZhenFa(card);
             },
-            "xjb_updateCoordinate": function () {
-                let player = this
-                player.coordinate = [0, 0]
-                var list = [...player.coordinate]
-                game.countPlayer(current => {
-                    if (!current.coordinate) {
-                        let distance = get.distance(player, current) * 50
-                        let num1 = Math.floor(Math.random() * distance);
-                        let num2 = Math.floor(Math.sqrt(distance * distance - num1 * num1))
-                        current.coordinate = [num1, num2]
-                    }
-                    current.coordinate[0] -= list[0]
-                    current.coordinate[1] -= list[1]
-                })
-            },
             "xjb_recover": function (num = 1) {
                 const player = this
                 for (let i = 0; i < num; i++) {
@@ -244,10 +229,10 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                         temp = true
                     }
                     else if (typeof arguments[i] === 'object') var expire = arguments[i]
-                    else if (typeof arguments[i] == 'string') var need = arguments[i]
                     else if (typeof arguments[i] == 'number') var num = arguments[i]
+                    else if (typeof arguments[i] == 'string') var need = arguments[i]
                 }
-                for (var a = 0; a < list.length; a++) {
+                for (let a = 0; a < list.length; a++) {
                     const info = get.info(list[a])
                     if (!list[a] || list[a].endsWith('_roundcount')) list.splice(a--, 1)
                     else if (!info || info.sub || info.hiddenSkill) list.splice(a--, 1)
@@ -255,15 +240,16 @@ window.XJB_LOAD_EVENT = function (_status, lib, game, ui, get, ai) {
                     else if (!lib.translate[list[a] + '_info']) list.splice(a--, 1)
                 }
                 skills = skills.concat(list)
-                for (var b = 0; b < skills.length; b++) {
+                for (let b = 0; b < skills.length; b++) {
                     var info = lib.skill[skills[b]]
                     if (need) {
                         if (!info[need]) skills.splice(b--, 1)
                         else if (player.hasSkill(skills[b])) skills.splice(b--, 1)
                     }
                 }
-                var skill = skills.randomGet()
-                if (lib.skill[skill].limited) player.restoreSkill(skill)
+                var skill = skills.randomGet();
+                if (!(skill in lib.skill)) return false;
+                if (lib.skill[skill].limited) player.restoreSkill(skill);
                 if (num) {
                     if (lib.skill[skill].juexingji) {
                         player.addTip("addSkillrandom", "觉醒技无视条件")

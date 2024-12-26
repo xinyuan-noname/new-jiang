@@ -1186,10 +1186,9 @@ const xjb_liuli = SkillCreater(
             },
             prompt: '交给另一名其他角色一张♦️牌，你令伤害来源改为这名角色并令其重新分配伤害'
         });
-        if (result.bool) {
-            player.give(result.cards, result.targets[0]);
-            trigger.cancel();
-        }
+        if (!result.bool) return;
+        player.give(result.cards, result.targets[0]);
+        trigger.cancel();
         const { targets, bool } = await result.targets[0].chooseTarget([1, trigger.num], "你对其造成一点伤害").forResult();
         if (bool) targets.forEach(target => target.damage(trigger.nature));
     },

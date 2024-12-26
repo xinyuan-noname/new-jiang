@@ -328,11 +328,13 @@ const lingli_method = {
         const player = this;
         return player.hasMark("_xjb_moli")
     },
+    //获取灵力密度
     "xjb_getLingliDensity": function () {
         const player = this;
         if (!player.storage.xjb_lingliDensity) player.storage.xjb_lingliDensity = 0
         return player.storage.xjb_lingliDensity;
     },
+    //判断灵力是否稳定
     "xjb_isLingliStable": function () {
         const player = this;
         return player.countMark("_xjb_lingli") <= player.xjb_getLingliDensity()
