@@ -37,8 +37,8 @@ export class TransCnText {
         const result = [];
         for (const [_, line] of lines.entries()) {
             if (line.startsWith("/*") && line.endsWith("*/")) continue;
-            if (!line.length) continue;
-            result.push(line);
+            if (/^\s*$/.test(line)) continue;
+            result.push(line.replace(/\t/g,""));
         }
         return result;
     }
@@ -56,7 +56,7 @@ export class TransCnText {
                 continue;
             }
             const newline = line.replace(/([,\{\}\[\]\(\)\:\.]|\.{3})/g, " $1 ");
-            const words = newline.split(/[ \t]/);
+            const words = newline.split(/[ ]/);
             //分词后若中文全带引号,则按不分词的形式进行
             if (words.filter(word => /[\u4e00-\u9fa5]/.test(word)).every(word => /["'`]/.test(word))) {
                 result[num] = [line];
@@ -73,7 +73,8 @@ export class TransCnText {
      */
     static translate(word, directory = {}) {
         if (typeof word != "string") return "";
-        return directory[word] || directory[word.replaceAll(/[的]/g, "")] || word;
+        //pass
+        return directory[word] || directory[word.replace(/[的]/g, "")] || word;
     }
     static translateLine(lines, directory) {
         if (!Array.isArray(lines)) return [[]];

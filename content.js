@@ -7,30 +7,6 @@ import {
     _status
 } from "../../noname.js";
 export function XJB_CONTENT(config, pack) {
-    //新的数据处理函数部分            
-    String.prototype.getNumberBefore = function (character) {
-        if (this.indexOf(character) == -1) return []
-        var pList = []
-        this.replace(new RegExp(`(\-{0,1}[0-9][0-9\.\/]*)${character}`, 'g'), function (match, p) {
-            pList.push(p)
-        })
-        return pList
-    }
-    String.prototype.getNumberAfter = function (character) {
-        if (this.indexOf(character) == -1) return []
-        var pList = []
-        this.replace(new RegExp(`${character}(\-{0,1}[0-9][0-9\.\/]*)`, 'g'), function (match, p) {
-            pList.push(p)
-        })
-        return pList
-    }
-    String.prototype.withTogether = function (str, func) {
-        return [func(this), func(str)]
-    }
-    Array.prototype.toEnsureItsPersonality = function () {
-        var list = Array.from(new Set(this))
-        return list
-    }
     //这个是用于设置关卡信息的函数
     lib.arenaReady.push(function () {
         _status.xjb_level = {

@@ -92,6 +92,17 @@ export function randomBase36(length) {
     }
     return temp.join("")
 }
+export const replaceAllStr = (raw, replacee, replacer) => {
+    if (typeof raw != "string") throw new Error(raw, `不是一个字符串类型!`);
+    if (replacee instanceof RegExp) {
+        if (!replacee.flags.includes("g")) throw new Error(replacee, "正则表达式必须带有falg:g!")
+        return raw.replace(replacee, replacer)
+    } else {
+        if (typeof replacee !== "string") replacee = String(replacee);
+        if (typeof replacer !== "string") replacer = String(replacer);
+        return raw.split(replacee).join(replacer);
+    }
+}
 /**
  * 
  * @param {Element} element - 一个文本输入元素（input或textarea）
@@ -156,35 +167,7 @@ export function isOpenCnStr(str) {
     const regexp = /(?<!["'`][\u4e00-\u9fa5，。？！“”]*?)[\u4e00-\u9fa5]+(?![\u4e00-\u9fa5，。？！“”]*?["'`])/;
     return regexp.test(str);
 }
-/**
- * 将扑克牌花色符号转换为中文名称
- * @param {string} str - 包含扑克牌花色符号的字符串
- * @returns {string} - 花色符号被转换为中文名称后的字符串
- */
-export function suitSymbolToCN(str) {
-    // 直接操作传入的字符串以避免不必要的复制
-    let result = str;
 
-    // 定义一个映射，用于将扑克牌花色符号转换为中文名称
-    const map = {
-        "♣️": "梅花",
-        "♠️": "黑桃",
-        "♥️": "红桃",
-        "♦️": "方片",
-        '♣': '梅花',
-        '♠': '黑桃',
-        '♥': '红桃',
-        '♦': '方片'
-    }
-
-    // 遍历映射表，将所有的花色符号替换为对应的中文名称
-    for (let [symbol, cn] of Object.entries(map)) {
-        // 使用replaceAll方法全局替换字符串中的花色符号
-        result = result.replaceAll(symbol, cn)
-    }
-
-    return result;
-}
 export function moveWordToEnd(str, word, space = "", judge1 = () => true, judge2 = () => true) {
     const regexp = new RegExp(`^(.*?)(${word.replace(/[-\/\\^$*+?.()|[\]{}]/, "\\$&")})(.*?)$`, "mg");
     return str.replace(regexp, (match, p1, p2, p3) => {

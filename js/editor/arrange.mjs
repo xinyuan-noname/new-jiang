@@ -62,4 +62,3 @@ export class EditorArrange {
         that.changeWord(new RegExp(`(${words.join("|")})(?!\n)`, "g"), '$1\n');
     }
 }
-

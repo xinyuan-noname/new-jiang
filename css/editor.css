@@ -50,8 +50,8 @@
     background-color: rgb(51, 51, 128, 0.8);
     border: rgb(51, 51, 128, 0.8) solid 4px;
     border-radius: 1px;
-    height:100%;
-    color:white;
+    height: 100%;
+    color: white;
     font-size: large;
     font-family: "楷体";
 }
@@ -85,4 +85,9 @@
 
 .xjb-Ed-contentChoiceContainer .xjb_dialogButton {
     font-size: 0.85em;
+}
+
+.xjb_dialogButton.xjb-Ed-footerButton {
+    font-size: smaller;
+    margin-right: 10px;
 }

@@ -131,6 +131,7 @@
 }
 
 
+
 /*左浮动*/
 .xjb_floatRight {
   float: right;
@@ -407,6 +408,8 @@ div.xjb_curtain {
   position: relative;
 }
 
+
+
 .xjb-button {
   padding: 0 0;
   text-align: center;
@@ -415,7 +418,8 @@ div.xjb_curtain {
   background-color: #e4d5b7;
   margin-left: 3px;
 }
-.xjb_ImgButton{
+
+.xjb_ImgButton {
   position: relative;
 }
 

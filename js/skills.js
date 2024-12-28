@@ -97,9 +97,11 @@ lib.skill.xjb_3 = {
                 player: "useSkillAfter"
             },
             filter: function (event, player) {
+                //判断角色
                 if (!event.targets) return false
                 if (!event.targets.length) return false
                 if (!event.skill) return false
+                //判断有没有标签的
                 if (!lib.skill[event.skill].qzj) return false
                 return true
             },

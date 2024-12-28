@@ -153,9 +153,9 @@ export const EditorParameterList = {
         { cn: "到谁的特殊区域(默认为你)", type: "Player", value: "target" },
     ],
     addToExpansion: [
-        { cn: "获得的牌", type: "cards", value: "cards", mission: "置于武将牌上", NaPIndex: [2] },
+        { cn: "获得的牌", type: "cards", value: "cards", mission: "置于武将牌上", NaPIndex: [1] },
+        { cn: "牌的记号", type: "stringArray", value: "gaintag", skillIdToList: true },
         { cn: "牌的来源", type: "Player", value: "source" },
-        { cn: "牌的记号", type: "stringArray", value: "gaintag" },
         {
             cn: "获得牌动画", type: "stringToChoose", value: "animate",
             choices: [
@@ -398,6 +398,55 @@ export const EditorParameterList = {
         { cn: "是否阻止markSkill", type: "boolean" }
     ]
 }
+
+
+export const EditorPlayerToolList = {
+    hp: [
+        { type: "attr", returns: "number", cn: "体力值" }
+    ],
+    maxHp: [
+        { type: "attr", returns: "number", cn: "体力上限" }
+    ],
+    getDamaged: [
+        { type: "func", returns: "number", cn: "已损失的体力值" }
+    ],
+    hujia: [
+        { type: "attr", returns: "number", cn: "护甲值" }
+    ],
+    phaseNumber: [
+        { type: "attr", returns: "number", cn: "已进行的回合数", description: "包括正在进行的会和" }
+    ],
+    getHandcardLimit: [
+        { type: "func", returns: "number", cn: "手牌上限", name: "getHandcardLimit" }
+    ],
+    getSeatNum: [
+        { type: "func", returns: "number", cn: "座位号数", name: "getSeatNum" }
+    ],
+    countMark: [
+        { type: "func", returns: "number", cn: "某个标记的数量", name: "countMark" },
+        { type: "string", skillIdToList: true }
+    ],
+
+    name: [
+        { type: "attr", returns: "string", cn: "英文名", name: "name" }
+    ],
+    name1: [
+        { type: "attr", returns: "string", cn: "主将英文名", name: "name1" }
+    ],
+    name2: [
+        { type: "attr", returns: "string", cn: "副将英文名", name: "name2" }
+    ],
+    identity: [
+        { type: "attr", returns: "string", cn: "身份" }
+    ],
+    sex: [
+        { type: "attr", returns: "string", cn: "性别" }
+    ],
+    group: [
+        { type: "attr", returns: "string", cn: "势力" }
+    ]
+
+}
 const PlayerVarName = ["player", "source", "target"];
 const PlayerVarValue = ['player', 'target', 'game.me', 'game.zhu', '_status.currentPhase', 'trigger.player', 'trigger.source', 'trigger.target', 'event.target']
 const CardVarNameREs = [/card(x)?/, /card\d/];
@@ -419,7 +468,7 @@ export const parameterJudge = {
         if (CardVarNameREs.some(regexp => regexp.test(varName))) return true;
         return false;
     },
-    card: (varName, varValue) => {
+    cards: (varName, varValue) => {
         if (CardsVarName.includes(varName)) return true;
         return false;
     },

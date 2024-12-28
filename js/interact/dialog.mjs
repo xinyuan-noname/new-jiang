@@ -93,6 +93,7 @@ ui.create.xjb_dialogBase = function () {
     }
     div.back = back
     div.buttons = buttons;
+    div.buttonContainer = buttonContainer;
     //
     div.appeadButton = function (str, addButtons = true, closable = true) {
         const button = ui.create.xjb_button(buttonContainer, str);
@@ -219,12 +220,12 @@ ui.create.xjb_dialogBase = function () {
     return div
 };
 //创建按钮
-ui.create.xjb_button = function (length, str, remove = [], removeCallBack, removeSelf) {
+ui.create.xjb_button = function (father, str, remove = [], removeCallBack, removeSelf) {
     if (remove instanceof HTMLElement) remove = [remove];
     const button = element("div")
         .addClass("xjb_dialogButton")
         .innerHTML(str)
-        .father(length)
+        .father(father)
         .setKey("removeEle", remove)
         .style({
             margin: "auto 15px",
@@ -248,6 +249,11 @@ ui.create.xjb_button = function (length, str, remove = [], removeCallBack, remov
     }
     return button
 };
+ui.create.xjb_button2 = function (...args) {
+    const button = ui.create.xjb_button(...args);
+    button.style.cssText = '';
+    return button;
+}
 if (!game.xjb_create) game.xjb_create = {}
 //game.xjb_create开关
 game.xjb_create.ban = function () {
@@ -1181,7 +1187,7 @@ game.xjb_create.UABobjectsToChange = function ({ object, num, free, list, previo
 
 game.xjb_create.range = function (str, min, max, value = 0, callback, changeValue = () => true) {
     if (game.xjb_create.baned) return;
-    let dialog = game.xjb_create.confirm(void 0, callback);
+    const dialog = game.xjb_create.confirm(void 0, callback);
     const prompt = element('div')
         .block()
         .setStyle('position', 'relative')

@@ -13,9 +13,9 @@ import {
 } from "./js/library.js";
 import {
 	LOAD_GAME_TETRIS
-} from "./js/game/tetris.js"
-import "./js/interact/dialog.mjs"
-import "./js/interact/ui.mjs"
+} from "./js/game/tetris.js";
+import "./js/interact/dialog.mjs";
+import "./js/interact/ui.mjs";
 function provideFunction() {
 	lib.xjb_dataGet = function () {
 		return Object.keys(lib.config).filter(function (a) {

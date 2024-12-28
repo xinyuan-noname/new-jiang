@@ -22,6 +22,7 @@ export class ImplicitTextTool {
                 return `获取 属性 ${p[0]}\n ${p[1]} \n ${p[2]}属性 \n ${p[1].includes("不") ? "或者" : "并且"} \n 获取 牌名 ${p[0]} \n ${p[1]} \n 杀`
             })
         result = result
+            .replace(/^(.+?)于回合外$/mg, "$1 不是当前回合角色")
             .replace(/^(.+?)[ ]*[是为][ ]*(男性|女性)$/mg, '$1 属于性别 $2')
             .replace(/^(.+?)[ ]*不[是为][ ]*(男性|女性)$/mg, '$1 不属于性别 $2')
         return result;
