@@ -1,3 +1,4 @@
+"use script"
 import {
 	lib,
 	game,
@@ -33,7 +34,7 @@ import {
 	NonameCN
 } from './editor/nonameCN.js'
 import { EditorInteraction } from './editor/interaction.mjs';
-import { dispose } from './editor/transCnText.mjs';
+import { dispose, disposeTri } from './editor/transCnText.mjs';
 import { EditorArrange } from './editor/arrange.mjs';
 import { ImplicitTextTool } from "./editor/implicitText.mjs";
 import { EditorOrganize } from "./editor/organize.mjs";
@@ -1281,28 +1282,25 @@ game.xjb_skillEditor = function () {
 		back.organize();
 	}
 	back.ele.filter.inherit = function () {
-		//继承指令
-		let wonderfulInherit = (filterFree.value.indexOf("继承") >= 0 && filterFree.value.match(/继承.+\n/) && filterFree.value.match(/继承.+\n/)[0]) || '';
-		if (wonderfulInherit && wonderfulInherit != '继承') {
-			let preSkill = ''
-			//获取继承的技能的id                   
-			wonderfulInherit = wonderfulInherit.replace(/继承/, '');
-			wonderfulInherit = wonderfulInherit.replace(/\n/, '');
-			//获取继承的技能的filter并处理                    
-			if (lib.skill[wonderfulInherit] && lib.skill[wonderfulInherit].content) preSkill = wonderfulInherit;
-			wonderfulInherit = (lib.skill[wonderfulInherit] && lib.skill[wonderfulInherit].filter && lib.skill[wonderfulInherit].filter.toString()) || ''
-			/*清除空格*/
-			wonderfulInherit = wonderfulInherit.replace(/\s\s+/g, '\n')
-			/*截取函数*/
-			wonderfulInherit = wonderfulInherit.slice((wonderfulInherit.indexOf('{') + 2), -1)
-			wonderfulInherit = wonderfulInherit.replace(/\s\s+/g, '\n')
-			wonderfulInherit = wonderfulInherit.replace(new RegExp(preSkill, 'g'), back.skill.id)
-			back.returnIgnore = true;
-			filterFree.changeWord(/继承.+\n/, wonderfulInherit);
-			filterFree.value = `/*back.returnIgnore=true*/\n${filterFree.value}`;
-			filterFree.adjustTab();
-		}
-	}
+		// 继承指令
+		const inheritLine = filterFree.value.match(/继承.+\n/);
+		if (!inheritLine || inheritLine[0].trim() === '继承') return;
+		const skillId = inheritLine[0].replace('继承', '').trim();
+		const skill = lib.skill[skillId];
+		if (!skill || !skill.filter) {
+			filterFree.changeWord(/继承.+\n/, "");
+			return;
+		};
+		let filterCode = skill.filter.toString();
+		filterCode = filterCode.replace(/\s\s+/g, '\n');
+		filterCode = filterCode.slice(filterCode.indexOf('{') + 2, -1);
+		filterCode = filterCode.replace(/\s\s+/g, '\n');
+		filterCode = filterCode.replace(new RegExp(skillId, 'g'), back.skill.id);
+		back.returnIgnore = true;
+		filterFree.changeWord(/继承.+\n/, filterCode);
+		filterFree.value = `/*back.returnIgnore=true*/\n${filterFree.value}`;
+		filterFree.adjustTab();
+	};
 	back.ele.filter.adjustTab = function () {
 		const that = back.ele.filter;
 		that.changeWord(/\t/g, '')
@@ -1694,9 +1692,10 @@ game.xjb_skillEditor = function () {
 	back.ele.trigger.submit = function (e) {
 		back.ele.trigger.init();
 		if (triggerFree.value.length === 0) return;
+		triggerFree.inherit();
 		this.value.includes('于回合外失去') && back.skill.uniqueTrigger.push("outPhase:lose");
 		this.value.includes('于回合内失去') && back.skill.uniqueTrigger.push("inPhase:lose");
-		let list = dispose(ImplicitTextTool.trigger(this.value), 3, NonameCN.TriList)
+		let list = disposeTri(ImplicitTextTool.trigger(this.value))
 		let tri_player = [], tri_global = [], tri_target = [], tri_source = [], tri_players = []
 		let cardsNames = Object.keys(lib.card),
 			suits = lib.suits,
@@ -1817,6 +1816,25 @@ game.xjb_skillEditor = function () {
 		back.ele.content.submit();
 		back.organize()
 	}
+	back.ele.trigger.inherit = function () {
+		// 继承指令
+		const inheritLine = triggerFree.value.match(/继承.+\n/);
+		if (!inheritLine || inheritLine[0].trim() === '继承') return;
+		const skillId = inheritLine[0].replace('继承', '').trim();
+		const skill = lib.skill[skillId];
+		if (!skill || !skill.trigger) {
+			triggerFree.changeWord(/继承.+\n/, "");
+			return;
+		};
+		let triggerCode = "";
+		debugger
+		const targetTrigger = skill.trigger;
+		for (const key in targetTrigger) {
+			if (typeof targetTrigger[key] === "string") triggerCode += `${key} ${targetTrigger[key]}`;
+			else triggerCode += `${key} ${targetTrigger[key].join(" ")}\n`;
+		}
+		triggerFree.changeWord(/继承.+\n/, triggerCode);
+	};
 	textareaTool().setTarget(back.ele.trigger)
 		.debounce('keyup', back.ele.trigger.submit, 200)
 		.style({

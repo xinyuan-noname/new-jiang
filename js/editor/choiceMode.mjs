@@ -6,8 +6,8 @@ import {
     get,
     _status
 } from "../../../../noname.js";
-import { element} from "../tool/ui.js";
-import { arrayToString,  getOppositingOperator, objectToString} from "../tool/string.js";
+import { element } from "../tool/ui.js";
+import { arrayToString, getOppositingOperator, objectToString } from "../tool/string.js";
 import { NonameCN } from "./nonameCN.js";
 import { TransCnText, dispose } from "./transCnText.mjs";
 import { EditorParameterList, parameterJudge } from "./parameter.mjs";
@@ -921,7 +921,7 @@ export class choiceMode {
         controlContainer.getData = () => {
             if (!control.value.length) return [value, void 0]
             let output = control.value;
-            if (stringMap[control.value]) output = stringMap[output];
+            if (stringMap && stringMap[control.value]) output = stringMap[output];
             if (isTemplateRegexp.test(output)) return [value, `\`${output}\``]
             return [value, `"${output}"`];
         }

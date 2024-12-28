@@ -16,6 +16,14 @@ export function dispose(str, number, directory = lib.xjb_translate) {
     if (number === 3) return list3;
     return TransCnText.linkWords(list3);
 }
+export function disposeTri(str, number, directory = NonameCN.TriList) {
+    let list1 = TransCnText.splitLine(str);
+    if (number === 1) return list1;
+    let list2 = TransCnText.splitWordTri(list1)
+    if (number === 2) return list2;
+    let list3 = TransCnText.translateLine(list2, directory);
+    return list3;
+}
 const matchNotObjColon = /(?<!\{[ \w"']+):(?![ \w"']+\})/;
 const vCardObject = NonameCN.getVirtualCard();
 const player = NonameCN.getVirtualPlayer();
@@ -38,7 +46,7 @@ export class TransCnText {
         for (const [_, line] of lines.entries()) {
             if (line.startsWith("/*") && line.endsWith("*/")) continue;
             if (/^\s*$/.test(line)) continue;
-            result.push(line.replace(/\t/g,""));
+            result.push(line.replace(/\t/g, ""));
         }
         return result;
     }
@@ -62,6 +70,15 @@ export class TransCnText {
                 result[num] = [line];
                 continue;
             }
+            result[num] = words
+        }
+        return result;
+    }
+    static splitWordTri(lines) {
+        if (!Array.isArray(lines)) return [[]];
+        const result = new Array(lines.length);
+        for (const [num, line] of lines.entries()) {
+            const words = line.split(/[ :\t"'`]/).filter(word => word.length);
             result[num] = words
         }
         return result;

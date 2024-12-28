@@ -31,6 +31,7 @@ export class ImplicitTextTool {
         let result = ImplicitTextTool.common(text)
             .replace(/(.+?)[ ]*执行(一个)?额外的?(准备|判定|出牌|摸牌|弃牌|结束)阶段/g, `阶段列表 剪接 当前回合序号 0 $3阶段|\\-skillID`)
             .replace(/^销毁(此牌|卡牌)/mg, '$1 修正\n$1 移除\n$1 已销毁 令为 真\n游戏 日志 $1 "已销毁"')
+            .replace(/^重置本技能发动次数$/mg, '本技能发动次数令为0')
         console.log("content", result);
         return result;
     }
