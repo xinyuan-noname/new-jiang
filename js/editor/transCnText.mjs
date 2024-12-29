@@ -6,6 +6,7 @@ import {
     ai,
     _status
 } from "../../../../noname.js";
+import { chineseToArabic } from "../tool/math.js";
 import { NonameCN } from "./nonameCN.js";
 export function dispose(str, number, directory = lib.xjb_translate) {
     let list1 = TransCnText.splitLine(str);
@@ -25,6 +26,7 @@ export function disposeTri(str, number, directory = NonameCN.TriList) {
     return list3;
 }
 const matchNotObjColon = /(?<!\{[ \w"']+):(?![ \w"']+\})/;
+const matchFromTo = /^([bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)到([bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)[张名点枚]$/
 const vCardObject = NonameCN.getVirtualCard();
 const player = NonameCN.getVirtualPlayer();
 const vPlayers = NonameCN.getVirtualPlayers();
@@ -90,7 +92,9 @@ export class TransCnText {
      */
     static translate(word, directory = {}) {
         if (typeof word != "string") return "";
-        //pass
+        if (matchFromTo.test(word)) {
+            return `[${word.slice(0, -1).split("到").map(item => chineseToArabic(item))}]`
+        }
         return directory[word] || directory[word.replace(/[的]/g, "")] || word;
     }
     static translateLine(lines, directory) {

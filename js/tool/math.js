@@ -20,6 +20,46 @@ export function apSum(first, endIndex, difference) {
 	const last = first + (endIndex - 1) * difference
 	return (first + last) * endIndex / 2
 }
+export function chineseToArabic(chinese) {
+	if (!/[零一二两三四五六七八九十百千万]/.test(chinese)) return chinese;
+	const chineseNumbers = {
+		'零': 0,
+		'一': 1,
+		'二': 2,
+		'两': 2,
+		'三': 3,
+		'四': 4,
+		'五': 5,
+		'六': 6,
+		'七': 7,
+		'八': 8,
+		'九': 9
+	};
+	const chineseUnits = {
+		'十': 10,
+		'百': 100,
+		'千': 1000,
+		'万': 10000
+	};
+	let result = 0;
+	let temp = 0;
+	let unit = 1;
+	for (let i = chinese.length - 1; i >= 0; i--) {
+		const char = chinese[i];
+		if (chineseUnits[char]) {
+			if (chineseUnits[char] >= 10000) {
+				unit = chineseUnits[char];
+				result += temp * unit;
+				temp = 0;
+			} else {
+				unit = chineseUnits[char];
+			}
+		} else if (chineseNumbers[char] !== undefined) {
+			temp += chineseNumbers[char] * unit;
+		}
+	}
+	return result + temp;
+}
 export class XJB_Math {
 	static "Math_!"(x) {
 		if (x < 0) return

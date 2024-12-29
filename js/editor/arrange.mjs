@@ -28,11 +28,23 @@ export class EditorArrange {
             that.value = moveWordToEnd(that.value, word, " ", judge);
         }
     }
-    static makeNumToEnd(that) {
+    static makeNumToEnd_zhang(that){
         that.value = that.value.replace(/^(.*?)((?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)到(?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)|\d+|[一两二三四五六七八九十]+|[bcdefghlmnoprstuvwxyz])张(.*?)$/img,"$1$3 $2张")
+    }
+    static makeNumToEnd_dian(that){
         that.value = that.value.replace(/^(.*?)((?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)到(?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)|\d+|[一两二三四五六七八九十]+|[bcdefghlmnoprstuvwxyz])点(.*?)$/img,"$1$3 $2点")
+    }
+    static makeNumToEnd_ming(that){
         that.value = that.value.replace(/^(.*?)((?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)到(?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)|\d+|[一两二三四五六七八九十]+|[bcdefghlmnoprstuvwxyz])名(.*?)$/img,"$1$3 $2名")
+    }
+    static makeNumToEnd_mei(that){
         that.value = that.value.replace(/^(.*?)((?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)到(?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)|\d+|[一两二三四五六七八九十]+|[bcdefghlmnoprstuvwxyz])枚(.*?)$/img,"$1$3 $2枚")
+    }
+    static makeNumToEnd(that) {
+        EditorArrange.makeNumToEnd_zhang(that)
+        EditorArrange.makeNumToEnd_dian(that)
+        EditorArrange.makeNumToEnd_ming(that)
+        EditorArrange.makeNumToEnd_mei(that)
     }
     static makeOtherToEnd(that) {
         that.value = moveWordToEnd(that.value, "其他", " ", (p1, p2, p3) => {
