@@ -29,26 +29,10 @@ export class EditorArrange {
         }
     }
     static makeNumToEnd(that) {
-        for (let i = 10; i >= 1; i--) {
-            that.value = moveWordToEnd(that.value, i + '张', " ");
-            that.value = moveWordToEnd(that.value, get.cnNumber(i) + '张', " ");
-            that.value = moveWordToEnd(that.value, i + '点', " ");
-            that.value = moveWordToEnd(that.value, get.cnNumber(i) + '点', " ");
-            that.value = moveWordToEnd(that.value, i + '名', " ");
-            that.value = moveWordToEnd(that.value, get.cnNumber(i) + '名', " ");
-            that.value = moveWordToEnd(that.value, i + '枚', " ");
-            that.value = moveWordToEnd(that.value, get.cnNumber(i) + '枚', " ");
-        }
-        "bcdefghlmnoprstuvwxyz".split('').forEach(i => {
-            that.value = moveWordToEnd(that.value, i + '点', " ");
-            that.value = moveWordToEnd(that.value, i.toUpperCase() + '点', " ");
-            that.value = moveWordToEnd(that.value, i + '名', " ");
-            that.value = moveWordToEnd(that.value, i.toUpperCase() + '名', " ");
-            that.value = moveWordToEnd(that.value, i + '张', " ");
-            that.value = moveWordToEnd(that.value, i.toUpperCase() + '张', " ");
-            that.value = moveWordToEnd(that.value, i + '枚', " ");
-            that.value = moveWordToEnd(that.value, i.toUpperCase() + '枚', " ");
-        });
+        that.value = that.value.replace(/^(.*?)((?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)到(?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)|\d+|[一两二三四五六七八九十]+|[bcdefghlmnoprstuvwxyz])张(.*?)$/img,"$1$3 $2张")
+        that.value = that.value.replace(/^(.*?)((?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)到(?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)|\d+|[一两二三四五六七八九十]+|[bcdefghlmnoprstuvwxyz])点(.*?)$/img,"$1$3 $2点")
+        that.value = that.value.replace(/^(.*?)((?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)到(?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)|\d+|[一两二三四五六七八九十]+|[bcdefghlmnoprstuvwxyz])名(.*?)$/img,"$1$3 $2名")
+        that.value = that.value.replace(/^(.*?)((?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)到(?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)|\d+|[一两二三四五六七八九十]+|[bcdefghlmnoprstuvwxyz])枚(.*?)$/img,"$1$3 $2枚")
     }
     static makeOtherToEnd(that) {
         that.value = moveWordToEnd(that.value, "其他", " ", (p1, p2, p3) => {

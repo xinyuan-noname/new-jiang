@@ -57,22 +57,21 @@ window.XJB_EDITOR_LIST = {
 		'你移动场上一张牌', '你失去一点体力', '你随机弃置两张牌',
 		'所有角色回复一点体力', '所有角色摸一张牌',
 		'所有角色随机弃置两张牌',
-		'你摸一张牌，如果\n游戏轮数小于3\n那么\n你再摸一张牌',
-		'你选择一名其他角色，所选角色摸两张牌', '你选择一名其他角色，所选角色回复一点体力',
-		'继承releiji\n',
-		'继承jieming\n', '继承niepan\n', '继承xunxun\n',
-		'继承kurou\n', '继承chengxiang\n', '继承huituo\n', '继承fangzhu\n',
-		'继承yiji\n', "继承luoshen\n"
+		'你摸一张牌\n如果\n游戏轮数小于3\n那么\n你再摸一张牌',
+		'你令一名其他角色摸两张牌', '你令一名其他角色回复一点体力',
+		'继承niepan\n', '继承xunxun\n',
+		'继承kurou\n', '继承chengxiang\n',
+		"继承luoshen\n"
 	],
 	trigger: [
 		'你受到一点伤害后', '你失去一点体力后',
 		'你受到伤害后', '你回复体力后',
 		'回合结束时', '摸牌阶段开始时', '摸牌阶段结束时', '弃牌阶段开始时', '弃牌阶段结束时',
-		'当你判定牌生效后',
+		'你判定牌生效后',
 		'你于回合外失去手牌后', '你于回合外失去牌后',
-		'当你使用杀指定目标时', '当你使用杀指定目标后',
-		'当你成为杀的目标后', '当你成为决斗的目标后',
-		'当你使用杀后', '当你使用决斗后', '当你使用桃后'
+		'你使用杀指定目标时', '你使用杀指定目标后',
+		'你成为杀的目标后', '你成为决斗的目标后',
+		'你使用杀后', '你使用决斗后', '你使用桃后'
 	],
 };
 window.XJB_PUNC = ["!", " || ", " && ", " + ", " - ", " * ", " / ", " % ",
@@ -1449,16 +1448,12 @@ game.xjb_skillEditor = function () {
 			that.changeWord(new RegExp("任意" + get.cnNumber(i) + '张', 'g'), get.cnNumber(i) + '张');
 			that.changeWord(new RegExp("任意" + i + '名', 'g'), get.cnNumber(i) + '名');
 			that.changeWord(new RegExp("任意" + get.cnNumber(i) + '名', 'g'), get.cnNumber(i) + '名');
-			that.changeWord(new RegExp(`可?以?令(至多|至少)*${i}名(其他)*角色`, 'g'), function (match, p1, p2) {
-				return `选择${p1 ? p1 : ''}${i}名${p2 ? p2 : ''}角色\n所选角色`
-			});
-			that.changeWord(new RegExp(`可?以?令(至多|至少)*${get.cnNumber(i)}名(其他)*角色`, 'g'), function (match, p1, p2) {
-				return `选择${p1 ? p1 : ''}${get.cnNumber(i)}名${p2 ? p2 : ''}角色\n所选角色`
-			});
 		}
-		that.changeWord(new RegExp(`令任意名(其他)*角色`, 'g'), function (match, p1) {
-			return `选择名${p1 ? p1 : ''}角色\n所选角色`
-		});
+		that.changeWord(/可?以?令(至多|至少)?(\d+)名(其他)?角色(.*)$/mg, "选择$1$2名$3角色 ''\n新步骤\n如果\n有选择结果\n那么\n分支开始\n所选角色$4\n分支结束")
+		that.changeWord(/可?以?令(至多|至少)?(\d+)到(\d+)名(其他)?角色(.*)$/mg, "选择$1$2名$3角色 ''\n新步骤\n如果\n有选择结果\n那么\n分支开始\n所选角色$4\n分支结束")
+		that.changeWord(/可?以?令(至多|至少)?(一|两|二|三|四|五|六|七|八|九|十+)名(其他)?角色(.*)$/mg, "选择$1$2到$3名$4角色\n新步骤\n如果\n有选择结果\n那么\n分支开始\n所选角色$4\n分支结束")
+		that.changeWord(/可?以?令(至多|至少)?(一|两|二|三|四|五|六|七|八|九|十+)到(一|两|二|三|四|五|六|七|八|九|十+)名(其他)?角色(.*)$/mg, "选择$1$2到$3名$4角色\n新步骤\n如果\n有选择结果\n那么\n分支开始\n所选角色$5\n分支结束")
+		that.changeWord(/可?以?令任意名(其他)?角色(.*)$/mg,"选择任意名$1角色\n新步骤\n如果\n有选择结果\n那么\n分支开始\n所选角色$2\n分支结束");
 		//数字参数处理
 		EditorArrange.makeNumToEnd(that);
 		//统一写法
@@ -1509,7 +1504,7 @@ game.xjb_skillEditor = function () {
 	contentFree.getID = function () {
 		return back.getID();
 	}
-	contentFree.toLastLine = function (step=1) {
+	contentFree.toLastLine = function (step = 1) {
 		const lengthes = this.value.slice(0, this.selectionStart).split("\n").map(word => word.length);
 		for (let i = 0; i < step; i++) {
 			let length = lengthes.pop() + 1;
