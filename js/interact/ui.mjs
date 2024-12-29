@@ -188,7 +188,6 @@ ui.create.xjb_book = (father, text) => {
                 targetList.push(toAdd);
                 //设置ignore值
                 ignore = Boolean(ignoreValue)
-                //console.log(targetList,nowTarget)
             }
             requestAnimationFrame(function xjbWonderfulWriter() {
                 if (!wordsGroups.length) {

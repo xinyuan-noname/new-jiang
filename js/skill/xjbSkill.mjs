@@ -1052,7 +1052,7 @@ const xjb_shiyin = SkillCreater(
     },
     filter(event, player) {
         if (event.type != "discard" || event.getlx === false) return false;
-        console.log(get.info("xjb_shiyin").getType(event, player).length)
+        
         return get.info("xjb_shiyin").getType(event, player).length === 1;
     },
     async cost(event, trigger, player) {

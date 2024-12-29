@@ -151,7 +151,7 @@ const xjb_soul_hongxi = SkillCreater(
         }).filter(item => {
             return item[2] > 1;
         });
-        console.log(area)
+        
         if (area.length > 1) {
             player.chooseButton([
                 `你选择${get.translation(player)}的一张体力牌，将此体力牌用等额的体力牌替换之。`,

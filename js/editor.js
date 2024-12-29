@@ -1509,6 +1509,14 @@ game.xjb_skillEditor = function () {
 	contentFree.getID = function () {
 		return back.getID();
 	}
+	contentFree.toLastLine = function (step=1) {
+		const lengthes = this.value.slice(0, this.selectionStart).split("\n").map(word => word.length);
+		for (let i = 0; i < step; i++) {
+			let length = lengthes.pop() + 1;
+			this.selectionStart -= length;
+			this.selectionEnd = this.selectionStart;
+		}
+	}
 	back.ele.content.adjustTab = function () {
 		const that = back.ele.content;
 		that.changeWord(/\t/g, '');
@@ -1590,6 +1598,22 @@ game.xjb_skillEditor = function () {
 				);
 			}
 		)
+		.whenChangeLineHas(/(?<!变量).+?选择.*?(卡牌|角色)/, function (e) {
+			//之后这里添加条件可以取消,自行设置
+			if (false) return;
+			this.value += [
+				"",
+				"新步骤",
+				"如果",
+				"有选择结果",
+				"那么",
+				"分支开始",
+				"所选角色 ",
+				"分支结束"
+			].join("\n");
+			this.adjustTab();
+			this.toLastLine();
+		})
 		.addClass("xjb-Ed-contentTextarea")
 		.debounce('keyup', back.ele.content.submit, 200)
 		.listen('keydown', deleteModule)
@@ -1830,7 +1854,7 @@ game.xjb_skillEditor = function () {
 		debugger
 		const targetTrigger = skill.trigger;
 		for (const key in targetTrigger) {
-			if (typeof targetTrigger[key] === "string") triggerCode += `${key} ${targetTrigger[key]}`;
+			if (typeof targetTrigger[key] === "string") triggerCode += `${key} ${targetTrigger[key]}\n`;
 			else triggerCode += `${key} ${targetTrigger[key].join(" ")}\n`;
 		}
 		triggerFree.changeWord(/继承.+\n/, triggerCode);

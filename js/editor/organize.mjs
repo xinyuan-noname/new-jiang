@@ -16,10 +16,12 @@ const format = (text) => {
 }
 
 const orderSteps = (str) => {
-    let step = 0;
-    return str.replace(/('step[ ]*\d*'|"step[ ]*\d*")/g, () => {
+    let result = str, step = 0;
+    result = result.replace(/(?<="step[ ]*\d*"|'step[ ]*\d*')(\s*"step[ ]*\d*"|\s*'step[ ]*\d*')+/g, "")
+    result = result.replace(/('step[ ]*\d*'|"step[ ]*\d*")/g, () => {
         return `"step ${step++}"`;
     });
+    return result;
 }
 
 const getStrFormConst = ({ costName, costNature, costColor, costSuit }) => {

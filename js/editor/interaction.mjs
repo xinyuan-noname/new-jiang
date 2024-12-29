@@ -53,6 +53,7 @@ export class EditorInteraction {
         if (preEnd != preStart) return;
         input.value = `${preValue.slice(0, preEnd)}${str}${preValue.slice(preEnd)}`;
         input.setSelectionRange(preEnd + str.length, preEnd + str.length);
+        return preEnd + str.length;
     }
     /**
      * @param {HTMLElement} trigger 

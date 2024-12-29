@@ -49,6 +49,7 @@ export class ImplicitTextTool {
     }
     static trigger(text) {
         let result = text
+            .replace(/^游戏开始时$/mg, "global phaseBefore\nplayer enterGame\n")
             .replace(/于回合[外内]/g, '')
             .replace(/当(?!前)/g, '')
             .replace(/(结束时|结束后)/g, "结束")

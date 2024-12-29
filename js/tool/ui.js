@@ -1,6 +1,7 @@
 import {
     eachLine,
-    addPSFix
+    addPSFix,
+    stringToRegExp
 } from './string.js'
 class elementTool {
     /**
@@ -540,6 +541,23 @@ class TextareaTool extends elementTool {
     }
     mark(match, prefix, suffix) {
         this.ele.value = addPSFix(this.ele.value, match, prefix, suffix)
+        return this;
+    }
+    /**
+     * 
+     * @param {string|RegExp} match 
+     * @param {function} callback 
+     * @returns 
+     */
+    whenChangeLineHas(match, callback) {
+        if (typeof match === "string") match = stringToRegExp(match);
+        this.ele.addEventListener("keyup", function (e) {
+            if (e.key !== "Enter") return;
+            const lastLine = this.value.slice(0, this.selectionStart - 1).split("\n").at(-1);
+            if (match.test(lastLine)) {
+                callback.apply(this, [e]);
+            }
+        })
         return this;
     }
 }

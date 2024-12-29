@@ -43,8 +43,12 @@ export function getOppositingOperator(operator) {
     if (JavascriptOperatorppsiting[operator]) return JavascriptOperatorppsiting[operator];
     return operator;
 }
+export function stringToRegExp(string, flag) {
+    if (typeof string !== "string") string = String(string);
+    string = string.replace(/([^\w\s])/g, "\\$1");
+    return new RegExp(string, flag);
+}
 /**
- * 
  * @param {string} str - 需要修正的字符串
  * @returns {string}
  */

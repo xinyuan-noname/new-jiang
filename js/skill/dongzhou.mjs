@@ -187,7 +187,6 @@ const xjb_xuechou = SkillCreater(
 				return event.player.countGainableCards(player, "he")
 			},
 			content: function () {
-				console.log(trigger)
 				player.gainPlayerCard(trigger.player, "he");
 			}
 		}

@@ -147,7 +147,7 @@ const xjb_wei_fengtian = SkillCreater(
             next.choiceList[0] = `<span style=opacity:0.5>${next.choiceList[0]}</span>`
         }
         const { control } = await next.forResult();
-        console.log(event.target.name, control)
+        
         if (control === "选项一") {
             const { cards } = await event.target.chooseCard(true, 'he', `选择一张牌交给${get.translation(player)}`)
                 .set("ai", get.attitude(player, event.target) > 0 ? card => {
@@ -203,7 +203,7 @@ const xjb_wu_yushou = SkillCreater(
         if (!player.hasZhuSkill("xjb_wu_yushou")) return false;
         if (player.group != "wu") return false;
         const target = event.name == "dying" ? event.player : event.target;
-        console.log(event.name)
+        
         if (target.group !== "wu") return false;
         if (target === player && game.countPlayer(cur => cur != player && cur.group === "wu") === 0) return false;
         return true;
@@ -247,7 +247,7 @@ const xjb_wu_yushou = SkillCreater(
                     const playerx = _status.event.player;
                     const targetx = _status.event.target;
                     const cardName = _status.event.cardName;
-                    console.log(playerx.name, targetx.name, cardName, get.value(card), card.name)
+                    
                     if (get.attitude(playerx, targetx) <= 0) return -1000;
                     if (_status.event.dyingEvent && card.name == "jiu") return 6;
                     if (cardName === "sha" && card.name == "shan") return 6;

@@ -914,7 +914,6 @@ window.XJB_LOAD_PROJECT = function (_status, lib, game, ui, get, ai) {
                             }
                             else {
                                 const max = parseInt((lib.config[type] - 100) / backNum)
-                                console.log(max)
                                 game.xjb_create.range(`你当前投资额为:${lib.config[type]}点，可提取${max} 个魂币`,
                                     0, max, 0,
                                     function () {

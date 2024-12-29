@@ -173,7 +173,6 @@ window.XJB_LOAD_RAISE = function (_status, lib, game, ui, get, ai) {
             const id = result;
             game.xjb_removeSkills(skillName);
             if (game.xjb_raiseCharGainSkill(skillName, void 0, connectDia)) {
-                console.log(connectDia.consturctArgs[0])
                 if (connectDia.consturctArgs[0]) {
                     delete connectDia.consturctArgs[0][skillName];
                     connectDia.consturctArgs[0][id] = get.xjb_skillDescription(id);
