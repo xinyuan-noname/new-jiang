@@ -4,6 +4,8 @@ const format = (text) => {
     let result = text
         .replace(/^if\(\n(.*)\n\)\n{/mg, "if($1){")
         .replace(/^else[ ]+if\(\n(.*)\n\)\n{/mg, "else if($1){")
+        .replace(/^if\(\n(.*)\n\)/mg, "if($1)")
+        .replace(/^else[ ]+if\(\n(.*)\n\)/mg, "else if($1)")
         .replace(/\belse[ ]*\n{/g, "else{")
         .replace(/\n (\|\||&&) \n/g, " $1 ")
         .replace(/\n(?=[ ]*[><]=?[ ]*)/g, "")

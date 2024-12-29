@@ -48,8 +48,11 @@ window.XJB_EDITOR_LIST = {
 		'你有空置的防具栏',
 		'你有空置的宝物栏',
 		'场上有男性角色',
+		'场上有女性角色',
 		'你已横置',
-		'你已翻面'
+		'你已翻面',
+		"你性别相同于触发事件的角色",
+		"你性别不同于触发事件的角色",
 	],
 	effect: [
 		'你可以摸三张牌或回复一点体力值',
@@ -1240,7 +1243,7 @@ game.xjb_skillEditor = function () {
 			return p[0];
 		})
 		//处理变量词
-		NonameCN.standardBoolExpBefore(that)
+		EditorArrange.standardBoolExp(that)
 		NonameCN.underlieVariable(that)
 		//处理角色相关字符
 		playerCN.forEach(i => {
@@ -1419,7 +1422,7 @@ game.xjb_skillEditor = function () {
 		//
 		that.changeWord(/【([\u4e00-\u9fa5]+)】/g, '$1')
 		NonameCN.standardShort(that)
-		NonameCN.standardBoolExpBefore(that)
+		EditorArrange.standardBoolExp(that)
 		NonameCN.standardModBefore(that)
 		NonameCN.standardEffectBefore(that)
 		NonameCN.underlieVariable(that)
@@ -1974,7 +1977,7 @@ game.xjb_skillEditor = function () {
 	filterTargetFree.arrange = function () {
 		const that = filterTargetFree
 		that.changeWord(/(你|目标)/g, "$1 ");
-		NonameCN.standardBoolExpBefore(that)
+		EditorArrange.standardBoolExp(that)
 		NonameCN.underlieVariable(that)
 		NonameCN.standardFilterTargetBef(that)
 		new Array('你', '目标').forEach(i => {
@@ -2043,7 +2046,7 @@ game.xjb_skillEditor = function () {
 	filterCardFree.arrange = function () {
 		const that = filterCardFree
 		that.changeWord(/所选角色/g, '目标')
-		NonameCN.standardBoolExpBefore(that)
+		EditorArrange.standardBoolExp(that)
 		NonameCN.underlieVariable(that)
 		NonameCN.standardFilterCardBef(that)
 		that.changeWord(/(你|目标)/g, "$1 ");

@@ -23,8 +23,15 @@ export class ImplicitTextTool {
             })
         result = result
             .replace(/^(.+?)于回合外$/mg, "$1 不是当前回合角色")
+        result = result
             .replace(/^(.+?)[ ]*[是为][ ]*(男性|女性)$/mg, '$1 属于性别 $2')
             .replace(/^(.+?)[ ]*不[是为][ ]*(男性|女性)$/mg, '$1 不属于性别 $2')
+        result = result
+            .replace(/(.+?)[ ]*本回合未(使用|造成)过?(牌|伤害)$/mg, '$1 本回合$2$3次数\n为\n0')
+            .replace(/(.+?)[ ]*本回合(使用|造成)过(牌|伤害)$/mg, '$1 本回合$2$3次数\n大于\n0')
+        result = result
+            .replace(/^场上有(其他)?(男性|女性)(性别)?(角色)?$/mg, '游戏 统计场上$1$2数量\n大于\n0')
+            .replace(/^场上有(其他)?(魏|蜀|吴|群|晋|西|键|神)势力角色$/mg, '游戏 统计场上$1$2势力角色数量\n大于\n0')
         return result;
     }
     static content(text) {
