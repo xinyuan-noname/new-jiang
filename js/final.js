@@ -425,9 +425,10 @@ window.XJB_LOAD_FINAL = function () {
         skillsStore() {
             const array = []
             for (let k in lib.character) {
-                if (lib.character[k]) array.push(...lib.character[k][3])
+                if (lib.character[k][3]) array.push(...lib.character[k][3])
             }
             array.randomSort();
+            lib.xjb_characterList = Object.keys(lib.character)
             lib.xjb_skillList = lib.xjb_skillsStore = array;
             setTimeout(() => {
                 lib.xjb_skillDirectory = {};

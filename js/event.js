@@ -2,8 +2,9 @@ import { _status, lib, game, ui, get, ai } from "../../../noname.js";
 const xjb_playerMethod = {
     "xjb_zeroise": function (name) {
         name = name || this.name;
-        let player = this;
-        player.xjb_clearSkills()
+        const player = this;
+        player.skills.length = 0;
+        player.hiddenSkills.length = 0;
         player.init(name);
         if (lib.character[name]) {
             player.skills = lib.character[name][3] || [];
@@ -17,7 +18,6 @@ const xjb_playerMethod = {
         const player = this;
         player.skills.length = 0;
         player.hiddenSkills.length = 0;
-
     },
     "xjb_recordTalentCard": function (num, skillName) {
         const player = this;
@@ -254,7 +254,15 @@ const xjb_playerMethod = {
         game.saveConfig('xjb_count', lib.config.xjb_count);
         return lib.config.xjb_count[target.name].HpCard
     },
-
+    "xjb_speechWord": function (words) {
+        if (!("speechSynthesis" in window)) return;
+        if (!this.xjb_speaker) {
+            this.xjb_speaker = new SpeechSynthesisUtterance();
+            this.xjb_speaker.lang = "zh-CN"
+        }
+        this.xjb_speaker.text = words;
+        speechSynthesis.speak(this.xjb_speaker)
+    }
 }
 const xjb_likeEvent = {
     "xjb_chooseAllCard": function () {

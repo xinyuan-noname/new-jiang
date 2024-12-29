@@ -9,10 +9,28 @@
 ### 交互相关
 分为一般的和promise版的，promise写起来更加方便。
 下面是一些新将包的promise交互框写法。
+#### 警告框
+``` js
+await game.xjb_create.promise.alert(message);
+```
 #### 确认框
+``` js
+const { bool } = await game.xjb_create.promise.confirm(message);
 ```
-const {result,bool,chosen} = await game.xjb_create.promise.alert(message);
+#### 输入框
+``` js
+const { result, bool } = await game.xjb_create.promise.prompt(title, defaultValue, placeholder);
 ```
+#### 区间选数字框
+``` js
+const { result, bool } = await game.xjb_create.promise.range(title, setting, changeValue);
+```
+- title 对话框的标题
+- setting 对话框的设置
+  - max 上限
+  - min 下限
+  - value 默认值
+- changeValue 当range控件值改变时 设置的回调函数 用于更新标题内容
 
 ### 文件相关
 #### game.xjb_loadAPI(suc,fail,branch)

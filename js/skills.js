@@ -333,76 +333,75 @@ lib.skill.xjb_3 = {
             },
             forced: true,
             direct: true,
-            content() {
-                'step 0'
+            async content(event, trigger, player) {
                 event.level = _status.xjb_level;
                 if (game.players.length < 4 && game.me.isAlive()) {
                     const number = _status.xjb_level.xjb_chip * 5
-                    game.xjb_create.alert('恭喜你坚持到了最后!你可以获得奖励' + number + '个魂币', function () {
-                        if (number) game.xjb_getHunbi(number, void 0, true, false, '游戏');
-                    })
+                    await game.xjb_create.promise.alert('恭喜你坚持到了最后!你可以获得奖励' + number + '个魂币')
+                    if (number) game.xjb_getHunbi(number, void 0, true, false, '游戏');
                     game.over(true);
-                    event.finish();
-                    game.resume();
+                    return;
                 };
                 trigger.cancel();
-                'step 1'
+                let inputNum;
                 if (player === game.me) {
-                    game.pause();
-                    game.xjb_create.prompt('输入一个介于' + event.level.min + '到' + event.level.max + '间的一个数', '', function () {
-                        const input = Number(this.result)
-                        if (input > event.level.max || input < event.level.min || Math.floor(input) !== input) {
-                            game.xjb_create.alert('不是有效的数字,请重新输入', function () {
-                                event.redo();
-                                game.resume();
-                            });
-                        } else {
-                            event.input = input;
-                            game.resume();
-                        }
-                    }, function () {
-                        event.redo();
-                        game.resume();
-                    })
+                    if (_status.xjb_level.min === _status.xjb_level.max) {
+                        await game.xjb_create.promise.alert("boom!");
+                        inputNum = _status.xjb_level.min;
+                    }
+                    else for (let bool; !bool && _status.event === event;) {
+                        const { result, bool: boolx } = await game.xjb_create.promise.range(
+                            '输入一个介于' + event.level.min + '到' + event.level.max + '间的一个数',
+                            { min: event.level.min, max: event.level.max }
+                        )
+                        bool = boolx, inputNum = result;
+                    }
                 } else {
-                    game.pause();
-                    setTimeout(function () {
-                        event.input = XJB_Math['randomInt'](_status.xjb_level.min, _status.xjb_level.max)
-                        game.resume();
-                    }, 1000)
+                    await new Promise(res => {
+                        setTimeout(() => {
+                            inputNum = XJB_Math['randomInt'](_status.xjb_level.min, _status.xjb_level.max);
+                            res();
+                        }, 1000)
+                    })
                 };
-                'step 2'
-                player.popup(event.input)
-                game.pause();
-                setTimeout(function () {
-                    game.resume();
-                }, 1000)
-                'step 3'
-                if (event.input === event.level.guessNumber) {
-                    player.damage(player.hp);
+                player.popup(inputNum);
+                await new Promise(res => {
+                    setTimeout(res, 500);
+                })
+                if (inputNum === event.level.guessNumber) {
+                    await player.damage(Infinity);
                     _status.xjb_level.guessNumber = Math.floor(Math.random() * 1000)
                     _status.xjb_level.min = 0;
                     _status.xjb_level.max = 999;
-                } else if (event.input < event.level.guessNumber) {
-                    _status.xjb_level.min = event.input + 1;
-                    player.popup('小了')
-                } else if (event.input > event.level.guessNumber) {
-                    _status.xjb_level.max = event.input - 1;
-                    player.popup('大了')
+                    player.xjb_speechWord(get.translation(player) + "出局")
+                    await new Promise(res => {
+                        setTimeout(res, 100);
+                    })
+                } else if (inputNum < event.level.guessNumber) {
+                    _status.xjb_level.min = inputNum + 1;
+                    player.popup('小了');
+                    player.xjb_speechWord("小了")
+                    await new Promise(res => {
+                        setTimeout(res, 100);
+                    })
+                } else if (inputNum > event.level.guessNumber) {
+                    _status.xjb_level.max = inputNum - 1;
+                    player.popup('大了');
+                    player.xjb_speechWord("大了")
+                    await new Promise(res => {
+                        setTimeout(res, 100);
+                    })
                 }
-                'step 4'
                 if (game.players.length < 4 && game.me.isAlive()) {
                     const number = _status.xjb_level.xjb_chip * 5
-                    game.xjb_create.alert('恭喜你坚持到了最后!你可以获得奖励' + number + '个魂币', function () {
-                        if (number) game.xjb_getHunbi(number, void 0, true, false, '游戏');
-                        game.over(true);
-                    })
-                    event.finish();
+                    await game.xjb_create.alert(`恭喜你坚持到了最后!${isNaN(number) ? "你可以获得" + number + "个魂币。" : ""}`)
+                    if (number) game.xjb_getHunbi(number, void 0, true, false, '游戏');
+                    game.over(true);
+                    return;
                 };
                 trigger.cancel();
             }
-        }
-        )
+        })
     },
     project: function () {
         //变身标记
@@ -457,7 +456,6 @@ lib.skill.xjb_3 = {
         }
     },
     uniqueSkill: function () {
-
         //游戏初始化
         lib.skill._xjb_tianxing = {
             trigger: {
@@ -478,7 +476,6 @@ lib.skill.xjb_3 = {
                 game.players.forEach(function (current) {
                     //灵力设置
                     player.storage.xjb_daomoMax = 1
-
                     current.storage.xjb_card_allow = {}
                     current.noskill = {}
                     current.noskill_translate = {}

@@ -57,6 +57,7 @@ const _xjb_soul_xue_jiezhen = SkillCreater(
     filter: function (_, player) {
         if (!lib.config.xjb_lingli_Allallow) {
             if (!lib.xjb_lingliUser.includes(player.name1) && !lib.xjb_lingliUser.includes(player.name2)) return false;
+            if (!player.storage.xjb_tempAllowUseLingli) return false;
         }
         if (player.getHistory("custom", evt => evt.name === "xjb_addZhenFa").length) return false;
         return true;
