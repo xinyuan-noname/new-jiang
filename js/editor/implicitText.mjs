@@ -27,6 +27,8 @@ export class ImplicitTextTool {
             .replace(/^(.+?)[ ]*[是为][ ]*(男性|女性)$/mg, '$1 属于性别 $2')
             .replace(/^(.+?)[ ]*不[是为][ ]*(男性|女性)$/mg, '$1 不属于性别 $2')
         result = result
+            .replace(/^(.+?)[ ]*有(".+?"|'.+?')标记$/mg, "$1 有标记 $2")
+        result = result
             .replace(/(.+?)[ ]*本回合未(使用|造成)过?(牌|伤害)$/mg, '$1 本回合$2$3次数\n为\n0')
             .replace(/(.+?)[ ]*本回合(使用|造成)过(牌|伤害)$/mg, '$1 本回合$2$3次数\n大于\n0')
         result = result
@@ -39,13 +41,15 @@ export class ImplicitTextTool {
             .replace(/(.+?)[ ]*执行(一个)?额外的?(准备|判定|出牌|摸牌|弃牌|结束)阶段/g, `阶段列表 剪接 当前回合序号 0 $3阶段|\\-skillID`)
             .replace(/^销毁(此牌|卡牌)/mg, '$1 修正\n$1 移除\n$1 已销毁 令为 真\n游戏 日志 $1 "已销毁"')
             .replace(/^重置本技能发动次数$/mg, '本技能发动次数令为0')
+            .replace(/^你?[ ]*取消[本此该]触发事件$/mg, "触发事件 取消")
         console.log("content", result);
         return result;
     }
     static filter(text) {
         let result = ImplicitTextTool.common(text)
+            .replace(/^有(伤害来源|触发事件的来源)$/mg, "$1")
             .replace(/^卡牌(花色|点数|牌名|颜色|类型|副类别|类别)(相同|不同)$/mg, '获取 当前选择的卡牌$1是否$2')
-        console.log("filterCard", result);
+        console.log("filter", result);
         return result;
     }
     static filterCard(text) {
@@ -56,12 +60,11 @@ export class ImplicitTextTool {
     }
     static trigger(text) {
         let result = text
-            .replace(/^游戏开始时$/mg, "global phaseBefore\nplayer enterGame\n")
+            //.replace(/^游戏开始时$/mg, "global phaseBefore\nplayer enterGame\n")
+            .replace(/(?<!将牌)置于武将牌[旁上]|将牌置于武将牌旁/g, "将牌置于武将牌上")
+            .replace(/(回复|恢复)体力(?!上限)/g, "回复体力值")
             .replace(/于回合[外内]/g, '')
             .replace(/当(?!前)/g, '')
-            .replace(/(结束时|结束后)/g, "结束")
-            .replace(/(开始时|开始后)/g, "开始")
-            .replace(/(完成结算后|结算完成后)/g, "结算后")
             .replace(/之([前后])/g, "$1")
         console.log("trigger", result);
         return result;

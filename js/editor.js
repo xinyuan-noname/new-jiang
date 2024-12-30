@@ -559,8 +559,10 @@ game.xjb_skillEditor = function () {
 		if (back.skill.custom.cost) {
 			strParts.push(EditorOrganize.cost(back));
 		}
-		//filter部分
-		strParts.push(filter);
+		//filter部分	
+		if (!/filter\:function\(event\,player\,triggername\)\{\n\s*(return true;)?\s*?\n\}\,\n/.test(filter)) {
+			strParts.push(filter);
+		}
 		strParts.push(enableSkillNeed)
 		//content部分
 		if (!back.skill.boolList.includes("viewAs")) {
@@ -1211,7 +1213,7 @@ game.xjb_skillEditor = function () {
 	const filterFree = element('textarea')
 		.father(filterFreeContainer)
 		.setKey("toPart", "filter")
-		.exit()
+		.exit();
 	const filterContainer2 = element('div')
 		.father(subBack2)
 		.flexColumn()
@@ -1220,7 +1222,7 @@ game.xjb_skillEditor = function () {
 			position: 'relative',
 			'backgroundColor': 'rgba(63,65,81,0.9)'
 		})
-		.exit()
+		.exit();
 	addSidebarButton(filterFree, filterContainer2, 'filter')
 	back.ele.filter = filterFree;
 	filterFree.changeWord = function (replaced, replacer) {
@@ -1274,7 +1276,7 @@ game.xjb_skillEditor = function () {
 		const _this = this
 		back.skill.filter = [];
 		filterFree.inherit();
-		const implicitText = ImplicitTextTool.content(filterFree.value);
+		const implicitText = ImplicitTextTool.filter(filterFree.value);
 		const list = dispose(implicitText, void 0, NonameCN.FilterList);
 		const redispose = NonameCN.replace(list.join('\n')).map(t => {
 			let result = t.replace(/\btrigger\b/g, 'event');
@@ -1442,10 +1444,7 @@ game.xjb_skillEditor = function () {
 		that.changeWord(/(其他|其它)+/g, "其他");
 		that.changeWord(/(可以)+/g, "可以");
 		//数字有关处理
-		that.changeWord(/二(名|点)/g, function (match, p1) {
-			//将匹配的部分换为两名/两点
-			return '两' + p1
-		});
+		that.changeWord(/二(名|点)/g, '两$1');
 		for (let i = 1; i <= 10; i++) {
 			that.changeWord(new RegExp("任意" + i + '张', 'g'), i + '张');
 			that.changeWord(new RegExp("任意" + get.cnNumber(i) + '张', 'g'), get.cnNumber(i) + '张');
@@ -1453,7 +1452,7 @@ game.xjb_skillEditor = function () {
 			that.changeWord(new RegExp("任意" + get.cnNumber(i) + '名', 'g'), get.cnNumber(i) + '名');
 		}
 		that.changeWord(/可?以?令(至多|至少)?((?:[一两二三四五六七八九十]+|\d+)到(?:[一两二三四五六七八九十]+|\d+)|\d+|[一两二三四五六七八九十]+)名(其他)?角色(.*)$/mg, "选择$1$2名$3角色\n新步骤\n如果\n有选择结果\n那么\n分支开始\n所选角色$4\n分支结束")
-		that.changeWord(/可?以?令任意名(其他)?角色(.*)$/mg,"选择任意名$1角色\n新步骤\n如果\n有选择结果\n那么\n分支开始\n所选角色$2\n分支结束");
+		that.changeWord(/可?以?令任意名(其他)?角色(.*)$/mg, "选择任意名$1角色\n新步骤\n如果\n有选择结果\n那么\n分支开始\n所选角色$2\n分支结束");
 		//数字参数处理
 		EditorArrange.makeNumToEnd(that);
 		//统一写法
@@ -1737,24 +1736,30 @@ game.xjb_skillEditor = function () {
 			if (colors.includes(pending)) back.skill.filter_color.push(str + ':"' + pending + '"')
 			return true;
 		}
-		list.forEach(i => {
-			let a = i;
-			if (i.includes("一点")) {
-				a.remove("一点");
+		list.forEach(line => {
+			let words = line;
+			if (line.includes("一点")) {
+				words.remove("一点");
 				back.skill.getIndex = true;
 			}
-			if (i.includes("roundStart")) {
-				a.remove('roundStart');
+			if (line.includes("roundStart")) {
+				words.remove('roundStart');
 				tri_global.push("roundStart");
 			}
-			if (i.includes('player')) {
-				a.remove('player');
-				tri_players.push(...a);
-			} else if (i.includes('global')) {
-				a.remove('global');
-				tri_global.push(...a);
+			if (line.includes('player')) {
+				words.remove('player');
+				tri_players.push(...words);
+			} else if (line.includes('global')) {
+				words.remove('global');
+				tri_global.push(...words);
+			} else if (line.includes("source")) {
+				words.remove("source");
+				tri_source.push(...words);
+			} else if (line.includes("target")) {
+				words.remove("target");
+				tri_target.push(...words)
 			} else {
-				tri_players.push(...a);
+				tri_players.push(...words);
 			}
 		})
 		tri_players.forEach(i => {

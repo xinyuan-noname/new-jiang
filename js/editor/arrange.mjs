@@ -62,8 +62,6 @@ export class EditorArrange {
 
     static standardBoolExp(that) {
         that.value = that.value
-            .replace(/>/g, '不大于')
-            .replace(/</g, '不小于')
             .replace(/(?<!游戏 统计)场上势力数/g, '游戏 统计场上势力数')
             .replace(/^(.+?)[ ]*性别(相同|不同)于(.+?)$/mg, "$1 性别$2于 $3")
             .replace(/(?<=有标记)(?![ ])/g, ' ')

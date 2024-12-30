@@ -1,11 +1,10 @@
 import { _status, lib, game, ui, get, ai } from "../../../../noname.js";
 lib.skill._xjb_remnantArea = {
     mod: {
-        "cardEnabled2": function (card, player) {
-            var remnant = player.getCards("s").filter(i => {
-                return i.hasGaintag("_xjb_remnantArea")
-            });
-            if (remnant.includes(card)) return false
+        cardEnabled2: function (card, player) {
+            if (card.hasGaintag("_xjb_remnantArea")) {
+                return false
+            }
         },
     },
     trigger: {
@@ -64,6 +63,7 @@ lib.skill._xjb_remnantArea = {
     }
 }
 lib.translate._xjb_remnantArea = "<font color=gold>残区</font>"
+game.addGlobalSkill("xjb_gainRemnantCard");
 game.xjb_setEvent('xjb_gainRemnantCard',
     {
         player() {
@@ -77,6 +77,9 @@ game.xjb_setEvent('xjb_gainRemnantCard',
             next.setContent('xjb_gainRemnantCard');
             next.player = player;
             next.num ??= 1;
+            if (!lib.skill.global.includes('_xjb_remnantArea')){
+                game.addGlobalSkill("_xjb_remnantArea");
+            } 
             return next;
         },
         content() {

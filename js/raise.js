@@ -169,7 +169,7 @@ window.XJB_LOAD_RAISE = function (_status, lib, game, ui, get, ai) {
         ).coverDialog(connectDia);
         const dialog = promise.dialog;
         const { result, bool } = await promise;
-        if (bool) {
+        if (bool && result !== undefined) {
             const id = result;
             game.xjb_removeSkills(skillName);
             if (game.xjb_raiseCharGainSkill(skillName, void 0, connectDia)) {

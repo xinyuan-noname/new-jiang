@@ -41,7 +41,7 @@ const xjb_tongzhou = SkillCreater(
 const xjb_fuwei = SkillCreater(
 	"xjb_fuwei", {
 	translate: "赴危",
-	description: "限定技，当你受到致命伤害时，你可以防止此伤害，然后将同舟的触发时机改为准备阶段。",
+	description: "限定技，当你受到致命伤害时，你可以防止此伤害，然后将〖同舟〗的触发时机改为准备阶段。",
 	trigger: {
 		player: ["damageBefore"],
 	},
@@ -391,6 +391,184 @@ const xjb_cangshi = SkillCreater(
 	}
 })
 
+
+//伍员
+const xjb_wanxin = SkillCreater(
+	"xjb_wanxin", {
+	translate: "剜心",
+	description: "锁定技，每轮开始时，你失去“恨”标记数量点体力并摸等量张牌。",
+	trigger: {
+		global: ["roundStart"],
+	},
+	forced: true,
+	filter: function (event, player, triggername) {
+		if (!player.hasMark("xjb_duhen")) return false;
+		return true;
+	},
+	content: async function (event, trigger, player) {
+		const x = player.countMark("xjb_duhen")
+		await player.loseHp(x)
+		await player.draw(x)
+	},
+});
+const xjb_gangli = SkillCreater(
+	"xjb_gangli", {
+	translate: "刚戾",
+	description: "锁定技，你不能成为【乐不思蜀】的目标；你不能被翻面。",
+	mod: {
+		targetEnabled: function (card, player, target, now) {
+			if (get.name(card, player) === "lebu") return false;
+		},
+	},
+	forced: true,
+	trigger: {
+		player: "turnOverBegin"
+	},
+	filter: function (event, player, triggername) {
+		if (player.isTurnedOver()) return false;
+		return true;
+	},
+	content: function () {
+		trigger.cancel()
+	},
+	ai: {
+		noTurnover: true,
+	}
+})
+const xjb_duhen = SkillCreater(
+	"xjb_duhen", {
+	translate: "渡恨",
+	description: "当你造成伤害时，你可以获得一枚“恨”，令此伤害+1。</br>当你使用伤害牌时，你可以获得一枚“恨”，令此牌无法被响应。</br>当你受到伤害时，你可以获得一枚“恨”，对伤害来源造成等量点伤害。</br>出牌阶段开始前，你可以获得一枚“恨”，令本回合你使用牌无距离和次数限制。</br>出牌阶段，你可以移除〖渡恨〗的一个分项并移去X枚“恨”，然后你回复一点体力。(X为本项你发动的次数)。",
+	marktext: "恨",
+	intro: {
+		name: "渡恨",
+		content: "mark",
+	},
+	group: [
+		"xjb_duhen_1",
+		"xjb_duhen_2",
+		"xjb_duhen_3",
+		"xjb_duhen_4",
+		"xjb_duhen_5",
+	],
+	canUse: (player, num) => {
+		game.broadcastAll((player) => {
+			if (player.storage.xjb_duhen_config == undefined) player.storage.xjb_duhen_config = 0b11111;
+		}, player);
+		return Boolean(player.storage.xjb_duhen_config & (1 << (num - 1)));
+	},
+	removeConfig: (player, num) => {
+		game.broadcastAll((player, i) => {
+			if (player.storage.xjb_duhen_config == undefined) player.storage.xjb_duhen_config = 0b11111;
+			player.storage.xjb_duhen_config &= (0b11111 ^ (1 << (i - 1)))
+		}, player, num);
+	},
+	list: [
+		"当你造成伤害时，你可以获得一枚“恨”，令此伤害+1。",
+		"当你使用伤害牌时，你可以获得一枚“恨”，令此牌无法被响应。",
+		"当你受到伤害时，你可以获得一枚“恨”，对伤害来源造成等量点伤害。",
+		"出牌阶段开始前，你可以获得一枚“恨”，令本回合你使用牌无距离和次数限制。",
+		"出牌阶段，你可以移除〖渡恨〗的一个分项并移去X枚“恨”，然后你回复一点体力。(X为本项你发动的次数)。"
+	],
+	subSkill: {
+		1: {
+			trigger: {
+				source: ["damageBegin"],
+			},
+			prompt2(event, player) {
+				return `令对${get.translation(event.player)}造成的伤害+1`
+			},
+			filter: function (event, player, triggername) {
+				if (!get.info("xjb_duhen").canUse(player, 1)) return false;
+				return true;
+			},
+			content: function () {
+				"step 0"
+				player.addMark("xjb_duhen", 1)
+				trigger.num += 1
+			},
+		},
+		2: {
+			trigger: {
+				player: ["useCard"],
+			},
+			prompt2(event, player) {
+				return `令${get.translation(event.card)}不可被响应`
+			},
+			filter: function (event, player, triggername) {
+				if (!get.info("xjb_duhen").canUse(player, 2)) return false;
+				if (!get.tag(event.card, "damage")) return false;
+				return true;
+			},
+			content: function () {
+				"step 0"
+				player.addMark("xjb_duhen", 1);
+				trigger.directHit.addArray(trigger.targets);
+			},
+		},
+		3: {
+			trigger: {
+				player: "damageEnd"
+			},
+			filter: function (event, player, triggername) {
+				if (!get.info("xjb_duhen").canUse(player, 3)) return false;
+				if (!(event.source)) return false;
+				return true;
+			},
+			prompt2(event, player) {
+				return `是否对${get.translation(event.source)}造成${event.num}点伤害`
+			},
+			content: function () {
+				"step 0"
+				trigger.source.damage(trigger.num, player)
+				player.addMark("xjb_duhen", 1);
+			},
+		},
+		4: {
+			trigger: {
+				player: ["phaseUseBegin"],
+			},
+			filter: (event, player) => {
+				if (!get.info("xjb_duhen").canUse(player, 4)) return false;
+				return true;
+			},
+			prompt2: "你本回合使用牌无距离限制",
+			content: function () {
+				"step 0"
+				player.addMark("xjb_duhen", 1)
+				player.addTempSkill("xjb_duhen_infinity")
+			},
+
+		},
+		infinity: {
+			mod: {
+				targetInRange: function (card, player, target, now) {
+					return true;
+				}
+			},
+		},
+		5: {
+			enable: "phaseUse",
+			filter: (event, player) => {
+				if (!get.info("xjb_duhen").canUse(player, 5)) return false;
+				return true
+			},
+			content: async function (event, trigger, player) {
+				const info = get.info("xjb_duhen");
+				const list = [];
+				info.list.forEach((description, index) => {
+					if (info.canUse(player, index + 1)) list.push([[[index + 1, description]], "tdnodes"])
+				});
+				const { result: { links, bool } } = await player.chooseButton(list);
+				if (!bool) return false;
+				const [index] = links;
+				info.removeConfig(player, index);
+				await player.recover();
+				player.removeMark("xjb_duhen", player.getAllHistory("useSkill", evt => evt.skill === "xjb_duhen_5").length);
+			},
+		},
+	}
+})
 
 //嬴政
 const xjb_zulong = SkillCreater(

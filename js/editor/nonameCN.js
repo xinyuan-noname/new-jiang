@@ -149,28 +149,7 @@ function getMapOfgetParent() {
     }
     return list
 }
-function getMapOfTrigger() {
-    const list = {}
-    let event = {
-        ...eventList,
-        "获得技能": "addSkills",
-        "失去技能": "removeSkills",
-    };
-    for (let [i, k] of Object.entries(event)) {
-        list[i + "前"] = k + "Before"
-        list[i + "开始"] = k + "Begin"
-        if (["回合"].includes(i)) list[i + "时"] = k + "Begin"
-        list[i + "结束"] = k + "End"
-        list[i + "后"] = k + "After"
-        list[i + "结算后"] = k + "After"
-        list["令一名角色" + i + "时"] = "source:" + k + "Begin"
-        list["令一名角色" + i + "结束"] = "source:" + k + "End"
-        list["令一名角色" + i + "前"] = "source:" + k + "Before"
-        list["令一名角色" + i + "后"] = "source:" + k + "After"
-    }
-    list["失去手牌后"] = "loseAfter:h";
-    return list
-}
+
 function getMapOfTri_Target() {
     const map = {}
     for (let [cn, attr] of Object.entries({ ...getMapOfCard(false), ...getMapOfColorCard() })) {
@@ -1468,52 +1447,391 @@ export class NonameCN {
             '一名角色': 'global',
             '一位角色': 'global',
         },
-
         triggerList: {
-            ...getMapOfTrigger(),
             ...getMapOfTri_Target(),
             ...getMapOfTri_Use(),
-            //
             "进入游戏时": "enterGame",
-            "游戏开始时": "gameStart",
             "每轮开始时": "roundStart",
-            //phase类
+
+            "回合前": "phaseBefore",
             "回合开始后2": "phaseBeforeStart",
             "回合开始后4": "phaseBeforeEnd",
             "回合开始后7": "phaseBeginStart",
+            "回合开始": "phaseBegin",
             "回合开始后9": "phaseBegin",
-            "准备阶段": "phaseZhunbeiBegin",
-            "准备阶段开始": "phaseZhunbeiBegin",
-            "摸牌阶段2": "phaseDrawBegin2",
-            "结束阶段": "phaseJieshuBegin",
-            "结束阶段开始": "phaseJieshuBegin",
             "阶段改变时": "phaseChange",
             "阶段更改时": "phaseChange",
-            //伤害
+            "回合结束": "phaseEnd",
+            "回合后": "phaseAfter",
+            "回合结算后": "phaseAfter",
+
+            "准备阶段前": "phaseZhunbeiBefore",
+            "准备阶段": "phaseZhunbeiBegin",
+            "准备阶段开始": "phaseZhunbeiBegin",
+            "准备阶段结束": "phaseZhunbeiEnd",
+            "准备阶段后": "phaseZhunbeiAfter",
+            "准备阶段结算后": "phaseZhunbeiAfter",
+
+            "判定阶段前": "phaseJudgeBefore",
+            "判定阶段开始": "phaseJudgeBegin",
+            "判定阶段结束": "phaseJudgeEnd",
+            "判定阶段后": "phaseJudgeAfter",
+            "判定阶段结算后": "phaseJudgeAfter",
+
+            "摸牌阶段前": "phaseDrawBefore",
+            "摸牌阶段开始": "phaseDrawBegin",
+            "摸牌阶段": "phaseDrawBegin",
+            "摸牌阶段2": "phaseDrawBegin2",
+            "摸牌阶段结束": "phaseDrawEnd",
+            "摸牌阶段后": "phaseDrawAfter",
+            "摸牌阶段结算后": "phaseDrawAfter",
+
+            "出牌阶段前": "phaseUseBefore",
+            "出牌阶段开始": "phaseUseBegin",
+            "出牌阶段结束": "phaseUseEnd",
+            "出牌阶段后": "phaseUseAfter",
+            "出牌阶段结算后": "phaseUseAfter",
+
+            "结束阶段前": "phaseJieShuBefore",
+            "结束阶段开始": "phaseJieShuBegin",
+            "结束阶段": "phaseJieshuBegin",
+            "结束阶段开始": "phaseJieshuBegin",
+            "结束阶段结束": "phaseJieShuEnd",
+            "结束阶段后": "phaseJieShuAfter",
+            "结束阶段结算后": "phaseJieShuAfter",
+
+            "弃牌阶段前": "phaseDiscardBefore",
+            "弃牌阶段开始": "phaseDiscardBegin",
+            "弃牌阶段结束": "phaseDiscardEnd",
+            "弃牌阶段后": "phaseDiscardAfter",
+            "弃牌阶段结算后": "phaseDiscardAfter",
+
+            "摸牌前": "drawBefore",
+            "摸牌开始": "drawBegin",
+            "摸牌时": "drawBegin",
+            "摸牌结束": "drawEnd",
+            "摸牌后": "drawAfter",
+            "摸牌结算后": "drawAfter",
+            "令一名角色摸牌时": "source:drawBegin",
+            "令一名角色摸牌结束": "source:drawEnd",
+            "令一名角色摸牌前": "source:drawBefore",
+            "令一名角色摸牌后": "source:drawAfter",
+
+            "判定前": "judgeBefore",
+            "判定开始": "judgeBegin",
+            "判定牌生效前": "judge",
+            "判定牌生效后": "judgeEnd",
+            "判定结束": "judgeEnd",
+            "判定后": "judgeAfter",
+            "判定结算后": "judgeAfter",
+            "令一名角色判定时": "source:judgeBegin",
+            "令一名角色判定结束": "source:judgeEnd",
+            "令一名角色判定前": "source:judgeBefore",
+            "令一名角色判定后": "source:judgeAfter",
+
+            "响应牌前": "respondBefore",
+            "响应牌开始": "respondBegin",
+            "响应牌时": "respondBegin",
+            "响应牌结束": "respondEnd",
+            "响应牌后": "respondAfter",
+            "响应牌结算后": "respondAfter",
+            "打出牌前": "respondBefore",
+            "打出牌开始": "respondBegin",
+            "打出牌时": "respondBegin",
+            "打出牌结束": "respondEnd",
+            "打出牌后": "respondAfter",
+            "打出牌结算后": "respondAfter",
+            "令一名角色响应牌时": "source:respondBegin",
+            "令一名角色响应牌结束": "source:respondEnd",
+            "令一名角色响应牌前": "source:respondBefore",
+            "令一名角色响应牌后": "source:respondAfter",
+            "令一名角色打出牌时": "source:respondBegin",
+            "令一名角色打出牌结束": "source:respondEnd",
+            "令一名角色打出牌前": "source:respondBefore",
+            "令一名角色打出牌后": "source:respondAfter",
+
+            "使用牌前": "useCardBefore",
+            "使用牌开始": "useCardBegin",
+            "使用牌时": "useCard",
+            "使用卡牌0": "useCard0",
+            "使用卡牌1": "useCard1",
+            "使用卡牌2": "useCard2",
+            "使用牌结束": "useCardEnd",
+            "使用牌后": "useCardAfter",
+            "使用牌结算后": "useCardAfter",
+            '使用牌指定目标时': "useCardToPlayer",
+            '使用牌指定目标后': "useCardToPlayered",
+            //
+            "令一名角色使用牌开始": "source:useCard",
+            "令一名角色使用牌时": "source:useCard",
+            "令一名角色使用牌结束": "source:useCardEnd",
+            "令一名角色使用牌前": "source:useCardBefore",
+            "令一名角色使用牌后": "source:useCardAfter",
+            //
+            '成为牌的目标时': "target:useCardToTarget",
+            '成为牌的目标后': "target:useCardToTargeted",
+
+            "弃置牌前": "discardBefore",
+            "弃置牌开始": "discardBegin",
+            "弃置牌时": "discardBegin",
+            "弃置牌结束": "discardEnd",
+            "弃置牌后": "discardAfter",
+            "弃置牌结算后": "discardAfter",
+            "令一名角色弃置牌时": "source:discardBegin",
+            "令一名角色弃置牌结束": "source:discardEnd",
+            "令一名角色弃置牌前": "source:discardBefore",
+            "令一名角色弃置牌后": "source:discardAfter",
+
+            "获得牌前": "gainBefore",
+            "获得牌开始": "gainBegin",
+            "获得牌时": "gainBegin",
+            "获得牌结束": "gainEnd",
+            "获得牌后": "gainAfter",
+            "获得牌结算后": "gainAfter",
+            "令一名角色获得牌时": "source:gainBegin",
+            "令一名角色获得牌结束": "source:gainEnd",
+            "令一名角色获得牌前": "source:gainBefore",
+            "令一名角色获得牌后": "source:gainAfter",
+
+            "失去牌前": "loseBefore",
+            "失去牌开始": "loseBegin",
+            "失去牌时": "loseBegin",
+            "失去牌结束": "loseEnd",
+            "失去牌后": "loseAfter",
+            "失去牌结算后": "loseAfter",
+            "令一名角色失去牌时": "source:loseBegin",
+            "令一名角色失去牌结束": "source:loseEnd",
+            "令一名角色失去牌前": "source:loseBefore",
+            "令一名角色失去牌后": "source:loseAfter",
+            "失去手牌后": "loseAfter:h",
+
+            "牌置入装备区前": "equipBefore",
+            "牌置入装备区开始": "equipBegin",
+            "牌置入装备区时": "equipBegin",
+            "牌置入装备区结束": "equipEnd",
+            "牌置入装备区后": "equipAfter",
+            "牌置入装备区结算后": "equipAfter",
+            "令一名角色牌置入装备区时": "source:equipBegin",
+            "令一名角色牌置入装备区结束": "source:equipEnd",
+            "令一名角色牌置入装备区前": "source:equipBefore",
+            "令一名角色牌置入装备区后": "source:equipAfter",
+
+
+            "牌置入判定区前": "addJudgeBefore",
+            "牌置入判定区开始": "addJudgeBegin",
+            "牌置入判定区时": "addJudgeBegin",
+            "牌置入判定区结束": "addJudgeEnd",
+            "牌置入判定区后": "addJudgeAfter",
+            "牌置入判定区结算后": "addJudgeAfter",
+            "令一名角色牌置入判定区时": "source:addJudgeBegin",
+            "令一名角色牌置入判定区结束": "source:addJudgeEnd",
+            "令一名角色牌置入判定区前": "source:addJudgeBefore",
+            "令一名角色牌置入判定区后": "source:addJudgeAfter",
+
+            "置于武将牌上前": "addToExpansionBefore",
+            "置于武将牌上开始": "addToExpansionBegin",
+            "置于武将牌上时": "addToExpansionBegin",
+            "置于武将牌上结束": "addToExpansionEnd",
+            "置于武将牌上后": "addToExpansionAfter",
+            "置于武将牌上结算后": "addToExpansionAfter",
+            "令一名角色置于武将牌上时": "source:addToExpansionBegin",
+            "令一名角色置于武将牌上结束": "source:addToExpansionEnd",
+            "令一名角色置于武将牌上前": "source:addToExpansionBefore",
+            "令一名角色置于武将牌上后": "source:addToExpansionAfter",
+
+            "将牌置于武将牌上前": "addToExpansionBefore",
+            "将牌置于武将牌上开始": "addToExpansionBegin",
+            "将牌置于武将牌上时": "addToExpansionBegin",
+            "将牌置于武将牌上结束": "addToExpansionEnd",
+            "将牌置于武将牌上后": "addToExpansionAfter",
+            "将牌置于武将牌上结算后": "addToExpansionAfter",
+            "令一名角色将牌置于武将牌上时": "source:addToExpansionBegin",
+            "令一名角色将牌置于武将牌上结束": "source:addToExpansionEnd",
+            "令一名角色将牌置于武将牌上前": "source:addToExpansionBefore",
+            "令一名角色将牌置于武将牌上后": "source:addToExpansionAfter",
+
+            "回复体力值前": "recoverBefore",
+            "回复体力值开始": "recoverBegin",
+            "回复体力值时": "recoverBegin",
+            "回复体力值结束": "recoverEnd",
+            "回复体力值后": "recoverAfter",
+            "回复体力值结算后": "recoverAfter",
+            "令一名角色回复体力值时": "source:recoverBegin",
+            "令一名角色回复体力值结束": "source:recoverEnd",
+            "令一名角色回复体力值前": "source:recoverBefore",
+            "令一名角色回复体力值后": "source:recoverAfter",
+
+
+            "受伤前": "damageBefore",
+            "受伤开始": "damageBegin",
             "伤害开始时1": "damageBegin1",
             "伤害开始时2": "damageBegin2",
             "伤害开始时3": "damageBegin3",
             "伤害开始时4": "damageBegin4",
+            "受伤时": "damageBegin",
+            "受伤结束": "damageEnd",
+            "受伤后": "damageAfter",
+            "受伤结算后": "damageAfter",
+            "受到伤害前": "damageBefore",
+            "受到伤害开始": "damageBegin",
+            "受到伤害时": "damageBegin",
+            "受到伤害结束": "damageEnd",
             "受到伤害后": "damageEnd",
+            "受到伤害结算后": "damageAfter",
+            //
             '造成伤害': 'damageSource',
+            "造成伤害开始时": "source:damageBefore",
+            "造成伤害前": "source:damageBegin",
             '造成伤害时': 'damageSource',
             '造成伤害后': 'damageSource',
-            "造成零点伤害时": "damageZero",
-            "造成0点伤害时": "damageZero",
-            //判定
-            "判定牌生效前": "judge",
-            "判定牌生效后": "judgeEnd",
+            "令一名角色受伤时": "source:damageBegin",
+            "令一名角色受伤结束": "source:damageEnd",
+            "令一名角色受伤前": "source:damageBefore",
+            "令一名角色受伤后": "source:damageAfter",
+            "令一名角色受到伤害时": "source:damageBegin",
+            "令一名角色受到伤害结束": "source:damageEnd",
+            "令一名角色受到伤害前": "source:damageBefore",
+            "令一名角色受到伤害后": "source:damageAfter",
+            "受到零点伤害时": "damageZero",
+            "受到0点伤害时": "damageZero",
+
+            "失去体力前": "loseHpBefore",
+            "失去体力开始": "loseHpBegin",
+            "失去体力时": "loseHpBegin",
+            "失去体力结束": "loseHpEnd",
+            "失去体力后": "loseHpAfter",
+            "失去体力结算后": "loseHpAfter",
+            "失去体力值前": "loseHpBefore",
+            "失去体力值开始": "loseHpBegin",
+            "失去体力值时": "loseHpBegin",
+            "失去体力值结束": "loseHpEnd",
+            "失去体力值后": "loseHpAfter",
+            "失去体力值结算后": "loseHpAfter",
+            "令一名角色失去体力时": "source:loseHpBegin",
+            "令一名角色失去体力结束": "source:loseHpEnd",
+            "令一名角色失去体力前": "source:loseHpBefore",
+            "令一名角色失去体力后": "source:loseHpAfter",
+            "令一名角色失去体力值时": "source:loseHpBegin",
+            "令一名角色失去体力值结束": "source:loseHpEnd",
+            "令一名角色失去体力值前": "source:loseHpBefore",
+            "令一名角色失去体力值后": "source:loseHpAfter",
+
+            "失去体力上限前": "loseMaxHpBefore",
+            "失去体力上限开始": "loseMaxHpBegin",
+            "失去体力上限时": "loseMaxHpBegin",
+            "失去体力上限结束": "loseMaxHpEnd",
+            "失去体力上限后": "loseMaxHpAfter",
+            "失去体力上限结算后": "loseMaxHpAfter",
+            "减少体力上限前": "loseMaxHpBefore",
+            "减少体力上限开始": "loseMaxHpBegin",
+            "减少体力上限时": "loseMaxHpBegin",
+            "减少体力上限结束": "loseMaxHpEnd",
+            "减少体力上限后": "loseMaxHpAfter",
+            "减少体力上限结算后": "loseMaxHpAfter",
+            "令一名角色失去体力上限时": "source:loseMaxHpBegin",
+            "令一名角色失去体力上限结束": "source:loseMaxHpEnd",
+            "令一名角色失去体力上限前": "source:loseMaxHpBefore",
+            "令一名角色失去体力上限后": "source:loseMaxHpAfter",
+            "令一名角色减少体力上限时": "source:loseMaxHpBegin",
+            "令一名角色减少体力上限结束": "source:loseMaxHpEnd",
+            "令一名角色减少体力上限前": "source:loseMaxHpBefore",
+            "令一名角色减少体力上限后": "source:loseMaxHpAfter",
+
+            "增加体力上限前": "gainMaxHpBefore",
+            "增加体力上限开始": "gainMaxHpBegin",
+            "增加体力上限时": "gainMaxHpBegin",
+            "增加体力上限结束": "gainMaxHpEnd",
+            "增加体力上限后": "gainMaxHpAfter",
+            "增加体力上限结算后": "gainMaxHpAfter",
+            "获得体力上限前": "gainMaxHpBefore",
+            "获得体力上限开始": "gainMaxHpBegin",
+            "获得体力上限时": "gainMaxHpBegin",
+            "获得体力上限结束": "gainMaxHpEnd",
+            "获得体力上限后": "gainMaxHpAfter",
+            "获得体力上限结算后": "gainMaxHpAfter",
+            "令一名角色增加体力上限时": "source:gainMaxHpBegin",
+            "令一名角色增加体力上限结束": "source:gainMaxHpEnd",
+            "令一名角色增加体力上限前": "source:gainMaxHpBefore",
+            "令一名角色增加体力上限后": "source:gainMaxHpAfter",
+            "令一名角色获得体力上限时": "source:gainMaxHpBegin",
+            "令一名角色获得体力上限结束": "source:gainMaxHpEnd",
+            "令一名角色获得体力上限前": "source:gainMaxHpBefore",
+            "令一名角色获得体力上限后": "source:gainMaxHpAfter",
+
+            "横置或重置前": "linkBefore",
+            "横置或重置开始": "linkBegin",
+            "横置或重置时": "linkBegin",
+            "横置或重置结束": "linkEnd",
+            "横置或重置后": "linkAfter",
+            "横置或重置结算后": "linkAfter",
+            "令一名角色横置或重置时": "source:linkBegin",
+            "令一名角色横置或重置结束": "source:linkEnd",
+            "令一名角色横置或重置前": "source:linkBefore",
+            "令一名角色横置或重置后": "source:linkAfter",
+
+            "翻面前": "turnOverBefore",
+            "翻面开始": "turnOverBegin",
+            "翻面时": "turnOverBegin",
+            "翻面结束": "turnOverEnd",
+            "翻面后": "turnOverAfter",
+            "翻面结算后": "turnOverAfter",
+            "武将牌翻面前": "turnOverBefore",
+            "武将牌翻面开始": "turnOverBegin",
+            "武将牌翻面时": "turnOverBegin",
+            "武将牌翻面结束": "turnOverEnd",
+            "武将牌翻面后": "turnOverAfter",
+            "武将牌翻面结算后": "turnOverAfter",
+            "令一名角色翻面时": "source:turnOverBegin",
+            "令一名角色翻面结束": "source:turnOverEnd",
+            "令一名角色翻面前": "source:turnOverBefore",
+            "令一名角色翻面后": "source:turnOverAfter",
+            "令一名角色武将牌翻面时": "source:turnOverBegin",
+            "令一名角色武将牌翻面结束": "source:turnOverEnd",
+            "令一名角色武将牌翻面前": "source:turnOverBefore",
+            "令一名角色武将牌翻面后": "source:turnOverAfter",
+
+            '进入濒死状态时': 'dying',
+            '脱离濒死状态时': 'dyingAfter',
+            "死亡前": "dieBefore",
+            "死亡开始": "dieBegin",
+            "死亡时": "dieBegin",
+            "死亡结束": "dieEnd",
+            "死亡后": "dieAfter",
+            "死亡结算后": "dieAfter",
+            '杀死一名角色后': 'source:dieAfter',
+            '令一名角色进入濒死状态': "source:dying",
+            "令一名角色死亡时": "source:dieBegin",
+            "令一名角色死亡结束": "source:dieEnd",
+            "令一名角色死亡前": "source:dieBefore",
+            "令一名角色死亡后": "source:dieAfter",
+
+            "获得技能前": "addSkillsBefore",
+            "获得技能开始": "addSkillsBegin",
+            "获得技能时": "addSkillsBegin",
+            "获得技能结束": "addSkillsEnd",
+            "获得技能后": "addSkillsAfter",
+            "获得技能结算后": "addSkillsAfter",
+            "令一名角色获得技能时": "source:addSkillsBegin",
+            "令一名角色获得技能结束": "source:addSkillsEnd",
+            "令一名角色获得技能前": "source:addSkillsBefore",
+            "令一名角色获得技能后": "source:addSkillsAfter",
+
+            "失去技能前": "removeSkillsBefore",
+            "失去技能开始": "removeSkillsBegin",
+            "失去技能时": "removeSkillsBegin",
+            "失去技能结束": "removeSkillsEnd",
+            "失去技能后": "removeSkillsAfter",
+            "失去技能结算后": "removeSkillsAfter",
+            "令一名角色失去技能时": "source:removeSkillsBegin",
+            "令一名角色失去技能结束": "source:removeSkillsEnd",
+            "令一名角色失去技能前": "source:removeSkillsBefore",
+            "令一名角色失去技能后": "source:removeSkillsAfter",
+
             //牌事件
-            "使用卡牌0": "useCard0",
-            "使用卡牌1": "useCard1",
-            "使用卡牌2": "useCard2",
             "使用技能时": "useSkill",
             "洗牌时": "washCard",
             "应变时": "yingbian",
-            '使用牌指定目标时': "useCardToPlayer",
-            '使用牌指定目标后': "useCardToPlayered",
-            '成为牌的目标时': "target:useCardToTarget",
-            '成为牌的目标后': "target:useCardToTargeted",
+
             '牌被弃置后': 'loseAfter:discard',
             //
             "杀造成伤害时": "shaDamage",
@@ -1521,11 +1839,7 @@ export class NonameCN {
             "杀未命中时": "shaMiss",
             //拼点
             '亮出拼点牌前': 'compareCardShowBefore',
-            //死亡事件
-            '杀死一名角色后': 'source:dieAfter',
-            '令一名角色进入濒死状态': "source:dying",
-            '进入濒死状态时': 'dying',
-            '脱离濒死状态时': 'dyingAfter',
+
             //使用打出事件
             '需要打出闪时': 'chooseToRespondBefore:shan',
             '需要使用闪时': 'chooseToUseBefore:shan',
@@ -1875,7 +2189,7 @@ export class NonameCN {
 
             '你为男性': '你为男性(性别)',
             '你为女性': '你为女性(性别)',
-            '你性别相同于触发事件的角色':"你性别相同于触发事件的角色(性别)",
+            '你性别相同于触发事件的角色': "你性别相同于触发事件的角色(性别)",
 
             '你已横置': "你已横置(状态)",
             '你已翻面': "你已翻面(状态)",
@@ -1994,6 +2308,8 @@ export class NonameCN {
             "此牌不可被此牌的目标响应": "此牌不可被此牌的目标响应",
             "此牌无视此牌的目标的防具": "此牌无视此牌的目标的防具",
 
+            "你取消本触发事件": "你取消本触发事件",
+
             '你选择对一名角色杀': "你选择对一名角色杀(使用牌类)",
             "你视为对你使用一张无中生有": "你视为对你使用一张无中生有(使用牌类)",
             "你视为对你使用一张不可被无懈可击响应的无中生有": "你视为对你使用一张不可被无懈可击响应的无中生有(使用牌类)",
@@ -2013,7 +2329,6 @@ export class NonameCN {
         },
         trigger: {
             "每轮开始时": "每轮开始时",
-            "游戏开始时": "游戏开始时",
 
             "准备阶段": "准备阶段(阶段类)",
             "判定阶段": "判定阶段(阶段类)",
@@ -2142,7 +2457,7 @@ export class NonameCN {
             .replace(/令为\s*(.+?)且至多为(.+?)$/mg, "令为 数学 最小值 $1 $2")
             .replace(/令为\s*(.+?)且至少为(.+?)$/mg, "令为 数学 最大值 $1 $2")
     }
-    
+
     static standardModBefore(that) {
         textareaTool().setTarget(that)
             .replace(/你使用的?([\u4e00-\u9fa5]+?)无(距离和次数|次数和距离|距离和数量|数量和距离)限制/g, function (match, ...p) {
@@ -2165,7 +2480,7 @@ export class NonameCN {
             .replace(/可以(失去.+?点体力|受到.+?点伤害|摸.+?张牌)/g, function (match, ...p) {
                 return match.replace("可以", "")
             })
-            .replace(/(.+?)对([\u4e00-\u9fa5]+?)造成(.*?)点(火属性|雷属性|冰属性)?伤害/g, '$2 受到伤害 $1 $3点 $4')
+            .replace(/(.+?)对(.+?)造成(.*?)点(火属性|雷属性|冰属性)?伤害/g, '$2 受到伤害 $1 $3点 $4')
             .replace(/(.+?)\s*(可以)?获得(你|伤害来源|当前回合角色)(.*?)张(手牌|牌)/g, function (match, ...p) {
                 return match.replace("可以", "").replace("获得", "获得角色")
             })

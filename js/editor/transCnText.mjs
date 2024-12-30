@@ -95,7 +95,18 @@ export class TransCnText {
         if (matchFromTo.test(word)) {
             return `[${word.slice(0, -1).split("到").map(item => chineseToArabic(item))}]`
         }
-        return directory[word] || directory[word.replace(/[的]/g, "")] || word;
+        if (word in directory) return directory[word];
+        if (/(开始)[前时]/.test(word)) {
+            return TransCnText.translate(word.replace(/(开始)[前时]/, "$1"), directory);
+        }
+        if (/(结束)[时后]/.test(word)) {
+            return TransCnText.translate(word.replace(/(结束)[前时]/, "$1"), directory);
+        }
+        if (/(结算完成|完成结算)[时后]/.test(word)) {
+            return TransCnText.translate(word.replace(/(结算完成|完成结算)[前时]/, "$1"), directory);
+        }
+        if (word.includes("的")) return TransCnText.translate(word.replace(/的/g, ""), directory);
+        return word;
     }
     static translateLine(lines, directory) {
         if (!Array.isArray(lines)) return [[]];

@@ -32,15 +32,16 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     hp: 3,
                     skills: ["xjb_tongzhou", "xjb_fuwei", "xjb_taihuo"],
                     trashBin: [],
-                    names:"卫|伋-卫|寿",
+                    names: "卫|伋-卫|寿",
                 },
+
                 "xjb_qixianggong": {
                     sex: "male",
                     group: "xjb_qi",
                     hp: 4,
                     skills: ["xjb_xionghu", "xjb_yanshi", "xjb_xuechou", "xjb_guaqi"],
                     trashBin: [],
-                    names:"姜|诸儿"
+                    names: "姜|诸儿"
                 },
                 "xjb_guanyiwu": {
                     sex: "male",
@@ -50,6 +51,13 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     trashBin: []
                 },
 
+                "xjb_wuyuan": {
+                    sex: "male",
+                    group: "xjb_chunqiu_wu",
+                    hp: 6,
+                    skills: ["xjb_duhen", "xjb_gangli", "xjb_wanxin"],
+                    trashBin: []
+                },
                 "xjb_qinshihuang": {
                     sex: "male",
                     group: "xjb_qin",
@@ -57,12 +65,13 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     hujia: 2,
                     skills: ["xjb_zulong", "xjb_longwei"],
                     trashBin: [],
-                    names:"嬴|政"
+                    names: "嬴|政"
                 },
             },
             characterSort: {
                 xjb_easternZhou: {
-                    xjb_qihuanshouba: ["xjb_qixianggong", "xjb_guanyiwu"]
+                    xjb_qihuanshouba: ["xjb_qixianggong", "xjb_guanyiwu"],
+                    xjb_wuyuechunqiu: ["xjb_wuyuan"]
                 },
             },
             characterFilter: {},
@@ -71,6 +80,18 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                 xjb_tongzhou(player) {
                     if (lib.skill.xjb_tongzhou.trigger.player === "phaseZhunbeiBegin") return "准备阶段,你可以摸两张牌"
                     return "准备阶段和结束阶段,你可以摸两张牌"
+                },
+                xjb_duhen(player) {
+                    return [
+                        "当你造成伤害时，你可以获得一枚“恨”，令此伤害+1。",
+                        "当你使用伤害牌时，你可以获得一枚“恨”，令此牌无法被响应。",
+                        "当你受到伤害时，你可以获得一枚“恨”，对伤害来源造成等量点伤害。",
+                        "出牌阶段开始前，你可以获得一枚“恨”，令本回合你使用牌无距离和次数限制。",
+                        "出牌阶段，你可以移除〖渡恨〗的一个分项并移去X枚“恨”，然后你回复一点体力。(X为本项你发动的次数)。"
+                    ].map((option, index) => {
+                        if (!get.info("xjb_duhen").canUse(player, index + 1)) return "<s>" + option + "</s>";
+                        return option;
+                    }).join("</br>");
                 }
             },
             characterIntro: {
@@ -79,9 +100,12 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                 xjb_qihuangong: "齐桓公，姜姓吕氏，名小白，春秋时期第一位霸主。其兄齐襄公在位之时，在身为公子的小白与鲍叔牙出逃莒国。齐襄公、公孙无知相继死于内乱之中，流亡在外的小白和公子纠遂发生一场即位之争。回国路上，小白半路遭到管仲埋伏，射中衣带钩，随即诈死，得以回国即位。即位后，桓公遂与支持公子纠的鲁国开战，鲁国大败。鲁国人处死公子纠，之后又用囚车将管仲送至齐国。桓公不计前嫌，任命管仲为相国。在其辅佐下，齐国国力日渐强盛，桓公也成为春秋首位霸主。管仲死后，桓公任用公孙隰朋和鲍叔牙为相，不得长久。在齐桓公晚年病重之时，易牙、竖刁、开方把持朝政，诸公子忙于争位，这位位四十三年的首位霸主齐桓公，在死后六十七天才得以入殓。",
                 xjb_guanyiwu: "管夷吾，姬姓管氏，名夷吾，字仲。管仲早年辅佐公子纠，于后来与公子小白小白的即位之争中时，险些射死齐桓公。公子纠落败后，鲍叔牙劝说桓公任用管仲，桓公不计前嫌，任命管仲为相国并拜为“仲父”。在管仲的拜相后，齐国进行了政治、经济、军事等各方面的改革，齐国富强，打出了“尊王攘夷”的旗帜，“九合诸侯，一匡天下”，齐桓公成为春秋首霸。管仲死前，推举公孙隰朋为相，而告诫齐桓公远离竖刁、易牙、开方三人。桓公终不能远离三人，落得凄惨下场。",
                 xjb_baoshuya: "鲍叔牙，姓氏从其父封地，为人刚直。齐襄公时期辅佐公子小白出逃莒国。后来公子小白即位，后世称之齐桓公。桓公欲杀曾有一箭之仇的管仲，鲍叔牙劝止，认为桓公要想成就霸业必须依靠管仲。在管仲辅佐下，齐桓公成为春秋首位霸主。鲍叔牙早年即与管仲相交，相知多年，管仲曾叹曰：“生我者父母，知我者鲍子也。”",
+                xjb_wuyuan: "伍员，名员，字子胥。伍子胥原为楚平王时期大臣，其父亲伍奢为太子太傅。太子娶亲时，费无极见其绝美，建议平王代子娶亲，平王从之。后来，费无极害怕太子即位遭到清算，故构陷太子，伍子胥父亲和弟弟受到牵连被杀，伍子胥踏上逃亡之路，决心报仇。子胥过昭关时，楚王正搜捕子胥，世传子胥一夜白头，得以蒙混过关。后来官兵前来追捕，子胥跑到江边，得到一渔父相助过河。之后子胥盘缠用尽，一路乞讨到了吴国。到达吴国后，伍子胥认识了公子光，先后策划了针对吴王僚和吴王僚之子庆忌的刺杀，使得其登上并巩固君位。公子光即位后，是为吴王阖闾。伍子胥向吴王阖闾推荐了孙武。吴王阖闾九年，吴国攻灭楚国，时楚平王已死，伍子胥鞭尸以泄愤。后来，阖闾因越王勾践而死，夫差即位。夫差灭越后，勾践贿赂太宰嚭，不听子胥之言，未除掉勾践。太宰嚭多进谗言，使得夫差逐渐厌恶伍子胥，最后伍子胥被赐死。勾践灭吴国后，夫差后悔不听伍子胥之言，自刎。",
                 xjb_qinshihuang: "秦始皇，嬴姓，名政，是我国的第一位皇帝。"
             },
-            characterReplace: {},
+            characterReplace: {
+
+            },
             card: {},
             skill: {
                 ...dongzhouSkill
@@ -89,15 +113,18 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
             translate: {
                 "xjb_easternZhou": "东周志",
 
+                "xjb_qi": "齐",
                 'xjb_qin': '秦',
                 "xjb_chunqiu_wei": "卫",
-                "xjb_qi": "齐",
+                "xjb_chunqiu_wu": "吴",
 
                 "xjb_qihuanshouba": "齐国首霸",
+                "xjb_wuyuechunqiu": "吴越春秋",
 
                 "xjb_jizi_shou": "急子&寿",
                 "xjb_qixianggong": "齐襄公",
                 "xjb_guanyiwu": "管夷吾",
+                "xjb_wuyuan": "伍员",
                 "xjb_qinshihuang": "秦始皇",
                 ...dongzhouTranslate,
 
@@ -108,8 +135,9 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
         }
         const nameNatureMap = {
             "xjb_qin": "black",
-            "xjb_chunqiu_wei": "fire",
             "xjb_qi": "fire",
+            "xjb_chunqiu_wei": "fire",
+            "xjb_chunqiu_wu": "qun",
         }
         lib.config.all.characters.push("xjb_easternZhou");
         for (const [name, nature] of Object.entries(nameNatureMap)) {
@@ -334,7 +362,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     hp: 3,
                     skills: ['xjb_soul_lingpiao'],
                     trashBin: [],
-                    names:"索|芙艾派依"
+                    names: "索|芙艾派依"
                 },
                 xjb_chanter: {
                     sex: "female",
@@ -342,7 +370,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     hp: 3,
                     skills: ["xjb_soul_chanter"],
                     trashBin: [],
-                    names:"索|琪盎特儿"
+                    names: "索|琪盎特儿"
                 },
                 xjb_timer: {
                     sex: "male",
@@ -350,7 +378,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     hp: 3,
                     skills: ["xjb_soul_minglou", "xjb_soul_guifan"],
                     trashBin: [],
-                    names:"索|泰穆尔"
+                    names: "索|泰穆尔"
                 },
                 xjb_xuemo: {
                     sex: "female",
@@ -360,7 +388,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                     get trashBin() {
                         return [`ext:新将包/skin/image/xjb_xuemo/xuemo${[1, 2, 3].randomGet()}.jpg`]
                     },
-                    names:"索|布劳德"
+                    names: "索|布劳德"
                 },
                 xjb_newCharacter: {
                     get sex() {
@@ -373,7 +401,7 @@ window.XJB_LOAD_CHARACTER = function (_status, lib, game, ui, get, ai) {
                         return lib.config.xjb_newcharacter.hp;
                     },
                     get skills() {
-                        return [...lib.config.xjb_newcharacter.skill];
+                        return [...lib.config.xjb_newcharacter.skill].filter(skill => skill);
                     },
                     get isZhugong() {
                         return lib.config.xjb_newCharacter_isZhu == 1;
