@@ -52,14 +52,14 @@ window["xjb_xyAPI_Directory_新将包"]={
         "character.js",
         "economy.js",
         "editor.js",
-        "event.mjs",
+        "event.js",
         "final.js",
         "library.js",
         "lingli.js",
         "project.js",
         "raise.js",
         "rpg.js",
-        "skills.mjs",
+        "skills.js",
         "title.js"
     ],
     "json": [
