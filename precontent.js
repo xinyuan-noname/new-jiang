@@ -7,7 +7,6 @@ import {
 	ai,
 	_status
 } from "../../noname.js";
-import './js/skills.js';
 import {
 	xjb_library
 } from "./js/library.js";
@@ -16,18 +15,15 @@ import {
 } from "./js/game/tetris.js";
 import "./js/interact/dialog.mjs";
 import "./js/interact/ui.mjs";
+
+import "./js/feature/remnantArea.js";
+import "./js/feature/skillCard.mjs";
+import "./js/feature/hpCard.js";
 function provideFunction() {
 	lib.xjb_dataGet = function () {
 		return Object.keys(lib.config).filter(function (a) {
 			return a.includes("xjb_");
 		})
-	}
-	game.xjb_setEvent = function (name, { player, content }) {
-		lib.element.player[name] = get.copy(player)
-		lib.element.content[name] = get.copy(content)
-	}
-	game.xjb_addPlayerMethod = function (name, method) {
-		lib.element.player[name] = get.copy(method)
 	}
 	game.xjb_judgeSkill = {
 		Tri_logSkill: function (skill) {
@@ -311,11 +307,20 @@ function way() {
 }
 function importFile() {
 	let count = 0;
-	const files = ["lingli", "card", "title",
-		"project", "rpg", "character", "economy", "raise"];
+	const files = [
+		"lingli",
+		"card",
+		"title",
+		"project",
+		"rpg",
+		"character",
+		"economy",
+		"raise",
+		"event",
+		"skills"
+	];
 	function loadFiles(fileName) {
 		let script = lib.init.js(lib.xjb_src + "js", fileName, () => {
-			window[`XJB_LOAD_${fileName.toUpperCase()}`](_status, lib, game, ui, get, ai);
 			count++;
 		}, (err) => { game.print(err) });
 		script.type = 'module';
@@ -335,17 +340,12 @@ function importFile() {
 			}
 		}
 		setInterval(interval, 100)
-	}).then(async () => {
-		await import("./js/event.js");
-		await import("./js/feature/remnantArea.js");
-		await import("./js/feature/hpCard.js");
-		await import("./js/feature/skillCard.mjs");
 	}).then(() => {
 		const script = lib.init.js(lib.xjb_src + "js", "final", () => {
-			window.XJB_LOAD_FINAL(_status, lib, game, ui, get, ai)
+			window.XJB_LOAD_FINAL()
 		})
 		script.type = "module";
-	})
+	});
 	//引入api
 	/**
 	 * @property {function} xjb_loadAPI
@@ -386,7 +386,7 @@ function importFile() {
 		game.xjb_loadAPI(() => {
 			game.print(window.xjb_xyAPI);
 		}, void 0, "PR-branch");
-	}
+	};
 }
 function initialize() {
 	lib.xjb_skillsStore = [];

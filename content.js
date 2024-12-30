@@ -26,13 +26,13 @@ export function XJB_CONTENT(config, pack) {
         })
         //遍历这个数组，执行其中的函数
         arr.forEach(function (item) {
-            if (!this[item]) {
+            if (!lib.skill[item]) {
                 return false;
             }
-            for (let i in this[item]) {
-                if (typeof this[item][i] === "function") this[item][i]();
+            for (let i in lib.skill[item]) {
+                if (typeof lib.skill[item][i] === "function") lib.skill[item][i]();
             }
-        }, lib.skill)
+        })
     })
     //这个是一定要放在最后处理的新将包数据
     lib.arenaReady.push(function () {

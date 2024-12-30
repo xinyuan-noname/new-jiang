@@ -1,4 +1,12 @@
 import { _status, lib, game, ui, get, ai } from "../../../../noname.js";
+const setEvent = (name, { player, content }) => {
+    lib.element.player[name] = get.copy(player)
+    lib.element.content[name] = get.copy(content)
+};
+const addPlayerMethod = (name, method) => {
+    lib.element.player[name] = get.copy(method)
+};
+
 ; (() => {
     const map = new Map();
     map.set(1, { obv: 1, rev: 2 });
@@ -122,7 +130,7 @@ game.xjb_genHpCardData = function (value) {
     return map.get(value)
 }
 
-game.xjb_addPlayerMethod('xjb_adjustHpCard', function () {
+addPlayerMethod('xjb_adjustHpCard', function () {
     const player = this;
     player.xjb_HpCardArea = [];
     const mod = player.maxHp % 5;
@@ -151,7 +159,7 @@ game.xjb_addPlayerMethod('xjb_adjustHpCard', function () {
     }
     return player.xjb_HpCardArea;
 })
-game.xjb_addPlayerMethod("xjb_getLoseHpMap", function () {
+addPlayerMethod("xjb_getLoseHpMap", function () {
     const player = this;
     let has = player.hp;
     const hasHpList = player.xjb_HpCardArea.slice(0).reverse().reduce((acc, hpCard) => {
@@ -167,7 +175,7 @@ game.xjb_addPlayerMethod("xjb_getLoseHpMap", function () {
     }, []);
     return hasHpList.reverse();
 })
-game.xjb_addPlayerMethod("xjb_getAccLoseHpMap", function (...indexes) {
+addPlayerMethod("xjb_getAccLoseHpMap", function (...indexes) {
     const player = this;
     const lose = player.xjb_getLoseHpMap().filter((_, index) => {
         return indexes.includes(index)
@@ -175,7 +183,7 @@ game.xjb_addPlayerMethod("xjb_getAccLoseHpMap", function (...indexes) {
     return lose;
 })
 //给出体力牌
-game.xjb_addPlayerMethod("$xjb_giveHpCard", function (num, target) {
+addPlayerMethod("$xjb_giveHpCard", function (num, target) {
     const theCard = game.xjb_createHpCard(num, 150)
     const player = this
     ui.xjb_giveStyle(theCard, {
@@ -193,7 +201,7 @@ game.xjb_addPlayerMethod("$xjb_giveHpCard", function (num, target) {
         setTimeout(() => { theCard.remove() }, 500)
     }, 300)
 })
-game.xjb_setEvent('xjb_giveHpCard',
+setEvent('xjb_giveHpCard',
     {
         player(target, num) {
             const player = this;
@@ -225,7 +233,7 @@ game.xjb_setEvent('xjb_giveHpCard',
     }
 )
 //使用体力牌
-game.xjb_setEvent('xjb_useHpCard', {
+setEvent('xjb_useHpCard', {
     player: function (num, source, bool = true) {
         if (!source) source = this;
         const player = this;
@@ -262,7 +270,7 @@ game.xjb_setEvent('xjb_useHpCard', {
     }
 })
 //体力牌翻面动画
-game.xjb_addPlayerMethod("$xjb_turnOverHpCard", function (obv, rev) {
+addPlayerMethod("$xjb_turnOverHpCard", function (obv, rev) {
     const player = this;
     const container = ui.create.div('.xjb-hpCard-container');
     const card = ui.create.div('.xjb-hpCard-doubleFace');
@@ -280,7 +288,7 @@ game.xjb_addPlayerMethod("$xjb_turnOverHpCard", function (obv, rev) {
     }, 1100)
 })
 //将体力牌翻面
-game.xjb_setEvent("xjb_turnOverHpCard", {
+setEvent("xjb_turnOverHpCard", {
     player(index) {
         const player = this;
         if (!player.xjb_HpCardArea) player.xjb_adjustHpCard()
@@ -312,7 +320,7 @@ game.xjb_setEvent("xjb_turnOverHpCard", {
     }
 })
 //交换体力牌
-game.xjb_setEvent("xjb_swapHpCard", {
+setEvent("xjb_swapHpCard", {
     player(target, num = 1) {
         const player = this;
         if (!target) return;
@@ -401,7 +409,7 @@ game.xjb_setEvent("xjb_swapHpCard", {
     }
 })
 //分割体力牌
-game.xjb_setEvent("xjb_splitHpCard", {
+setEvent("xjb_splitHpCard", {
     player(index, forced) {
         const player = this;
         if (!player.xjb_HpCardArea) player.xjb_adjustHpCard()
@@ -445,8 +453,8 @@ if (game.createHpCard) console.warn('已有game.createHpCard函数!将被新将�
 game.createHpCard = game.xjb_createHpCard;
 if (game.countHpCard) console.warn('已有game.countHpCard函数!将被新将包的同名函数替换!')
 game.countHpCard = game.xjb_countHpCard;
-game.xjb_setEvent('giveHpCard', {
+setEvent('giveHpCard', {
     player: lib.element.player['xjb_giveHpCard'],
     content: lib.element.content['xjb_giveHpCard']
 })
-game.xjb_addPlayerMethod("$giveHpCard", lib.element.player["$xjb_giveHpCard"])
+addPlayerMethod("$giveHpCard", lib.element.player["$xjb_giveHpCard"])

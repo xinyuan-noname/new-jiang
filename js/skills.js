@@ -1,7 +1,7 @@
-import './skill/raiseSkill.mjs';
-import './skill/sanSkill.mjs';
 import { _status, lib, game, ui, get, ai } from "../../../noname.js"
 import { XJB_Math } from './tool/math.js';
+import './skill/raiseSkill.mjs';
+import './skill/sanSkill.mjs';
 /**
  * @param {String} name 技能名
  * @param {Object} skill 技能对象

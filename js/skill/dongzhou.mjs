@@ -438,7 +438,7 @@ const xjb_gangli = SkillCreater(
 const xjb_duhen = SkillCreater(
 	"xjb_duhen", {
 	translate: "渡恨",
-	description: "当你造成伤害时，你可以获得一枚“恨”，令此伤害+1。</br>当你使用伤害牌时，你可以获得一枚“恨”，令此牌无法被响应。</br>当你受到伤害时，你可以获得一枚“恨”，对伤害来源造成等量点伤害。</br>出牌阶段开始前，你可以获得一枚“恨”，令本回合你使用牌无距离和次数限制。</br>出牌阶段，你可以移除〖渡恨〗的一个分项并移去X枚“恨”，然后你回复一点体力。(X为本项你发动的次数)。",
+	description: "当你造成伤害时，你可以获得一枚“恨”，令此伤害+1。</br>当你使用伤害牌时，你可以获得一枚“恨”，令此牌无法被响应。</br>当你受到伤害时，你可以获得一枚“恨”，对伤害来源造成等量点伤害。</br>出牌阶段开始前，你可以获得一枚“恨”，令本回合你使用牌无距离和次数限制。</br>出牌阶段，你可以移除〖渡恨〗的一个分项并移去X枚“恨”，然后你回复一点体力。(X为本项你发动的次数+1)。",
 	marktext: "恨",
 	intro: {
 		name: "渡恨",
@@ -559,12 +559,12 @@ const xjb_duhen = SkillCreater(
 				info.list.forEach((description, index) => {
 					if (info.canUse(player, index + 1)) list.push([[[index + 1, description]], "tdnodes"])
 				});
-				const { result: { links, bool } } = await player.chooseButton(list);
+				const { result: { links, bool } } = await player.chooseButton(list, true);
 				if (!bool) return false;
 				const [index] = links;
 				info.removeConfig(player, index);
 				await player.recover();
-				player.removeMark("xjb_duhen", player.getAllHistory("useSkill", evt => evt.skill === "xjb_duhen_5").length);
+				player.removeMark("xjb_duhen", 1 + player.getAllHistory("useSkill", evt => evt.skill === "xjb_duhen_5").length);
 			},
 		},
 	}

@@ -288,104 +288,103 @@ lib.skill.xjb_theLevel = {
         })
     },
 }
-window.XJB_LOAD_RPG = function () {
-    lib.skill.xjb_8 = {
-        leadVitalSkill: function () {
-            lib.skill._xjb_TryYourBest = {
-                direct: true,
-                trigger: {
-                    global: "gameStart",
-                },
-                filter: function (event, player) {
-                    if (!_status.brawl) return false
-                    if (!_status.brawl.scene) return false
-                    if (player != game.me) return false
-                    if (_status.brawl.scene.name === "xjb_tyb") {
-                        _status.xjb_level.Type = "Play"
-                        return true
+
+lib.skill.xjb_8 = {
+    leadVitalSkill: function () {
+        lib.skill._xjb_TryYourBest = {
+            direct: true,
+            trigger: {
+                global: "gameStart",
+            },
+            filter: function (event, player) {
+                if (!_status.brawl) return false
+                if (!_status.brawl.scene) return false
+                if (player != game.me) return false
+                if (_status.brawl.scene.name === "xjb_tyb") {
+                    _status.xjb_level.Type = "Play"
+                    return true
+                }
+            },
+            async content() {
+                "step 0"
+                //部分全局技能禁用
+                ["_xjb_cardStore", "_xjb_soul_qiling",
+                "_xjb_bianshen", "_xjb_soul_daomo",
+                "_xjb_skillsNumberLimitation", "_xjb_maxHpLimitation"].forEach(skill => {
+                    game.removeGlobalSkill(skill)
+                });
+                "step 1"
+                player.chooseButton([
+                    "选择你的关卡吧！",
+                    [["教程篇", "游戏", "读档"], "tdnodes"],
+                    "教程篇:在这里你将了解一些教程",
+                ], [0, 1], true);
+                "step 2"
+                if (result.links.length === 0) event.goto(1)
+                else {
+                    let button
+                    switch (result.links[0]) {
+                        case "教程篇": {
+                            button = [
+                                "你要看看什么教程呢？",
+                                [["灵力"], "tdnodes"]
+                            ];
+                            player.chooseButton(true, button, 1);
+                        }; break;
+                        case "读档": {
+                            player.xjb_readStorage(true);
+                        }; break;
+                        case "游戏": {
+                            button = [
+                                "你要玩什么游戏呢？",
+                                [["猜数字"], "tdnodes"]
+                            ];
+                            player.chooseButton(true, button, 1);
+                        }; break;
                     }
-                },
-                async content() {
-                    "step 0"
-                    //部分全局技能禁用
-                    ["_xjb_cardStore", "_xjb_soul_qiling",
-                    "_xjb_bianshen", "_xjb_soul_daomo",
-                    "_xjb_skillsNumberLimitation", "_xjb_maxHpLimitation"].forEach(skill => {
-                        game.removeGlobalSkill(skill)
-                    });
-                    "step 1"
-                    player.chooseButton([
-                        "选择你的关卡吧！",
-                        [["教程篇", "游戏", "读档"], "tdnodes"],
-                        "教程篇:在这里你将了解一些教程",
-                    ], [0, 1], true);
-                    "step 2"
-                    if (result.links.length === 0) event.goto(1)
-                    else {
-                        let button
-                        switch (result.links[0]) {
-                            case "教程篇": {
-                                button = [
-                                    "你要看看什么教程呢？",
-                                    [["灵力"], "tdnodes"]
-                                ];
-                                player.chooseButton(true, button, 1);
-                            }; break;
-                            case "读档": {
-                                player.xjb_readStorage(true);
-                            }; break;
-                            case "游戏": {
-                                button = [
-                                    "你要玩什么游戏呢？",
-                                    [["猜数字"], "tdnodes"]
-                                ];
-                                player.chooseButton(true, button, 1);
-                            }; break;
-                        }
-                    };
-                    "step 3"
-                    if (result.links) {
-                        result.links[0] === "灵力" && game.xjb_bossLoad("Lingli0001", player);
-                        result.links[0] === "猜数字" && game.xjb_bossLoad("guessNumber", player);
-                    }
+                };
+                "step 3"
+                if (result.links) {
+                    result.links[0] === "灵力" && game.xjb_bossLoad("Lingli0001", player);
+                    result.links[0] === "猜数字" && game.xjb_bossLoad("guessNumber", player);
                 }
             }
-        },
-        Start: function () {
-            if (lib.config.xjb_yangcheng !== 1 || !lib.config.xjb_hun) return
-            if (lib.config.mode === "brawl") {
-                if (!lib.storage.scene) lib.storage.scene = {};
-                lib.storage.scene["试练模式"] = {
-                    name: "xjb_tyb",
-                    intro: "来挑战自己吧！",
-                    players: [{
-                        name: "xjb_newCharacter",
-                        "name2": "none",
-                        "identity": "zhu",
-                        "position": 1,
-                        "linked": false,
-                        "turnedover": false,
-                        "playercontrol": true,
-                        "handcards": [],
-                        "equips": [],
-                        "judges": []
-                    }, {
-                        name: "xin_fellow",
-                        "name2": "none",
-                        "identity": "fan",
-                        "position": 2,
-                        "linked": false,
-                        "turnedover": false,
-                        "playercontrol": false,
-                        "handcards": [],
-                        "equips": [],
-                        "judges": []
-                    }],
-                    cardPileTop: [],
-                    cardPileBottom: [],
-                    discardPile: [],
-                }
+        }
+    },
+    Start: function () {
+        if (lib.config.xjb_yangcheng !== 1 || !lib.config.xjb_hun) return
+        if (lib.config.mode === "brawl") {
+            if (!lib.storage.scene) lib.storage.scene = {};
+            lib.storage.scene["试练模式"] = {
+                name: "xjb_tyb",
+                intro: "来挑战自己吧！",
+                players: [{
+                    name: "xjb_newCharacter",
+                    "name2": "none",
+                    "identity": "zhu",
+                    "position": 1,
+                    "linked": false,
+                    "turnedover": false,
+                    "playercontrol": true,
+                    "handcards": [],
+                    "equips": [],
+                    "judges": []
+                }, {
+                    name: "xin_fellow",
+                    "name2": "none",
+                    "identity": "fan",
+                    "position": 2,
+                    "linked": false,
+                    "turnedover": false,
+                    "playercontrol": false,
+                    "handcards": [],
+                    "equips": [],
+                    "judges": []
+                }],
+                cardPileTop: [],
+                cardPileBottom: [],
+                discardPile: [],
             }
-        },
-    }
+        }
+    },
 }

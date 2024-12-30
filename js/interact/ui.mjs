@@ -347,7 +347,7 @@ ui.create.xjb_back = function (str) {
     //点击close关闭back
     function closeIt() {
         let modeActionList = {
-            close: () => { ui.window.removeChild(back); },
+            close: () => { back.remove(); },
             hide: () => { back.hide() }
         };
         const mode = this.dataset.closeMode, func = modeActionList[mode];

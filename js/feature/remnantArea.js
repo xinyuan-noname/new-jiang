@@ -1,4 +1,8 @@
 import { _status, lib, game, ui, get, ai } from "../../../../noname.js";
+const setEvent = (name, { player, content }) => {
+    lib.element.player[name] = get.copy(player)
+    lib.element.content[name] = get.copy(content)
+}
 lib.skill._xjb_remnantArea = {
     mod: {
         cardEnabled2: function (card, player) {
@@ -64,7 +68,7 @@ lib.skill._xjb_remnantArea = {
 }
 lib.translate._xjb_remnantArea = "<font color=gold>残区</font>"
 game.addGlobalSkill("xjb_gainRemnantCard");
-game.xjb_setEvent('xjb_gainRemnantCard',
+setEvent('xjb_gainRemnantCard',
     {
         player() {
             const player = this;
@@ -77,9 +81,9 @@ game.xjb_setEvent('xjb_gainRemnantCard',
             next.setContent('xjb_gainRemnantCard');
             next.player = player;
             next.num ??= 1;
-            if (!lib.skill.global.includes('_xjb_remnantArea')){
+            if (!lib.skill.global.includes('_xjb_remnantArea')) {
                 game.addGlobalSkill("_xjb_remnantArea");
-            } 
+            }
             return next;
         },
         content() {

@@ -52,14 +52,14 @@ window["xjb_xyAPI_Directory_新将包"]={
         "character.js",
         "economy.js",
         "editor.js",
-        "event.js",
+        "event.mjs",
         "final.js",
         "library.js",
         "lingli.js",
         "project.js",
         "raise.js",
         "rpg.js",
-        "skills.js",
+        "skills.mjs",
         "title.js"
     ],
     "json": [
@@ -126,7 +126,8 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_guanyiwu.jpg",
         "xjb_jizi_shou.jpg",
         "xjb_qinshihuang.jpg",
-        "xjb_qixianggong.jpg"
+        "xjb_qixianggong.jpg",
+        "xjb_wuyuan.jpg"
     ],
     "image/character_soul": [
         "xjb_bat.jpg",
@@ -172,6 +173,7 @@ window["xjb_xyAPI_Directory_新将包"]={
     ],
     "js/editor": [
         "arrange.mjs",
+        "choiceMode.mjs",
         "implicitText.mjs",
         "interaction.mjs",
         "nonameCN.js",
