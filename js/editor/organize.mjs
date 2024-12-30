@@ -2,11 +2,6 @@ import { findPrefix } from "../tool/string.js";
 import { NonameCN } from "./nonameCN.js";
 const format = (text) => {
     let result = text
-        .replace(/^if\(\n(.*)\n\)\n{/mg, "if($1){")
-        .replace(/^else[ ]+if\(\n(.*)\n\)\n{/mg, "else if($1){")
-        .replace(/^if\(\n(.*)\n\)/mg, "if($1)")
-        .replace(/^else[ ]+if\(\n(.*)\n\)/mg, "else if($1)")
-        .replace(/\belse[ ]*\n{/g, "else{")
         .replace(/\n (\|\||&&) \n/g, " $1 ")
         .replace(/\n(?=[ ]*[><]=?[ ]*)/g, "")
         .replace(/(?<=[ ]*[><]=?[ ]*)\n/g, "")
@@ -14,6 +9,11 @@ const format = (text) => {
         .replace(/(?<=[ ]*={2,3}[ ]*)\n/g, "")
         .replace(/\n(?=[ ]*\!={1,2}[ ]*)/g, "")
         .replace(/(?<=[ ]*\!={1,2}[ ]*)\n/g, "")
+        .replace(/^if\(\n(.*)\n\)\n{/mg, "if($1){")
+        .replace(/^else[ ]+if\(\n(.*)\n\)\n{/mg, "else if($1){")
+        .replace(/^if\(\n(.*)\n\)/mg, "if($1)")
+        .replace(/^else[ ]+if\(\n(.*)\n\)/mg, "else if($1)")
+        .replace(/\belse[ ]*\n{/g, "else{")
     return result;
 }
 
