@@ -480,7 +480,7 @@ const xjb_duhen = SkillCreater(
 			},
 			filter: function (event, player, triggername) {
 				if (!get.info("xjb_duhen").canUse(player, 1)) return false;
-				return true;
+				return event.notLink();
 			},
 			content: function () {
 				"step 0"

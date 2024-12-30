@@ -29,6 +29,8 @@ export class ImplicitTextTool {
         result = result
             .replace(/^(.+?)[ ]*有(".+?"|'.+?')标记$/mg, "$1 有标记 $2")
         result = result
+            .replace(/^触发的伤害事件不因横置传导而?造成$/mg,"触发事件 不涉及横置")
+        result = result
             .replace(/(.+?)[ ]*本回合未(使用|造成)过?(牌|伤害)$/mg, '$1 本回合$2$3次数\n为\n0')
             .replace(/(.+?)[ ]*本回合(使用|造成)过(牌|伤害)$/mg, '$1 本回合$2$3次数\n大于\n0')
         result = result
