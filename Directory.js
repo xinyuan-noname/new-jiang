@@ -175,6 +175,7 @@ window["xjb_xyAPI_Directory_新将包"]={
     "js/editor": [
         "arrange.mjs",
         "choiceMode.mjs",
+        "dataAnalyze.mjs",
         "implicitText.mjs",
         "interaction.mjs",
         "nonameCN.js",

@@ -1663,6 +1663,7 @@ game.xjb_skillEditor = function () {
 		.setStyle("float", "right")
 		.setStyle("position", "relative")
 		.setStyle("z-index","2")
+		.addClass("xjb-pointer")
 		.block()
 		.listen(DEFAULT_EVENT, (e) => {
 			console.log(e.target)

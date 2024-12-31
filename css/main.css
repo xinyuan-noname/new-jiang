@@ -452,6 +452,10 @@ li.xjb-chosen,
   font-size: 24px
 }
 
+
+.xjb-pointer:hover{
+  cursor: pointer;
+}
 /**/
 
 .xjb-Ed-contentDataInput {
