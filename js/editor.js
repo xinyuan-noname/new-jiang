@@ -1851,7 +1851,6 @@ game.xjb_skillEditor = function () {
 			return;
 		};
 		let triggerCode = "";
-		debugger
 		const targetTrigger = skill.trigger;
 		for (const key in targetTrigger) {
 			if (typeof targetTrigger[key] === "string") triggerCode += `${key} ${targetTrigger[key]}\n`;

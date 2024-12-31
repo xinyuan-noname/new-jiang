@@ -54,22 +54,7 @@ game.xjb_isKind = function (player, kindName) {
     if (!lib.config.xjb_count[player]) return false;
     if (!lib.config.xjb_count[player].kind != kindName) return false;
 }
-game.updateRed = function () {
-    var list = lib.config["xjb_redSkill"].list, keys = Object.keys(lib.skill)
-    for (let i = 0; i < list.length; i++) {
-        var str = list[i]
-        if (!keys.includes(str.slice(13))) {
-            lib.config["xjb_redSkill"].list.remove(str)
-            i--
-        }
-        else {
-            game.xjb_EqualizeSkillObject(list[i], lib.skill[str.slice(13)])
-            lib.skill[str].audio = false
-            lib.translate[list[i]] = lib.config["xjb_redSkill"].translate[list[i]]
-            lib.translate[list[i] + "_info"] = lib.config["xjb_redSkill"].translate[list[i] + "_info"]
-        }
-    }
-}
+
 lib.skill.xjb_6 = {
     "xjb_storage": function () {
         get.xjb_storage = function () {
@@ -267,24 +252,6 @@ lib.skill.xjb_6 = {
             }
         }
         lib.translate._xjb_bianshen = "魂将"
-    },
-}
-lib.skill.xjb_7 = {
-    "ui_modify": function () {
-        lib.skill.xjb_ui_dialog_append = {
-            forced: true,
-            trigger: {
-                player: "chooseButtonBegin"
-            },
-            content: function () {
-                var a = window.requestAnimationFrame(() => {
-                    if (trigger.dialog && trigger.appendC) {
-                        trigger.appendC.forEach(i => { trigger.dialog.add(i) })
-                    }
-                    cancelAnimationFrame(a)
-                })
-            }
-        }
     },
 }
 lib.skill.xjb_9 = {

@@ -237,10 +237,10 @@ function provideFunction() {
 		willget = willget.replace(/\"|'/g, "");
 		if (num && num === 1) {
 			willget = willget.replace(/\{|}/g, "");
-			willget = willget.replace(/\gainMaxHp/g, "获得体力上限");
-			willget = willget.replace(/\loseMaxHp/g, "失去体力上限");
-			willget = willget.replace(/\uniqueSkill/g, "特殊技能");
-			willget = willget.replace(/\HpCard/g, "体力牌");
+			willget = willget.replace(/gainMaxHp/g, "获得体力上限");
+			willget = willget.replace(/loseMaxHp/g, "失去体力上限");
+			willget = willget.replace(/uniqueSkill/g, "特殊技能");
+			willget = willget.replace(/HpCard/g, "体力牌");
 			willget = willget.replace(/\,/g, "<br>");
 		} else {
 			willget = willget.replace(/\*/g, "%<br>");

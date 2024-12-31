@@ -94,6 +94,115 @@ const xjb_taihuo = SkillCreater(
 	}
 })
 
+//卫赤
+const xjb_haohe = SkillCreater(
+	"xjb_haohe", {
+	translate: "好鹤",
+	description: "锁定技，游戏开始时，你声明一张不是【闪】且合法的非装备牌。结束阶段，你可以将一张与之牌同名的牌置于一名角色的武将牌旁，其手牌均视为与之同名牌直到失去“鹤”。",
+	forced: true,
+	trigger: {
+		player: "enterGame",
+		global: "phaseBefore"
+	},
+	filter(event, player) {
+		return game.hasPlayer(current => current != player) && (event.name != "phase" || game.phaseNumber == 0);
+	},
+	mark: true,
+	marktext: "好",
+	intro: {
+		name: "好鹤",
+		content: "$"
+	},
+	async content(event, trigger, player) {
+		const list = [];
+		for (const i of lib.inpile) {
+			if (get.type(i) === "equip") continue;
+			if (i === "wuzhong") continue;
+			if (i === "shunshou") continue;
+			if (i === "shan") continue;
+			list.push(["好鹤", "", i]);
+		}
+		const { result: { links } } = await player.chooseButton(["好鹤", [list, 'vcard']]);
+		player.storage.xjb_haohe = links[0][2];
+	},
+	group: ["xjb_haohe_bianhe"],
+	global: "xjb_haohe_effect",
+	subSkill: {
+		effect: {
+			marktext: "鹤",
+			intro: {
+				name: "鹤",
+				content: "expansion",
+				countMark: "expansion"
+			},
+			mod: {
+				cardname(card, player, name) {
+					const target = game.findPlayer2(curr => curr.hasSkill("xjb_shiguo"));
+					if (player.hasExpansions('xjb_haohe_effect') && get.position(card) === "h") {
+						return target.storage.xjb_haohe;
+					}
+				},
+			}
+		},
+		bianhe: {
+			trigger: {
+				player: "phaseJieshuBegin"
+			},
+			filter(event, player) {
+				return player.countCards("h", card => {
+					return get.name(card) === player.storage.xjb_haohe;
+				});
+			},
+			async cost(event, trigger, player) {
+				const { result: { bool, cards, targets } } = await player.chooseCardTarget()
+					.set("filterCard", card => {
+						return get.name(card) === _status.event.player.storage.xjb_haohe;
+					})
+					.set("filterTarget", (card, player, target) => {
+						return target !== player && !target.hasExpansions('xjb_haohe_effect')
+					})
+					.set("position", "he");
+				event.result = { bool, cost_data: { cards }, targets }
+			},
+			async content(event, trigger, player) {
+				event.targets[0].addToExpansion(event.cost_data.cards).gaintag.add("xjb_haohe_effect")
+			}
+		},
+
+	}
+})
+const xjb_shiguo = SkillCreater(
+	"xjb_shiguo", {
+	translate: "失国",
+	description: "锁定技，你的装备牌和【闪】均视为〖好鹤〗声明的牌。结束阶段，武将牌旁有“鹤”的角色可以弃置“鹤”，令你失去一点体力。",
+	mod: {
+		cardname(card, player, name) {
+			if (player.storage.xjb_haohe && (lib.card[card.name].type === "equip" || card.name === "shan")) return player.storage.xjb_haohe;
+		},
+	},
+	global: "xjb_shiguo_fanshi",
+	subSkill: {
+		fanshi: {
+			trigger: {
+				player: "phaseEnd"
+			},
+			prompt(event, player) {
+				const target = game.findPlayer(curr => curr.hasSkill("xjb_shiguo"));
+				return "是否移去“鹤”，令" + get.translation(target) + "失去一点体力"
+			},
+			filter(event, player) {
+				return player.hasExpansions("xjb_haohe_effect");
+			},
+			async content(event, trigger, player) {
+				const cards = player.getExpansions("xjb_haohe_effect");
+				await player.lose(cards, ui.ordering);
+				const target = game.findPlayer(curr => curr.hasSkill("xjb_shiguo"));
+				if (target) target.loseHp();
+			}
+		}
+	}
+})
+
 //诸儿
 const xjb_xionghu = SkillCreater(
 	"xjb_xionghu", {
@@ -196,7 +305,7 @@ const xjb_guaqi = SkillCreater(
 	"xjb_guaqi", {
 	global: "xjb_guaqi_shubian",
 	translate: "瓜期",
-	description: "出牌阶段限一次，你可以将一张牌交给一名其他角色，称为“瓜”。手牌中拥有瓜的角色：1.回合开始时，失去一点体力并摸一张牌；2.回合内使用牌无次数限制；3.其本轮获得的牌不计入手牌上限；4.不能使用瓜。每轮开始时，你可以获得场上的所有瓜。",
+	description: "出牌阶段限一次，你可以将一张牌交给一名其他角色，称为“瓜”。手牌中拥有瓜的角色：1.回合开始时，失去一点体力；2.回合内使用牌无次数限制；3.其本轮获得的牌不计入手牌上限。每轮开始时，你可以获得场上的所有瓜。",
 	enable: "phaseUse",
 	position: "he",
 	usable: 1,
@@ -220,8 +329,7 @@ const xjb_guaqi = SkillCreater(
 			},
 			forced: true,
 			content: async function (event, trigger, player) {
-				await player.loseHp();
-				player.draw()
+				player.loseHp();
 			},
 			mod: {
 				cardUsable: function (card, player, num) {
@@ -235,10 +343,7 @@ const xjb_guaqi = SkillCreater(
 				cardDiscardable: function (card, player, name) {
 					if (player.getCards("h").every(card => !card.hasGaintag("xjb_guaqi_gua"))) return;
 					if (name == "phaseDiscard" && player.getRoundHistory("gain", lib.filter.all).map(evt => evt.cards).flat().includes(card)) return false;
-				},
-				cardEnabled2: function (card, player) {
-					if (card.hasGaintag("xjb_guaqi_gua") && get.position(card) === "h") return false;
-				},
+				}
 			},
 		},
 		daigua: {
@@ -438,7 +543,7 @@ const xjb_gangli = SkillCreater(
 const xjb_duhen = SkillCreater(
 	"xjb_duhen", {
 	translate: "渡恨",
-	description: "当你造成伤害时，你可以获得一枚“恨”，令此伤害+1。</br>当你使用伤害牌时，你可以获得一枚“恨”，令此牌无法被响应。</br>当你受到伤害时，你可以获得一枚“恨”，对伤害来源造成等量点伤害。</br>出牌阶段开始前，你可以获得一枚“恨”，令本回合你使用牌无距离和次数限制。</br>出牌阶段，你可以移除〖渡恨〗的一个分项并移去X枚“恨”，然后你回复一点体力。(X为本项你发动的次数+1)。",
+	description: "当你造成伤害时，你可以获得一枚“恨”，令此伤害+1。</br>当你使用伤害牌时，你可以获得一枚“恨”，令此牌无法被响应。</br>当你受到伤害时，你可以获得一枚“恨”，对伤害来源造成等量点伤害。</br>出牌阶段开始前，你可以获得一枚“恨”，令本回合你使用牌无距离限制。</br>出牌阶段/濒死阶段，你可以移除〖渡恨〗的一个分项并移去X枚“恨”，然后你回复一点体力。(X为本项你发动的次数)。",
 	marktext: "恨",
 	intro: {
 		name: "渡恨",
@@ -467,8 +572,8 @@ const xjb_duhen = SkillCreater(
 		"当你造成伤害时，你可以获得一枚“恨”，令此伤害+1。",
 		"当你使用伤害牌时，你可以获得一枚“恨”，令此牌无法被响应。",
 		"当你受到伤害时，你可以获得一枚“恨”，对伤害来源造成等量点伤害。",
-		"出牌阶段开始前，你可以获得一枚“恨”，令本回合你使用牌无距离和次数限制。",
-		"出牌阶段，你可以移除〖渡恨〗的一个分项并移去X枚“恨”，然后你回复一点体力。(X为本项你发动的次数)。"
+		"出牌阶段开始前，你可以获得一枚“恨”，令本回合你使用牌无距离限制。",
+		"出牌阶段/濒死阶段，你可以移除〖渡恨〗的一个分项并移去X枚“恨”，然后你回复一点体力。(X为本项你发动的次数)。"
 	],
 	subSkill: {
 		1: {
@@ -548,10 +653,16 @@ const xjb_duhen = SkillCreater(
 			},
 		},
 		5: {
-			enable: "phaseUse",
+			enable: "chooseToUse",
 			filter: (event, player) => {
 				if (!get.info("xjb_duhen").canUse(player, 5)) return false;
-				return true
+				if (event.type == "dying") {
+					if (player != event.dying) return false;
+					return true;
+				} else if (event.getParent().name == "phaseUse") {
+					return true;
+				}
+				return false;
 			},
 			content: async function (event, trigger, player) {
 				const info = get.info("xjb_duhen");
@@ -564,8 +675,11 @@ const xjb_duhen = SkillCreater(
 				const [index] = links;
 				info.removeConfig(player, index);
 				await player.recover();
-				player.removeMark("xjb_duhen", 1 + player.getAllHistory("useSkill", evt => evt.skill === "xjb_duhen_5").length);
+				player.removeMark("xjb_duhen", player.getAllHistory("useSkill", evt => evt.skill === "xjb_duhen_5").length);
 			},
+			ai: {
+				save: true
+			}
 		},
 	}
 })
