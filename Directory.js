@@ -127,6 +127,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_jizi_shou.jpg",
         "xjb_qinshihuang.jpg",
         "xjb_qixianggong.jpg",
+        "xjb_weiyigong.jpg",
         "xjb_wuyuan.jpg"
     ],
     "image/character_soul": [
