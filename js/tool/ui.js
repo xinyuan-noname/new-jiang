@@ -100,6 +100,16 @@ class elementTool {
         this.ele.addEventListener(event, callback, option)
         return this;
     }
+    listenNotScroll(event, callback, option) {
+        let isScroll = false;
+        this.ele.addEventListener("scroll", () => isScroll = true);
+        this.ele.addEventListener("scrollend", () => isScroll = false);
+        this.ele.addEventListener(event, function (...args) {
+            if (isScroll) return;
+            callback.apply(this, args);
+        }, option);
+        return this;
+    }
     listenUnderCondition(condition, event, callback) {
         if (condition) this.ele.addEventListener(event, callback)
         return this;
@@ -560,6 +570,7 @@ class TextareaTool extends elementTool {
         })
         return this;
     }
+
 }
 /**
  * @type {TouchEvent}

@@ -7,6 +7,7 @@ import {
 } from "../../../../noname.js"
 import { EXTENSION_GAME_URL } from "../import/url.js";
 import { element } from "../tool/ui.js";
+const DEFAULT_EVENT = lib.config.touchscreen ? 'touchend' : 'click';
 ui.xjb_domTool = element;
 ui.xjb_toBeHidden = function (ele) {
     if (arguments.length > 1) {
@@ -67,6 +68,16 @@ ui.xjb_addElement = function ({ target, tag, innerHTML,
     };
     return ele;
 }
+ui.xjb_listenDefualt = function (ele, callback, config) {
+    let isScroll = false;
+    ele.addEventListener("scroll", () => isScroll = true);
+    ele.addEventListener("scrollend", () => isScroll = false);
+    ele.addEventListener(DEFAULT_EVENT, function (...args) {
+        if (isScroll) return;
+        callback.apply(this, args);
+    }, config);
+    return ele;
+};
 ui.xjb_setStyle = (node, key, value) => {
     node.style[key] = value;
 }

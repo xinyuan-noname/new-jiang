@@ -112,7 +112,7 @@ get.xjb_en = (str) => NonameCN.getEn(str);
 lib.xjb_translate = { ...NonameCN.AllList }
 lib.xjb_editorUniqueFunc = NonameCN.uniqueFunc;
 //判定类型
-get.xjb_judgeType = game.xjb_judgeType = function (word) {
+game.xjb_judgeType = function (word) {
 	if (!word || !word.length) return;
 	if (Object.values(NonameCN.groupedList.array).some(arr => word === arr)) return "array"
 	for (let k in lib.xjb_class) {
@@ -123,9 +123,7 @@ game.xjb_skillEditor = function () {
 	const DEFAULT_EVENT = lib.config.touchscreen ? 'touchend' : 'click';
 	const playerCN = NonameCN.playerCN;
 	const JOINED_PLAYAERCN = playerCN.join("|");
-	let backArr = ui.create.xjb_back()
-	const back = backArr[0]
-	let close = backArr[1]
+	const [back, close] = ui.create.xjb_back()
 	back.close = close
 	back.classList.add("xjb-editor")
 	back.ele = {}
@@ -494,6 +492,12 @@ game.xjb_skillEditor = function () {
 			}; break;
 		}
 	}
+	back.turnToPageOne = function () {
+		back.pageNum = 0;
+		back.pages.forEach((i, k) => {
+			i.style.display = back.pageNum == k ? 'flex' : 'none'
+		})
+	}
 	//
 	function isJianxiongGain() {
 		/**
@@ -623,6 +627,53 @@ game.xjb_skillEditor = function () {
 		back.target.value = str;
 		NonameCN.deleteBlank2(back.target);
 	}
+
+
+	back.changableSKillKey = ["variable_content", "variable_filter"]
+	back.startCacheTurn = function () {
+		if (lib.config.xjb_editorCache) {
+			back.cacheTurnInterval = setInterval(() => {
+				const cache = {
+					skill: get.copy(back.skill),
+					ele: {}
+				};
+				for (const key of back.changableSKillKey) {
+					delete cache.skill[key];
+				}
+				const listEle = [
+					"id",
+					"filter",
+					"content",
+					"trigger",
+					"filterTarget",
+					"filterCard"
+				]
+				for (const itemName of listEle) {
+					cache.ele[itemName] = back.ele[itemName].value;
+				};
+				game.saveConfig("xjb_editorCache", cache)
+			}, 500)
+		}
+	}
+	back.stopCacheTurn = function () {
+		clearInterval(back.cacheTurnInterval);
+		lib.config.xjb_editorCache = null;
+		game.saveConfig("xjb_editorCache", lib.config.xjb_editorCache)
+	}
+	back.loadLastCache = function () {
+		if (lib.config.xjb_editorCache && typeof lib.config.xjb_editorCache === "object") {
+			for (const k in lib.config.xjb_editorCache.ele) {
+				back.ele[k].value = lib.config.xjb_editorCache.ele[k];
+			};
+			for (const k in lib.config.xjb_editorCache.skill) {
+				back.skill[k] = lib.config.xjb_editorCache.skill[k];
+			}
+			back.organize()
+		}
+	}
+
+
+
 	/**
 	 * @param {String} tag 
 	 * @param {String} innerHTML 
@@ -646,7 +697,6 @@ game.xjb_skillEditor = function () {
 		return h;
 	}
 	/**
-	 * 
 	 * @param {HTMLElement} ele 
 	 * @param {Function} fn 
 	 */
@@ -789,8 +839,28 @@ game.xjb_skillEditor = function () {
 	let h1 = newElement('h1', '', back).setStyle({
 		width: '90%'
 	});
-	let h1Title = newElement("span", "魂氏技能编辑器", h1);
-	listener(h1Title, () => { });
+	const h1Title = element("span")
+		.father(h1)
+		.innerHTML(`魂氏技能编辑器
+			<span class="xjb-weakHidden xjb-pointer" style=font-size:0.7em>📓</span>
+			<span class="xjb-weakHidden xjb-pointer" style=font-size:0.7em>⚙️</span>`
+		)
+		.addClass("hover-showChildren")
+		.listen(DEFAULT_EVENT, async e => {
+			if (e.target.innerText === "📓") {
+				if (lib.config.xjb_editorCache) {
+					await game.xjb_create.promise.alert("你已经处于缓存状态中！");
+					return;
+				}
+				const { bool } = await game.xjb_create.promise.confirm("是否缓存？数据将保存至你复制此技能时。");
+				if (bool) {
+					lib.config.xjb_editorCache = true;
+					back.startCacheTurn();
+				}
+			} else if (e.target.innerText === "⚙️") {
+			}
+		})
+		.exit();
 	//换页功能
 	//切换至下一页
 	const next = newElement('span', '下一页', h1).setStyle({
@@ -820,11 +890,11 @@ game.xjb_skillEditor = function () {
 			i.style.display = back.pageNum == k ? 'flex' : 'none'
 		})
 	}
-	{
-		element().setTarget(last)
-			.listen(DEFAULT_EVENT, turnLastPage)
-			.shortCut('l');
-	}
+	element().setTarget(last)
+		.listen(DEFAULT_EVENT, turnLastPage)
+		.shortCut('l');
+
+
 	//第一页
 	let subBack = newPage()
 	let idSeter = newElement('div', '技能id:', subBack).style1();
@@ -876,9 +946,6 @@ game.xjb_skillEditor = function () {
 		};
 		for (const [category, kind] of Object.entries(skillCategories)) {
 			// 这是创建一个button,设置技能的类别;
-			/**
-			 * @type {HTMLDivElement}
-			 */
 			const button = ui.create.xjb_button(parentNode, category);
 			ui.xjb_giveStyle(button, {
 				fontSize: '1em'
@@ -886,7 +953,6 @@ game.xjb_skillEditor = function () {
 			button.kind = kind;
 			listener(button, e => {
 				if (button.computedStyleMap().get("opacity") <= 0.1) return;
-				console.log(back.skill.kind)
 				back.skill.kind = button.kind;
 				for (const child of button.parentElement.children) {
 					child.unchosen();
@@ -1662,11 +1728,10 @@ game.xjb_skillEditor = function () {
 		.setStyle("border", "2px solid black")
 		.setStyle("float", "right")
 		.setStyle("position", "relative")
-		.setStyle("z-index","2")
+		.setStyle("z-index", "2")
 		.addClass("xjb-pointer")
 		.block()
 		.listen(DEFAULT_EVENT, (e) => {
-			console.log(e.target)
 			if (e.target.innerHTML === "-") kindSettingPage.hide()
 			else if (e.target.innerHTML === "+") kindSettingPage.show()
 		})
@@ -2408,6 +2473,7 @@ game.xjb_skillEditor = function () {
 	copy.style.marginRight = "0.5em"
 	copy.style.float = 'right'
 	function copyToClipboard() {
+		back.stopCacheTurn();
 		if (document.execCommand) {
 			back.target.select();
 			document.execCommand("copy")
@@ -2481,7 +2547,10 @@ game.xjb_skillEditor = function () {
 	back.contentDoms = [contentContainer1, contentContainer2]
 	back.viewAsDoms = [chooseSeter]
 	back.choose = [choosePage];
-	//初始化
-	back.organize()
-	return back
+	if (lib.config.xjb_editorCache && typeof lib.config.xjb_editorCache === "object") {
+		back.loadLastCache();
+	} else {
+		back.organize();
+	}
+	return back;
 }

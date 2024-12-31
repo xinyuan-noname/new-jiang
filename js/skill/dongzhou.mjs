@@ -122,7 +122,7 @@ const xjb_haohe = SkillCreater(
 			if (i === "shan") continue;
 			list.push(["好鹤", "", i]);
 		}
-		const { result: { links } } = await player.chooseButton(["好鹤", [list, 'vcard']]);
+		const { result: { links } } = await player.chooseButton(["好鹤", [list, 'vcard']], true);
 		player.storage.xjb_haohe = links[0][2];
 	},
 	group: ["xjb_haohe_bianhe"],

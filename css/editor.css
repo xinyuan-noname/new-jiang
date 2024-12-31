@@ -56,10 +56,7 @@
     font-family: "楷体";
 }
 
-.xjb-Ed-contentChoiceContainer ul.xjb-touch-screen {
-    max-width: 10em;
-    padding-left: 3em;
-}
+
 
 .xjb-Ed-contentChoiceContainer ul:empty {
     display: none;

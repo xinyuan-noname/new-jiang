@@ -247,13 +247,13 @@ ui.create.xjb_button = function (father, str, remove = [], removeCallBack, remov
         element().setTarget(this)
             .clickAndTouch()
     }
-    button.chosenChange = function(){
+    button.chosenChange = function () {
         this.classList.toggle("xjb-chosen")
     }
-    button.chosen = function(){
+    button.chosen = function () {
         this.classList.add("xjb-chosen")
     }
-    button.unchosen = function(){
+    button.unchosen = function () {
         this.classList.remove("xjb-chosen")
     }
     return button
@@ -1020,6 +1020,14 @@ game.xjb_create.configList = function (list, func) {
     })
     return dialog;
 }
+game.xjb_create.configSet = function () {
+    const dialog = game.xjb_create.search("<div style=position:relative;overflow:auto;font-size:24px>点击以下项目可进行设置。输入关键词后，敲击回车以进行搜索,只显示前100条</div><hr>", func)
+    const textarea = dialog.textarea;
+    const ul = dialog.ul;
+    dialog.buttons[0].isOpened = [];
+    dialog.buttons[0].isClosed = [];
+    if (!list) return dialog;
+}
 //这种对话框用于展示条件
 game.xjb_create.condition = function (obj = {}) {
     if (game.xjb_create.baned) return;
@@ -1150,7 +1158,7 @@ game.xjb_create.searchChoose = function (obj = {}, single, callback) {
             .exit();
         return li
     }, obj);
-    ul.addEventListener(DEFAULT_EVENT, (e) => {
+    ui.xjb_listenDefualt(ul, (e) => {
         if (textarea.index.includes(e.target)) e.target.classList.toggle("xjb-chosen");
         if (e.target.classList.contains("xjb-chosen")) {
             if (single) {

@@ -1167,9 +1167,7 @@ export class choiceMode {
         const controlSearch = element("input").type("search").setKey("placeholder", "回车可搜索技能").setStyle("position", "relative").exit();
         const controlSearchSubmit = element("button").innerHTML("提交").addClass("xjb-button").exit();
         const controlSearch2 = element("input").type("search").addClass("xjb_hidden").width("12em").setKey("placeholder", "回车以增加变量").setStyle("position", "relative").exit();
-        const controlSkillInfo = element("ul").hook(ele => {
-            if (lib.config.touchscreen) ele.classList.add("xjb-touch-screen")
-        }).exit();
+        const controlSkillInfo = element("ul").exit();
         ED_UlList.add(controlSearch, controlSkillInfo)
         let controlVarTypeShift
         const addButton = (skill, deletable = true, isVar, isSkillsVar) => {
@@ -1277,7 +1275,7 @@ export class choiceMode {
                 }
                 const node = element("li")
                     .innerHTML(inner)
-                    .listen(XJB_DEFAULT_EVENT, function (e) {
+                    .listenNotScroll(XJB_DEFAULT_EVENT, function (e) {
                         this.classList.toggle("xjb-chosen");
                         if (this.button) {
                             this.button.remove();
@@ -1447,9 +1445,7 @@ export class choiceMode {
         const controlText = element("div").block().innerHTML(cn).setStyle("position", "relative").exit();
         const controlButton = element("button").exit();
         const controlButtonClose = element("button").exit();
-        const controlUl = element("ul").hook(ele => {
-            if (lib.config.touchscreen) ele.classList.add("xjb-touch-screen")
-        }).addClass("xjb_hidden").exit();
+        const controlUl = element("ul").addClass("xjb_hidden").exit();
         const ULTitile = element("div").block().innerHTML("设置选牌条件").fontSize("0.9em").setStyle("position", "relative").father(controlUl).exit();
         ED_UlList.add(controlButton, controlUl);
         element().setTarget(controlButton)
