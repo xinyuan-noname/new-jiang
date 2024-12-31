@@ -22,7 +22,7 @@ export function disposeTri(str, number, directory = NonameCN.TriList) {
     if (number === 1) return list1;
     let list2 = TransCnText.splitWordTri(list1)
     if (number === 2) return list2;
-    let list3 = TransCnText.translateLine(list2, directory);
+    let list3 = TransCnText.translateLineTri(list2);
     return list3;
 }
 const matchNotObjColon = /(?<!\{[ \w"']+):(?![ \w"']+\})/;
@@ -80,7 +80,7 @@ export class TransCnText {
         if (!Array.isArray(lines)) return [[]];
         const result = new Array(lines.length);
         for (const [num, line] of lines.entries()) {
-            const words = line.split(/[ :\t"'`]/).filter(word => word.length);
+            const words = line.split(/[ \t"'`]/).filter(word => word.length);
             result[num] = words
         }
         return result;
@@ -92,7 +92,7 @@ export class TransCnText {
      */
     static translate(word, directory = {}) {
         if (typeof word != "string") return "";
-        if (matchFromTo.test(word)) {
+        if ( matchFromTo.test(word)) {
             return `[${word.slice(0, -1).split("到").map(item => chineseToArabic(item))}]`
         }
         if (word in directory) return directory[word];
@@ -143,6 +143,27 @@ export class TransCnText {
             result[num].unshift(...prefix);
             result[num].push(...args);
         }
+        return result;
+    }
+    static translateTri(word) {
+        if (typeof word != "string") return "";
+        const directory = NonameCN.TriList;
+        if (word in directory) return directory[word];
+        if (/(开始)[前时]/.test(word)) {
+            return TransCnText.translate(word.replace(/(开始)[前时]/, "$1"), directory);
+        }
+        if (/(结束)[时后]/.test(word)) {
+            return TransCnText.translate(word.replace(/(结束)[前时]/, "$1"), directory);
+        }
+        if (/(结算完成|完成结算)[时后]/.test(word)) {
+            return TransCnText.translate(word.replace(/(结算完成|完成结算)[前时]/, "$1"), directory);
+        }
+        if (word.includes("的")) return TransCnText.translate(word.replace(/的/g, ""), directory);
+        return word;
+    }
+    static translateLineTri(lines) {
+        if (!Array.isArray(lines)) return [[]];
+        const result = lines.map(line => line.map(word => TransCnText.translateTri(word)))
         return result;
     }
     static linkWords(lines) {

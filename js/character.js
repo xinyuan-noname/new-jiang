@@ -79,7 +79,7 @@ game.import("character", () => {
         },
         characterSort: {
             xjb_easternZhou: {
-                xjb_weiqinbuning: ["xjb_jizi_shou"],
+                xjb_weiqingbuning: ["xjb_jizi_shou","xjb_weiyigong"],
                 xjb_qihuanshouba: ["xjb_qixianggong", "xjb_guanyiwu"],
                 xjb_wuyuechunqiu: ["xjb_wuyuan"],
             },
@@ -131,6 +131,7 @@ game.import("character", () => {
 
             "xjb_qihuanshouba": "齐国首霸",
             "xjb_wuyuechunqiu": "吴越春秋",
+            "xjb_weiqingbuning": "卫顷不宁",
 
             "xjb_jizi_shou": "急子&寿",
             "xjb_weiyigong": "卫懿公",

@@ -39,6 +39,7 @@ import { EditorArrange } from './editor/arrange.mjs';
 import { ImplicitTextTool } from "./editor/implicitText.mjs";
 import { EditorOrganize } from "./editor/organize.mjs";
 import { choiceMode } from "./editor/choiceMode.mjs";
+import { EditorDataAnalyze } from "./editor/dataAnalyze.mjs"
 window.XJB_EDITOR_LIST = {
 	filter: [
 		'你已受伤',
@@ -1714,6 +1715,7 @@ game.xjb_skillEditor = function () {
 		this.value.includes('于回合外失去') && back.skill.uniqueTrigger.push("outPhase:lose");
 		this.value.includes('于回合内失去') && back.skill.uniqueTrigger.push("inPhase:lose");
 		let list = disposeTri(ImplicitTextTool.trigger(this.value))
+		console.log(EditorDataAnalyze.trigger(list));
 		let tri_player = [], tri_global = [], tri_target = [], tri_source = [], tri_players = []
 		let cardsNames = Object.keys(lib.card),
 			suits = lib.suits,
@@ -1918,32 +1920,32 @@ game.xjb_skillEditor = function () {
 		position: "relative"
 	});
 	const filterCardSeter = enableButtonAdd('选择卡片', 'filterCard')
-	{
-		const h = ui.create.xjb_button(filterCardSeter, "手牌")
-		h.position = "h"
-		h.style.fontSize = "0.75em"
-		h.style.margin = "auto 10px"
-		const e = ui.create.xjb_button(filterCardSeter, "装备")
-		e.position = "e"
-		e.style.fontSize = "0.75em"
-		e.style.margin = "auto 10px"
-		const s = ui.create.xjb_button(filterCardSeter, "木牛流马")
-		s.position = "s"
-		s.style.fontSize = "0.75em"
-		s.style.margin = "auto 10px"
-		listener(filterCardSeter, e => {
-			if (!e.target.position) return;
-			if (back.skill.position.includes(e.target.position)) {
-				back.skill.position.remove(e.target.position)
-				e.target.style.backgroundColor = "#e4d5b7";
-			} else {
-				e.target.style.backgroundColor = "red";
-				back.skill.position.push(e.target.position)
-			}
-			back.organize()
-		})
-		back.ele.positions = [h, e, s]
-	}
+		; (() => {
+			const h = ui.create.xjb_button(filterCardSeter, "手牌")
+			h.position = "h"
+			h.style.fontSize = "0.75em"
+			h.style.margin = "auto 10px"
+			const e = ui.create.xjb_button(filterCardSeter, "装备")
+			e.position = "e"
+			e.style.fontSize = "0.75em"
+			e.style.margin = "auto 10px"
+			const s = ui.create.xjb_button(filterCardSeter, "木牛流马")
+			s.position = "s"
+			s.style.fontSize = "0.75em"
+			s.style.margin = "auto 10px"
+			listener(filterCardSeter, e => {
+				if (!e.target.position) return;
+				if (back.skill.position.includes(e.target.position)) {
+					back.skill.position.remove(e.target.position)
+					e.target.style.backgroundColor = "#e4d5b7";
+				} else {
+					e.target.style.backgroundColor = "red";
+					back.skill.position.push(e.target.position)
+				}
+				back.organize()
+			})
+			back.ele.positions = [h, e, s]
+		})();
 	const filterCardFree = newElement('textarea', '');
 	const enablePage = element('div')
 		.father(subBack5)
@@ -1987,12 +1989,7 @@ game.xjb_skillEditor = function () {
 		new Array('你', '目标').forEach(i => {
 			that.changeWord(new RegExp(i, 'g'), i + ' ')
 		})
-		that.changeWord(/二/g, '两')
-		that.changeWord(/(?<=[0-9一二三四五六七八九])(?=到.+?名)/g, '名')
-		for (let i = 1; i <= 10; i++) {
-			that.changeWord(new RegExp(`(${i}名)`, 'mg'), " $1 ");
-			that.changeWord(new RegExp(`(${get.cnNumber(i)}名)`, 'mg'), " $1 ");
-		}
+		EditorArrange.makeNumToEnd_ming(that);
 		NonameCN.deleteBlank(that)
 	}
 	filterTargetFree.adjustTab = function () {
@@ -2003,36 +2000,15 @@ game.xjb_skillEditor = function () {
 		that.value = adjustTab(that.value, 0, '{', '}', true);
 	}
 	filterTargetFree.submit = function (e) {
+		if (!back.skill.type.includes('filterTarget')) back.skill.type.push("filterTarget")
 		const that = filterTargetFree
 		back.skill.filterTarget = [];
 		back.skill.selectTarget = '';
 		let line = dispose(that.value);
 		let processLine = line.filter(line => {
-			let result = line
 			if (/^[ \t]+$/.test(line)) return false;
-			if (line.includes('atLeast')) {
-				result = result.replace('atLeast', '')
-				result = `[${result},Infinity]`
-				back.skill.selectTarget = result;
-				return false;
-			}
-			if (line.includes('atMost')) {
-				result = result.replace('atMost', '')
-				result = `[1,${result}]`
-				back.skill.selectTarget = result
-				return false;
-			}
-			if (/[0-9]到[0-9]/.test(line)) {
-				result = result.replace('到', ',')
-				result = `[${result}]`
-				back.skill.selectTarget = result
-				return false;
-			}
-			if (/^\[[0-9],Infinity\]$/.test(line)) {
-				back.skill.selectTarget = result
-				return false;
-			}
-			if (Number(result) == result) {
+			const [isSelect, result] = EditorDataAnalyze.select(line);
+			if (isSelect) {
 				back.skill.selectTarget = result
 				return false;
 			}
@@ -2054,12 +2030,7 @@ game.xjb_skillEditor = function () {
 		NonameCN.underlieVariable(that)
 		NonameCN.standardFilterCardBef(that)
 		that.changeWord(/(你|目标)/g, "$1 ");
-		that.changeWord(/二/g, '两');
-		that.changeWord(/(?<=[0-9一二三四五六七八九])(?=到.+?张)/g, '张');
-		for (let i = 1; i <= 10; i++) {
-			that.changeWord(new RegExp(`(${i}张)`, 'mg'), " $1 ");
-			that.changeWord(new RegExp(`(${get.cnNumber(i)}张)`, 'mg'), " $1 ");
-		}
+		EditorArrange.makeNumToEnd_zhang(that);
 		NonameCN.deleteBlank(that)
 	}
 	filterCardFree.adjustTab = function () {
@@ -2070,41 +2041,20 @@ game.xjb_skillEditor = function () {
 		that.value = adjustTab(that.value, 0, '{', '}', true);
 	}
 	filterCardFree.submit = function (e) {
+		if (!back.skill.type.includes('filterCard')) back.skill.type.push("filterCard")
 		const that = filterCardFree
 		back.skill.filterCard = [];
 		back.skill.selectCard = '';
 		let implicitText = ImplicitTextTool.filterCard(that.value);
 		let line = dispose(implicitText);
 		let processLine = line.filter(line => {
-			let result = line
 			if (/^[ \t]+$/.test(line)) return false;
-			if (line.includes('atLeast')) {
-				result = result.replace('atLeast', '')
-				result = `[${result},Infinity]`
+			const [isSelect, result] = EditorDataAnalyze.select(line);
+			if (isSelect) {
 				back.skill.selectCard = result;
 				return false;
 			}
-			if (line.includes('atMost')) {
-				result = result.replace('atMost', '')
-				result = `[1,${result}]`
-				back.skill.selectCard = result
-				return false;
-			}
-			if (/[0-9]到[0-9]/.test(line)) {
-				result = result.replace('到', ',')
-				result = `[${result}]`
-				back.skill.selectCard = result
-				return false;
-			}
-			if (/^\[[0-9],Infinity\]$/.test(line)) {
-				back.skill.selectCard = result
-				return false;
-			}
-			if (Number(result) == result) {
-				back.skill.selectCard = result
-				return false;
-			}
-			return true
+			return true;
 		})
 		back.skill.filterCard.push(...processLine)
 		back.organize()
@@ -2112,7 +2062,6 @@ game.xjb_skillEditor = function () {
 	back.ele.filterTarget = filterTargetFree
 	back.ele.filterCard = filterCardFree
 	textareaTool().setTarget(back.ele.filterTarget)
-		.order(/.+/, e => { if (!back.skill.type.includes('filterTarget')) e.target.value = '' })
 		.clearThenOrder("整理", back.ele.filterTarget.arrange)
 		.replaceOrder(/(本|此|该)技能id/g, back.getID)
 		.replaceThenOrder('新如果', "如果\n\n那么\n分支开始\n\n分支结束", back.ele.filterTarget.adjustTab)
@@ -2127,8 +2076,7 @@ game.xjb_skillEditor = function () {
 			position: "relative"
 		})
 		.placeholder(
-			'点击选择角色按钮后可进行书写!!!\n'
-			+ '可以设置选择角色的数量:\n'
+			'可以设置选择角色的数量:\n'
 			+ '比如你可以在一行中写:\n'
 			+ '两名/至少一名/至多五名/一到两名\n'
 			+ '你也可以写角色的限制条件,写法同限制条件框\n'
@@ -2138,7 +2086,6 @@ game.xjb_skillEditor = function () {
 			+ "最后输入整理即可\n"
 		);
 	textareaTool().setTarget(back.ele.filterCard)
-		.order(/.+/, e => { if (!back.skill.type.includes('filterCard')) e.target.value = '' })
 		.clearThenOrder("整理", back.ele.filterCard.arrange)
 		.debounce('keyup', back.ele.filterCard.submit, 200)
 		.style({
@@ -2150,8 +2097,7 @@ game.xjb_skillEditor = function () {
 			position: "relative"
 		})
 		.placeholder(
-			'点击选择卡片按钮后可进行书写!!!\n'
-			+ '可以设置选择卡片的数量:\n'
+			 '可以设置选择卡片的数量:\n'
 			+ '比如你可以在一行中写:\n'
 			+ '两张/至少一张/至多五张/一到两张\n'
 			+ '你也可以写卡片的限制条件,写法同限制条件框\n'
@@ -2161,6 +2107,9 @@ game.xjb_skillEditor = function () {
 			+ "最后输入整理即可\n"
 		);
 	enableAdd(enablePage);
+
+
+
 	//
 	let chooseSeter = newElement('div', '视为的牌')
 		.style1()

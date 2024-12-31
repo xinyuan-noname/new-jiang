@@ -158,6 +158,7 @@ function getMapOfTri_Target() {
         map["使用" + cn + '指定目标时'] = 'player:' + attr + ':' + 'useCardToPlayer';
         map["使用" + cn + '指定目标后'] = 'player:' + attr + ':' + 'useCardToPlayered';
     }
+    console.log(map)
     return map;
 }
 function getMapOfTri_Use() {
