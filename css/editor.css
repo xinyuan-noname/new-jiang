@@ -91,3 +91,10 @@
     font-size: smaller;
     margin-right: 10px;
 }
+
+.ED-kindSwitchPage {
+    width: 100%;
+    background: purple;
+    opacity: 0.95;
+    z-index: 4;
+}

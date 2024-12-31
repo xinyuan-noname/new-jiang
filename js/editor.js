@@ -433,11 +433,19 @@ game.xjb_skillEditor = function () {
 	//调整显示
 	back.updateDisplay = function () {
 		for (const kindButton of back.ele.kinds) {
-			if (kindButton.kind == back.skill.kind) {
-				kindButton.style.backgroundColor = 'red';
-				continue;
+			kindButton.unchosen();
+			if (kindButton.kind === back.skill.kind) {
+				kindButton.chosen();
 			}
-			kindButton.style.backgroundColor = "#e4d5b7";
+		}
+		for (const skindButton of back.ele.switchKinds) {
+			skindButton.unchosen();
+			if (skindButton.kind === back.skill.kind) {
+				skindButton.chosen();
+			}
+		}
+		if (back.skill.kind) {
+			kindSettingPage.hide();
 		}
 		for (const typeButton of [...back.ele.types, ...back.ele.phaseUseButton]) {
 			if (back.skill.type.includes(typeButton.type)) {
@@ -858,27 +866,39 @@ game.xjb_skillEditor = function () {
 		.father(subBack)
 		.exit()
 	back.ele.kinds = kindFree.children
-	{
-		let list = ['触发类', '出牌阶段类', '使用类', '打出类', '使用打出类'];
-		let list1 = ['trigger', 'enable:"phaseUse"', 'enable:"chooseToUse"',
-			'enable:"chooseToRespond"', 'enable:["chooseToUse","chooseToRespond"]']
-		list.forEach((i, k) => {
-			//这是创建一个button,设置技能的类别;
-			let it = ui.create.xjb_button(kindFree, i)
-			ui.xjb_giveStyle(it, {
+	const generateKindsButton = (parentNode) => {
+		const skillCategories = {
+			'触发类': 'trigger',
+			'出牌阶段类': 'enable:"phaseUse"',
+			'使用类': 'enable:"chooseToUse"',
+			'打出类': 'enable:"chooseToRespond"',
+			'使用打出类': 'enable:["chooseToUse","chooseToRespond"]'
+		};
+		for (const [category, kind] of Object.entries(skillCategories)) {
+			// 这是创建一个button,设置技能的类别;
+			/**
+			 * @type {HTMLDivElement}
+			 */
+			const button = ui.create.xjb_button(parentNode, category);
+			ui.xjb_giveStyle(button, {
 				fontSize: '1em'
-			})
-			it.kind = list1[k]
-			listener(it, e => {
-				back.skill.kind = it.kind;
-				Array.from(it.parentElement.children).forEach(t => {
-					t.style.backgroundColor = "#e4d5b7"
-					if (t.kind == back.skill.kind) t.style.backgroundColor = 'red'
-				})
-				back.organize()
-			})
-		})
+			});
+			button.kind = kind;
+			listener(button, e => {
+				if (button.computedStyleMap().get("opacity") <= 0.1) return;
+				console.log(back.skill.kind)
+				back.skill.kind = button.kind;
+				for (const child of button.parentElement.children) {
+					child.unchosen();
+					if (child.kind === back.skill.kind) {
+						child.chosen();
+					}
+				}
+				back.organize();
+			});
+		}
 	}
+	generateKindsButton(kindFree)
 	/**
 	 * @param {Array<string>} list1 
 	 * @returns {Array<string>}
@@ -1169,7 +1189,7 @@ game.xjb_skillEditor = function () {
 		.father(subBack)
 		.exit()
 	back.ele.modes = modeFree.children;
-	if (true) {
+	; (() => {
 		let list = ['本体自带编写器', 'mt管理器', '主代码'];
 		let list1 = ['self', 'mt', 'mainCode']
 		list.forEach((i, k) => {
@@ -1187,7 +1207,7 @@ game.xjb_skillEditor = function () {
 				back.organize()
 			})
 		})
-	}
+	})()
 	//第二页
 	let subBack2 = newPage().flexRow().offBack();
 	let filterSeter = newElement('div', '<b><font color="red">发动条件</font></b>')
@@ -1630,6 +1650,54 @@ game.xjb_skillEditor = function () {
 	EditorInteraction.addFootButton(contentContainer1, contentFree);
 	//第五页
 	let subBack5 = newPage();
+
+	const kindSettingPage = element('div')
+		.father(subBack5)
+		.setStyle()
+		.addClass("ED-kindSwitchPage")
+		.exit();
+	const oepnClose = element("div")
+		.father(kindSettingPage)
+		.innerHTML("-")
+		.setStyle("border", "2px solid black")
+		.setStyle("float", "right")
+		.setStyle("position", "relative")
+		.setStyle("z-index","2")
+		.block()
+		.listen(DEFAULT_EVENT, (e) => {
+			console.log(e.target)
+			if (e.target.innerHTML === "-") kindSettingPage.hide()
+			else if (e.target.innerHTML === "+") kindSettingPage.show()
+		})
+		.exit();
+	const switchKindTitle = element("div")
+		.father(kindSettingPage)
+		.innerHTML("请选择一个技能种类")
+		.block()
+		.setStyle("position", "relative")
+		.exit();
+	const switchKind = element("div")
+		.father(kindSettingPage)
+		.setStyle("position", "relative")
+		.exit();
+	generateKindsButton(switchKind);
+	kindSettingPage.hide = function () {
+		ui.xjb_hideElement(switchKind)
+		ui.xjb_hideElement(switchKindTitle)
+		kindSettingPage.style.width = 0;
+		oepnClose.innerHTML = "+"
+	};
+	kindSettingPage.show = function () {
+		kindSettingPage.style.width = "100%";
+		setTimeout(() => {
+			ui.xjb_showElement(switchKind)
+			ui.xjb_showElement(switchKindTitle)
+		}, 300)
+		oepnClose.innerHTML = "-"
+	}
+	back.ele.switchKindContainer = kindSettingPage;
+	back.ele.switchKinds = switchKind.children;
+
 	let triggerAdd = (who, en) => {
 		back.trigger.push(who);
 		who.style.display = 'none';
@@ -2097,7 +2165,7 @@ game.xjb_skillEditor = function () {
 			position: "relative"
 		})
 		.placeholder(
-			 '可以设置选择卡片的数量:\n'
+			'可以设置选择卡片的数量:\n'
 			+ '比如你可以在一行中写:\n'
 			+ '两张/至少一张/至多五张/一到两张\n'
 			+ '你也可以写卡片的限制条件,写法同限制条件框\n'

@@ -247,6 +247,15 @@ ui.create.xjb_button = function (father, str, remove = [], removeCallBack, remov
         element().setTarget(this)
             .clickAndTouch()
     }
+    button.chosenChange = function(){
+        this.classList.toggle("xjb-chosen")
+    }
+    button.chosen = function(){
+        this.classList.add("xjb-chosen")
+    }
+    button.unchosen = function(){
+        this.classList.remove("xjb-chosen")
+    }
     return button
 };
 ui.create.xjb_button2 = function (...args) {
