@@ -101,11 +101,12 @@ class elementTool {
         return this;
     }
     listenNotScroll(event, callback, option) {
-        let isScroll = false;
-        this.ele.addEventListener("scroll", () => isScroll = true);
-        this.ele.addEventListener("scrollend", () => isScroll = false);
+        let topScroll = this.ele.scrollTop
         this.ele.addEventListener(event, function (...args) {
-            if (isScroll) return;
+            if (Math.abs(topScroll - ele.scrollTop) > 0.5) {
+                topScroll = ele.scrollTop;
+                return;
+            }
             callback.apply(this, args);
         }, option);
         return this;
