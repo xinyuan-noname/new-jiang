@@ -68,14 +68,7 @@ ui.xjb_addElement = function ({ target, tag, innerHTML,
     };
     return ele;
 }
-/**
- * 
- * @param {HTMLElement} ele 
- * @param {*} callback 
- * @param {*} config 
- * @returns 
- */
-ui.xjb_listenDefualt = function (ele, callback, config) {
+ui.xjb_listenDefault = function (ele, callback, config) {
     let topScroll = ele.scrollTop
     ele.addEventListener(DEFAULT_EVENT, function (...args) {
         if (Math.abs(topScroll - ele.scrollTop) > 0.5) {

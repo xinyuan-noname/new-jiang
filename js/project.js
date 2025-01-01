@@ -319,7 +319,7 @@ lib.skill.xjb_9 = {
                         backgroundColor: "white"
                     })
                     li.myName = item
-                    li.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function () {
+                    ui.xjb_listenDefault(li, function () {
                         //这是设置彩框
                         textarea.index.forEach(function (item) {
                             item.className = ""
@@ -328,7 +328,7 @@ lib.skill.xjb_9 = {
                         if (intro.left.I) intro.left.I.remove()
                         intro.right.character_id = item
                         intro.right.clear()
-                    })
+                    });
                 }
             })
             intro.right.clear = function () {

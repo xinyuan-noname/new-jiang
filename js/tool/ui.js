@@ -103,8 +103,8 @@ class elementTool {
     listenNotScroll(event, callback, option) {
         let topScroll = this.ele.scrollTop
         this.ele.addEventListener(event, function (...args) {
-            if (Math.abs(topScroll - ele.scrollTop) > 0.5) {
-                topScroll = this.ele.scrollTop;
+            if (Math.abs(topScroll - this.scrollTop) > 0.5) {
+                topScroll = this.scrollTop;
                 return;
             }
             callback.apply(this, args);

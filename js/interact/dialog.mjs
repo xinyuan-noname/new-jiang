@@ -1158,7 +1158,7 @@ game.xjb_create.searchChoose = function (obj = {}, single, callback) {
             .exit();
         return li
     }, obj);
-    ui.xjb_listenDefualt(ul, (e) => {
+    ui.xjb_listenDefault(ul, (e) => {
         if (textarea.index.includes(e.target)) e.target.classList.toggle("xjb-chosen");
         if (e.target.classList.contains("xjb-chosen")) {
             if (single) {
