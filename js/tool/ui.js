@@ -104,7 +104,7 @@ class elementTool {
         let topScroll = this.ele.scrollTop
         this.ele.addEventListener(event, function (...args) {
             if (Math.abs(topScroll - ele.scrollTop) > 0.5) {
-                topScroll = ele.scrollTop;
+                topScroll = this.ele.scrollTop;
                 return;
             }
             callback.apply(this, args);
