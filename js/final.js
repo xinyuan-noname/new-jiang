@@ -249,70 +249,29 @@ window.XJB_LOAD_FINAL = function () {
         },
         "xjb_count": function () {
             let list = { ...lib.character, 'xjb_newCharacter': [] }
-            for (var i in list) {
-                const id = i;
-                const map = {
-                    kill: 0,
-                    strongDamage: 0,
-                    thunder: 0,
-                    fire: 0,
-                    ice: 0,
-                    loseMaxHp: 0,
-                    gainMaxHp: 0,
-                    win1: 0,
-                    win2: 0,
-                    HpCard: [],
-                    uniqueSkill: [],
-                    daomo: {},
-                    book: []
-                }
-                for (const [attr, preValue] of Object.entries(map)) {
-                    game.xjb_checkCharacterCount(id, attr, preValue)
-                }
-                {
-                    const bookWrite = (author, books, type) => {
-                        if (!lib.translate[i]) return;
-                        let target = lib.config.xjb_count[i].book
-                        if (lib.translate[i].includes(author)) {
-                            let list1 = target.filter(item1 => {
-                                return !books.includes(item1.headline)
-                            })
-                            target = [...list1]
-                            books.forEach((item, index) => {
-                                target.push({ type: type[index], headline: item })
-                            })
-                        }
-                    }
-                    let wonderfulP = new Array(10).fill("poem")
-                    let wonderfulA = new Array(10).fill("article")
-                    bookWrite("曹操", ["龟虽寿", "短歌行", "观沧海"], wonderfulP)
-                    bookWrite("曹植", ["白马篇", "铜雀台赋", "赠白马王彪"], wonderfulP)
-                    bookWrite("曹丕", ["燕歌行"], wonderfulP)
-                    bookWrite("诸葛亮", ["隆中对", "出师表", "诫子书", "诫外生书"], wonderfulA)
-                    bookWrite("李白", ['行路难', "蜀道难", "清平调", "梦游天姥吟留别", "将进酒", "弃我去者"], wonderfulP)
-                }
-                const daomoes = ["xuemo", "tear", "taoyao", "dragon", "sun", "blood"];
-                for (const daomo of daomoes) {
-                    game.xjb_checkCharacterDaomo(id, daomo)
-                }
-                lib.config.xjb_count[i].titles = [];
-                lib.config.xjb_count[i].lingtan = [];
-                lib.config.xjb_count[i].lingfa = [];
-                lib.config.xjb_count[i].kind = "人类"
+            for (const id in list) {
+                game.xjb_checkCharCountAll(id);
+                lib.config.xjb_count[id].titles = [];
+                lib.config.xjb_count[id].kind = "人类"
+            }
+            const map = {
+                "曹操": ["龟虽寿", "短歌行", "观沧海"],
+                "曹植": ["白马篇", "铜雀台赋", "赠白马王彪"],
+                "曹丕": ["燕歌行"],
+                "诸葛亮": ["隆中对", "出师表", "诫子书", "诫外生书"],
+                "李白": ['行路难', "蜀道难", "清平调", "梦游天姥吟留别", "将进酒", "弃我去者"],
             }
         },
         lingli: function () {
-            //
-            lib.config.xjb_count["xjb_chanter"].lingfa = ["xjb_soul_lingdun"];
-            lib.config.xjb_count["xjb_Fuaipaiyi"].lingfa = ["xjb_soul_lingqiang"];
+
             //琪盎特儿的导魔介质        
-            lib.config.xjb_count["xjb_chanter"].daomo.blood.number = Infinity;
-            lib.config.xjb_count["xjb_chanter"].daomo.taoyao.number = Infinity;
-            lib.config.xjb_count["xjb_chanter"].daomo.tear.number = Infinity;
-            lib.config.xjb_count["xjb_chanter"].daomo.dragon.number = Infinity;
-            lib.config.xjb_count["xjb_chanter"].daomo.sun.number = Infinity;
-            //                   
-            lib.config.xjb_count["xjb_xuemo"].daomo.xuemo.number = Infinity
+            // lib.config.xjb_count["xjb_chanter"].daomo.blood.number = Infinity;
+            // lib.config.xjb_count["xjb_chanter"].daomo.taoyao.number = Infinity;
+            // lib.config.xjb_count["xjb_chanter"].daomo.tear.number = Infinity;
+            // lib.config.xjb_count["xjb_chanter"].daomo.dragon.number = Infinity;
+            // lib.config.xjb_count["xjb_chanter"].daomo.sun.number = Infinity;
+
+            // lib.config.xjb_count["xjb_xuemo"].daomo.xuemo.number = Infinity
             lib.config.xjb_count["xjb_xuemo"].kind = "血族"
         },
         title: function () {

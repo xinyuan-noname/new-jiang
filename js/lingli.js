@@ -87,7 +87,7 @@ lib.skill.xjb_11 = {
         game.xjb_haveDaomo = game.xjb_hasDaomo = function (name) {
             if (typeof name != 'string') name = name.name
             var list = []
-            if (!lib.config.xjb_count[name]) return false;
+            game.xjb_checkCharCountAll(name)
             let dataSource = lib.config.xjb_count[name].daomo
             if (typeof dataSource != "object") return false
             list = Object.keys(dataSource).filter(i => {
@@ -247,17 +247,6 @@ lib.skill.xjb_11 = {
         //     },
         // }
         // lib.translate._xjb_soul_daomo = "<span data-nature=xjb_hun><font color=white>导魔</font></span>"
-    },
-    play: function () {
-        lib.soul = {}
-        lib.soul.xjb_chanter = () => {
-            if (!lib.config.xjb_count.xjb_chanter.dialog) lib.config.xjb_count.xjb_chanter.dialog = {}
-            let chanter = lib.xjb_src + "soul_chanter.jpg";
-            let chanter2 = lib.xjb_src + "soul_chanter2.jpg";
-            let library = lib.xjb_src + "position/library.jpg";
-            let LH = lib.xjb_src + lib.config.xjb_newcharacter.selectedSink.slice(8);
-            let myName = lib.config.xjb_newcharacter.name2;
-        }
     },
     linglichang: function () {
         lib.xjb_lingli = window.xjb_lingli = {

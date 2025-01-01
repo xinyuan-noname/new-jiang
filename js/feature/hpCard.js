@@ -29,7 +29,7 @@ lib.skill._xjb_UseHpCard = {
     filter: function (event, player) {
         if (!lib.config.xjb_hun) return false
         var name = player.name
-        if (!lib.config.xjb_count[name]) return false
+        game.xjb_checkCharCountAll(name);
         if (!lib.config.xjb_count[name].HpCard || !lib.config.xjb_count[name].HpCard.length) return false
         if (!(player === game.me || player.isUnderControl())) return false
         return true

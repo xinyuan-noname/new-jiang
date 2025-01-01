@@ -47,12 +47,41 @@ game.xjb_checkCharacterCount = function (id, attr, preValue) {
 }
 game.xjb_checkCharacterDaomo = function (id, type) {
     if (!lib.config.xjb_count[id]) lib.config.xjb_count[id] = {}
+    if (!lib.config.xjb_count[id].daomo) lib.config.xjb_count[id].daomo = {}
     if (!lib.config.xjb_count[id].daomo[type]) lib.config.xjb_count[id].daomo[type] = { number: 0 };
 }
 game.xjb_isKind = function (player, kindName) {
     player = typeof player === "string" ? player : player.name;
     if (!lib.config.xjb_count[player]) return false;
     if (!lib.config.xjb_count[player].kind != kindName) return false;
+}
+const CharCountMap = {
+    kill: 0,
+    strongDamage: 0,
+    thunder: 0,
+    fire: 0,
+    ice: 0,
+    loseMaxHp: 0,
+    gainMaxHp: 0,
+    win1: 0,
+    win2: 0,
+    HpCard: [],
+    uniqueSkill: [],
+    daomo: {},
+    book: []
+}
+
+game.xjb_checkCharCountAll = function (id) {
+    if (!lib.config.xjb_count[id]) lib.config.xjb_count[id] = {};
+    for (const [key, value] of Object.entries(CharCountMap)) {
+        lib.config.xjb_count[id][key] = value;
+    }
+    if (xjb_lingli && xjb_lingli.daomo && xjb_lingli.daomo.type) {
+        for (const type of xjb_lingli.daomo.type) {
+            if (!lib.config.xjb_count[id].daomo[type])
+                lib.config.xjb_count[id].daomo[type] = { number: 0 };
+        }
+    }
 }
 
 lib.skill.xjb_6 = {
@@ -335,7 +364,7 @@ lib.skill.xjb_9 = {
                 //清除技能   
                 intro.right.player.xjb_zeroise(intro.right.character_id)
                 intro.right.player.node.avatar.onclick = function () {
-                    lib.soul[intro.right.player.name1] && lib.soul[intro.right.player.name1]()
+                    
                 };
                 intro.right.name.onclick = () => {
                     if (intro.right.player.name1 === "xjb_newCharacter") lib.xjb_yangcheng.name2()
@@ -440,7 +469,7 @@ lib.skill.xjb_9 = {
                 let count = lib.config.xjb_count[intro.right.character_id]
                 //排序
                 let arr1 = Object.keys(count).filter(item => {
-                    if (["selectedTitle", "HpCard", "uniqueSkill", "titles", "skill", "xjb_storage", "dialog", "book", "daomo", "lingtan", "lingfa"].includes(item))
+                    if (["selectedTitle", "HpCard", "uniqueSkill", "titles", "skill", "xjb_storage", "dialog", "book", "daomo"].includes(item))
                         return false
                     return true
                 })

@@ -60,10 +60,7 @@ lib.skill.xjb_5 = {
                 if (!lib.config.xjb_hun) return false
                 if (!(player == game.me || player.isUnderControl())) return false
                 if (event.num > 1) {
-                    if (!lib.config.xjb_count[player.name]) lib.config.xjb_count[player.name] = {}
-                    if (!lib.config.xjb_count[player.name].strongDamage) {
-                        lib.config.xjb_count[player.name].strongDamage = 0
-                    }
+                    game.xjb_checkCharCountAll(player.name);
                     lib.config.xjb_count[player.name].strongDamage++
                     game.saveConfig('xjb_count', lib.config.xjb_count);
                     game.log(player, 'strongDamage值为' + lib.config.xjb_count[player.name].strongDamage)
@@ -82,7 +79,7 @@ lib.skill.xjb_5 = {
                     case 'ice': i = 3; break;
                 }
                 var name = player.name1;
-                if (!lib.config.xjb_count[name]) game.zeroise_xjbCount(player)
+                game.xjb_checkCharCountAll(player.name);
                 if (lib.config.xjb_count[name][nature] == undefined) lib.config.xjb_count[name][nature] = 0
                 if (isNaN(lib.config.xjb_count[name][nature])) lib.config.xjb_count[name][nature] = 0
                 lib.config.xjb_count[name][nature] += trigger.num
@@ -137,8 +134,8 @@ lib.skill.xjb_5 = {
                 //一个魂币，不消耗能量，沉默
                 game.xjb_getHunbi(1, void 0, true, true, `${get.translation(player)}(${player.name1})击杀角色`)
                 //
-                var name = player.name1;
-                if (!lib.config.xjb_count[name]) game.zeroise_xjbCount(player)
+                const name = player.name1;
+                game.xjb_checkCharCountAll(player.name);
                 if (isNaN(lib.config.xjb_count[name].kill)) lib.config.xjb_count[name].kill = 0
                 lib.config.xjb_count[name].kill++
                 game.saveConfig('xjb_count', lib.config.xjb_count);
@@ -172,7 +169,7 @@ lib.skill.xjb_5 = {
             },
             content: function () {
                 var name = player.name1, num = trigger.name === "loseMaxHp" ? 4 : 5
-                if (!lib.config.xjb_count[name]) game.zeroise_xjbCount(player)
+                game.xjb_checkCharCountAll(player.name);
                 if (isNaN(lib.config.xjb_count[name][trigger.name])) lib.config.xjb_count[name][trigger.name] = 0
                 lib.config.xjb_count[name][trigger.name] += trigger.num
                 game.saveConfig('xjb_count', lib.config.xjb_count);

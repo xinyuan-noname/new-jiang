@@ -64,8 +64,8 @@ const xjb_playerMethod = {
         this.damage(num, "ice")
     },
     "xjb_saveStorage": function (bool) {
-        let player = this
-        if (!lib.config.xjb_count[player.name1]) lib.config.xjb_count[player.name1]
+        const player = this
+        game.xjb_checkCharCountAll(player.name1);
         if (!lib.config.xjb_count[player.name1].xjb_storage) {
             lib.config.xjb_count[player.name1].xjb_storage = { total: 0 }
         }
@@ -96,7 +96,7 @@ const xjb_playerMethod = {
     },
     "xjb_readStorage": function (bool) {
         let player = this
-        if (!lib.config.xjb_count[player.name1]) lib.config.xjb_count[player.name1]
+        game.xjb_checkCharCountAll(player.name1)
         if (!lib.config.xjb_count[player.name1].xjb_storage) {
             lib.config.xjb_count[player.name1].xjb_storage = { total: 0 }
         }
@@ -123,6 +123,7 @@ const xjb_playerMethod = {
     },
     "xjb_updateStorage": function () {
         let player = this
+        game.xjb_checkCharCountAll(player);
         lib.config.xjb_count[player.name1].xjb_storage = lib.config.xjb_myStorage
         game.saveConfig("xjb_count", lib.config.xjb_count)
     },
@@ -245,8 +246,8 @@ const xjb_playerMethod = {
     "giveHpCard2": function (target) {
         if (!target) target = _status.event.player
         let num = 1
-        if (!lib.config.xjb_count[target.name1].HpCard) lib.config.xjb_count[target.name1].HpCard = []
-        var player = this
+        const player = this
+        game.xjb_checkCharCountAll(target.name);
         player.xjb_cardDeath()
         player.loseMaxHp(num)
         lib.config.xjb_count[target.name].HpCard.push(num)

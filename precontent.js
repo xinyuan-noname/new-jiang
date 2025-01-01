@@ -513,9 +513,7 @@ function initialize() {
 		},
 		translate: {
 			//count翻译
-			lingfa: "灵法",
 			kind: "种族",
-			lingtan: "灵弹",
 			selectedTitle: "当前称号",
 			strongDamage: "重伤害",
 			ice: "冰属性伤害",

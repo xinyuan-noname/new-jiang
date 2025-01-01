@@ -113,10 +113,7 @@ const lingli_event = {
     },
     "xjb_chooseToBuildBridge": {
         player: function (target) {
-            if (!lib.config.xjb_count[this.name]) return;
-            if (!lib.config.xjb_count[this.name].daomo) {
-                lib.config.xjb_count[this.name].daomo = {}
-            };
+            game.xjb_checkCharCountAll(this.name);
             let next = game.createEvent('xjb_chooseToBuildBridge')
             next.player = this
             next.target = target
@@ -127,7 +124,7 @@ const lingli_event = {
             "step 0"
             if (player != game.me) player.storage.xjb_daomoMax = 5;
             var list = [], maxNum = player.storage.xjb_daomoMax || 1;
-            let dataSource = lib.config.xjb_count[player.name1].daomo;
+            let dataSource = lib.config.xjb_count[player.name].daomo;
             function add(str, str2) {
                 if (dataSource[str] && dataSource[str].number >= maxNum) {
                     list.push([str, `${str2 + xjbLogo[str](80)}`])
