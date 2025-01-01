@@ -565,33 +565,33 @@ export class choiceMode {
     }
 
     static pushCardNameControl(father, data) {
-        data.cn ??= "牌名";
-        data.stringMap ??= getCardNameMap();
-        data.autoDearray ??= true;
+        if (data.cn == null) data.cn = "牌名";
+        if (data.stringMap == null) data.stringMap = getCardNameMap();
+        if (data.autoDearray == null) data.autoDearray = true;
         return choiceMode.pushStringArrayControl(father, data);
     }
     static pushSuitControl(father, data) {
-        data.cn ??= "花色";
-        data.stringMap ??= suitMap;
-        data.autoDearray ??= true;
+        if (data.cn == null) data.cn = "花色";
+        if (data.stringMap == null) data.stringMap = suitMap;
+        if (data.autoDearray == null) data.autoDearray = true;
         return choiceMode.pushStringArrayControl(father, data);
     }
     static pushColorControl(father, data) {
-        data.cn ??= "颜色";
-        data.stringMap ??= colorMap;
-        data.autoDearray ??= true;
+        if (data.cn == null) data.cn = "颜色";
+        if (data.stringMap == null) data.stringMap = colorMap;
+        if (data.autoDearray == null) data.autoDearray = true;
         return choiceMode.pushStringArrayControl(father, data);
     }
     static pushTypeControl(father, data) {
-        data.cn ??= "类别";
-        data.stringMap ??= typeMap;
-        data.autoDearray ??= true;
+        if (data.cn == null) data.cn = "类别";
+        if (data.stringMap == null) data.stringMap = typeMap;
+        if (data.autoDearray == null) data.autoDearray = true;
         return choiceMode.pushStringArrayControl(father, data);
     }
     static pushSubtypeControl(father, data) {
-        data.cn ??= "副类别";
-        data.stringMap ??= subtypeMap;
-        data.autoDearray ??= true;
+        if (data.cn == null) data.cn = "副类别";
+        if (data.stringMap == null) data.stringMap = subtypeMap;
+        if (data.autoDearray == null) data.autoDearray = true;
         return choiceMode.pushStringArrayControl(father, data);
     }
     static pushNatureControl(father, { cn = "属性", value, single }) {

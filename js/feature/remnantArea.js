@@ -80,7 +80,7 @@ setEvent('xjb_gainRemnantCard',
             }
             next.setContent('xjb_gainRemnantCard');
             next.player = player;
-            next.num ??= 1;
+            if (next.num == null) next.num = 1;
             if (!lib.skill.global.includes('_xjb_remnantArea')) {
                 game.addGlobalSkill("_xjb_remnantArea");
             }

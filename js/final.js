@@ -248,12 +248,11 @@ window.XJB_LOAD_FINAL = function () {
             }
         },
         "xjb_count": function () {
-            let list = { ...lib.character, 'xjb_newCharacter': [] }
-            for (const id in list) {
-                game.xjb_checkCharCountAll(id);
-                lib.config.xjb_count[id].titles = [];
-                lib.config.xjb_count[id].kind = "人类"
-            }
+            // let list = { ...lib.character, 'xjb_newCharacter': [] }
+            // for (const id in list) {
+            //     game.xjb_checkCharCountAll(id);
+            //     lib.config.xjb_count[id].kind = "人类"
+            // }
             const map = {
                 "曹操": ["龟虽寿", "短歌行", "观沧海"],
                 "曹植": ["白马篇", "铜雀台赋", "赠白马王彪"],
@@ -272,36 +271,41 @@ window.XJB_LOAD_FINAL = function () {
             // lib.config.xjb_count["xjb_chanter"].daomo.sun.number = Infinity;
 
             // lib.config.xjb_count["xjb_xuemo"].daomo.xuemo.number = Infinity
+            game.xjb_checkCharCountAll("xjb_xuemo");
             lib.config.xjb_count["xjb_xuemo"].kind = "血族"
         },
         title: function () {
             if (lib.config.xjb_hun) {
-                //遍历角色新将包数据，如果角色原来有称号，则增加至新将包角色称号列表。
-                Object.keys(lib.config.xjb_count).forEach(function (item, index) {
-                    if (this[item]) {
-                        lib.config.xjb_count[item].titles = lib.config.xjb_count[item].titles || [];
-                        lib.config.xjb_count[item].titles.add(this[item]);
+                const nameSet = new Set();
+                //遍历已有的称号列表 如果这个角色没有selectedTile 将其称号设置为默认的selectedTitle
+                for (const name in lib.characterTitle) {
+                    game.xjb_checkCharCountAll(name);
+                    if (!nameSet.has(name)) lib.config.xjb_count[name].titles = [];
+                    lib.config.xjb_count[name].titles.add(lib.characterTitle[name]);
+                    nameSet.add(name);
+                }
+                //遍历新将包称号列表(lib.config.xjb_title，0-称号内容，1-称号名单)，
+                // 如果称号名单中含有角色，则将此称号加入新将包列表。
+                for (const [title, names] of lib.config.xjb_title) {
+                    if (!names.length) continue;
+                    for (const name of names) {
+                        game.xjb_checkCharCountAll(name);
+                        if (!nameSet.has(name)) lib.config.xjb_count[name].titles = [];
+                        if (Array.isArray(lib.config.xjb_count[name].titles)) {
+                            lib.config.xjb_count[name].titles.add(title);
+                            nameSet.add(name);
+                        }
                     }
-                }, lib.characterTitle)
-                //遍历新将包称号列表(lib.config.xjb_title，0-称号内容，1-称号名单)，如果称号名单中含有角色，则将此称号加入新将包列表。
-                lib.config.xjb_title.forEach(function (item) {
-                    if (!item[1]) return 0;
-                    item[1].forEach(function (ite) {
-                        if (!this[ite]) return
-                        (this[ite].titles) && this[ite].titles.add(item[0])
-                    }, lib.config.xjb_count);
-                })
-                //遍历新将包记录的角色，如果其有称号，则设置称号，否则则显示“获得称号方式”，令其点击时location.hash值改变以触发hashchange事件
-                Object.keys(lib.config.xjb_count).forEach(function (item) {
-                    if (this[item].selectedTitle) lib.characterTitle[item] = '<a class=xjb_hunTitle href=#xjb_player' + item + ' onclick="location.hash=this.href">' + this[item].selectedTitle + '</a>'
-                    else if (this[item].titles && this[item].titles.length) {
-                        this[item].selectedTitle = this[item].titles[0]
-                        lib.characterTitle[item] = '<a class=xjb_hunTitle href=#xjb_player' + item + ' onclick="location.hash=this.href">' + this[item].selectedTitle + '</a>'
-                    } else {
-                        //没有称号的角色
-                        lib.characterTitle[item] = '<a data-nature=xjb_hun href=#xjb_titlesCondition onclick="location.hash=this.href">获得称号方式</a>'
-                    }
-                }, lib.config.xjb_count)
+                }
+                for (const name of nameSet) {
+                    if (!lib.config.xjb_count[name].selectedTitle) {
+                        lib.config.xjb_count[name].selectedTitle = lib.config.xjb_count[name].titles[0];
+                    };
+                    lib.characterTitle[name] =
+                        '<a class=xjb_hunTitle href=#xjb_player' + name + ' onclick="location.hash=this.href">'
+                        + lib.config.xjb_count[name].selectedTitle +
+                        '</a>'
+                }
             }
             //设置新将包称号获取说明方式
             lib.xjb_title_condition = {}
@@ -323,48 +327,28 @@ window.XJB_LOAD_FINAL = function () {
                 14: "诡计多端:发动技能造成五次0点伤害并获得游戏胜利",
             }
             lib.config.xjb_title.forEach(function (item, index) {
-                //图片+换行+条件
-                this[index] = item[0] + "<br>" + condition[index]
-            }, lib.xjb_title_condition)
-            window.addEventListener('hashchange', function () {
-                //判断锚点是否为所要的                        
-                if (location.hash !== '#xjb_titlesCondition') return false
-                let target = game.xjb_create.condition(lib.xjb_title_condition)
-                //移去灰色背景及其上的按钮           
-                target.buttons[0].parentNode.parentNode.remove()
-                //为页面增加事件，如果点击或触摸处不为条件框元素，移去之
-                document.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function removeIt(e) {
-                    if (e.target !== target && !Array.from(target.getElementsByTagName("*")).includes(e.target)) {
-                        target.remove()
-                        location.hash = ''
-                        document.removeEventListener(lib.config.touchscreen ? 'touchend' : 'click', removeIt)
-                    }
-                })
+                lib.xjb_title_condition[index] = item[0] + "<br>" + condition[index]
             })
         },
         "Intro2": function () {
             //这个代码块来判断条件
-            {
-                if (!game.xjb_Intro2) return false
+            if (game.xjb_Intro2) {
+                game.xjb_Intro2()
+                game.xjb_Introduction.style.display = "none"
+                window.addEventListener('hashchange', function () {
+                    //判断锚点是否为所要的                        
+                    if (!location.hash.includes('xjb_player')) return false;
+                    const playerName = location.hash.replace('#xjb_player', '')
+                    const intro = game.xjb_Intro2(playerName)
+                    intro.right.titleSet.click();
+                    intro.right.titleSet.dispatchEvent(new TouchEvent("touchend", {
+                        bubbles: true,
+                        cancelable: true,
+                        composed: true
+                    }))
+                    location.hash = ''
+                })
             }
-            game.xjb_Intro2()
-            game.xjb_Introduction.style.display = "none"
-            window.addEventListener('hashchange', function () {
-                //判断锚点是否为所要的                        
-                if (location.hash.indexOf('xjb_player') < 0) return false
-                let playerName = location.hash.replace('#xjb_player', '')
-                let intro = game.xjb_Intro2(playerName)
-                //这里模拟点击称号查询，考虑到触屏模式，所以两者皆设置之。
-                //模拟点击事件
-                intro.right.titleSet.click();
-                //模拟触摸事件
-                intro.right.titleSet.dispatchEvent(new TouchEvent("touchend", {
-                    bubbles: true,
-                    cancelable: true,
-                    composed: true
-                }))
-                location.hash = ''
-            })
         },
         skillTag: function () {
             let skilllist = Object.keys(lib.skill)

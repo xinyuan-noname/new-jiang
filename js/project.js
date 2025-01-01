@@ -72,13 +72,13 @@ const CharCountMap = {
 }
 
 game.xjb_checkCharCountAll = function (id) {
-    if (!lib.config.xjb_count[id]) lib.config.xjb_count[id] = {};
+    if (lib.config.xjb_count[id] == null) lib.config.xjb_count[id] = {};
     for (const [key, value] of Object.entries(CharCountMap)) {
-        lib.config.xjb_count[id][key] = value;
+        if (lib.config.xjb_count[id][key] == null) lib.config.xjb_count[id][key] = value;
     }
     if (xjb_lingli && xjb_lingli.daomo && xjb_lingli.daomo.type) {
         for (const type of xjb_lingli.daomo.type) {
-            if (!lib.config.xjb_count[id].daomo[type])
+            if (lib.config.xjb_count[id].daomo[type] == null)
                 lib.config.xjb_count[id].daomo[type] = { number: 0 };
         }
     }
@@ -334,47 +334,34 @@ lib.skill.xjb_9 = {
                 backgroundColor: "#3c4151"
             })
             Object.keys(lib.config.xjb_count).forEach(function (item) {
-                if (lib.character[item]) {
-                    //
-                    let li = document.createElement("li")
-                    li.innerHTML = `${get.translation(item)}(${item})`
-                    textarea.index.add(li)
-                    ul.appendChild(li)
-                    ui.xjb_giveStyle(li, {
-                        width: "90%",
-                        fontSize: "20px",
-                        color: "black",
-                        border: "solid 1.5px",
-                        backgroundColor: "white"
+                if (!lib.character[item]) return;
+                //
+                let li = document.createElement("li")
+                li.innerHTML = `${get.translation(item)}(${item})`
+                textarea.index.add(li)
+                ul.appendChild(li)
+                ui.xjb_giveStyle(li, {
+                    width: "90%",
+                    fontSize: "20px",
+                    color: "black",
+                    border: "solid 1.5px",
+                    backgroundColor: "white"
+                })
+                li.myName = item
+                ui.xjb_listenDefaultFNS(li, function () {
+                    //这是设置彩框
+                    textarea.index.forEach(function (item) {
+                        item.className = ""
                     })
-                    li.myName = item
-                    ui.xjb_listenDefaultFNS(li, function () {
-                        //这是设置彩框
-                        textarea.index.forEach(function (item) {
-                            item.className = ""
-                        })
-                        this.className = "xjb_color_circle"
-                        if (intro.left.I) intro.left.I.remove()
-                        intro.right.character_id = item
-                        intro.right.clear()
-                    });
-                }
+                    this.className = "xjb_color_circle"
+                    if (intro.left.I) intro.left.I.remove()
+                    intro.right.character_id = item
+                    intro.right.clear()
+                });
             })
             intro.right.clear = function () {
                 //清除技能   
                 intro.right.player.xjb_zeroise(intro.right.character_id)
-                intro.right.player.node.avatar.onclick = function () {
-                    
-                };
-                intro.right.name.onclick = () => {
-                    if (intro.right.player.name1 === "xjb_newCharacter") lib.xjb_yangcheng.name2()
-                };
-                intro.right.group.onclick = () => {
-                    if (intro.right.player.name1 === "xjb_newCharacter") lib.xjb_yangcheng.group()
-                };
-                intro.right.sex.onclick = () => {
-                    if (intro.right.player.name1 === "xjb_newCharacter") lib.xjb_yangcheng.sex()
-                };
                 intro.right.name.innerHTML = "<span data-nature='water'>姓名:" +
                     get.translation(intro.right.player.name1) + "</span>"
                 if (!lib.character[intro.right.player.name1]) return;
@@ -385,7 +372,7 @@ lib.skill.xjb_9 = {
                     get.xjb_translation(lib.character[intro.right.player.name1][0]) + "</span>"
 
                 intro.right.Title.innerHTML = "<span data-nature='metal'>称号</span>:<br>" +
-                    (lib.characterTitle[intro.right.player.name1] && lib.characterTitle[intro.right.player.name1].indexOf('获得称号方式') > 0 ? "无" : lib.characterTitle[intro.right.player.name1])
+                    (intro.right.player.name in lib.characterTitle ? lib.characterTitle[intro.right.player.name] : "无")
             }
             let div = document.createElement("div")
             ui.xjb_giveStyle(div, {
@@ -469,7 +456,7 @@ lib.skill.xjb_9 = {
                 let count = lib.config.xjb_count[intro.right.character_id]
                 //排序
                 let arr1 = Object.keys(count).filter(item => {
-                    if (["selectedTitle", "HpCard", "uniqueSkill", "titles", "skill", "xjb_storage", "dialog", "book", "daomo"].includes(item))
+                    if (["selectedTitle", "HpCard", "uniqueSkill", "titles", "skill", "xjb_storage", "dialog", "book", "daomo", "lingtan", "lingfa"].includes(item))
                         return false
                     return true
                 })
@@ -477,7 +464,6 @@ lib.skill.xjb_9 = {
                     if (lib.xjb_list_xinyuan._order[a] && lib.xjb_list_xinyuan._order[b]) {
                         return (lib.xjb_list_xinyuan._order[a] - lib.xjb_list_xinyuan._order[b])
                     }
-
                     return a > b ? 1 : -1
                 })
                 arr1.forEach(function (item) {
@@ -514,20 +500,22 @@ lib.skill.xjb_9 = {
                     width: "80%"
                 })
                 intro.right.appendChild(xjb_count_title)
-                intro.left.I = xjb_count_title
-                let count = lib.config.xjb_count[intro.right.character_id].titles
-                count.forEach(function (item) {
-                    let countA = document.createElement("li")
-                    countA.innerHTML = item
-                    xjb_count_title.appendChild(countA)
-                    countA.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function () {
-                        game.xjb_create.confirm('是否将' + item + '设置为你的称号', function () {
-                            lib.config.xjb_count[intro.right.character_id].selectedTitle = item
-                            game.saveConfig("xjb_count", lib.config.xjb_count)
-                            game.xjb_create.alert("已设置成功，重启即生效！")
+                intro.left.I = xjb_count_title;
+                if (lib.config.xjb_count[intro.right.character_id]
+                    && lib.config.xjb_count[intro.right.character_id].titles) {
+                    for (const item of lib.config.xjb_count[intro.right.character_id].titles) {
+                        const countA = document.createElement("li");
+                        countA.innerHTML = item;
+                        xjb_count_title.appendChild(countA);
+                        countA.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function () {
+                            game.xjb_create.confirm('是否将' + item + '设置为你的称号', function () {
+                                lib.config.xjb_count[intro.right.character_id].selectedTitle = item
+                                game.saveConfig("xjb_count", lib.config.xjb_count)
+                                game.xjb_create.alert("已设置成功，重启即生效！")
+                            })
                         })
-                    })
-                })
+                    }
+                }
                 if (true) {
                     let countA = document.createElement("li")
                     countA.innerHTML = "<span data-nature='key'>双击查看获取称号方法！</span>"
@@ -538,7 +526,6 @@ lib.skill.xjb_9 = {
                         )
                     })
                     xjb_count_title.appendChild(countA)
-
                 }
             })
             //背包设定

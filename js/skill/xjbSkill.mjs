@@ -723,7 +723,7 @@ const xin_xiongli = SkillCreater(
         targets.forEach(targetx => {
             targetx.damage(player, natureList.randomGet())
             const nature = lib.inpile_nature.randomGet()
-            event.remnantNatureList[nature] ??= 0;
+            if (event.remnantNatureList[nature] == null) event.remnantNatureList[nature] = 0;
             event.remnantNatureList[nature]++;
         });
         "step 1"
@@ -1052,7 +1052,7 @@ const xjb_shiyin = SkillCreater(
     },
     filter(event, player) {
         if (event.type != "discard" || event.getlx === false) return false;
-        
+
         return get.info("xjb_shiyin").getType(event, player).length === 1;
     },
     async cost(event, trigger, player) {
