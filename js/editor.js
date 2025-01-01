@@ -40,6 +40,7 @@ import { ImplicitTextTool } from "./editor/implicitText.mjs";
 import { EditorOrganize } from "./editor/organize.mjs";
 import { choiceMode } from "./editor/choiceMode.mjs";
 import { EditorDataAnalyze } from "./editor/dataAnalyze.mjs"
+if (!lib.config.xjb_editorConfig) lib.config.xjb_editorConfig = {}
 window.XJB_EDITOR_LIST = {
 	filter: [
 		'你已受伤',
@@ -842,8 +843,9 @@ game.xjb_skillEditor = function () {
 		.father(h1)
 		.innerHTML(`魂氏技能编辑器
 			<span class="xjb-weakHidden xjb-pointer" style=font-size:0.7em>📓</span>
-			<span class="xjb-weakHidden xjb-pointer" style=font-size:0.7em>⚙️</span>`
-		)
+			<span class="xjb-weakHidden xjb-pointer" style=font-size:0.7em>⚙️</span>
+			<span class="xjb-weakHidden xjb-pointer" style=font-size:0.7em>🆕</span>
+		`)
 		.addClass("hover-showChildren")
 		.listen(DEFAULT_EVENT, async e => {
 			if (e.target.innerText === "📓") {
@@ -851,12 +853,31 @@ game.xjb_skillEditor = function () {
 					await game.xjb_create.promise.alert("你已经处于缓存状态中！");
 					return;
 				}
-				const { bool } = await game.xjb_create.promise.confirm("是否缓存？数据将保存至你复制此技能时。");
+				const { bool } = await game.xjb_create.promise.confirm("是否缓存？当你关闭时自动保存数据，这些数据将保存至你复制此技能时。");
 				if (bool) {
 					lib.config.xjb_editorCache = true;
 				}
 			} else if (e.target.innerText === "⚙️") {
-				
+				if (!lib.config.xjb_editorConfig) lib.config.xjb_editorConfig = {}
+				const { result, bool, changedItems } = await game.xjb_create.promise.setConfig(
+					"技能编辑器目前配置如下，可以进行修改。",
+					{
+						"autoCache": "自动缓存"
+					},
+					lib.config.xjb_editorConfig
+				);
+				if (bool) {
+					game.saveConfig("xjb_editorConfig", result);
+					if (changedItems.includes("autoCache") && result.autoCache === true && !lib.config.xjb_editorCache) {
+						lib.config.xjb_editorCache = true;
+					}
+				}
+			} else if (e.target.innerText === "🆕") {
+				const { bool } = await game.xjb_create.promise.alert("是否重置编辑器并开启一个新的技能？");
+				if (bool) {
+					if (lib.config.xjb_editorCache) lib.config.xjb_editorCache = true;
+					game.xjb_skillEditor();
+				}
 			}
 		})
 		.exit();
@@ -2549,6 +2570,7 @@ game.xjb_skillEditor = function () {
 	if (lib.config.xjb_editorCache && typeof lib.config.xjb_editorCache === "object") {
 		back.loadLastCache();
 	} else {
+		if (lib.config.xjb_editorConfig && lib.config.xjb_editorConfig.autoCache) lib.config.xjb_editorCache = true;
 		back.organize();
 	}
 	return back;

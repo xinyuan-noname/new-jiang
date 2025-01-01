@@ -542,3 +542,7 @@ span.xjb-weakHidden {
 .hover-showChildren:hover>span {
   display: inline;
 }
+
+.xjb-smaller {
+  font-size: smaller
+}

@@ -21,6 +21,7 @@ class DialogEvent {
                         chosen: this.innerText,
                         bool: this.innerText === "确定" ? true : this.innerText === "取消" ? false : null,
                         rmImgs: this.rmImgs,
+                        changedItems: this.changedItems,
                         type: "main"
                     }
                     if (this.file) {
@@ -1046,38 +1047,58 @@ game.xjb_create.configList = function (list, func) {
     })
     return dialog;
 }
-game.xjb_create.configSet = function (list, configObject = lib.config, cost = 0, exclude = []) {
+game.xjb_create.configSet = function (list, func, configObject = lib.config, cost = 0, exclude = []) {
+    /**
+     * @type {XJB_Dialog}
+     */
     const dialog = game.xjb_create.search("<div style=position:relative;overflow:auto;font-size:24px>点击以下项目可进行设置。输入关键词后，敲击回车以进行搜索,只显示前100条</div><hr>", func)
     const textarea = dialog.textarea;
     const ul = dialog.ul;
+    const previousConfig = configObject;
+    const changedItems = [];
+    configObject = get.copy(configObject);
     if (!list) return dialog;
     dialog.appendLi((key, value, index) => {
         const li = element("li")
             .setKey("configName", key)
-            .innerHTML(`<span>${value}</span>`)
-            .appendInnerHTML(`<span>${configObject[key] ? "【🔓已开启】" : cost !== 0 && !exclude.includes(key) ? "【🔐已锁定】" : "【🔒已关闭】"}</span>`)
+            .setStyle("justify-content", "space-between")
+            .innerHTML(`<span style="padding:3px;max-width:450px;flex-wrap:wrap">${value}</span>`)
+            .appendInnerHTML(`<span class=xjb-smaller>${configObject[key] ? "【🔓已开启】" : cost !== 0 && !exclude.includes(key) ? "【🔐已锁定】" : "【🔒已关闭】"}</span>`)
             .flexRow()
             .exit();
         return li;
-    })
+    }, list)
+    const judgeIsChanged = (key) => {
+        return configObject[key] !== previousConfig[key];
+    }
     ui.xjb_listenDefault(ul, e => {
+        const configName = e.target.parentNode.configName;
         if (e.target.innerText === "【🔓已开启】") {
-            configObject[key] = false;
+            configObject[configName] = false;
+            e.target.innerText = "【🔒已关闭】"
         } else if (e.target.innerText === "【🔒已关闭】") {
-            configObject[key] = true;
-        } else {
+            configObject[configName] = true;
+            e.target.innerText = "【🔓已开启】"
+        } else if (e.target.innerText === "【🔐已锁定】") {
             if (game.xjb_canPayWithB(cost)) {
                 game.xjb_costHunbi(cost);
-                configObject[key] = true;
-                e.target.parentNode.myLi.className = "xjb_animation_shake"
+                configObject[configName] = true;
+                e.target.innerText = "【🔓已开启】"
+            } else {
+                e.target.parentNode.className = "xjb_animation_shake"
                 setTimeout(() => {
-                    _this.myLi.className = ""
+                    e.target.parentNode.className = ""
                 }, 820)
             }
         }
+        if (configName) {
+            if (judgeIsChanged(configName) && !changedItems.includes(configName)) changedItems.push(configName);
+            else if (changedItems.includes(configName)) changedItems.remove(configName);
+        }
     });
-    dialog.appendButton()
-    dialog.buttons[0]
+    dialog.appendButton("取消");
+    dialog.buttons[0].result = configObject;
+    dialog.buttons[0].changedItems = changedItems;
     return dialog;
 }
 //这种对话框用于展示条件
@@ -1374,6 +1395,15 @@ game.xjb_create.promise = {
         const dialog = game.xjb_create.button(void 0, folder, images, void 0, void 0, rmCallBack);
         const titleNode = dialog.querySelector("div");
         titleNode.innerHTML = title;
+        return game.xjb_createDialogEvent(dialog);
+    },
+    setConfig: (title, map, configObject, { cost, exclude } = {}) => {
+        /**
+         * @type {XJB_Dialog}
+         */
+        const dialog = game.xjb_create.configSet(map, void 0, configObject, cost, exclude);
+        const titleNode = dialog.querySelector("div");
+        if (title) titleNode.innerHTML = title;
         return game.xjb_createDialogEvent(dialog);
     },
     readFile: (title, type = "all") => {
