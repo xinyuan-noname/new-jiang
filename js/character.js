@@ -80,7 +80,7 @@ game.import("character", () => {
         },
         characterSort: {
             xjb_easternZhou: {
-                xjb_weiqinbuning: ["xjb_jizi_shou","xjb_weiyigong"],
+                xjb_weiqinbuning: ["xjb_jizi_shou", "xjb_weiyigong"],
                 xjb_qihuanshouba: ["xjb_qixianggong", "xjb_guanyiwu"],
                 xjb_wuyuechunqiu: ["xjb_wuyuan"],
             },
@@ -106,9 +106,7 @@ game.import("character", () => {
             }
         },
         characterIntro: dongzhouIntro,
-        characterReplace: {
-
-        },
+        characterReplace: {},
         card: {},
         skill: {
             ...dongzhouSkill

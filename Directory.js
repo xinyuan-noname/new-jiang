@@ -215,6 +215,9 @@ window["xjb_xyAPI_Directory_新将包"]={
         "soulSkill.mjs",
         "xjbSkill.mjs"
     ],
+    "js/text": [
+        "dongzhouIntro.js"
+    ],
     "js/tool": [
         "canvas.js",
         "math.js",
