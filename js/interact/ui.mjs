@@ -71,8 +71,19 @@ ui.xjb_addElement = function ({ target, tag, innerHTML,
 ui.xjb_listenDefault = function (ele, callback, config) {
     let topScroll = ele.scrollTop
     ele.addEventListener(DEFAULT_EVENT, function (...args) {
-        if (Math.abs(topScroll - ele.scrollTop) > 0.5) {
+        if (DEFAULT_EVENT === "touchend" && Math.abs(topScroll - ele.scrollTop) > 0.5) {
             topScroll = ele.scrollTop;
+            return;
+        }
+        callback.apply(this, args);
+    }, config);
+    return ele;
+};
+ui.xjb_listenDefaultFNS = function (ele, callback, config) {
+    let topScroll = ele.parentNode.scrollTop
+    ele.addEventListener(DEFAULT_EVENT, function (...args) {
+        if (DEFAULT_EVENT === "touchend" && Math.abs(topScroll - ele.parentNode.scrollTop) > 0.5) {
+            topScroll = ele.parentNode.scrollTop;
             return;
         }
         callback.apply(this, args);

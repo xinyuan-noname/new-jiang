@@ -78,11 +78,6 @@ window.XJB_EDITOR_LIST = {
 		'你使用杀后', '你使用决斗后', '你使用桃后'
 	],
 };
-window.XJB_PUNC = ["!", " || ", " && ", " + ", " - ", " * ", " / ", " % ",
-	" += ", " -= ",
-	"++", "--",
-	" > ", " < ", " >= ", " <= ", " == ", " === ",
-	"(", ")", "."]
 lib.xjb_class = {
 	player: ['_status.currentPhase', 'target', 'game.me',
 		'player', 'trigger.player', 'trigger.source', 'trigger.target',
@@ -111,6 +106,7 @@ lib.xjb_class = {
 get.xjb_en = (str) => NonameCN.getEn(str);
 lib.xjb_translate = { ...NonameCN.AllList }
 lib.xjb_editorUniqueFunc = NonameCN.uniqueFunc;
+
 //判定类型
 game.xjb_judgeType = function (word) {
 	if (!word || !word.length) return;
@@ -630,33 +626,30 @@ game.xjb_skillEditor = function () {
 
 
 	back.changableSKillKey = ["variable_content", "variable_filter"]
-	back.startCacheTurn = function () {
+	back.storeCache = function () {
 		if (lib.config.xjb_editorCache) {
-			back.cacheTurnInterval = setInterval(() => {
-				const cache = {
-					skill: get.copy(back.skill),
-					ele: {}
-				};
-				for (const key of back.changableSKillKey) {
-					delete cache.skill[key];
-				}
-				const listEle = [
-					"id",
-					"filter",
-					"content",
-					"trigger",
-					"filterTarget",
-					"filterCard"
-				]
-				for (const itemName of listEle) {
-					cache.ele[itemName] = back.ele[itemName].value;
-				};
-				game.saveConfig("xjb_editorCache", cache)
-			}, 500)
+			const cache = {
+				skill: get.copy(back.skill),
+				ele: {}
+			};
+			for (const key of back.changableSKillKey) {
+				delete cache.skill[key];
+			}
+			const listEle = [
+				"id",
+				"filter",
+				"content",
+				"trigger",
+				"filterTarget",
+				"filterCard"
+			]
+			for (const itemName of listEle) {
+				cache.ele[itemName] = back.ele[itemName].value;
+			};
+			game.saveConfig("xjb_editorCache", cache)
 		}
 	}
-	back.stopCacheTurn = function () {
-		clearInterval(back.cacheTurnInterval);
+	back.clearCache = function () {
 		lib.config.xjb_editorCache = null;
 		game.saveConfig("xjb_editorCache", lib.config.xjb_editorCache)
 	}
@@ -671,6 +664,12 @@ game.xjb_skillEditor = function () {
 			back.organize()
 		}
 	}
+
+	close.addEventListener(DEFAULT_EVENT, () => {
+		if (lib.config.xjb_editorCache && (typeof lib.config.xjb_editorCache === "object" || lib.config.xjb_editorCache === true)) {
+			back.storeCache();
+		}
+	})
 
 
 
@@ -855,9 +854,9 @@ game.xjb_skillEditor = function () {
 				const { bool } = await game.xjb_create.promise.confirm("是否缓存？数据将保存至你复制此技能时。");
 				if (bool) {
 					lib.config.xjb_editorCache = true;
-					back.startCacheTurn();
 				}
 			} else if (e.target.innerText === "⚙️") {
+				
 			}
 		})
 		.exit();
@@ -2473,7 +2472,7 @@ game.xjb_skillEditor = function () {
 	copy.style.marginRight = "0.5em"
 	copy.style.float = 'right'
 	function copyToClipboard() {
-		back.stopCacheTurn();
+		back.clearCache();
 		if (document.execCommand) {
 			back.target.select();
 			document.execCommand("copy")

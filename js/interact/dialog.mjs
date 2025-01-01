@@ -62,46 +62,58 @@ class DialogEvent {
     }
     exit
 }
-game.xjb_createDialogEvent = (dialog, ...subs) => {
-    return new DialogEvent(dialog, ...subs);
-}
-ui.create.xjb_dialogBase = function () {
-    if (game.xjb_create.baned) return null;
-    //这个是对话框
-    const div = element('div')
-        .addClass("xjb_dialogBase")
-        .addClass("xjbToCenter")
-        .father(ui.window)
-        .exit();
-    //这里写幕布
-    const back = ui.create.xjb_curtain()
-    const buttonContainer = element("div")
-        .style({
-            "z-index": "8",
-            width: "100%",
-            display: "block",
-            height: "36px",
-            top: "250px"
-        })
-        .addClass("xjbToCenter")
-        .father(back)
-        .exit();
-    const buttons = [];
-    for (const arg of arguments) {
-        const button = ui.create.xjb_button(buttonContainer, arg, [div, back])
-        buttons.push(button)
+class XJB_Dialog extends HTMLDivElement {
+    constructor(...args) {
+        const dialog = element('div')
+            .addClass("xjb_dialogBase")
+            .addClass("xjbToCenter")
+            .father(ui.window)
+            .exit();
+        const back = ui.create.xjb_curtain()
+        const buttonContainer = element("div")
+            .style({
+                "z-index": "8",
+                width: "100%",
+                display: "block",
+                height: "36px",
+                top: "250px"
+            })
+            .addClass("xjbToCenter")
+            .father(back)
+            .exit();
+        Object.setPrototypeOf(dialog, XJB_Dialog.prototype);
+        const buttons = [];
+        for (const arg of args) {
+            const button = ui.create.xjb_button(buttonContainer, arg, [dialog, back])
+            buttons.push(button)
+        }
+        dialog.back = back
+        dialog.buttons = buttons;
+        dialog.buttonContainer = buttonContainer;
+
+        return dialog;
     }
-    div.back = back
-    div.buttons = buttons;
-    div.buttonContainer = buttonContainer;
-    //
-    div.appeadButton = function (str, addButtons = true, closable = true) {
-        const button = ui.create.xjb_button(buttonContainer, str);
-        if (closable) button.removeEle = [div, div.back]
-        if (addButtons) buttons.push(button);
+    /**
+     * @type {HTMLDivElement}
+     */
+    back;
+    /**
+     * @type {HTMLDivElement[]}
+     */
+    buttons = [];
+    /**
+     * @param {string} str 
+     * @param {boolean} addButtons 
+     * @param {boolean} closable 
+     * @returns 
+     */
+    appendButton(str, addButtons = true, closable = true) {
+        const removeEle = closable ? [this, this.back] : []
+        const button = ui.create.xjb_button(this.buttonContainer, str, removeEle);
+        if (addButtons) this.buttons.push(button);
         return button;
     }
-    div.replaceButton = function (node, index = 0, closable = true) {
+    replaceButton(node, index = 0, closable = true) {
         if (!this.buttons[index]) return;
         this.buttons[index].parentNode.insertBefore(node, this.buttons[index]);
         this.buttons[index].remove();
@@ -110,7 +122,79 @@ ui.create.xjb_dialogBase = function () {
         if (closable) node.removeEle = [this, this.back]
         delete node.result;
     }
-    //
+
+    higher() {
+        ui.xjb_giveStyle(this, {
+            height: "308.4px",
+            top: "-170px"
+        })
+        return this
+    }
+    highest() {
+        ui.xjb_giveStyle(this, {
+            height: "500px",
+            top: "0px"
+        })
+        this.back.remove()
+        this.highestRemove = function () {
+            document.removeEventListener(DEFAULT_EVENT, this.highestListenerRemove);
+            this.remove()
+        }
+        this.highestListenerRemove = function (e) {
+            if (!this.highestRemoveOk) return;
+            if (e.target !== this && !Array.from(this.getElementsByTagName("*")).includes(e.target)) {
+                this.highestRemove()
+            }
+        }
+        document.addEventListener(DEFAULT_EVENT, this.highestListenerRemove)
+        return this
+    }
+    standardWidth = function () {
+        ui.xjb_giveStyle(this, {
+            width: "502px"
+        })
+        return this;
+    }
+
+
+    show() {
+        ui.xjb_showElement(this);
+        ui.xjb_showElement(this.back)
+        return this;
+    }
+    hide() {
+        ui.xjb_hideElement(this);
+        ui.xjb_hideElement(this.back)
+        return this;
+    }
+    close() {
+        this.remove();
+        this.back.remove()
+        return this;
+    }
+
+    insertDialog(dialog) {
+        if (!dialog || !dialog.buttons || !Array.isArray(dialog.buttons)) return this;
+        dialog.hide();
+        for (const button of this.buttons) {
+            button.addEventListener(DEFAULT_EVENT, () => {
+                dialog.show();
+            })
+        }
+        return this;
+    }
+    coverDialog(dialog) {
+        if (!dialog || !dialog.buttons || !Array.isArray(dialog.buttons)) return this;
+        dialog.hide();
+        return this;
+    }
+}
+game.xjb_createDialogEvent = (dialog, ...subs) => {
+    return new DialogEvent(dialog, ...subs);
+}
+ui.create.xjb_dialogBase = function (...args) {
+    if (game.xjb_create.baned) return null;
+    const div = new XJB_Dialog(...args);
     div.addElement = function (tag, innerHTML, style) {
         let ele = ui.xjb_addElement({
             target: div,
@@ -121,7 +205,7 @@ ui.create.xjb_dialogBase = function () {
         if (tag == "textarea") {
             ele.addButton = function (character, text) {
                 text = text ? text : character
-                let button = div.addElement("span", character, { display: "Inline-block", height: "30px", width: "30px", textAlign: "center", border: "#FFFFE0 1.5px solid", fontSize: "1em", borderRadius: "50%", })
+                const button = div.addElement("span", character, { display: "Inline-block", height: "30px", width: "30px", textAlign: "center", border: "#FFFFE0 1.5px solid", fontSize: "1em", borderRadius: "50%", })
                 if (ele.nextSibling !== button) {
                     div.insertBefore(button, ele.nextSibling)
                 }
@@ -148,68 +232,6 @@ ui.create.xjb_dialogBase = function () {
         }
         ele.addElement = this.addElement;
         return ele
-    }
-    div.higher = function () {
-        ui.xjb_giveStyle(div, {
-            height: "308.4px",
-            top: "-170px"
-        })
-        return div
-    }
-    div.highest = function () {
-        ui.xjb_giveStyle(div, {
-            height: "500px",
-            top: "0px"
-        })
-        div.back.remove()
-        div.highestRemove = function () {
-            document.removeEventListener(lib.config.touchscreen ? 'touchend' : 'click', div.highestListenerRemove);
-            div.remove()
-        }
-        div.highestListenerRemove = function (e) {
-            if (!div.highestRemoveOk) return;
-            if (e.target !== div && !Array.from(div.getElementsByTagName("*")).includes(e.target)) {
-                div.highestRemove()
-            }
-        }
-        document.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', div.highestListenerRemove)
-        return div
-    }
-    div.standardWidth = function () {
-        ui.xjb_giveStyle(div, {
-            width: "502px"
-        })
-        return div
-    }
-    div.hide = function () {
-        ui.xjb_hideElement(this);
-        ui.xjb_hideElement(this.back)
-        return this;
-    }
-    div.show = function () {
-        ui.xjb_showElement(this);
-        ui.xjb_showElement(this.back)
-        return this;
-    }
-    div.close = function () {
-        this.remove();
-        this.back.remove()
-        return this;
-    }
-    div.insertDialog = function (dialog) {
-        if (!dialog || !dialog.buttons || !Array.isArray(dialog.buttons)) return this;
-        dialog.hide();
-        for (const button of this.buttons) {
-            button.addEventListener(DEFAULT_EVENT, () => {
-                dialog.show();
-            })
-        }
-        return this;
-    }
-    div.coverDialog = function (dialog) {
-        if (!dialog || !dialog.buttons || !Array.isArray(dialog.buttons)) return this;
-        dialog.hide();
-        return this;
     }
     div.setReconstruct = function (method, ...args) {
         div.reconstruct = () => method(...args);
@@ -639,7 +661,7 @@ game.xjb_create.dir = function (str = '', path = '', func, config = {}, button) 
     const dialog = game.xjb_create.search(str, func);
     const ul = dialog.ul;
     const textarea = dialog.textarea;
-    const nextButton = dialog.appeadButton("上一页", false, false);
+    const nextButton = dialog.appendButton("上一页", false, false);
     const chosen = [];
     dialog.chosen = chosen;
     ui.xjb_setStyle(ul, 'height', '250px');
@@ -875,7 +897,11 @@ game.xjb_create.search = function (
                 }, 0)
             })
         });
-        Promise.all(promises).then(lis => ul.append(...lis));
+        if (promises.length < 100) Promise.all(promises).then(lis => ul.append(...lis));
+        else {
+            Promise.all(promises.slice(0, 100)).then(lis => ul.append(...lis));
+            Promise.all(promises.slice(100)).then(lis => ul.append(...lis));
+        }
     }
     return dialog;
 }
@@ -1020,13 +1046,39 @@ game.xjb_create.configList = function (list, func) {
     })
     return dialog;
 }
-game.xjb_create.configSet = function () {
+game.xjb_create.configSet = function (list, configObject = lib.config, cost = 0, exclude = []) {
     const dialog = game.xjb_create.search("<div style=position:relative;overflow:auto;font-size:24px>点击以下项目可进行设置。输入关键词后，敲击回车以进行搜索,只显示前100条</div><hr>", func)
     const textarea = dialog.textarea;
     const ul = dialog.ul;
-    dialog.buttons[0].isOpened = [];
-    dialog.buttons[0].isClosed = [];
     if (!list) return dialog;
+    dialog.appendLi((key, value, index) => {
+        const li = element("li")
+            .setKey("configName", key)
+            .innerHTML(`<span>${value}</span>`)
+            .appendInnerHTML(`<span>${configObject[key] ? "【🔓已开启】" : cost !== 0 && !exclude.includes(key) ? "【🔐已锁定】" : "【🔒已关闭】"}</span>`)
+            .flexRow()
+            .exit();
+        return li;
+    })
+    ui.xjb_listenDefault(ul, e => {
+        if (e.target.innerText === "【🔓已开启】") {
+            configObject[key] = false;
+        } else if (e.target.innerText === "【🔒已关闭】") {
+            configObject[key] = true;
+        } else {
+            if (game.xjb_canPayWithB(cost)) {
+                game.xjb_costHunbi(cost);
+                configObject[key] = true;
+                e.target.parentNode.myLi.className = "xjb_animation_shake"
+                setTimeout(() => {
+                    _this.myLi.className = ""
+                }, 820)
+            }
+        }
+    });
+    dialog.appendButton()
+    dialog.buttons[0]
+    return dialog;
 }
 //这种对话框用于展示条件
 game.xjb_create.condition = function (obj = {}) {

@@ -33,6 +33,11 @@ const vPlayers = NonameCN.getVirtualPlayers();
 const vGame = NonameCN.getVirtualGame();
 const eventModel = NonameCN.getVirtualEvent();
 const vStorage = NonameCN.getVirtualStorage();
+const XJB_PUNC = ["!", " || ", " && ", " + ", " - ", " * ", " / ", " % ",
+	" += ", " -= ",
+	"++", "--",
+	" > ", " < ", " >= ", " <= ", " == ", " === ",
+	"(", ")", "."]
 const XJB_NEED_FOLLOW_PUNC = ['++', "--"]
 const XJB_NEED_FELLOW_PUNC = ['!', '~']
 const XJB_NEED_LINK_PUNC = [' || ', ' && ', ' ?? ', ' ? ', ' + ', ' - ', ' * ', ' ** ', ' / ', ' % ', ' += ', ' -= ', ' > ', ' < ', ' >= ', ' <= ', ' == ', ' === ', '(', '.']
