@@ -212,6 +212,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "dongzhou.mjs",
         "raiseSkill.mjs",
         "sanSkill.mjs",
+        "skillTag.mjs",
         "soulSkill.mjs",
         "xjbSkill.mjs"
     ],
