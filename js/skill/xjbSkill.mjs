@@ -299,6 +299,7 @@ const xjb_qizuo = SkillCreater(
     }
 });
 
+
 const xjb_jianxiong = SkillCreater(
     "xjb_jianxiong", {
     trigger: {
@@ -502,12 +503,12 @@ const xjb_zhijue = SkillCreater(
         event.result = await player.chooseToDiscard(
             'he',
             "弃置一张相同点数/颜色的牌，取消此牌的所有目标。"
-        ).set("filterCard", (card, player) => {
-            const cardx = _status.event.getParent("useCard").card;
+        ).set("filterCard", (card) => {
+            const cardx = _status.event.cardx;
             if (cardx.cards.length === 0) return true;
-            return get.color(card) === get.color(cardx)
-                || get.number(card) === get.number(cardx)
-        }).forResult()
+            return get.color(card) === get.color(cardx) || get.number(card) === get.number(cardx);
+        }).set("cardx", trigger.card)
+        .forResult()
     },
     content: async function (event, trigger, player) {
         game.broadcastAll(triggerX => {
@@ -548,7 +549,7 @@ const xjb_qiongzhi = SkillCreater(
                 dialog: function (event, player) {
                     const list = [];
                     for (const i of lib.inpile) {
-                        if (get.type(i, "trick") !== "trick") continue;
+                        if (get.type(i) !== "trick") continue;
                         if (!event.filterCard({ name: i }, player, event)) continue;
                         list.push(["锦囊", "", i]);
                     }
@@ -909,6 +910,7 @@ const xjb_huibian = SkillCreater(
     "_priority": 0,
 })
 
+//庞统技能
 const xjb_fengchu = SkillCreater(
     "xjb_fengchu", {
     translate: "凤雏",
@@ -986,7 +988,7 @@ const xjb_yiji = SkillCreater(
 const xjb_taoni = SkillCreater(
     "xjb_taoni", {
     translate: "讨逆",
-    description: "出牌阶段限X次，你可以重铸一张牌并令一名角色横置;你对已横置的角色使用牌无次数限制。(X为你造成伤害的次数+1)",
+    description: "出牌阶段限X次，你可以重铸一张牌并令一名角色横置;你对已横置的角色使用牌无次数限制。(X为你本回合造成伤害的次数+1)",
     enable: "phaseUse",
     filterCard: (card, player) => player.canRecast(card),
     filterTarget: function (card, player, target) {
@@ -995,8 +997,8 @@ const xjb_taoni = SkillCreater(
     position: "he",
     filter: function (event, player) {
         if (!player.countCards('he')) return false;
-        if (!player.getStat().skill.xjb_taoni) return true;
-        return player.getHistory("sourceDamage").length + 1 > player.getStat().skill.xjb_taoni;
+        if (!player.countSkill("xjb_taoni")) return true;
+        return player.getHistory("sourceDamage").length + 1 > player.countSkill("xjb_taoni");
     },
     discard: false,
     lose: false,

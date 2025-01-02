@@ -571,7 +571,7 @@ const xjb_duhen = SkillCreater(
 			player.storage.xjb_duhen_config &= (0b11111 ^ (1 << (i - 1)))
 		}, player, num);
 	},
-	init(skill){
+	init(player, skill) {
 		player.storage.xjb_duhen_config = 0b11111;
 	},
 	list: [

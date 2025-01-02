@@ -76,7 +76,7 @@ game.xjb_checkCharCountAll = function (id) {
     for (const [key, value] of Object.entries(CharCountMap)) {
         if (lib.config.xjb_count[id][key] == null) lib.config.xjb_count[id][key] = value;
     }
-    if (xjb_lingli && xjb_lingli.daomo && xjb_lingli.daomo.type) {
+    if ("xjb_lingli" in window && xjb_lingli.daomo && xjb_lingli.daomo.type) {
         for (const type of xjb_lingli.daomo.type) {
             if (lib.config.xjb_count[id].daomo[type] == null)
                 lib.config.xjb_count[id].daomo[type] = { number: 0 };
