@@ -148,6 +148,7 @@ const xjb_gongxin = SkillCreater(
     }
 })
 
+//甘宁技能
 const xjb_yexi = SkillCreater(
     "xjb_yexi", {
     enable: "phaseUse",
@@ -190,39 +191,6 @@ const xjb_yexi = SkillCreater(
         threaten: 1.5,
     }
 });
-const xjb_jianxiong = SkillCreater(
-    "xjb_jianxiong", {
-    trigger: {
-        player: "damageEnd"
-    },
-    getIndex: function (event, player, triggername) {
-        return event.num;
-    },
-    content: async function (event, trigger, player) {
-        if (!trigger.cards) trigger.cards = [];
-        const cards = trigger.cards.filterInD();
-        const num = Math.max(2 - cards.length, 0)
-        await player.draw(num);
-        await player.gain(cards, 'gain2')
-    },
-    translate: "奸雄",
-    description: "当你受到一点伤害后，你可以摸2-X张牌，然后你获得对你造成伤害的牌。(X为位于中央区的对你造成伤害的牌的数量且至多为2)",
-    ai: {
-        maixie: true,
-        "maixie_hp": true,
-        effect: {
-            target: function (card, player, target) {
-                if (target.isTurnedOver()) {
-                    if (get.tag(card, 'damage')) {
-                        if (target.hp == 1) return;
-                        return [1, 2];
-                    }
-                }
-            },
-        },
-    },
-})
-
 const xjb_qizuo = SkillCreater(
     "xjb_qizuo", {
     group: ["xjb_qizuo_gain"],
@@ -329,8 +297,40 @@ const xjb_qizuo = SkillCreater(
         },
         "off": {},
     }
-})
+});
 
+const xjb_jianxiong = SkillCreater(
+    "xjb_jianxiong", {
+    trigger: {
+        player: "damageEnd"
+    },
+    getIndex: function (event, player, triggername) {
+        return event.num;
+    },
+    content: async function (event, trigger, player) {
+        if (!trigger.cards) trigger.cards = [];
+        const cards = trigger.cards.filterInD();
+        const num = Math.max(2 - cards.length, 0)
+        await player.draw(num);
+        await player.gain(cards, 'gain2')
+    },
+    translate: "奸雄",
+    description: "当你受到一点伤害后，你可以摸2-X张牌，然后你获得对你造成伤害的牌。(X为位于中央区的对你造成伤害的牌的数量且至多为2)",
+    ai: {
+        maixie: true,
+        "maixie_hp": true,
+        effect: {
+            target: function (card, player, target) {
+                if (target.isTurnedOver()) {
+                    if (get.tag(card, 'damage')) {
+                        if (target.hp == 1) return;
+                        return [1, 2];
+                    }
+                }
+            },
+        },
+    },
+})
 //汉曹操技能
 const xin_zhibang = SkillCreater(
     "xin_zhibang", {
@@ -499,16 +499,15 @@ const xjb_zhijue = SkillCreater(
     translate: "智绝",
     description: "一名其他角色使用锦囊牌时，你可以弃置一张相同点数/颜色的牌(虚拟牌则改为任意一张)，取消此牌的所有目标。该角色获得X张残【杀】(X为此牌的目标数且至少为1)",
     cost: async function (event, trigger, player) {
-        const { result: { bool } } = await player.chooseToDiscard(
+        event.result = await player.chooseToDiscard(
             'he',
             "弃置一张相同点数/颜色的牌，取消此牌的所有目标。"
         ).set("filterCard", (card, player) => {
             const cardx = _status.event.getParent("useCard").card;
             if (cardx.cards.length === 0) return true;
-            return get.color(card, false) === get.color(cardx, false)
-                || get.number(card, false) === get.number(cardx, false)
-        })
-        event.result = { bool, cost_data: { cards: event.cards } }
+            return get.color(card) === get.color(cardx)
+                || get.number(card) === get.number(cardx)
+        }).forResult()
     },
     content: async function (event, trigger, player) {
         game.broadcastAll(triggerX => {

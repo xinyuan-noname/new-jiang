@@ -571,6 +571,9 @@ const xjb_duhen = SkillCreater(
 			player.storage.xjb_duhen_config &= (0b11111 ^ (1 << (i - 1)))
 		}, player, num);
 	},
+	init(skill){
+		player.storage.xjb_duhen_config = 0b11111;
+	},
 	list: [
 		"当你造成伤害时，你可以获得一枚“恨”，令此伤害+1。",
 		"当你使用伤害牌时，你可以获得一枚“恨”，令此牌无法被响应。",
