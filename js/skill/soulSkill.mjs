@@ -115,26 +115,30 @@ const xjb_soul_fuhong = SkillCreater(
         return true;
     },
     content: function () {
-        'step 0'
-        if (!target.xjb_HpCardArea) target.xjb_adjustHpCard();
-        const area = target.xjb_HpCardArea.map((content, index) => {
-            return [index, game.xjb_createHpCard(content.obv).outerHTML]
-        });
-        if (area.length > 1) {
-            player.chooseButton([
-                `你选择${get.translation(target)}的一张体力牌，令此体力牌牌翻面。`,
-                [area, "tdnodes"]
-            ])
-        } else {
-            target.xjb_turnOverHpCard(0);
-            event.finish()
-        }
-        'step 1'
-        if (result.bool) {
-            target.xjb_turnOverHpCard(result.links[0])
-        } else {
-            player.storage.counttrigger["xjb_soul_fuxue"] -= 1
-        }
+        // 'step 0'
+        // if (!target.xjb_HpCardArea) target.xjb_adjustHpCard();
+        // const area = target.xjb_HpCardArea.map((content, index) => {
+        //     return [index, game.xjb_createHpCard(content.obv).outerHTML]
+        // });
+        // if (area.length > 1) {
+        //     player.chooseButton([
+        //         `你选择${get.translation(target)}的一张体力牌，令此体力牌牌翻面。`,
+        //         [area, "tdnodes"]
+        //     ])
+        // } else {
+        //     target.xjb_turnOverHpCard(0);
+        //     event.finish()
+        // }
+        // 'step 1'
+        // if (result.bool) {
+        //     target.xjb_turnOverHpCard(result.links[0])
+        // } else {
+        //     player.storage.counttrigger["xjb_soul_fuxue"] -= 1
+        // }
+        "step 0"
+        player.xjb_turnOverPlayerHpCard(target);
+        "step 1"
+        console.log(result);
     },
     translate: "覆红",
     description: "出牌阶段限一次,你可以翻转你攻击范围内一名角色的一张体力牌。"

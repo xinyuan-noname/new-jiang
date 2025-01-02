@@ -240,20 +240,5 @@ lib.skill.xjb_3 = {
                 game.xjb_cpjsRemove();
             },
         }
-        //判定反转
-        SkillCreater(
-            "xjb_JudgeReversal", {
-            mod: {
-                judge: function (player, result) {
-                    if (!_status.event.card) return;
-                    if (result.bool == false) result.bool = true;
-                    else result.bool = false
-                }
-            },
-            translate: '判定反转',
-            description: "你的延时锦囊牌判定结果反转"
-        })
-        //强制技效果
-        
     },
 }

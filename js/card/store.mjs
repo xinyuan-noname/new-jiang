@@ -358,8 +358,11 @@ const xjb_skillCard = CardCreater(
         return skill;
     },
     SanSkill: [
-        'xjb_xinsheng',
-        'xjb_lunaticMasochist'
+        "xjb_reviveDead",
+        'xjb_lunaticMasochist',
+        "xjb_JudgeReversal",
+        "xjb_arrangePhase",
+        "xjb_seasonChange"
     ],
     async content(event, trigger, player) {
         const { control } = await player.chooseControl(["输入id", "神圣技能"]).forResult();

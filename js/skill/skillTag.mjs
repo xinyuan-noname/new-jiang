@@ -6,7 +6,12 @@ lib.translate.shouSkill = "<b description=寿技：首次使用此技能加两�
 lib.translate.suidongSkill = "<b description=随动技：因为此技能效果获得牌后可以立即使用该牌>随动技</b>"
 lib.translate.qzj = "<b description=强制技：技能结算后,此技能指定的目标角色当前回合失去技能>强制技</b>"
 lib.translate.queqiaoxian = "<b description=鹊桥仙：技能结算后,可令一名珠联璧合的异性角色额外结算一次>鹊桥仙</b>"
-
+/**
+ * 
+ * @param {string} name 
+ * @param {Skill} skill 
+ * @returns 
+ */
 function SkillCreater(name, skill) {
     lib.skill[name] = { ...skill }
     delete lib.skill[name].translate;

@@ -49,11 +49,17 @@ function SkillCreater(name, skill) {
 //         },
 //     },
 // })
+const _xjb_soul_zhizhen = SkillCreater(
+    "_xjb_soul_zhizhen", {
+    translate: "置阵",
+    description: "出牌阶段限一次，。",
+})
 const _xjb_soul_xue_jiezhen = SkillCreater(
     "_xjb_soul_xue_jiezhen", {
     translate: "<span data-nature=xjb_hun><font color=white>血·结阵</font></span>",
     description: "出牌阶段限一次，你失去一点体力，从牌堆顶及牌堆底各获得一张牌。若这两张牌花色相同或点数相同，你销毁这对牌并将牌堆中一张放入阵法区。",
     enable: "phaseUse",
+    filterCard: false,
     filter: function (_, player) {
         if (!lib.config.xjb_lingli_Allallow) {
             const bool1 = !lib.xjb_lingliUser.includes(player.name1) && !lib.xjb_lingliUser.includes(player.name2);

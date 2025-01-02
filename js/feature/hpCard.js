@@ -131,33 +131,34 @@ game.xjb_genHpCardData = function (value) {
 }
 
 addPlayerMethod('xjb_adjustHpCard', function () {
-    const player = this;
-    player.xjb_HpCardArea = [];
-    const mod = player.maxHp % 5;
-    if ([1, 2, 3, 4, 5].includes(player.maxHp)) {
-        player.xjb_HpCardArea.push(game.xjb_genHpCardData(player.maxHp));
-    }
-    else if (mod === 0) {
-        for (let i = 0; i < player.maxHp / 5; i++) {
-            player.xjb_HpCardArea.push(game.xjb_genHpCardData(5));
+    game.broadcastAll((player) => {
+        player.xjb_HpCardArea = [];
+        const mod = player.maxHp % 5;
+        if ([1, 2, 3, 4, 5].includes(player.maxHp)) {
+            player.xjb_HpCardArea.push(game.xjb_genHpCardData(player.maxHp));
         }
-    }
-    else if ([3, 4].includes(mod)) {
-        player.xjb_HpCardArea.push(game.xjb_genHpCardData(mod));
-        const times = (player.maxHp - mod) / 5
-        for (let i = 0; i < times; i++) {
-            player.xjb_HpCardArea.push(game.xjb_genHpCardData(5));
+        else if (mod === 0) {
+            for (let i = 0; i < player.maxHp / 5; i++) {
+                player.xjb_HpCardArea.push(game.xjb_genHpCardData(5));
+            }
         }
-    }
-    else if ([1, 2].includes(mod)) {
-        player.xjb_HpCardArea.push(game.xjb_genHpCardData(3));
-        player.xjb_HpCardArea.push(game.xjb_genHpCardData(2 + mod));
-        const times = (player.maxHp - mod) / 5;
-        for (let i = 0; i < times - 1; i++) {
-            player.xjb_HpCardArea.push(game.xjb_genHpCardData(5));
+        else if ([3, 4].includes(mod)) {
+            player.xjb_HpCardArea.push(game.xjb_genHpCardData(mod));
+            const times = (player.maxHp - mod) / 5
+            for (let i = 0; i < times; i++) {
+                player.xjb_HpCardArea.push(game.xjb_genHpCardData(5));
+            }
         }
-    }
-    return player.xjb_HpCardArea;
+        else if ([1, 2].includes(mod)) {
+            player.xjb_HpCardArea.push(game.xjb_genHpCardData(3));
+            player.xjb_HpCardArea.push(game.xjb_genHpCardData(2 + mod));
+            const times = (player.maxHp - mod) / 5;
+            for (let i = 0; i < times - 1; i++) {
+                player.xjb_HpCardArea.push(game.xjb_genHpCardData(5));
+            }
+        }
+    }, this);
+    return this.xjb_HpCardArea;
 })
 addPlayerMethod("xjb_getLoseHpMap", function () {
     const player = this;
@@ -317,6 +318,41 @@ setEvent("xjb_turnOverHpCard", {
         'step 3'
         player.update();
         game.log(player, '将一张', event.obv, '点的体力牌', '翻面，', '成为', event.rev, '点的体力牌')
+    }
+})
+setEvent("xjb_turnOverPlayerHpCard", {
+    player() {
+        const player = this;
+        const next = game.createEvent('xjb_turnOverPlayerHpCard');
+        next.player = player;
+        for (const arg of arguments) {
+            if (get.itemtype(arg) === "player") next.target = arg;
+            else if (typeof arg === "boolean") next.forced = arg;
+        }
+        if (!next.target) next.target = player;
+        if (!next.target.xjb_HpCardArea) next.target.xjb_adjustHpCard();
+        next.setContent('xjb_turnOverPlayerHpCard');
+        return next
+    },
+    content: function () {
+        'step 0'
+        const area = event.target.xjb_HpCardArea.map((content, index) => {
+            return [index, game.xjb_createHpCard(content.obv).outerHTML]
+        });
+        if (area.length > 1) {
+            player.chooseButton([
+                `你选择${get.translation(event.target)}的一张体力牌，令此体力牌牌翻面。`,
+                [area, "tdnodes"]
+            ], event.forced);
+        } else {
+            event.target.xjb_turnOverHpCard(0);
+            event.finish();
+        }
+        'step 1'
+        if (result.bool) {
+            event.target.xjb_turnOverHpCard(result.links[0]);
+        }
+        event._result = event.result;
     }
 })
 //交换体力牌

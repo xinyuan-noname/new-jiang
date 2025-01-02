@@ -4,10 +4,7 @@ lib.skill.xjb_5 = {
     titleSet: function () {
         for (let i = 0; i < 15; i++) {
             if (!lib.config.xjb_title[i]) {
-                lib.config.xjb_title[i] = [
-                    ``,
-                    []
-                ]
+                lib.config.xjb_title[i] = ["", []];
             }
         }
         lib.config.xjb_title[0][0] = `<img src=${lib.xjb_src}title/xjb_kill1.png height=50px></img>`
