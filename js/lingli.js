@@ -105,7 +105,7 @@ lib.skill.xjb_11 = {
             game.saveConfig("xjb_count", lib.config.xjb_count)
         }
         get.xjb_daomoInformation = function (type) {
-            let list = {
+            const list = {
                 blood: {
                     translation: "杜鹃",
                     intro: "失去体力导魔介质"
@@ -286,10 +286,10 @@ lib.skill.xjb_11 = {
                 }
             },
             event: {
-                "+2": ["loseHp", "loseMaxHp",
+                "+2": ["loseHp", "damgage",
                     "xjb_fire", "xjb_ice", "xjb_thunder",
                     "giveHpCard2"],
-                "-2": ["recover", "gainMaxHp"],
+                "-2": ["recover"],
                 "+1": ["xjb_cardDeath"],
                 "-1": ["xjb_cardBirth"],
                 match: function (num) {
@@ -331,170 +331,26 @@ lib.skill.xjb_11 = {
             //
             gathering: {
                 M: -2520,
+                K: 100,
             },
             //血色空间
             blood: {
-                M: -10080
+                M: -10080,
+                K: 0,
             },
             //空气
             air: {
                 M: -5040,
+                K: 10,
             },
             //灵力场
             area: {
                 M: 5040,
                 "ΣL": 1024,
-                S: {
-                    S0: 0,
-                    S1: 2,
-                    S2: 14,
-                    S3: 38,
-                    S4: 74,
-                    S5: 122,
-                    S6: 182,
-                    S7: 254,
-                    S8: 338
-                },
+            },
+            getK(position) {
+                return this[position] && this[position].K;
             }
-        }
-        xjb_lingli.area.countL = () => {
-            let S = xjb_lingli.area.S
-            return S.S0 + S.S1 + S.S2 + S.S3 + S.S4 + S.S5 + S.S6 + S.S7 + S.S8
-        }
-        xjb_lingli.updateK = str => {
-            let lg = (x) => {
-                let ln = Math.log
-                return ln(x) / ln(10)
-            }
-            let pow = Math.pow, L = xjb_lingli.area["ΣL"],
-                M1 = xjb_lingli.area.M, M2 = xjb_lingli[str].M, abs = Math.abs
-            xjb_lingli[str].K = pow(10, (lg(L) * 2 * M1 / abs(M1 - M2)) + 1 - lg(L))
-            return xjb_lingli[str].K
-        }
-        xjb_lingli.air.updateK = () => {
-            xjb_lingli.updateK("air")
-            return xjb_lingli.air.K
-        }
-        xjb_lingli.air.updateK()
-        xjb_lingli.updateK("blood")
-        xjb_lingli.updateK("gathering")
-        xjb_lingli.area["updateΔL"] = () => {
-            let S = xjb_lingli.area.S
-            xjb_lingli.area["ΔL"] = [];
-            xjb_lingli.area["ΔL"][0] = S.S1 - S.S0
-            xjb_lingli.area["ΔL"][1] = S.S2 - S.S1
-            xjb_lingli.area["ΔL"][2] = S.S3 - S.S2
-            xjb_lingli.area["ΔL"][3] = S.S4 - S.S3
-            xjb_lingli.area["ΔL"][4] = S.S5 - S.S4
-            xjb_lingli.area["ΔL"][5] = S.S6 - S.S5
-            xjb_lingli.area["ΔL"][6] = S.S7 - S.S6
-            xjb_lingli.area["ΔL"][7] = S.S8 - S.S7
-        }
-        xjb_lingli.area["updateΔL"]()
-        xjb_lingli.area["updateV"] = () => {
-            let S = xjb_lingli.area.S
-            xjb_lingli.area.V = {
-                V0: S.S0 / 2,
-                V1: S.S1 / 2,
-                V2: S.S2 / 2,
-                V3: S.S3 / 2,
-                V4: S.S4 / 2,
-                V5: S.S5 / 2,
-                V6: S.S6 / 2,
-                V7: S.S7 / 2,
-                V8: S.S8 / 2
-            }
-            let V = xjb_lingli.area["V"]
-            xjb_lingli.area["ΔV"] = [];
-            xjb_lingli.area["ΔV"][0] = V.V1 - V.V0
-            xjb_lingli.area["ΔV"][1] = V.V2 - V.V1
-            xjb_lingli.area["ΔV"][2] = V.V3 - V.V2
-            xjb_lingli.area["ΔV"][3] = V.V4 - V.V3
-            xjb_lingli.area["ΔV"][4] = V.V5 - V.V4
-            xjb_lingli.area["ΔV"][5] = V.V6 - V.V5
-            xjb_lingli.area["ΔV"][6] = V.V7 - V.V6
-            xjb_lingli.area["ΔV"][7] = V.V8 - V.V7
-        }
-        xjb_lingli.area["updateV"]()
-        xjb_lingli.area["updateW"] = () => {
-            let L = xjb_lingli.area["ΔL"], M = xjb_lingli.area.M
-            xjb_lingli.area["W"] = {};
-            xjb_lingli.area["W"]["0"] = M / L[0]
-            xjb_lingli.area["W"]["1"] = M / L[1]
-            xjb_lingli.area["W"]["2"] = M / L[2]
-            xjb_lingli.area["W"]["3"] = M / L[3]
-            xjb_lingli.area["W"]["4"] = M / L[4]
-            xjb_lingli.area["W"]["5"] = M / L[5]
-            xjb_lingli.area["W"]["6"] = M / L[6]
-            xjb_lingli.area["W"]["7"] = M / L[7]
-        }
-        xjb_lingli.area["updateW"]()
-        xjb_lingli.update = () => {
-            xjb_lingli.area["updateΔL"]()
-            xjb_lingli.air.updateK()
-            xjb_lingli.area["updateV"]()
-            xjb_lingli.area["updateW"]()
-        }
-        xjb_lingli.area["fanchan"] = num => {
-            let area = xjb_lingli.area;
-            let S = area.S;
-            let count = 0
-            function check(num1, num2) {
-                return (area.countL() <= num1) && (area.countL() > num2);
-            }
-            function isNature(arr) {
-                let array = []
-                for (let i = 0; i < arr.length; i++) {
-                    array[i] = 0 + (arr[i] % 1 === 0)
-                }
-                return Math.min(...array)
-            }
-            xjb_lingli.update()
-            function linglilose(num1, num2, str1) {
-                if (check(num1, num2)) while (num > 0 && check(num1, num2)) {
-                    if (area.countL() <= 72) return;
-                    S[str1] -= 2;
-                    count += 2;
-                    xjb_lingli.update()
-                    if (isNature(Object.values(area.W))) num--
-                    if (area.countL() <= 72) return;
-                }
-            }
-            //
-            linglilose(1024, 942, "S8")
-            linglilose(942, 872, "S7")
-            linglilose(872, 814, "S6")
-            linglilose(814, 768, "S5")
-            linglilose(768, 734, "S4")
-            linglilose(734, 712, "S3")
-            linglilose(712, 702, "S2")
-            //
-            linglilose(702, 632, "S8")
-            linglilose(632, 574, "S7")
-            linglilose(574, 528, "S6")
-            linglilose(528, 494, "S5")
-            linglilose(494, 472, "S4")
-            linglilose(472, 462, "S3")
-            //
-            linglilose(462, 404, "S8")
-            linglilose(404, 358, "S7")
-            linglilose(358, 324, "S6")
-            linglilose(324, 302, "S5")
-            linglilose(302, 292, "S4")
-            //
-            linglilose(292, 246, "S8")
-            linglilose(246, 212, "S7")
-            linglilose(212, 190, "S6")
-            linglilose(190, 180, "S5")
-            //
-            linglilose(180, 146, "S8")
-            linglilose(146, 124, "S7")
-            linglilose(124, 114, "S6")
-
-            linglilose(114, 92, "S8")
-            linglilose(92, 82, "S7")
-            linglilose(82, 72, "S8")
-            return count
         }
     },
     logo: function () {

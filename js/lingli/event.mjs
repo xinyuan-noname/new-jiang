@@ -2,10 +2,11 @@ import { _status, lib, ui, game, ai, get } from "../../../../noname.js"
 
 const lingli_event = {
     "xjb_qiling": {
-        player: function (num = 1) {
+        player: function (num = 1, source) {
             let next = game.createEvent('xjb_qiling');
             next.player = this;
             next.num = num;
+            next.source = source;
             next.setContent('xjb_qiling');
             return next
         },
@@ -17,7 +18,7 @@ const lingli_event = {
             }
             "step 1"
             game.log(player, "进行了一次启灵")
-            const num = xjb_lingli.area["fanchan"](1);
+            const num = parseInt(Math.random() * 5);
             player.xjb_addlingli(num);
             event.num--;
             "step 2"
@@ -186,7 +187,7 @@ const lingli_event = {
         },
         content: function () {
             "step 0"
-            //如果没有魔力，事件结束
+            // 如果没有魔力，事件结束
             event.num = event.player.countMark("_xjb_moli")
             if (event.num <= 0) event.finish()
             "step 1"
@@ -270,7 +271,7 @@ const lingli_event = {
         },
         content: function () {
             let num = game.xjb_getSb.allLingli(event.player),
-                K = xjb_lingli.updateK(game.xjb_getSb.position(event.player))
+                K = xjb_lingli.getK(game.xjb_getSb.position(event.player))
             if (num > K) {
                 let limit = num - K
                 for (let i = 0; i < limit; i++) {

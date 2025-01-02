@@ -6,8 +6,6 @@ import {
     _status
 } from "../../../../noname.js"
 import {
-    findPrefix,
-    addPSFix,
     adjustTab,
 } from "../tool/string.js";
 import {

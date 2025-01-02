@@ -235,10 +235,6 @@ window.XJB_LOAD_FINAL = function () {
         },
         "import": function () {
             importEditor();
-            if (lib.xjb_yangcheng1) {
-                lib.xjb_yangcheng = lib.xjb_yangcheng1.onclick("other");
-                delete lib.xjb_yangcheng1
-            }
         },
         guozhan: function () {
             if (get.mode() === "guozhan") {
@@ -248,18 +244,13 @@ window.XJB_LOAD_FINAL = function () {
             }
         },
         "xjb_count": function () {
-            // let list = { ...lib.character, 'xjb_newCharacter': [] }
-            // for (const id in list) {
-            //     game.xjb_checkCharCountAll(id);
-            //     lib.config.xjb_count[id].kind = "人类"
+            // const map = {
+            //     "曹操": ["龟虽寿", "短歌行", "观沧海"],
+            //     "曹植": ["白马篇", "铜雀台赋", "赠白马王彪"],
+            //     "曹丕": ["燕歌行"],
+            //     "诸葛亮": ["隆中对", "出师表", "诫子书", "诫外生书"],
+            //     "李白": ['行路难', "蜀道难", "清平调", "梦游天姥吟留别", "将进酒", "弃我去者"],
             // }
-            const map = {
-                "曹操": ["龟虽寿", "短歌行", "观沧海"],
-                "曹植": ["白马篇", "铜雀台赋", "赠白马王彪"],
-                "曹丕": ["燕歌行"],
-                "诸葛亮": ["隆中对", "出师表", "诫子书", "诫外生书"],
-                "李白": ['行路难', "蜀道难", "清平调", "梦游天姥吟留别", "将进酒", "弃我去者"],
-            }
         },
         lingli: function () {
 
@@ -385,9 +376,8 @@ window.XJB_LOAD_FINAL = function () {
             })
         },
         choujiang: function () {
-            {
-                if (!lib.config.xjb_hun) return false
-            }
+            if (!lib.config.xjb_hun) return false;
+            
             lib.config.xjb_list_hunbilist.choujiang = {
                 "1": {
                     "称号(1个)": "4*100",

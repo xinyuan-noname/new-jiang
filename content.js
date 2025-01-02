@@ -501,7 +501,7 @@ export function XJB_CONTENT(config, pack) {
             }
         }
         if (lib.config.xjb_yangcheng == 1) {
-            lib.xjb_yangcheng1 = lib.extensionMenu.extension_新将包.newCharacter = {
+             lib.extensionMenu.extension_新将包.newCharacter = {
                 name: '<img src="' + lib.xjb_src + 'xin_newCharacter.jpg" height="16">' + '<font color="yellow">武将养成</font>',
                 init: 'name2',
                 item: {

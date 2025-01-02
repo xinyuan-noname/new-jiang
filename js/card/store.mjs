@@ -138,9 +138,7 @@ const xjb_lingliCheck = CardCreater(
     },
     content: function () {
         "step 0"
-        var num = xjb_lingli.area["fanchan"]()
         target.xjb_addlingli(14 - cards[0].number).set("lingliSource", "card")
-
     },
     fullskin: true,
     image: "ext:新将包/lingli/check.png",

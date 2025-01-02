@@ -474,6 +474,9 @@ const xjb_cangshi = SkillCreater(
 	translate: "仓实",
 	description: "出牌阶段，你可以弃置两张基本牌，令你手牌上限+1",
 	enable: "phaseUse",
+	init(player, skill) {
+		if (player.countMark(skill)) player.markSkill(skill)
+	},
 	filter: (event, player) => {
 		return player.countCards("h", { type: "basic" }) >= 2;
 	},

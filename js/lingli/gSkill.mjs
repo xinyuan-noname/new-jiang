@@ -56,8 +56,9 @@ const _xjb_soul_xue_jiezhen = SkillCreater(
     enable: "phaseUse",
     filter: function (_, player) {
         if (!lib.config.xjb_lingli_Allallow) {
-            if (!lib.xjb_lingliUser.includes(player.name1) && !lib.xjb_lingliUser.includes(player.name2)) return false;
-            if (!player.storage.xjb_tempAllowUseLingli) return false;
+            const bool1 = !lib.xjb_lingliUser.includes(player.name1) && !lib.xjb_lingliUser.includes(player.name2);
+            const bool2 = !player.storage.xjb_tempAllowUseLingli
+            if (bool1 && bool2) return false;
         }
         if (player.getHistory("custom", evt => evt.name === "xjb_addZhenFa").length) return false;
         return true;
@@ -147,7 +148,7 @@ const _xjb_lingli = SkillCreater(
     intro: {
         name: "灵力",
         content: function (storage, player, skill) {
-            let num = xjb_lingli.updateK(game.xjb_getSb.position(player))
+            let num = xjb_lingli.getK(game.xjb_getSb.position(player))
             return `灵力值:${storage}Ch/${Math.floor(num)}Ch
             </br>灵力密度:${player.xjb_getLingliDensity()}`
         },
