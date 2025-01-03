@@ -1,19 +1,5 @@
 "use script"
 import { _status, lib, ui, game, ai, get } from "../../../../noname.js"
-lib.element.card.xjb_Becolorful = function () {
-    this.style.border = "1.5px solid black"
-    this.classList.add("xjb_color_circle")
-}
-game.xjb_createSkillCard = function (id, colorful) {
-    const info = lib.card.xjb_skillCard
-    const isSanSkill = info.SanSkill.includes(id)
-    info.cardConstructor(id, isSanSkill);
-    info.skillLeadIn(id);
-    const card = game.createCard(id + "_card");
-    if (colorful) card.xjb_Becolorful();
-    return card;
-}
-
 /**
  * 
  * @param {string} name 
@@ -28,12 +14,49 @@ function SkillCreater(name, skill) {
     lib.translate[name + "_info"] = skill.description
     return lib.skill[name];
 };
+const setEvent = (name, { player, content }) => {
+    lib.element.player[name] = get.copy(player)
+    lib.element.content[name] = get.copy(content)
+};
+const addPlayerMethod = (name, method) => {
+    lib.element.player[name] = get.copy(method)
+};
+
+lib.element.card.xjb_Becolorful = function () {
+    this.style.border = "1.5px solid black"
+    this.classList.add("xjb_color_circle")
+}
+game.xjb_createSkillCard = function (id, colorful) {
+    const info = lib.card.xjb_skillCard
+    const isSanSkill = info.SanSkill.includes(id)
+    info.cardConstructor(id, isSanSkill);
+    info.skillLeadIn(id);
+    const card = game.createCard(id + "_card");
+    card.dataset.xjb_skillCard = true;
+    if (colorful) card.xjb_Becolorful();
+    return card;
+}
+
+addPlayerMethod("xjb_hasSkillCard", function (postion = "h", includeNoSkill) {
+    const player = this;
+    return player.countCards(postion, (card, player) => {
+        if (includeNoSkill && get.name(card) === "xjb_skillCard") return true;
+        return card.dataset.xjb_skillCard;
+    }) > 0;
+})
+addPlayerMethod("xjb_countSkillCard", function (postion = "h", includeNoSkill) {
+    const player = this;
+    return player.countCards(postion, (card, player) => {
+        if (includeNoSkill && get.name(card) === "xjb_skillCard") return true;
+        return card.dataset.xjb_skillCard;
+    })
+})
 
 const xjb_skillCardObserver = SkillCreater(
     "xjb_skillCardObserver", {
     trigger: {
         player: ["phaseBefore"],
-        global: ["loseAfter", "loseAsyncAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter","roundStart"]
+        global: ["loseAfter", "loseAsyncAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter", "roundStart"]
     },
     charlotte: true,
     superCharlotte: true,

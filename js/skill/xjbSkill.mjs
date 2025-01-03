@@ -1142,10 +1142,6 @@ const xjb_ruijin = SkillCreater(
     },
 })
 
-
-
-
-
 const xjb_liuli = SkillCreater(
     "xjb_liuli", {
     translate: "流离",

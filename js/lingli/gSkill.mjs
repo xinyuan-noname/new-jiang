@@ -14,46 +14,6 @@ function SkillCreater(name, skill) {
     return lib.skill[name];
 };
 
-// const _xjb_soul_ling_jiezhen = SkillCreater(
-//     "_xjb_soul_jiezhen", {
-//     translate: "<span data-nature=xjb_hun><font color=white>灵·结阵</font></span>",
-//     description: "出牌阶段，你可以销毁一对点数相同的手牌，将牌堆中随机一张牌置入阵法区。",
-//     enable: "phaseUse",
-//     check: function (card) {
-//         if (lib.card[card.name].debuff) return 0;
-//         if (lib.card[card.name].hasSkill) return 999;
-//         return 10 - get.value(card)
-//     },
-//     filterCard: (card) => {
-//         if (!ui.selected.cards.length) return true;
-//         const firstCard = ui.selected.cards[0]
-//         return get.number(card) === get.number(firstCard)
-//     },
-//     selectCard: 2,
-//     filter: function (_, player) {
-//         if (!lib.config.xjb_lingli_Allallow && !lib.characterPack['xjb_soul'][player.name]) return false;
-//         if (player.getHistory("custom", evt => evt.name === "xjb_addZhenFa").length) return false;
-//         const hs = player.getCards('h').map(card => get.number(card));
-//         return hs.toUniqued().length != hs.length;
-//     },
-//     content: function () {
-//         player.xjb_destoryCards(cards);
-//         player.xjb_addZhenFa(Array.from(ui.cardPile.childNodes).randomGet());
-//     },
-//     ai: {
-//         basic: {
-//             order: 2,
-//         },
-//         result: {
-//             player: 1,
-//         },
-//     },
-// })
-const _xjb_soul_zhizhen = SkillCreater(
-    "_xjb_soul_zhizhen", {
-    translate: "置阵",
-    description: "出牌阶段限一次，。",
-})
 const _xjb_soul_xue_jiezhen = SkillCreater(
     "_xjb_soul_xue_jiezhen", {
     translate: "<span data-nature=xjb_hun><font color=white>血·结阵</font></span>",
@@ -61,11 +21,7 @@ const _xjb_soul_xue_jiezhen = SkillCreater(
     enable: "phaseUse",
     filterCard: false,
     filter: function (_, player) {
-        if (!lib.config.xjb_lingli_Allallow) {
-            const bool1 = !lib.xjb_lingliUser.includes(player.name1) && !lib.xjb_lingliUser.includes(player.name2);
-            const bool2 = !player.storage.xjb_tempAllowUseLingli
-            if (bool1 && bool2) return false;
-        }
+        if (!player.xjb_canUseLingli()) return false;
         if (player.getHistory("custom", evt => evt.name === "xjb_addZhenFa").length) return false;
         return true;
     },
@@ -95,6 +51,27 @@ const _xjb_soul_xue_jiezhen = SkillCreater(
         },
     },
 })
+const _xjb_soul_zhizhen = SkillCreater(
+    "_xjb_soul_zhizhen", {
+    translate: "<span data-nature=xjb_hun><font color=white>置阵</font></span>",
+    description: "出牌阶段，若你手牌中有技能卡，你可以失去一点体力，将其置于阵法区。",
+    enable: "phaseUse",
+    filter: function (_, player) {
+        if (!player.xjb_canUseLingli()) return false;
+        if (!player.xjb_hasSkillCard()) return false;
+        if (player.getHistory("custom", evt => evt.name === "xjb_addZhenFa").length) return false;
+        return true;
+    },
+    filterCard(card, player) {
+        console.log(card.dataset.xjb_skillCard)
+        return card.dataset.xjb_skillCard;
+    },
+    async content(event, trigger, player) {
+        await player.loseHp();
+        player.xjb_addZhenFa(event.cards[0]);
+    }
+})
+
 const _xjb_soul_lingji = SkillCreater(
     "_xjb_soul_lingji", {
     trigger: {

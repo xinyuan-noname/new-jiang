@@ -1,4 +1,5 @@
 import { _status, lib, ui, game, ai, get } from "../../../../noname.js"
+import { Player } from "../../../../noname/library/element/player.js";
 
 const lingli_event = {
     "xjb_qiling": {
@@ -18,7 +19,7 @@ const lingli_event = {
             }
             "step 1"
             game.log(player, "进行了一次启灵")
-            const num = parseInt(Math.random() * 5);
+            const num = new Array(13).fill().map((_, index) => parseInt(Math.random() * index) + 1).randomGet();
             player.xjb_addlingli(num);
             event.num--;
             "step 2"
@@ -326,6 +327,10 @@ const lingli_method = {
         const player = this;
         return player.hasMark("_xjb_moli")
     },
+    "xjb_countMoli": function () {
+        const player = this;
+        return player.countMark("_xjb_moli")
+    },
     //获取灵力密度
     "xjb_getLingliDensity": function () {
         const player = this;
@@ -336,6 +341,15 @@ const lingli_method = {
     "xjb_isLingliStable": function () {
         const player = this;
         return player.countMark("_xjb_lingli") <= player.xjb_getLingliDensity()
+    },
+    "xjb_canUseLingli": function () {
+        const player = this;
+        if (!lib.config.xjb_lingli_Allallow) {
+            const bool1 = !lib.xjb_lingliUser.includes(player.name1) && !lib.xjb_lingliUser.includes(player.name2);
+            const bool2 = !player.storage.xjb_tempAllowUseLingli
+            if (bool1 && bool2) return false;
+        }
+        return true;
     }
 }
 for (const event in lingli_event) {
@@ -345,3 +359,4 @@ for (const event in lingli_event) {
 for (const method in lingli_method) {
     lib.element.player[method] = lingli_method[method];
 }
+[].add

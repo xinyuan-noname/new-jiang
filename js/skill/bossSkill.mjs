@@ -40,7 +40,6 @@ const _xjb_soulBoss_load = SkillCreater(
         }
         list[lib.translate[player.name1]][1](player)
         player.xjb_addSkillCard("xjb_ziruo")
-        player.xjb_addSkillCard("xjb_lingpiao")
         game.countPlayer(function (current) {
             if (current != player) {
                 list[lib.translate[player.name1]][0](current) && current.showCharacter(2)
@@ -53,7 +52,7 @@ const _xjb_soulBoss_load = SkillCreater(
             game.pause()
             game.xjb_create.alert("魂使发动了能力！<br>\
             1.场上超过其体力上限的角色体力均压制至1;<br>\
-            2.魂使进入阵法〖自若〗〖灵票〗<br>\
+            2.魂使进入阵法〖自若〗<br>\
             "+ extraStr, function () {
                 if (!judgeOk) game.resume()
             })

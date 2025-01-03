@@ -363,7 +363,7 @@ game.import("character", () => {
                 sex: "female",
                 group: "xjb_hun",
                 hp: 3,
-                skills: ['xjb_soul_lingpiao'],
+                skills: ["xjb_soul_zhigong","xjb_soul_jihuo"],
                 trashBin: [],
                 names: "索|芙艾派依"
             },
