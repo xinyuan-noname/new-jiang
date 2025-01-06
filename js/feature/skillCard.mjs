@@ -15,11 +15,11 @@ function SkillCreater(name, skill) {
     return lib.skill[name];
 };
 const setEvent = (name, { player, content }) => {
-    lib.element.player[name] = get.copy(player)
+    lib.element.Player.prototype[name] = get.copy(player)
     lib.element.content[name] = get.copy(content)
 };
 const addPlayerMethod = (name, method) => {
-    lib.element.player[name] = get.copy(method)
+    lib.element.Player.prototype[name] = get.copy(method)
 };
 
 lib.element.card.xjb_Becolorful = function () {
@@ -50,6 +50,32 @@ addPlayerMethod("xjb_countSkillCard", function (postion = "h", includeNoSkill) {
         if (includeNoSkill && get.name(card) === "xjb_skillCard") return true;
         return card.dataset.xjb_skillCard;
     })
+})
+addPlayerMethod("xjb_getSkillCard", function (postion = "h", includeNoSkill) {
+    const player = this;
+    return player.getCards(postion, (card, player) => {
+        if (includeNoSkill && get.name(card) === "xjb_skillCard") return true;
+        return card.dataset.xjb_skillCard;
+    })
+})
+setEvent("xjb_discardSkillCard", {
+    player: function (select = 1) {
+        let next = game.createEvent('xjb_discardSkillCard')
+        next.player = this
+        next.select = select
+        next.setContent('xjb_discardSkillCard');
+        return next
+    },
+    content: function () {
+        "step 0"
+        const zhenfa = player.getExpansions("_xjb_zhenfa");
+        const skillCard = zhenfa.filter(i => lib.card[i.name].hasSkill)
+        if (skillCard.length) player.chooseButton(["选择从阵法中移除的技能牌", skillCard], event.select, true)
+        "step 1"
+        if (result && result.links) {
+            player.gain(result.links, "gain2")
+        }
+    },
 })
 
 const xjb_skillCardObserver = SkillCreater(

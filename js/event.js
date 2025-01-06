@@ -227,22 +227,6 @@ const xjb_playerMethod = {
         })
         return cards
     },
-    "xjb_loseHpTo": function (num) {
-        var player = this, number = player.hp - num || 1
-        if (num < 0) number = 1
-        player.loseHp(number)
-    },
-    "xjb_adjustHandCardTo": function (num, str) {
-        var player = this
-        var hlen = player.countCards("h")
-        if (hlen > num) {
-            player.chooseToDiscard(hlen - num, true)
-        }
-        else if (hlen < num) {
-            if (str) player.gain(get.cards(num - hlen), "draw").gaintag.add(str)
-            else player.gain(get.cards(num - hlen), "draw")
-        }
-    },
     "giveHpCard2": function (target) {
         if (!target) target = _status.event.player
         let num = 1
@@ -375,25 +359,6 @@ const xjb_event = {
             let cards = player.getCards(event.position).randomGets(event.num)
             player.lose(cards)
             player.xjb_destoryCards(cards)
-        },
-    },
-    "xjb_DisSkillCard": {
-        player: function (number = 1) {
-            let next = game.createEvent('xjb_DisSkillCard')
-            next.player = this
-            next.number = number
-            next.setContent('xjb_DisSkillCard');
-            return next
-        },
-        content: function () {
-            "step 0"
-            const zhenfa = player.getExpansions("_xjb_zhenfa");
-            const skillCard = zhenfa.filter(i => lib.card[i.name].hasSkill)
-            if (skillCard.length) player.chooseButton(["选择从阵法中移除的技能牌", skillCard], event.number, true)
-            "step 1"
-            if (result && result.links) {
-                player.gain(result.links, "gain2")
-            }
         },
     },
     "xjb_chooseSkillAll": {
