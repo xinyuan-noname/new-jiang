@@ -5,7 +5,7 @@ import './skill/sanSkill.mjs';
 import './skill/skillTag.mjs';
 /**
  * @param {String} name 技能名
- * @param {Object} skill 技能对象
+ * @param {Skill} skill 技能对象
  */
 function SkillCreater(name, skill) {
     lib.skill[name] = { ...skill }
@@ -45,11 +45,11 @@ lib.skill.xjb_3 = {
                 event.skillsLength = skills.length
                 if (skills.length > 6 && lib.config.xjb_skillsNumberLimitation === 1) return true;
             },
-            content() {
-                player.xjb_chooseSkillToCard((trigger.skillsLength - 6));
+            async content(event, trigger, player) {
+                player.xjb_chooseSkillToCard(trigger.skillsLength - 6, true);
             },
             translate: '技能数限制',
-            description: '回合开始前,若当前回合角色技能数超过6,其选择一项技能并将其转化为技能牌。其重复此流程，直到技能数为6。'
+            description: '回合开始前,若当前回合角色技能数超过6,其选择任意项多出的技能并将之转化为技能牌。'
         })
         SkillCreater(
             "_xjb_maxHpLimitation", {

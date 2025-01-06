@@ -60,6 +60,13 @@ declare module "../../../node_modules/@types/noname-typings/nonameModules/noname
          * @param select 选择牌的区间or张数
          */
         xjb_discardSkillCard: (select: Select | number) => GameEvent;
+        /**
+         * @param {boolean} [forced] - 是否强制选择。如果设置为 true，则必须被选择。
+         * @param {(Select|number)} [select] - 选择技能卡的区间或数量。
+         * @param {function(string):boolean} [filterSkill] - 过滤技能，指示该技能是否应该被转化。
+         * @param {Player} [target] - 技能转化为技能卡的目标玩家。
+         */
+        xjb_chooseSkillToCard: (...args: any[]) => GameEvent;
     }
 }
 
