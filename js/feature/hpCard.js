@@ -1,10 +1,10 @@
 import { _status, lib, game, ui, get, ai } from "../../../../noname.js";
 const setEvent = (name, { player, content }) => {
-    lib.element.player[name] = get.copy(player)
+    lib.element.Player.prototype[name] = get.copy(player)
     lib.element.content[name] = get.copy(content)
 };
 const addPlayerMethod = (name, method) => {
-    lib.element.player[name] = get.copy(method)
+    lib.element.Player.prototype[name] = get.copy(method)
 };
 
 ; (() => {
@@ -273,6 +273,10 @@ setEvent('xjb_useHpCard', {
 //体力牌翻面动画
 addPlayerMethod("$xjb_turnOverHpCard", function (obv, rev) {
     const player = this;
+    if (!obv && !rev) {
+        if (!player.xjb_HpCardArea) player.xjb_adjustHpCard();
+        obv = player.xjb_HpCardArea[0].obv, rev = player.xjb_HpCardArea[0].rev;
+    }
     const container = ui.create.div('.xjb-hpCard-container');
     const card = ui.create.div('.xjb-hpCard-doubleFace');
     const obvCard = game.xjb_createHpCard(obv, 100)
@@ -293,10 +297,16 @@ setEvent("xjb_turnOverHpCard", {
     player(index) {
         const player = this;
         if (!player.xjb_HpCardArea) player.xjb_adjustHpCard()
-        const list = player.xjb_HpCardArea;
+        if (index == null) index = 0;
+        if (typeof index !== "number") index = Number(index);
+        if (typeof index === "number" && isNaN(index)) index = 0;
+        else if (index < 0 || index >= player.xjb_HpCardArea.length || !Number.isInteger(index)) {
+            console.warn(`${index}不是合法的索引值！已自动调整为0`)
+            index = 0;
+        }
         const next = game.createEvent('xjb_turnOverHpCard');
         next.player = player;
-        next.index = list[index] ? index : 0;
+        next.index = index;
         next.setContent('xjb_turnOverHpCard');
         return next
     },
@@ -339,7 +349,7 @@ setEvent("xjb_turnOverPlayerHpCard", {
         const area = event.target.xjb_HpCardArea.map((content, index) => {
             return [index, game.xjb_createHpCard(content.obv).outerHTML]
         });
-        if (area.length > 1) {
+        if (area.length > 1 || area.length === 1 && !event.forced) {
             player.chooseButton([
                 `你选择${get.translation(event.target)}的一张体力牌，令此体力牌牌翻面。`,
                 [area, "tdnodes"]
@@ -352,7 +362,7 @@ setEvent("xjb_turnOverPlayerHpCard", {
         if (result.bool) {
             event.target.xjb_turnOverHpCard(result.links[0]);
         }
-        event._result = event.result;
+        event.result = result;
     }
 })
 //交换体力牌
@@ -453,6 +463,7 @@ setEvent("xjb_splitHpCard", {
         const next = game.createEvent('xjb_splitHpCard');
         next.player = player;
         next.index = list[index] ? index : 0;
+        next.forced = forced;
         next.setContent('xjb_splitHpCard');
         return next
     },
@@ -481,6 +492,7 @@ setEvent("xjb_splitHpCard", {
                 player.xjb_HpCardArea.push(game.xjb_genHpCardData(item))
             })
         }
+        event.result = result;
     }
 })
 

@@ -128,8 +128,8 @@ const xjb_soul_fuhong = SkillCreater(
         if (!(player.inRange(target))) return false;
         return true;
     },
-    content: function () {
-        player.xjb_turnOverPlayerHpCard(target);
+    async content(event, trigger, player) {
+        player.xjb_turnOverPlayerHpCard(target, true);
     },
     translate: "覆红",
     description: "出牌阶段限一次,你可以翻转你攻击范围内一名角色的一张体力牌。"
@@ -516,27 +516,27 @@ const xjb_soul_jihuo = SkillCreater(
     "xjb_soul_jihuo", {
     enable: "phaseUse",
     translate: "激活",
-    description: "出牌阶段，你可以移去两倍于一名“智工仆从”的灵力，为其设置一个身份，并令其可自由活动。",
+    description: "出牌阶段，你可以移去一名“智工仆从”体力点的灵力，为其设置一个身份，并令其可自由活动。",
     filter(event, player) {
         return game.hasPlayer(curr => {
             return curr.hasSkill("xjb_soul_zhigong_servant")
                 && curr.storage.xjb_soul_zhigong_servant
                 && curr.storage.xjb_soul_zhigong_servant.includes(player)
-                && player.xjb_countLingli() >= curr.hp * 2;
+                && player.xjb_countLingli() >= curr.hp;
         })
     },
     filterTarget(card, player, target) {
         return target.hasSkill("xjb_soul_zhigong_servant")
             && target.storage.xjb_soul_zhigong_servant
             && target.storage.xjb_soul_zhigong_servant.includes(player)
-            && player.xjb_countLingli() >= target.hp * 2;
+            && player.xjb_countLingli() >= target.hp;
     },
     async content(event, trigger, player) {
         player.xjb_loselingli(event.target.hp);
-        const identityList = Object.keys(game.getIdentityList(event.target))
-        if (identityList) identityList.remove("cai")
+        const identityList = Object.keys(game.getIdentityList(event.target));
+        if (identityList) identityList.remove("cai");
         const { result: { links, bool } } = await player.chooseButton([
-            "请为" + get.translation(event.target) + "设置一个身份"
+            "请为" + get.translation(event.target) + "设置一个身份",
             [identityList, "tdnodes"]
         ]);
         if (bool) {

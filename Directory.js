@@ -17,6 +17,9 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_tianming_huobi2.png",
         "xjb_zhihuan.png"
     ],
+    "@types": [
+        "Player.ts"
+    ],
     "audio": [
         "fire1.mp3"
     ],

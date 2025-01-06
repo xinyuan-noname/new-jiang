@@ -3,7 +3,7 @@ export const xjbSkill = {};
 export const xjbTranslate = {};
 /**
  * 
- * @param {*} name 
+ * @param {string} name 
  * @param {Skill} skill 
  * @returns 
  */
