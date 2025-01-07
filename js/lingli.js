@@ -73,7 +73,7 @@ lib.skill.xjb_11 = {
                         next.target = trigger.player;
                         next.nature = trigger.nature;
                         next.setContent(function () {
-                            target.xjb_addlingli()
+                            target.xjb_addLingli()
                             target.damage(player, event.nature)
                         })
                     }; break;
@@ -202,7 +202,7 @@ lib.skill.xjb_11 = {
                 next.target = target
                 next.setContent(function () {
                     target.popup("命中！")
-                    target.xjb_addlingli();
+                    target.xjb_addLingli();
                     target.xjb_eventLine(2);
                 })
             },

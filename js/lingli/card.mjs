@@ -20,5 +20,5 @@ const xjb_lingli = CardCreater(
     image: "ext:新将包/lingli/lingli_card.png",
     fullskin: true,
     enable: false,
-    global: ""
+    global: "xjb_lingliDensity"
 })

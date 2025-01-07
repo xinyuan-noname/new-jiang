@@ -71,38 +71,6 @@ const _xjb_soul_zhizhen = SkillCreater(
     }
 })
 
-const _xjb_soul_lingji = SkillCreater(
-    "_xjb_soul_lingji", {
-    trigger: {
-        global: "phaseAfter"
-    },
-    direct: true,
-    charlotte: true,
-    filter(event, player, triggername) {
-        return player.xjb_hasLingli() && !player.xjb_isLingliStable();
-    },
-    async content(event, trigger, player) {
-        player.xjb_transDensity();
-        player.popup("灵寂");
-    }
-})
-const _xjb_soul_linghu = SkillCreater(
-    "_xjb_soul_linghu", {
-    translate: "灵护",
-    trigger: {
-        player: ["damageBegin"]
-    },
-    forced: true,
-    charlotte: true,
-    filter: function (event, player, name) {
-        return player.xjb_countLingli() >= 2;
-    },
-    content: function () {
-        trigger.cancel();
-        player.xjb_transDensityForced(2);
-    }
-})
-
 const _xjb_zhenfa = SkillCreater(
     "_xjb_zhenfa", {
     marktext: "阵",
@@ -124,29 +92,28 @@ const _xjb_zhenfa = SkillCreater(
         if (player.countExpansions("_xjb_zhenfa") > 3) player.xjb_discardZhenfaCard(1);
     },
 })
-const _xjb_lingli = SkillCreater(
-    "_xjb_lingli", {
+const xjb_lingli = SkillCreater(
+    "xjb_lingliDensity", {
     markimage: lib.xjb_src + "lingli/lingli.png",
     intro: {
         name: "灵力",
-        markcount(storage,player,string){
+        markcount(storage, player, string) {
             return player.xjb_getLingliDensity()
         },
         content: function (storage, player, skill) {
-            let num = xjb_lingli.getK(game.xjb_getSb.position(player))
-            return `灵力值:${storage}Ch/${Math.floor(num)}Ch
-            </br>灵力密度:${player.xjb_getLingliDensity()}`
+            return `灵力密度:${player.xjb_getLingliDensity()}`
         },
+    },
+    trigger: {
+        global: "phaseAfter"
+    },
+    direct: true,
+    charlotte: true,
+    filter(event, player, triggername) {
+        return player.xjb_hasLingli() && !player.xjb_isLingliStable();
+    },
+    async content(event, trigger, player) {
+        player.xjb_transDensity();
+        player.popup("灵寂");
     }
 })
-const _xjb_moli = SkillCreater(
-    "_xjb_moli", {
-    marktext: "魔",
-    intro: {
-        name: "魔力",
-        content: function (storage, player, skill) {
-            return "魔力值:" + storage + "Ch";
-        },
-    }
-})
-

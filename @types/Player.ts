@@ -67,6 +67,44 @@ declare module "../../../node_modules/@types/noname-typings/nonameModules/noname
          * @param {Player} [target] - 技能转化为技能卡的目标玩家。
          */
         xjb_chooseSkillToCard: (...args: any[]) => GameEvent;
+
+
+        //
+        /**
+         * 返回特殊区域中的灵力牌
+         */
+        xjb_getLingli: () => Card[];
+        //
+        /**
+         * 返回特殊区域中的灵力张数
+         */
+        xjb_countLingli: () => number;
+        //
+        /**
+         * 判断角色是否有灵力
+         */
+        xjb_hasLingli: () => boolean;
+        /**
+         * 获取角色的灵力密度
+         */
+        xjb_getLingliDensity: () => number;
+        /**
+         * 失去灵力
+         */
+        xjb_loseLingli: (num: number) => GameEvent;
+        /**
+         * 获得灵力
+         */
+        xjb_addLingli: (num: number) => GameEvent;
+        /**
+         * 将灵力转化灵力密度
+         * @param ignoreStable 是否将灵力转化为灵力密度直到灵力平衡
+         */
+        xjb_transDensity: (ignoreStable: boolean) => GameEvent
+        /**
+         * 增加灵力密度
+         */
+        xjb_addLingliDensity: (num: number) => GameEvent
     }
 }
 

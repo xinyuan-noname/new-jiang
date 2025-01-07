@@ -532,7 +532,7 @@ const xjb_soul_jihuo = SkillCreater(
             && player.xjb_countLingli() >= target.hp;
     },
     async content(event, trigger, player) {
-        player.xjb_loselingli(event.target.hp);
+        player.xjb_loseLingli(event.target.hp);
         const identityList = game.getIdentityList(event.target);
         if (identityList) delete identityList.cai;
         const { result: { links, bool } } = await player.chooseButton([
