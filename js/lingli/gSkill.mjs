@@ -63,7 +63,6 @@ const _xjb_soul_zhizhen = SkillCreater(
         return true;
     },
     filterCard(card, player) {
-        console.log(card.dataset.xjb_skillCard)
         return card.dataset.xjb_skillCard;
     },
     async content(event, trigger, player) {
@@ -127,9 +126,12 @@ const _xjb_zhenfa = SkillCreater(
 })
 const _xjb_lingli = SkillCreater(
     "_xjb_lingli", {
-    marktext: "灵",
+    markimage: lib.xjb_src + "lingli/lingli.png",
     intro: {
         name: "灵力",
+        markcount(storage,player,string){
+            return player.xjb_getLingliDensity()
+        },
         content: function (storage, player, skill) {
             let num = xjb_lingli.getK(game.xjb_getSb.position(player))
             return `灵力值:${storage}Ch/${Math.floor(num)}Ch

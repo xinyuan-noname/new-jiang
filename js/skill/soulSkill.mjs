@@ -533,11 +533,11 @@ const xjb_soul_jihuo = SkillCreater(
     },
     async content(event, trigger, player) {
         player.xjb_loselingli(event.target.hp);
-        const identityList = Object.keys(game.getIdentityList(event.target));
-        if (identityList) identityList.remove("cai");
+        const identityList = game.getIdentityList(event.target);
+        if (identityList) delete identityList.cai;
         const { result: { links, bool } } = await player.chooseButton([
             "请为" + get.translation(event.target) + "设置一个身份",
-            [identityList, "tdnodes"]
+            [Object.entries(identityList), "tdnodes"]
         ]);
         if (bool) {
             event.target.removeSkill("xjb_soul_zhigong_servant");

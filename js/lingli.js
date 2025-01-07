@@ -1,5 +1,6 @@
 import "./lingli/event.mjs"
 import './lingli/gSkill.mjs'
+import "./lingli/card.mjs"
 import { _status, lib, game, ui, get, ai } from "../../../noname.js"
 
 lib.xjb_lingliUser = ["xjb_chanter", "xjb_xuemo", "xjb_Fuaipaiyi"];

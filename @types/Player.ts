@@ -56,7 +56,7 @@ declare module "../../../node_modules/@types/noname-typings/nonameModules/noname
          */
         xjb_hasSkillCard: (position?: string, includeNoSkill?: boolean) => Card[];
         /**
-         * 弃置一张技能卡
+         * 从阵法区中移除一张技能卡
          * @param select 选择牌的区间or张数
          */
         xjb_discardSkillCard: (select: Select | number) => GameEvent;

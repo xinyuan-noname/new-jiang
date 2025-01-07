@@ -362,7 +362,8 @@ const xjb_skillCard = CardCreater(
         'xjb_lunaticMasochist',
         "xjb_JudgeReversal",
         "xjb_arrangePhase",
-        "xjb_seasonChange"
+        "xjb_seasonChange",
+        "xjb_livelyForever"
     ],
     async content(event, trigger, player) {
         const { control } = await player.chooseControl(["输入id", "神圣技能"]).forResult();

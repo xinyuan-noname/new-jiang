@@ -17,7 +17,6 @@ const xjb_lunaticMasochist = SkillCreater(
     "xjb_lunaticMasochist", {
     nobracket: true,
     translate: "疼痛敏感",
-    nobracket: true,
     description: "你弃牌、失去体力、恢复体力、失去体力上限、恢复体力上限、装备装备牌均视为受到伤害。",
     trigger: {
         player: ["equipBefore", "discardBefore", "loseHpBefore", "recoverBefore", "loseMaxHpBefore", "gainMaxHpBefore"]
@@ -72,6 +71,7 @@ const xjb_seasonChange = SkillCreater(
     translate: "四季分明",
     description: "每轮开始时，根据季节分别加场上人数张【桃】/【火攻】/【五谷丰登】/冰【杀】。(一轮代表一个季节)",
     nobracket: true,
+    sanSkill: true,
     trigger: {
         global: "roundStart"
     },
@@ -151,5 +151,44 @@ const xjb_arrangePhase = SkillCreater(
                 trigger.phaseList = master.storage.xjb_arrangePhase;
             }
         }
+    }
+})
+
+const xjb_livelyForever = SkillCreater(
+    "xjb_livelyForever", {
+    translate: "生生不息",
+    description: "每回合限一次，你可以选择两张颜色相反的异名牌，生成一张字数、点数在其之间，花色从其一的牌。",
+    nobracket: true,
+    getCardNames: (num) => {
+        const result = [];
+        for (const i in lib.card) {
+            if (get.translation(i).length === num) result.push(i);
+        }
+        return result;
+    },
+    enable: "phaseUse",
+    selectCard: 2,
+    filterCard: (card) => {
+        if (ui.selected.cards.length === 0) return true;
+        else return get.color(card, false) !== get.color(ui.selected.cards[0], false) &&
+            get.name(card, false) !== get.name(ui.selected.cards[0], false);
+    },
+    lose: false,
+    discard: false,
+    usable: 1,
+    position:"he",
+    content: async function (event, trigger, player) {
+        const nameList = [];
+        event.cards.sort((card1, card2) => get.cardNameLength(card1, false) - get.cardNameLength(card2, false));
+        const [card1, card2] = event.cards;
+        const num1 = get.cardNameLength(card1, false), num2 = get.cardNameLength(card2, false);
+        for (let i = num1; i <= num2; i++) {
+            nameList.addArray(get.info(event.name).getCardNames(i));
+        }
+        const name = nameList.randomGet(),
+            suit = event.cards.map(card => get.suit(card, false)).randomGet(),
+            number = parseInt(Math.random() * (num2 - num1)) + num1;
+        const card = game.createCard(name, suit, number);
+        player.gain(card);
     }
 })

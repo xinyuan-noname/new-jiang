@@ -70,17 +70,18 @@ addPlayerMethod("xjb_getSkillCard", function (postion = "h", includeNoSkill) {
 })
 setEvent("xjb_discardSkillCard", {
     player: function (select = 1) {
-        let next = game.createEvent('xjb_discardSkillCard')
-        next.player = this
-        next.select = select
+        const player = this;
+        const next = game.createEvent('xjb_discardSkillCard')
+        next.player = this;
+        next.select = select;
         next.setContent('xjb_discardSkillCard');
         return next
     },
     content: function () {
         "step 0"
-        const zhenfa = player.getExpansions("_xjb_zhenfa");
-        const skillCard = zhenfa.filter(i => lib.card[i.name].hasSkill)
+        const skillCard = player.xjb_getSkillCard("x");
         if (skillCard.length) player.chooseButton(["选择从阵法中移除的技能牌", skillCard], event.select, true)
+        else event.finish();
         "step 1"
         if (result && result.links) {
             player.gain(result.links, "gain2")
