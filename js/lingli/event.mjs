@@ -1,5 +1,4 @@
 import { _status, lib, ui, game, ai, get } from "../../../../noname.js"
-
 const lingli_event = {
     "xjb_qiling": {
         player: function (num = 1, source) {
@@ -18,7 +17,7 @@ const lingli_event = {
             }
             "step 1"
             game.log(player, "进行了一次启灵")
-            const num = new Array(5).fill().map((_, index) => parseInt(Math.random() * index) + 1).randomGet();
+            const num = get.xjb_randomNDInt(3, 0.9);
             player.xjb_addLingli(num);
             event.num--;
             "step 2"
@@ -41,84 +40,23 @@ const lingli_event = {
         content: async function (event, trigger, player) {
             "step 0"
             while (!player.xjb_isLingliStable()) {
-                await player.xjb_loseLingli();
-                await player.xjb_addLingliDensity();
+                const status = player.xjb_getLingliStatus();
+                await player.xjb_loseLingli(1, status);
+                await player.xjb_addLingliDensity(1, status);
             }
             event.trigger("xjb_transLingliStable");
         }
     },
 
-    "xjb_chooseToBuildBridge": {
-        player: function (target) {
-            game.xjb_checkCharCountAll(this.name);
-            let next = game.createEvent('xjb_chooseToBuildBridge')
-            next.player = this
-            next.target = target
-            next.setContent('xjb_chooseToBuildBridge');
-            return next
-        },
-        content: function () {
-            "step 0"
-            if (player != game.me) player.storage.xjb_daomoMax = 5;
-            var list = [], maxNum = player.storage.xjb_daomoMax || 1;
-            let dataSource = lib.config.xjb_count[player.name].daomo;
-            function add(str, str2) {
-                if (dataSource[str] && dataSource[str].number >= maxNum) {
-                    list.push([str, `${str2 + xjbLogo[str](80)}`])
-                }
-            };
-            xjb_lingli.daomo.type.forEach((i) => {
-                add(i, get.xjb_daomoInformation(i).translation)
-            });
-            let div = document.createElement("div"),
-                range = document.createElement("input")
-            range.type = 'range'
-            range.value = (player.storage.xjb_daomoMax || 1);
-            range.min = 1;
-            range.max = 5;
-            range.onchange = function () {
-                player.storage.xjb_daomoMax = (-(-this.value))
-                this.parentNode.parentNode.querySelector('.xjb-daomo-length').innerText = (player.storage.xjb_daomoMax || 1);
-                ui.selected.buttons.forEach(i => {
-                    i.click()
-                    i.dispatchEvent(new TouchEvent("touchend", {
-                        bubbles: true,
-                        cancelable: true,
-                        composed: true
-                    }))
-                })
-                game.check()
-            }
-            div.appendChild(range)
-            const dialog = ui.create.dialog(
-                `请选择一个导魔介质，放置<span class=xjb-daomo-length>${(player.storage.xjb_daomoMax || 1)}</span>对在你和${get.translation(event.target)}间`,
-                [list, "tdnodes"],
-                "调整放置的导魔介质",
-                div,
-                ''
-            )
-            const next = player.chooseButton(dialog, [0, 1]);
-            next.set('filterButton', function (button) {
-                let logo = button.link
-                return lib.config.xjb_count[player.name].daomo[logo].number >= (player.storage.xjb_daomoMax || 1)
-            });
-            "step 1"
-            if (result.links && result.links.length) {
-                let logo = result.links[0];
-                game.xjb_getDaomo(player, logo, -player.storage.xjb_daomoMax);
-                event.logo = result.links[0];
-                player.addMark("_xjb_daomo_" + logo, player.storage.xjb_daomoMax);
-                event.target.addMark("_xjb_daomo_" + logo, player.storage.xjb_daomoMax);
-                player.xjb_switchlingli()
-                event.target.xjb_switchlingli()
-            }
-        },
-    },
     "xjb_loseLingli": {
-        player: function (num = 1) {
+        player: function (num = 1, status) {
             const player = this;
             let next = game.createEvent('xjb_loseLingli')
             next.player = player
+            if (status && num < 0) {
+                num = 0;
+            }
+            next.status = status;
             next.num = num
             next.setContent('xjb_loseLingli');
             return next
@@ -129,16 +67,35 @@ const lingli_event = {
          * @param {Player} player 
          */
         content: async function (event, trigger, player) {
-            const cards = player.xjb_getLingli();
-            player.lose(ui.ordering, cards.randomGets(event.num));
+            if (event.num === 0) {
+                await event.trigger("xjb_lingliLoseZero");
+                return;
+            }
+            if (event.num > 0 && !event.status) {
+                event.status = "positive"
+            }
+            if (event.num < 0 && !event.status) {
+                event.status = "negative";
+                event.num = Math.abs(event.num)
+            }
+            const cards = player.xjb_getLingli(event.status).randomGets(event.num);
+            player.lose(ui.ordering, cards);
+            cards.forEach(card => {
+                card.remove();
+                card.fix();
+                card.destroyed = true;
+            })
         },
     },
     "xjb_addLingli": {
-        player: function (num = 1) {
-            const player = this;
-            let next = game.createEvent('xjb_addLingli')
-            next.player = player
-            next.num = num
+        player: function (num = 1, status) {
+            const player = this; let next = game.createEvent('xjb_addLingli');
+            next.player = player;
+            if (status && num < 0) {
+                num = 0;
+            }
+            next.status = status;
+            next.num = num;
             next.setContent('xjb_addLingli');
             return next
         },
@@ -148,20 +105,49 @@ const lingli_event = {
          * @param {Player} player 
          */
         content: async function (event, trigger, player) {
+            if (event.num === 0) {
+                await event.trigger("xjb_lingliAddZero");
+                return;
+            }
+            if (event.num > 0 && !event.status) {
+                event.status = "positive"
+            }
+            if (event.num < 0 && !event.status) {
+                event.status = "negative";
+                event.num = Math.abs(event.num)
+            }
             const cards = [];
             for (let i = 0; i < event.num; i++) {
                 const card = game.createCard("xjb_lingli");
                 cards.push(card);
             }
+            if (event.status === "negative") {
+                cards.forEach(card => {
+                    card.classList.add("xjb-color-invert")
+                });
+            }
             player.loseToSpecial(cards, "xjb_lingli", player);
         },
     },
     "xjb_addLingliDensity": {
-        player: function (num = 1) {
+        player: function (num = 1, status) {
             const player = this;
-            let next = game.createEvent('xjb_addLingliDensity')
-            next.player = player
-            next.num = num
+            const next = game.createEvent('xjb_addLingliDensity')
+            next.player = player;
+            if (!status && num > 0) {
+                status = 'positive';
+            }
+            if (!status && num < 0) {
+                status = "negative";
+            }
+            if (status === "negative" && num > 0) {
+                num = -num;
+            }
+            if (status === "positive" && num < 0) {
+                num = 0;
+            }
+            next.status = status;
+            next.num = num;
             next.setContent('xjb_addLingliDensity');
             return next
         },
@@ -173,9 +159,15 @@ const lingli_event = {
         content: async function (event, trigger, player) {
             game.broadcastAll(player => {
                 if (!player.storage.xjb_lingliDensity) player.storage.xjb_lingliDensity = 0
-                player.storage.xjb_lingliDensity++;
+                player.storage.xjb_lingliDensity += event.num;
             }, player)
             player.markSkill("xjb_lingliDensity")
+            game.broadcastAll(player => {
+                if (player.marks.xjb_lingliDensity) {
+                    if (player.xjb_getLingliDensity() >= 0) player.marks.xjb_lingliDensity.classList.remove("xjb-color-invert")
+                    else player.marks.xjb_lingliDensity.classList.add("xjb-color-invert");
+                }
+            }, player)
         },
     },
 
@@ -230,17 +222,29 @@ const lingli_event = {
  * @type {Player}
  */
 const lingli_method = {
-    "xjb_getLingli": function () {
+    "xjb_getLingli": function (status) {
         const player = this;
-        return player.getCards("s", card => card.name === "xjb_lingli" && card.hasGaintag("xjb_lingli"))
+        const allLingli = player.getCards("s", card => card.name === "xjb_lingli" && card.hasGaintag("xjb_lingli"));
+        if (status === "positive") return allLingli.filter(card => !card.classList.contains("xjb-color-invert"));
+        if (status === "negative") return allLingli.filter(card => card.classList.contains("xjb-color-invert"));
+        return allLingli;
     },
-    "xjb_hasLingli": function () {
+    "xjb_hasLingli": function (status) {
         const player = this;
-        return player.xjb_getLingli().length > 0;
+        return player.xjb_getLingli(status).length > 0;
     },
-    "xjb_countLingli": function () {
+    "xjb_countLingli": function (status) {
         const player = this;
-        return player.xjb_getLingli().length;
+        if (!status) return player.xjb_countLingli("positive") - player.xjb_countLingli("negative");
+        return player.xjb_getLingli(status).length;
+    },
+    "xjb_getLingliStatus": function () {
+        const player = this;
+        switch (Math.sign(player.xjb_countLingli())) {
+            case 1: return "postive";
+            case -1: return "negative";
+            default: return null;
+        }
     },
     //获取灵力密度
     "xjb_getLingliDensity": function () {
@@ -255,7 +259,9 @@ const lingli_method = {
     //判断灵力是否稳定
     "xjb_isLingliStable": function () {
         const player = this;
-        return player.xjb_countLingli() <= player.xjb_getLingliDensity()
+        const value = player.xjb_countLingli();
+        const sign = Math.sign(value), abs = Math.abs(value);
+        return sign * player.xjb_getLingliDensity() >= abs;
     },
     "xjb_canUseLingli": function () {
         const player = this;

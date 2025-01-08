@@ -71,31 +71,38 @@ declare module "../../../node_modules/@types/noname-typings/nonameModules/noname
 
         //
         /**
-         * 返回特殊区域中的灵力牌
+         * 返回特殊区域中的灵力
+         * @param status "postive"代表正灵力 "negative"表示负灵力 不填则两者均算入
          */
-        xjb_getLingli: () => Card[];
-        //
+        xjb_getLingli: (status?: "positive" | "negative") => Card[];
         /**
          * 返回特殊区域中的灵力张数
+         * @param status "postive"代表正灵力 "negative"表示负灵力 不填则两者均算入
          */
-        xjb_countLingli: () => number;
-        //
+        xjb_countLingli: (status?: "positive" | "negative") => number;
         /**
          * 判断角色是否有灵力
+         * @param status "postive"代表正灵力 "negative"表示负灵力 不填则计算两者的代数和
          */
-        xjb_hasLingli: () => boolean;
+        xjb_hasLingli: (status?: "positive" | "negative") => boolean;
+        /**
+         * 返回特殊区域灵力的总体状态
+         */
+        xjb_getLingliStatus: () => "positive" | "negative" | null
         /**
          * 获取角色的灵力密度
          */
         xjb_getLingliDensity: () => number;
         /**
          * 失去灵力
+         * @param num 无第二个参数status时 num为正数失去正灵力 负数失去反灵力 若有status且num为负数 则num为0
          */
-        xjb_loseLingli: (num: number) => GameEvent;
+        xjb_loseLingli: (num: number, status?: "positive" | "negative") => GameEvent;
         /**
          * 获得灵力
+         * @param num 无第二个参数status时 num为正数获得正灵力 负数获得反灵力 若有status且num为负数 则num为0
          */
-        xjb_addLingli: (num: number) => GameEvent;
+        xjb_addLingli: (num: number, status?: "positive" | "negative") => GameEvent;
         /**
          * 将灵力转化灵力密度
          * @param ignoreStable 是否将灵力转化为灵力密度直到灵力平衡
@@ -104,7 +111,7 @@ declare module "../../../node_modules/@types/noname-typings/nonameModules/noname
         /**
          * 增加灵力密度
          */
-        xjb_addLingliDensity: (num: number) => GameEvent
+        xjb_addLingliDensity: (num: number, status: "positive" | "negative") => GameEvent
     }
 }
 

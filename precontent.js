@@ -13,6 +13,8 @@ import {
 import {
 	LOAD_GAME_TETRIS
 } from "./js/game/tetris.js";
+import { XJB_Math } from "./js/tool/math.js";
+
 import "./js/interact/dialog.mjs";
 import "./js/interact/ui.mjs";
 
@@ -20,6 +22,9 @@ import "./js/feature/remnantArea.js";
 import "./js/feature/skillCard.mjs";
 import "./js/feature/hpCard.js";
 function provideFunction() {
+	get.xjb_randomNDInt = (mu, sigma) => {
+		return Math.floor(XJB_Math.NDRandom(mu, sigma));
+	}
 	lib.xjb_dataGet = function () {
 		return Object.keys(lib.config).filter(function (a) {
 			return a.includes("xjb_");

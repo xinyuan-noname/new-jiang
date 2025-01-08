@@ -546,3 +546,8 @@ span.xjb-weakHidden {
 .xjb-smaller {
   font-size: smaller
 }
+
+.xjb-color-invert{
+    filter: invert(100%); 
+    -webkit-filter: invert(100%); 
+}

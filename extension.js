@@ -14,7 +14,7 @@ game.import("extension", function () {
         content: XJB_CONTENT,
         precontent: XJB_PRECONTENT,
         editable: false,
-        connect:false,
+        connect: false,
         help: {},
         config: {},
         package: {
@@ -24,6 +24,11 @@ game.import("extension", function () {
             forumURL: "",
             version: "1.2.1",
         },
-        files: { "character": [], "card": [], "skill": [], "audio": [] }
+        files: {
+            "character": [],
+            "card": [],
+            "skill": [],
+            "audio": []
+        }
     }
 });

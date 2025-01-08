@@ -103,4 +103,19 @@ export class XJB_Math {
 	static 'randomInt'(min, max) {
 		return Math.floor(Math.random() * (max - min) + min)
 	}
+	static 'ND'(mu, sigma) {
+		const pi = Math.PI, sqrt = Math.sqrt, e = Math.E;
+		const coefficient = 1 / (sqrt(2 * pi) * sigma);
+		return (x) => {
+			const exponent = -((x - mu) ** 2 / (2 * sigma ** 2));
+			return coefficient * e ** exponent;
+		}
+	}
+	static "NDRandom"(mu = 0, sigma = 1) {
+		let u1 = 0, u2 = 0;
+		while (u1 === 0) u1 = Math.random();
+		u2 = Math.random();
+		const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+		return z0 * sigma + mu;
+	}
 }
