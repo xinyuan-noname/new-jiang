@@ -28,6 +28,7 @@ game.import("character", () => {
         name: "xjb_easternZhou",
         connect: true,
         character: {
+            //names按照无名杀规则，写成姓+名吧，毕竟屈原写的芈|原，但是为什么不是芈|平？
             "xjb_jizi_shou": {
                 sex: "male",
                 group: "xjb_chunqiu_wei",
@@ -47,7 +48,7 @@ game.import("character", () => {
 
             "xjb_qixianggong": {
                 sex: "male",
-                group: "xjb_qi",
+                group: "xjb_chunqiu_qi",
                 hp: 4,
                 skills: ["xjb_xionghu", "xjb_yanshi", "xjb_xuechou", "xjb_guaqi"],
                 trashBin: [],
@@ -55,10 +56,21 @@ game.import("character", () => {
             },
             "xjb_guanyiwu": {
                 sex: "male",
-                group: "xjb_qi",
+                group: "xjb_chunqiu_qi",
                 hp: 3,
                 skills: ["xjb_zhangwei"],
-                trashBin: []
+                trashBin: [],
+                names: "姬|夷吾"
+            },
+
+
+            "xjb_xunan": {
+                sex: "male",
+                group: "xjb_chunqiu_jin",
+                hp: 3,
+                skills: ["xjb_jiatu"],
+                trashBin: [],
+                names: "姬|黯"
             },
 
             "xjb_wuyuan": {
@@ -81,7 +93,9 @@ game.import("character", () => {
         characterSort: {
             xjb_easternZhou: {
                 xjb_weiqingbuning: ["xjb_jizi_shou", "xjb_weiyigong"],
-                xjb_qihuanshouba: ["xjb_qixianggong", "xjb_guanyiwu"],
+                xjb_biqizhijiang: ["xjb_qixianggong"],
+                xjb_qihuanshouba: ["xjb_guanyiwu"],
+                xjb_lijizhiluan: ["xjb_xunan"],
                 xjb_wuyuechunqiu: ["xjb_wuyuan"],
             },
         },
@@ -114,19 +128,23 @@ game.import("character", () => {
         translate: {
             "xjb_easternZhou": "东周志",
 
-            "xjb_qi": "齐",
-            'xjb_qin': '秦',
+            "xjb_chunqiu_jin": "晋",
+            "xjb_chunqiu_qi": "齐",
             "xjb_chunqiu_wei": "卫",
             "xjb_chunqiu_wu": "吴",
+            'xjb_qin': '秦',
 
-            "xjb_qihuanshouba": "齐国首霸",
-            "xjb_wuyuechunqiu": "吴越春秋",
             "xjb_weiqingbuning": "卫顷不宁",
+            "xjb_biqizhijiang": "必齐之姜",
+            "xjb_qihuanshouba": "齐桓首霸",
+            "xjb_lijizhiluan": "骊姬之乱",
+            "xjb_wuyuechunqiu": "吴越春秋",
 
             "xjb_jizi_shou": "急子&寿",
             "xjb_weiyigong": "卫懿公",
             "xjb_qixianggong": "齐襄公",
             "xjb_guanyiwu": "管夷吾",
+            "xjb_xunan": "荀黯",
             "xjb_wuyuan": "伍员",
             "xjb_qinshihuang": "秦始皇",
             ...dongzhouTranslate,
@@ -137,10 +155,14 @@ game.import("character", () => {
         pinyins: {},
     }
     const nameNatureMap = {
-        "xjb_qin": "black",
-        "xjb_qi": "fire",
+        //这几个都是姬姓诸侯国
+        "xjb_chunqiu_jin": "fire",
         "xjb_chunqiu_wei": "fire",
+        //姜齐应当和姬姓诸国一致
+        "xjb_chunqiu_qi": "fire",
+        //
         "xjb_chunqiu_wu": "qun",
+        "xjb_qin": "black",
     }
     lib.config.all.characters.push("xjb_easternZhou");
     for (const [name, nature] of Object.entries(nameNatureMap)) {
@@ -153,6 +175,9 @@ game.import("character", () => {
     return result;
 })
 game.import("character", () => {
+    /**
+     * @type {importCharacterConfig}
+     */
     const result = {
         name: "XJB",
         connect: true,
@@ -197,7 +222,8 @@ game.import("character", () => {
                 sex: "male",
                 group: "xjb_han",
                 hp: 3,
-                skills: ["xjb_bingjie", "xjb_liuxiang"],
+                clans: ["颍川荀氏"],
+                skills: ["xjb_bingjie", "clandaojie"],
                 trashBin: []
             },
             "xjb_pangtong": {
@@ -267,7 +293,7 @@ game.import("character", () => {
         characterSort: {
             XJB: {
                 'xjb_chidan': ["xjb_ganning", "xjb_dianwei"],
-                'xjb_tiandu': ["xjb_sunce", "xjb_zhouyu", "xjb_pangtong", "xjb_guojia"],
+                'xjb_tianduyingcai': ["xjb_sunce", "xjb_zhouyu", "xjb_pangtong", "xjb_guojia"],
                 'xjb_zaiwu': ["xjbhan_caocao", "xjbhan_xunyu", "xjb_caocao"],
                 'xjb_jincui': ["xjb_zhugeliang", "xjb_liushan"],
                 'xjb_guijin': ["xjb_jin_simayi"],
@@ -336,7 +362,7 @@ game.import("character", () => {
             xjb_chidan: '赤胆忠心',
             xjb_fengyun: '风云荟萃',
             xjb_zaiwu: '天命在吾',
-            xjb_tiandu: '天妒英才',
+            "xjb_tianduyingcai": '天妒英才',
             xjb_jincui: '鞠躬尽瘁',
             xjb_guijin: '三分归晋',
             xjb_huahao: '花好月圆',

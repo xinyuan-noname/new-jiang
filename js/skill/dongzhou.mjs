@@ -500,7 +500,41 @@ const xjb_cangshi = SkillCreater(
 })
 
 
-//伍员
+//荀息
+const xjb_jiatu = SkillCreater(
+	"xjb_jiatu", {
+	translate: "假道",
+	description: "出牌阶段限一次，你可以交给一名角色一张牌，你对其攻击范围的一名角色造成一点伤害。若你以此法使该角色阵亡，你可以对一名本回合获得过你牌的角色造成一点伤害。",
+	enable: "phaseUse",
+	filterCard: true,
+	filterTarget: (card, player, target) => {
+		return player !== target;
+	},
+	position: "he",
+	usable: 1,
+	content: async function (event, trigger, player) {
+		await player.give(event.cards, event.target);
+		const { bool, targets } = await player.chooseTarget().set("filterTarget", (card, player, target) => {
+			return _status.event.yuguo.inRange(target)
+		})
+			.set("yuguo", event.target)
+			.forResult();
+		if (!bool) return;
+		await targets[0].damage(player);
+		if (targets[0].isDead()) {
+			const { bool: boolx, targets: targetsx } = await player.chooseTarget().set("filterTarget", (card, player, target) => {
+				const evt = target.getHistory("gain", evt => evt.giver === player);
+				console.log(evt);
+				return evt.length > 0;
+			}).forResult();
+			if (!boolx) return;
+			await targetsx[0].damage(player);
+		}
+	},
+})
+
+
+//伍子胥
 const xjb_wanxin = SkillCreater(
 	"xjb_wanxin", {
 	translate: "剜心",
@@ -690,7 +724,7 @@ const xjb_duhen = SkillCreater(
 	}
 })
 
-//嬴政
+//秦政
 const xjb_zulong = SkillCreater(
 	"xjb_zulong", {
 	translate: "祖龙",
