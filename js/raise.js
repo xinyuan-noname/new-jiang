@@ -267,7 +267,7 @@ game.xjb_newCharacterChangeSex = function (num = 1, free) {
         changeFunc: function (newAttribute) {
             lib.config.xjb_newcharacter.sex = newAttribute
             game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-            game.xjb_create.alert("已更改为:" + get.xjb_translation(lib.config.xjb_newcharacter.sex) + "，<br>重启即更新数据");
+            game.xjb_create.alert("已更改为:" + get.translation(lib.config.xjb_newcharacter.sex) + "，<br>重启即更新数据");
         }
     }
     game.xjb_create.UABobjectsToChange(informationList)
@@ -283,7 +283,7 @@ game.xjb_newCharacterChangeGroup = function (num = 1, free) {
         changeFunc: function (newAttribute) {
             lib.config.xjb_newcharacter.group = newAttribute
             game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-            game.xjb_create.alert("已更改为:" + get.xjb_translation(lib.config.xjb_newcharacter.group) + "，<br>重启即更新数据");
+            game.xjb_create.alert("已更改为:" + get.translation(lib.config.xjb_newcharacter.group) + "，<br>重启即更新数据");
         }
     }
     game.xjb_create.UABobjectsToChange(informationList)

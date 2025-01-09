@@ -1838,8 +1838,8 @@ game.xjb_skillEditor = function () {
 		//逻辑处理
 		that.changeWord(/(?<!使用)或(?!打出)/g, ' ');
 		//省略
-		that.changeWord(/一张/g, '');
-		that.changeWord(/^(.*?)(一点)(.*?)$/mg, '$1$3 $2')
+		// that.changeWord(/一张/g, '');
+		// that.changeWord(/^(.*?)(一点)(.*?)$/mg, '$1$3 $2')
 		//统一写法                    
 		that.changeWord(/红牌/g, '红色牌');
 		that.changeWord(/黑牌/g, '黑色牌');
@@ -1856,142 +1856,23 @@ game.xjb_skillEditor = function () {
 		back.skill.trigger.player = [];
 		back.skill.trigger.global = [];
 		back.skill.trigger.target = [];
-		back.skill.filter_card = [];
-		back.skill.filter_color = [];
-		back.skill.filter_suit = [];
-		back.skill.tri_filterCard = [];
-		back.skill.getIndex = false;
 	}
-	back.ele.trigger.submit = function (e) {
+	back.ele.trigger.submit = async function (e) {
 		back.ele.trigger.init();
 		if (triggerFree.value.length === 0) return;
 		triggerFree.inherit();
-		this.value.includes('于回合外失去') && back.skill.uniqueTrigger.push("outPhase:lose");
-		this.value.includes('于回合内失去') && back.skill.uniqueTrigger.push("inPhase:lose");
+		// this.value.includes('于回合外失去') && back.skill.uniqueTrigger.push("outPhase:lose");
+		// this.value.includes('于回合内失去') && back.skill.uniqueTrigger.push("inPhase:lose");
 		let list = disposeTri(ImplicitTextTool.trigger(this.value))
-		console.log(EditorDataAnalyze.trigger(list));
-		let tri_player = [], tri_global = [], tri_target = [], tri_source = [], tri_players = []
-		let cardsNames = Object.keys(lib.card),
-			suits = lib.suits,
-			colors = Object.keys(lib.color)
-		let strToArrayTarget = function (pending, str, global) {
-			if (!pending.includes(str)) return false;
-			if (!global) tri_target.includes(str) || tri_target.push(str);
-			pending = pending.replace(str, '').replace(':', '');
-			if (cardsNames.includes(pending)) back.skill.filter_card.push(str + ':"' + pending + '"')
-			if (suits.includes(pending)) back.skill.filter_suit.push(str + ':"' + pending + '"')
-			if (colors.includes(pending)) back.skill.filter_color.push(str + ':"' + pending + '"')
-			return true
+		const [trigger, triggerFilter, triLength, loseEvts, getIndexMap] = EditorDataAnalyze.trigger(list);
+		back.skill.trigger = trigger;
+		back.skill.triggerFilter = triggerFilter;
+		back.skill.triLength = triLength;
+		back.skill.triLoseEvts = loseEvts;
+		if(getIndexMap)back.skill.getIndex = getIndexMap;
+		if (loseEvts.length && triLength > 1) {
+			await game.xjb_create.promise.alert("涉及到失去牌事件作为触发时机，请仅保留此触发时机为唯一触发时机，否则可能导致编辑器无法正常生成技能！");
 		}
-		let strToArrayPlayer = function (pending, str, global) {
-			if (!pending.includes(str)) return false;
-			if (!global) tri_player.includes(str) || tri_player.push(str);
-			pending = pending.replace(str, '').replace(':', '')
-			if (cardsNames.includes(pending)) back.skill.filter_card.push(str + ':"' + pending + '"')
-			if (suits.includes(pending)) back.skill.filter_suit.push(str + ':"' + pending + '"')
-			if (colors.includes(pending)) back.skill.filter_color.push(str + ':"' + pending + '"')
-			return true;
-		}
-		list.forEach(line => {
-			let words = line;
-			if (line.includes("一点")) {
-				words.remove("一点");
-				back.skill.getIndex = true;
-			}
-			if (line.includes("roundStart")) {
-				words.remove('roundStart');
-				tri_global.push("roundStart");
-			}
-			if (line.includes('player')) {
-				words.remove('player');
-				tri_players.push(...words);
-			} else if (line.includes('global')) {
-				words.remove('global');
-				tri_global.push(...words);
-			} else if (line.includes("source")) {
-				words.remove("source");
-				tri_source.push(...words);
-			} else if (line.includes("target")) {
-				words.remove("target");
-				tri_target.push(...words)
-			} else {
-				tri_players.push(...words);
-			}
-		})
-		tri_players.forEach(i => {
-			let a = i;
-			if (i === 'damageSource') tri_source.push(a)
-			else if (i.startsWith("source:")) {
-				a = a.slice(7);
-				tri_source.push(a);
-			}
-			else if (i.startsWith("target:")) {
-				a = a.slice(7);
-				if (strToArrayTarget(a, 'useCardToTargeted')) { }
-				else if (strToArrayTarget(a, 'useCardToTarget')) { }
-				else tri_target.push(a)
-			}
-			else if (i.startsWith("loseAfter")) {
-				back.skill.uniqueTrigger.push('player:' + i);
-				tri_player.push("loseAfter", "loseAsyncAfter");
-				if (i !== 'loseAfter:discard') tri_global.push("equipAfter", "addJudgeAfter", "gainAfter", "addToExpansionAfter");
-			}
-			else if (i.startsWith("player:")) {
-				a = a.slice(7);
-				if (strToArrayPlayer(a, 'useCardToPlayered')) { }
-				else if (strToArrayPlayer(a, 'useCardToPlayer')) { }
-				else tri_player.push(a)
-			}
-			else if (i.includes(':useCard')) {
-				const list = i.split(":"), str = "useCardAfter";
-				a = list[0];
-				if (cardsNames.includes(a)) back.skill.filter_card.push(str + ':"' + a + '"')
-				if (suits.includes(a)) back.skill.filter_suit.push(str + ':"' + a + '"')
-				if (colors.includes(a)) back.skill.filter_color.push(str + ':"' + a + '"')
-				tri_player.push(list[1]);
-			}
-			else if (i.startsWith('chooseToUseBefore:') || i.startsWith('chooseToUseBegin:')) {
-				const list = i.split(":")
-				const str = list[0]
-				back.skill.tri_filterCard.add(list[1])
-				tri_player.push(str);
-			}
-			else if (i.startsWith('chooseToRespondBefore:') || i.startsWith('chooseToRespondBegin:')) {
-				const list = i.split(":");
-				back.skill.tri_filterCard.add(list[1])
-				tri_player.push(list[0]);
-			}
-			else tri_player.push(a)
-		})
-		tri_global = tri_global.map(i => {
-			let a = i
-			if (i.startsWith("source:")) {
-				let result = a.slice(7);
-				return result
-			} else if (i.startsWith("target:")) {
-				let result = a.slice(7)
-				if (strToArrayTarget(result, 'useCardToTargeted', true)) return "useCardToTargeted"
-				if (strToArrayTarget(result, 'useCardToTarget', true)) return "useCardToTarget"
-				return result;
-			} else if (i.startsWith("player:")) {
-				let result = a.slice(7)
-				if (strToArrayPlayer(result, 'useCardToPlayered', true)) return 'useCardToPlayered'
-				if (strToArrayPlayer(result, 'useCardToPlayer', true)) return "useCardToPlayer"
-				return result;
-			} else if (i.includes(':useCardAfter')) {
-				const str = "useCardAfter"
-				a = a.replace(':useCardAfter', '')
-				if (cardsNames.includes(a)) back.skill.filter_card.push(str + ':"' + a + '"')
-				if (suits.includes(a)) back.skill.filter_suit.push(str + ':"' + a + '"')
-				if (colors.includes(a)) back.skill.filter_color.push(str + ':"' + a + '"')
-				return str;
-			}
-			return i;
-		})
-		back.skill.trigger.player.push(...tri_player)
-		back.skill.trigger.source.push(...tri_source)
-		back.skill.trigger.target.push(...tri_target)
-		back.skill.trigger.global.push(...new Set(tri_global))
 		back.ele.filter.submit();
 		back.ele.content.submit();
 		back.organize()

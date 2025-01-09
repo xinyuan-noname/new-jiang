@@ -27,6 +27,7 @@ export function disposeTri(str, number, directory = NonameCN.TriList) {
 }
 const matchNotObjColon = /(?<!\{[ \w"']+):(?![ \w"']+\})/;
 const matchFromTo = /^([bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)到([bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)[张名点枚]$/
+const matchTriKeywords = /火属性|雷属性|冰属性|神属性|梅花|方片|黑桃|红桃|红色|黑色|基本|装备(?!区)|普通锦囊|非延时锦囊|延时锦囊|点数为(?:11|12|13|[AJQK1-9])|一张/
 const vCardObject = NonameCN.getVirtualCard();
 const player = NonameCN.getVirtualPlayer();
 const vPlayers = NonameCN.getVirtualPlayers();
@@ -34,10 +35,10 @@ const vGame = NonameCN.getVirtualGame();
 const eventModel = NonameCN.getVirtualEvent();
 const vStorage = NonameCN.getVirtualStorage();
 const XJB_PUNC = ["!", " || ", " && ", " + ", " - ", " * ", " / ", " % ",
-	" += ", " -= ",
-	"++", "--",
-	" > ", " < ", " >= ", " <= ", " == ", " === ",
-	"(", ")", "."]
+    " += ", " -= ",
+    "++", "--",
+    " > ", " < ", " >= ", " <= ", " == ", " === ",
+    "(", ")", "."]
 const XJB_NEED_FOLLOW_PUNC = ['++', "--"]
 const XJB_NEED_FELLOW_PUNC = ['!', '~']
 const XJB_NEED_LINK_PUNC = [' || ', ' && ', ' ?? ', ' ? ', ' + ', ' - ', ' * ', ' ** ', ' / ', ' % ', ' += ', ' -= ', ' > ', ' < ', ' >= ', ' <= ', ' == ', ' === ', '(', '.']
@@ -97,7 +98,7 @@ export class TransCnText {
      */
     static translate(word, directory = {}) {
         if (typeof word != "string") return "";
-        if ( matchFromTo.test(word)) {
+        if (matchFromTo.test(word)) {
             return `[${word.slice(0, -1).split("到").map(item => chineseToArabic(item))}]`
         }
         if (word in directory) return directory[word];
@@ -153,17 +154,32 @@ export class TransCnText {
     static translateTri(word) {
         if (typeof word != "string") return "";
         const directory = NonameCN.TriList;
+        console.log(word);
         if (word in directory) return directory[word];
         if (/(开始)[前时]/.test(word)) {
-            return TransCnText.translate(word.replace(/(开始)[前时]/, "$1"), directory);
+            return TransCnText.translateTri(word.replace(/(开始)[前时]/, "$1"));
         }
         if (/(结束)[时后]/.test(word)) {
-            return TransCnText.translate(word.replace(/(结束)[前时]/, "$1"), directory);
+            return TransCnText.translateTri(word.replace(/(结束)[前后]/, "$1"));
         }
         if (/(结算完成|完成结算)[时后]/.test(word)) {
-            return TransCnText.translate(word.replace(/(结算完成|完成结算)[前时]/, "$1"), directory);
+            return TransCnText.translateTri(word.replace(/(结算完成|完成结算)[前时]/, "$1"));
         }
-        if (word.includes("的")) return TransCnText.translate(word.replace(/的/g, ""), directory);
+        if (word.includes("的")) return TransCnText.translateTri(word.replace(/的/g, ""));
+        if (matchTriKeywords.test(word)) {
+            let decoration = [];
+            let wordx = word.replace(/红色|黑色|梅花|方片|黑桃|红桃|火属性|雷属性|冰属性|神属性|基本|装备(?!区)|普通锦囊|非延时锦囊|延时锦囊/g, (match) => {
+                decoration.push(NonameCN.getEn(match));
+                return ''
+            });
+            wordx = wordx.replace(/一张|一点/g, (match) => {
+                decoration.push('getIndex=1');
+                return '';
+            })
+            if (wordx in directory) {
+                return `${decoration.join(":")}:${directory[wordx]}`;
+            }
+        }
         return word;
     }
     static translateLineTri(lines) {

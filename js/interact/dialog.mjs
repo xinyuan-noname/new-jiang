@@ -1258,7 +1258,7 @@ game.xjb_create.UABobjectsToChange = function ({ object, num, free, list, previo
         else if (!game.xjb_purchaseIt(object, 1, previousPrice)) return game.xjb_create.alert(`购买${objectName}需要${game.xjb_goods[object].price}魂币，你的魂币不足!`)
         var word = '请按以下规则输入:'
         for (let i = 0; i < list.length; i++) {
-            word = word + '改为' + get.xjb_translation(list[i]) + '，请输入' + i + '，'
+            word = word + '改为' + get.translation(list[i]) + '，请输入' + i + '，'
         }
         let dialog = game.xjb_create.prompt(word, void 0, function () {
             var result = this.result

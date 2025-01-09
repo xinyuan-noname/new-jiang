@@ -183,7 +183,7 @@ game.import("character", () => {
                 sex: "male",
                 group: "wei",
                 hp: 3,
-                skills: ["xjb_qizuo", "xjb_yiji", "tiandu"],
+                skills: ["xjb_yiji", "xjb_tiandu"],
                 trashBin: []
             },
             "xjbhan_caocao": {
@@ -253,7 +253,7 @@ game.import("character", () => {
                 sex: "male",
                 group: "jin",
                 hp: 3,
-                skills: ["xjb_xianmou", "xjb_yinlve"],
+                skills: ["xjb_xianmou", "xjb_yintao"],
                 trashBin: []
             },
             "xjb_lvmeng": {
@@ -363,7 +363,7 @@ game.import("character", () => {
                 sex: "female",
                 group: "xjb_hun",
                 hp: 3,
-                skills: ["xjb_soul_zhigong","xjb_soul_jihuo"],
+                skills: ["xjb_soul_zhigong", "xjb_soul_jihuo"],
                 trashBin: [],
                 names: "索|芙艾派依"
             },

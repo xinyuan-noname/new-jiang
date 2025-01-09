@@ -369,8 +369,7 @@ lib.skill.xjb_9 = {
                     get.translation(lib.character[intro.right.player.name1][1]) + "</span>"
 
                 intro.right.sex.innerHTML = "<span data-nature='soil'>性别:" +
-                    get.xjb_translation(lib.character[intro.right.player.name1][0]) + "</span>"
-
+                    get.translation(lib.character[intro.right.player.name1][0]) + "</span>"
                 intro.right.Title.innerHTML = "<span data-nature='metal'>称号</span>:<br>" +
                     (intro.right.player.name in lib.characterTitle ? lib.characterTitle[intro.right.player.name] : "无")
             }
