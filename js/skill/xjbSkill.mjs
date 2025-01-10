@@ -719,7 +719,7 @@ const xin_mousheng = SkillCreater(
 const xjb_bingjie = SkillCreater(
     "xjb_bingjie", {
     translate: "秉节",
-    description: "锁定技，每轮开始时/你体力值每减少一点后，你可以弃置任意牌，然后你令一名角色将手牌摸至体力上限。(至多摸五张)",
+    description: "锁定技，每轮开始时/你体力值每减少一点后，你须将弃置牌使你手牌数等于体力上限，然后你令一名角色将手牌摸至体力上限称为“留香”。(至多摸五张)",
     trigger: {
         global: "roundStart",
         player: ["damageEnd", "loseHpAfter"]
@@ -729,13 +729,67 @@ const xjb_bingjie = SkillCreater(
         return event.num || 1;
     },
     content: async function (event, trigger, player) {
-       await player.chooseToDiscard([1, Infinity], "he");
+        if (player.countDiscardableCards(player, "h")) {
+            const min = Math.max(0, player.countCards("h") - player.maxHp)
+            await player.chooseToDiscard([min, Infinity], "he", true);
+        }
         const { result: { targets } } = await player.chooseTarget()
             .set("prompt2", "令角色将手牌摸至体力上限");
         if (targets) {
-            await targets[0].drawTo(Math.min(targets[0].maxHp, targets[0].countCards("h") + 5));
+            const { result: cards } = await targets[0].drawTo(Math.min(targets[0].maxHp, targets[0].countCards("h") + 5));
+            if (cards.length) targets[0].addGaintag(cards, "xjb_liuxiang")
         }
     },
+})
+const xjb_liuxiang = SkillCreater(
+    "xjb_liuxiang", {
+    translate: "留香",
+    description: "一名角色每使用或打出“留香”的次数大于X后，你可以令其恢复一点体力值，然后重新计算失去次数。(X为其体力值，且至少为3)",
+    group: ["xjb_liuxiang_xiang", "xjb_liuxiang_aid"],
+    subSkill: {
+        xiang: {
+            marktext: "香",
+            intro: {
+                name: "香",
+                content: "mark",
+            },
+            sub: true,
+            "_priority": 0,
+        },
+        aid: {
+            trigger: {
+                global: ["respondEnd", "useCardEnd"],
+            },
+            forced: true,
+            priority: -1,
+            filter: function (event, player) {
+                return event.player.hasHistory('lose', function (evt) {
+                    if (evt.getParent() != event) return false;
+                    for (var i in evt.gaintag_map) {
+                        if (evt.gaintag_map[i].includes('xjb_liuxiang')) {
+                            event.player.addMark('xjb_liuxiang_xiang', 1)
+                            event.player.update()
+                            return event.player.countMark('xjb_liuxiang_xiang') >= Math.max(player.hp, 3) && !event.player.isHealthy();
+                        }
+                    }
+                    return false;
+                });
+            },
+            content: function () {
+                'step 0'
+                event.target = trigger.player
+                player.chooseBool('对' + get.translation(event.target) + '是否令其恢复一点体力')
+                'step 1'
+                if (result.bool) {
+                    event.target.removeMark('xjb_liuxiang_xiang', event.target.countMark('xjb_liuxiang_xiang'));
+                    event.target.recover()
+                }
+            },
+            sub: true,
+            "_priority": -100,
+        },
+    },
+    "_priority": 0,
 })
 
 

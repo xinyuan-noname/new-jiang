@@ -223,7 +223,7 @@ game.import("character", () => {
                 group: "xjb_han",
                 hp: 3,
                 clans: ["颍川荀氏"],
-                skills: ["xjb_bingjie", "clandaojie"],
+                skills: ["xjb_bingjie", "xjb_liuxiang", "clandaojie"],
                 trashBin: []
             },
             "xjb_pangtong": {

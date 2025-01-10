@@ -504,7 +504,7 @@ const xjb_cangshi = SkillCreater(
 const xjb_jiatu = SkillCreater(
 	"xjb_jiatu", {
 	translate: "假道",
-	description: "出牌阶段限一次，你可以交给一名角色一张牌，你对其攻击范围的一名角色造成一点伤害。若你以此法使该角色阵亡，你可以对一名本回合获得过你牌的角色获得其任意张牌并对其造成一点伤害。",
+	description: "出牌阶段限一次，你可以交给一名角色一张牌，你对其攻击范围的一名角色造成一点伤害。若你以此法使该角色阵亡，你可以选择一名本回合获得过你牌的角色，你获得其一张牌并对其造成一点伤害。",
 	enable: "phaseUse",
 	filterCard: true,
 	filterTarget: (card, player, target) => {
@@ -527,8 +527,8 @@ const xjb_jiatu = SkillCreater(
 				return evt.length > 0;
 			}).forResult();
 			if (!boolx) return;
-			await player.gainPlayerCard(targetsx[0], "he", [1, Infinity]);
-			await targetsx[0].damage(player);
+			await player.gainPlayerCard(targetsx[0], "he", 1).forResult();
+			await targetsx[0].damage();
 		}
 	},
 })
