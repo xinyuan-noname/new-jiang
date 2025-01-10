@@ -68,7 +68,7 @@ game.import("character", () => {
                 sex: "male",
                 group: "xjb_chunqiu_jin",
                 hp: 3,
-                skills: ["xjb_jiatu"],
+                skills: ["xjb_jiatu", "xjb_gugong"],
                 trashBin: [],
                 names: "姬|黯"
             },

@@ -504,7 +504,7 @@ const xjb_cangshi = SkillCreater(
 const xjb_jiatu = SkillCreater(
 	"xjb_jiatu", {
 	translate: "假道",
-	description: "出牌阶段限一次，你可以交给一名角色一张牌，你对其攻击范围的一名角色造成一点伤害。若你以此法使该角色阵亡，你可以对一名本回合获得过你牌的角色造成一点伤害。",
+	description: "出牌阶段限一次，你可以交给一名角色一张牌，你对其攻击范围的一名角色造成一点伤害。若你以此法使该角色阵亡，你可以对一名本回合获得过你牌的角色获得其任意张牌并对其造成一点伤害。",
 	enable: "phaseUse",
 	filterCard: true,
 	filterTarget: (card, player, target) => {
@@ -524,13 +524,117 @@ const xjb_jiatu = SkillCreater(
 		if (targets[0].isDead()) {
 			const { bool: boolx, targets: targetsx } = await player.chooseTarget().set("filterTarget", (card, player, target) => {
 				const evt = target.getHistory("gain", evt => evt.giver === player);
-				console.log(evt);
 				return evt.length > 0;
 			}).forResult();
 			if (!boolx) return;
+			await player.gainPlayerCard(targetsx[0], "he", [1, Infinity]);
 			await targetsx[0].damage(player);
 		}
 	},
+})
+const xjb_gugong = SkillCreater(
+	"xjb_gugong", {
+	translate: "股肱",
+	description: "锁定技，当你使用一张普通锦囊牌后，你须选择本回合未选择一项：1.失去一点体力，重置一个技能；2.摸一张牌，回收此牌。",
+	trigger: {
+		player: "useCardAfter",
+	},
+	forced: true,
+	filter: (event, player) => {
+		return get.type(event.card) === "trick"
+			&& event.card.cards && event.card.cards.length
+			&& (!player.storage.xjb_gugong || player.storage.xjb_gugong.length < 2);
+	},
+	choiceList: ["失去一点体力，重置一个技能", "摸一张牌，回收此牌"],
+	content: async function (event, trigger, player) {
+		const choices = ["选项一", "选项二"]
+		const choiceList = get.info("xjb_gugong").choiceList
+		console.log(player.storage.xjb_gugong);
+		const choiceListx = choiceList.map((choice, index) => {
+			if (player.storage.xjb_gugong && player.storage.xjb_gugong.includes(index)) {
+				if (index === 0) choices.remove("选项一")
+				else if (index === 1) choices.remove("选项二")
+				return '<s>' + choice + '</s>'
+			}
+			return choice;
+		});
+		const control = await player.chooseControl()
+			.set("choiceList", choiceListx)
+			.set("controls", choices)
+			.forResultControl();
+		if (control === "选项一") {
+			await player.loseHp();
+			player.markAuto("xjb_gugong", 0);
+			//以下用中流和蹈节改的
+			const suffixs = ["used", "round", "block", "blocker"];
+			const skills = player.getSkills(null, false, false).filter(skill => {
+				const info = get.info(skill);
+				if (!info) return false;
+				if (typeof info.usable == "number") {
+					if (player.hasSkill("counttrigger") && player.storage.counttrigger[skill] && player.storage.counttrigger[skill] >= 1) {
+						return true;
+					}
+					if (typeof get.skillCount(skill) == "number" && get.skillCount(skill) >= 1) {
+						return true;
+					}
+				}
+				if (info.round && player.storage[skill + "_roundcount"]) {
+					return true;
+				}
+				if (player.storage[`temp_ban_${skill}`]) {
+					return true;
+				}
+				if (player.awakenedSkills.includes(skill)) {
+					return true;
+				}
+				for (const suffix of suffixs) {
+					if (player.hasSkill(skill + "_" + suffix)) {
+						return true;
+					}
+				}
+			});
+			const list = [];
+			for (const skill of skills) {
+				list.push([skill, '<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]);
+			}
+			if (!list.length) return;
+			const [skill] = await player.chooseButton([
+				"肱骨：重置一个技能",
+				[list, "textbutton"]
+			], true).forResultLinks();
+			const info = get.info(skill);
+			if (typeof info.usable == "number") {
+				if (player.hasSkill("counttrigger") && player.storage.counttrigger[skill] && player.storage.counttrigger[skill] >= 1) {
+					delete player.storage.counttrigger[skill];
+				}
+				if (typeof get.skillCount(skill) == "number" && get.skillCount(skill) >= 1) {
+					delete player.getStat("skill")[skill];
+				}
+			}
+			if (info.round && player.storage[skill + "_roundcount"]) {
+				delete player.storage[skill + "_roundcount"];
+			}
+			if (player.storage[`temp_ban_${skill}`]) {
+				delete player.storage[`temp_ban_${skill}`];
+			}
+			if (player.awakenedSkills.includes(skill)) {
+				player.restoreSkill(skill);
+			}
+			for (const suffix of suffixs) {
+				if (player.hasSkill(skill + "_" + suffix)) {
+					player.removeSkill(skill + "_" + suffix);
+				}
+			}
+			game.log(player, "重置了技能", "#g" + "【" + get.translation(skill) + "】");
+		} else if (control === "选项二") {
+			await player.draw();
+			await player.gain(trigger.cards);
+			player.markAuto("xjb_gugong", 1);
+		}
+		player.when({ global: "phaseAfter" }).then(() => {
+			delete player.storage.xjb_gugong;
+		})
+	}
 })
 
 
