@@ -187,7 +187,7 @@ const lingli_event = {
             "step 1"
             const zhenfa = player.getExpansions("_xjb_zhenfa");
             if (zhenfa.length > 3) player.xjb_discardZhenfaCard(3 - zhenfa.length);
-            player.actionHistory.at(-1)["custom"].push(event);
+            player.getHistory()["custom"].push(event);
         },
     },
     "xjb_discardZhenfaCard": {

@@ -72,6 +72,14 @@ game.import("character", () => {
                 trashBin: [],
                 names: "姬|黯"
             },
+            "xjb_xianzhen": {
+                sex: "male",
+                group: "xjb_chunqiu_jin",
+                hp: 3,
+                maxHp: 4,
+                skills: ["xjb_xiaojian", "xjb_guizhan"],
+                trashBin: [],
+            },
 
             "xjb_wuyuan": {
                 sex: "male",
@@ -96,6 +104,7 @@ game.import("character", () => {
                 xjb_biqizhijiang: ["xjb_qixianggong"],
                 xjb_qihuanshouba: ["xjb_guanyiwu"],
                 xjb_lijizhiluan: ["xjb_xunan"],
+                xjb_jinwenzhiba: ["xjb_xianzhen"],
                 xjb_wuyuechunqiu: ["xjb_wuyuan"],
             },
         },
@@ -138,6 +147,7 @@ game.import("character", () => {
             "xjb_biqizhijiang": "必齐之姜",
             "xjb_qihuanshouba": "齐桓首霸",
             "xjb_lijizhiluan": "骊姬之乱",
+            "xjb_jinwenzhiba": "晋文之霸",
             "xjb_wuyuechunqiu": "吴越春秋",
 
             "xjb_jizi_shou": "急子&寿",
@@ -145,6 +155,7 @@ game.import("character", () => {
             "xjb_qixianggong": "齐襄公",
             "xjb_guanyiwu": "管夷吾",
             "xjb_xunan": "荀黯",
+            "xjb_xianzhen": "先轸",
             "xjb_wuyuan": "伍员",
             "xjb_qinshihuang": "秦始皇",
             ...dongzhouTranslate,

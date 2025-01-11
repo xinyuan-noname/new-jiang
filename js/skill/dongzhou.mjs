@@ -272,7 +272,7 @@ const xjb_xuechou = SkillCreater(
 		player.addTempSkill(event.name + "_gain", { player: event.name + "After" })
 		player.addTempSkill(event.name + "_draw", { player: event.name + "After" })
 		while (event.target.isAlive() && player.countCards("h")) {
-			const { result: { bool } } = await player.chooseUseTarget(event.target, { name: "juedou" }, [player.getCards("h").at(0)], false, "九世之仇，今日报之！")
+			const { result: { bool } } = await player.chooseUseTarget(event.target, { name: "juedou" }, [player.getCards("h")[0]], false, "九世之仇，今日报之！")
 				.set("prompt2", "将第一张手牌视为【决斗】对" + get.translation(event.target) + "使用");
 			if (!bool) return;
 		}
@@ -434,7 +434,7 @@ const xjb_zunrang = SkillCreater(
 const xjb_huozhi = SkillCreater(
 	"xjb_huozhi", {
 	translate: "货殖",
-	description: "出牌阶段限一次，你可与一名本回合未发动过本技能的其他角色各展示一张手牌称为“货”，然后你与其用其他手牌拼点：双方获得对方的“货”，赢的角色获得拼点牌。若你赢，本回合你可多发动一次该技能。",
+	description: "出牌阶段限一次，你可与一名本回合未发动过本技能的其他角色各展示一张手牌，称为“货”，并用另一张手牌拼点。拼点结算后，双方交换“货”，赢的角色获得拼点牌，若赢的角色是你，重置此技能的发动次数。",
 	enable: "phaseUse",
 	usable: 1,
 	filterTarget: (card, player, target) => {
@@ -458,7 +458,7 @@ const xjb_huozhi = SkillCreater(
 		if (winner) {
 			await winner.gain([pCard, tCard], "gain2")
 		}
-		if (winner === player) player.getStat().skill[event.name]--;
+		if (winner === player) player.getStat().skill[event.name] = 0;
 	},
 	ai: {
 		order: 6,
@@ -637,6 +637,96 @@ const xjb_gugong = SkillCreater(
 	}
 })
 
+//先轸
+const xjb_xiaojian = SkillCreater(
+	"xjb_xiaojian", {
+	translate: "崤歼",
+	description: "当你造成伤害后，你可以将受到伤害的角色至多X张牌置入弃牌堆。（X为其牌数-其体力值）。",
+	trigger: {
+		source: "damageSource"
+	},
+	filter: (event, player) => {
+		return event.player.countCards("he") > event.player.hp
+	},
+	cost: async function (event, trigger, player) {
+		const max = Math.max(0, trigger.player.countCards("he") - trigger.player.hp)
+		const { bool, cards } = await player.choosePlayerCard(trigger.player, "he", [1, max])
+			.set("prompt", `将${get.translation(trigger.player)}至多${get.cnNumber(max)}牌置入弃牌堆`)
+			.forResult();
+		event.result = { bool, cost_data: { cards } }
+	},
+	content: async function (event, trigger, player) {
+		await trigger.player.loseToDiscardpile(event.cost_data.cards, player);
+	}
+})
+const xjb_guizhan = SkillCreater(
+	"xjb_guizhan", {
+	translate: "诡战",
+	description: "出牌阶段限X次，你可以选择任意张牌和等量名角色，你声明一张基本牌或普通锦囊牌，视为对这些角色使用之，此牌不可被响应。(X为本回合进入过濒死状态的角色数+1)。",
+	enable: "phaseUse",
+	selectTarget: () => {
+		return ui.selected.cards.length;
+	},
+	filterTarget: true,
+	multitarget: true,
+	multiline: true,
+	selectCard: [1, Infinity],
+	filterCard: true,
+	discard: false,
+	lose: false,
+	position: "he",
+	judgeOk: (player, target, name, cards, nature) => {
+		return lib.filter.targetEnabled2(get.autoViewAs({ name, nature }, cards), player, target)
+	},
+	filter: (event, player) => {
+		return player.countSkill("xjb_guizhan") <= (player.storage.xjb_guizhan || 0)
+	},
+	content: async function (event, trigger, player) {
+		const list = [];
+		const jugdeOk = get.info(event.name).judgeOk;
+		for (const name of lib.inpile) {
+			if (get.type(name) !== "basic" && get.type(name) != "trick") continue;
+			if (event.targets.every(target => jugdeOk(player, target, name, event.cards))) {
+				if (name === "sha") {
+					for (const nature of lib.inpile_nature) {
+						list.push(["基本", "", name, nature])
+					}
+				}
+				list.push([get.translation(get.type(name)), "", name])
+			}
+		}
+		const { result: { bool, links } } = await player.chooseButton([
+			"诡战",
+			[list, "vcard"]
+		]);
+		if (!bool) {
+			player.getStat().skill.xjb_guizhan--;
+			return;
+		}
+		const [_, __, name, nature] = links[0]
+		await player.useCard({ name, nature }, event.cards, event.targets)
+			.set("directHit", event.targets);
+	},
+	group: ["xjb_guizhan_countDie"],
+	subSkill: {
+		countDie: {
+			trigger: {
+				global: "dying"
+			},
+			charlotte: true,
+			direct: true,
+			content: async function (event, trigger, player) {
+				game.broadcastAll(player => {
+					if (!player.storage.xjb_guizhan) player.storage.xjb_guizhan = 0;
+					player.storage.xjb_guizhan++;
+				}, player)
+				player.when({ global: "phaseAfter" }).then(() => {
+					delete player.storage.xjb_guizhan;
+				})
+			}
+		}
+	}
+})
 
 //伍子胥
 const xjb_wanxin = SkillCreater(

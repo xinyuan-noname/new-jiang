@@ -1869,7 +1869,7 @@ game.xjb_skillEditor = function () {
 		back.skill.triggerFilter = triggerFilter;
 		back.skill.triLength = triLength;
 		back.skill.triLoseEvts = loseEvts;
-		if(getIndexMap)back.skill.getIndex = getIndexMap;
+		if (getIndexMap) back.skill.getIndex = getIndexMap;
 		if (loseEvts.length && triLength > 1) {
 			await game.xjb_create.promise.alert("涉及到失去牌事件作为触发时机，请仅保留此触发时机为唯一触发时机，否则可能导致编辑器无法正常生成技能！");
 		}
@@ -2146,7 +2146,7 @@ game.xjb_skillEditor = function () {
 
 
 	//
-	let chooseSeter = newElement('div', '视为的牌')
+	const chooseSeter = newElement('div', '视为的牌')
 		.style1()
 		.setStyle({
 			"height": "1em"
@@ -2195,15 +2195,73 @@ game.xjb_skillEditor = function () {
 		.height("100%")
 		.width("100%")
 		.exit()
+	const VIEWAS_LIST = {
+		"基本": [
+			['sha', '杀'],
+			['nature-fire:sha', '火杀'],
+			['nature-thunder:sha', '雷杀'],
+			['nature-ice:sha', '冰杀'],
+			['nature-stab:sha', '刺杀'],
+			['shan', '闪'],
+			['tao', '桃'],
+			['jiu', '酒'],
+		],
+		"军争": [
+			['wugu', '五谷丰登'],
+			['taoyuan', '桃园结义'],
+			['nanman', '南蛮入侵'],
+			['wanjian', '万箭齐发'],
+			['wuzhong', '无中生有'],
+			['juedou', '决斗'],
+			['shunshou', '顺手牵羊'],
+			['guohe', '过河拆桥'],
+			['jiedao', '借刀杀人'],
+			['wuxie', '无懈可击'],
+			['huogong', '火攻'],
+			['tiesuo', '铁索连环'],
+		],
+		"国战": [
+			['xietianzi', '挟令'],
+			['shuiyanqijunx', '水淹七军'],
+			['lulitongxin', '勠力同心'],
+			['lianjunshengyan', '联军盛宴'],
+			['chiling', '敕令'],
+			['diaohulishan', '调虎离山'],
+			['huoshaolianying', '火烧连营'],
+			['yuanjiao', '远交近攻'],
+			['zhibi', '知己知彼'],
+			['yiyi', '以逸待劳']
+		],
+		"应变": [
+			['yiyi', '以逸待劳'],
+			['suijiyingbian', '随机应变'],
+			['zhujinqiyuan', '逐近弃远'],
+			['dongzhuxianji', '洞烛先机'],
+			['chuqibuyi', '出其不意']
+		],
+		"忠胆": [
+			['jinchan', '金蝉脱壳'],
+			['qijia', '弃甲曳兵'],
+			['shengdong', '声东击西'],
+			['zengbin', '增兵减灶'],
+		],
+		"延时": [
+			['lebu', '乐不思蜀'],
+			['shandian', '闪电'],
+			['bingliang', '兵粮寸断'],
+			['fulei', '浮雷'],
+			['caomu', '草木皆兵']
+		],
+	};
 	{
 		const colorList = ["red", "orange", "yellow", "green", "pink", "#add8e6"];
 		/**
 		 * @param {HTMLElement} domEle 
 		 * @param {object} mapList 
-		 * @param {Array<string>} backAttr 
+		 * @param {string} backAttrName 
 		 * @param {string} domEleAttr 
 		 */
-		function setDom(domEle, mapList, backAttr, domEleAttr, ...extra) {
+		function setDom(domEle, mapList, backAttrName, domEleAttr, ...extra) {
 			let list = xjb_formatting(Object.values(mapList));
 			let list1 = xjb_formatting(Object.keys(mapList));
 			list.forEach((i, k) => {
@@ -2239,12 +2297,17 @@ game.xjb_skillEditor = function () {
 					list.forEach(ele => ui.xjb_hideElement(ele))
 					return;
 				}
-				if (backAttr.includes(e.target[domEleAttr])) backAttr.remove(e.target[domEleAttr]);
+				const backAttr = back.skill[backAttrName];
+				if (backAttr.includes(e.target[domEleAttr])) {
+					backAttr.remove(e.target[domEleAttr]);
+				}
 				else if (domEleAttr === "frequency") {
 					backAttr.remove(...NonameCN.viewAsFrequencyList)
 					backAttr.push(e.target[domEleAttr]);
 				}
-				else if (backAttr.length < colorList.length) backAttr.push(e.target[domEleAttr]);
+				else if (backAttr.length < colorList.length) {
+					backAttr.push(e.target[domEleAttr]);
+				}
 				let arr = Array.from(domEle.children)
 				for (let collection of extra) {
 					arr.push(...collection)
@@ -2279,11 +2342,12 @@ game.xjb_skillEditor = function () {
 				mapList["nature-" + k + ":sha"] = lib.translate[k] + '杀'
 			});
 			[...lib.cardPack.standard, ...lib.cardPack.extra,
-			...lib.cardPack.guozhan].forEach(k => {
+			...lib.cardPack.guozhan, ...lib.cardPack.yingbian, ...lib.cardPack.sp].forEach(k => {
 				if (lib.translate[k] && get.type(k) != "equip") mapList[k] = lib.translate[k]
 			})
-			setDom(cardNameFree, mapList, back.skill.viewAs, "viewAs", cardTypeFree.children)
+			setDom(cardNameFree, mapList, "viewAs", "viewAs", cardTypeFree.children)
 		};
+
 		if (cardTypeFree) {
 			const mapList = {
 				'cardType-basic': '基本',
@@ -2291,7 +2355,7 @@ game.xjb_skillEditor = function () {
 				'cardType-delay': '延时锦囊',
 				'cardType-trick2': '锦囊',
 			};
-			setDom(cardTypeFree, mapList, back.skill.viewAs, "viewAs", cardNameFree.children)
+			setDom(cardTypeFree, mapList, "viewAs", "viewAs", cardNameFree.children)
 		};
 		if (costFree1) {
 			const mapList = {
@@ -2303,7 +2367,7 @@ game.xjb_skillEditor = function () {
 			...lib.cardPack.guozhan].forEach(k => {
 				if (lib.translate[k]) mapList["cardName-" + k] = lib.translate[k]
 			})
-			setDom(costFree1, mapList, back.skill.viewAsCondition, "condition", costFree2.children, costFree3.children)
+			setDom(costFree1, mapList, "viewAsCondition", "condition", costFree2.children, costFree3.children)
 		};
 		if (costFree2) {
 			const mapList = {
@@ -2320,14 +2384,14 @@ game.xjb_skillEditor = function () {
 				'suit-pos-hes:spade': "♠牌",
 				'suit-pos-hs:spade': "♠手牌",
 			};
-			setDom(costFree2, mapList, back.skill.viewAsCondition, "condition", costFree1.children, costFree3.children)
+			setDom(costFree2, mapList, "viewAsCondition", "condition", costFree1.children, costFree3.children)
 		};
 		if (costFree3) {
 			const mapList = {
 				"preEve-link-true": "横置之",
 				"preEve-link-false": "重置之"
 			};
-			setDom(costFree3, mapList, back.skill.viewAsCondition, "condition", costFree1.children, costFree2.children)
+			setDom(costFree3, mapList, "viewAsCondition", "condition", costFree1.children, costFree2.children)
 		};
 		if (frequencyFree) {
 			const mapList = {
@@ -2335,7 +2399,7 @@ game.xjb_skillEditor = function () {
 				"frequency-round-cardName": "每轮牌名限一",
 				"frequency-game-cardName": "本局牌名限一",
 			}
-			setDom(frequencyFree, mapList, back.skill.viewAsFrequency, "frequency", [])
+			setDom(frequencyFree, mapList, "viewAsFrequency", "frequency", [])
 		}
 	}
 	//给以上所有free绑定事件
