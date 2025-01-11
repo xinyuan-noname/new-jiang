@@ -564,7 +564,7 @@ class TextareaTool extends elementTool {
         if (typeof match === "string") match = stringToRegExp(match);
         this.ele.addEventListener("keyup", function (e) {
             if (e.key !== "Enter") return;
-            const lastLine = this.value.slice(0, this.selectionStart - 1).split("\n").at(-1);
+            const lastLine = this.value.slice(0, this.selectionStart - 1).split("\n").slice(-1)[0];
             if (match.test(lastLine)) {
                 callback.apply(this, [e]);
             }

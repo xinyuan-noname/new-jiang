@@ -227,7 +227,7 @@ SkillCreater(
         )) return false;
         const skillEvt = lib.skill[event.skill].direct ?
             event.getParent(event.skill) :
-            event.player.getHistory("useSkill", evt => evt.skill === event.skill).at(-1).event;
+            event.player.getHistory("useSkill", evt => evt.skill === event.skill).slice(-1)[0].event;
         if (skillEvt.reason === "xjb_queqiaoxian") return false;
         const playerList = [];
         if (skillEvt.player) playerList.push(skillEvt.player);
@@ -250,7 +250,7 @@ SkillCreater(
             const skill = trigger.skill;
             const info = get.info(skill);
             const skillEvt = info.direct ?
-                trigger.getParent(trigger.skill) : trigger.player.getHistory("useSkill", evt => evt.skill === trigger.skill).at(-1).event;
+                trigger.getParent(trigger.skill) : trigger.player.getHistory("useSkill", evt => evt.skill === trigger.skill).slice(-1)[0].event;
             const next = game.createEvent(skill);
             if (typeof info.usable == "number") {
                 result.targets[0].addSkill("counttrigger");

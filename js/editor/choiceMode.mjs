@@ -281,7 +281,7 @@ export class choiceMode {
                     }
                 }
                 if (submitArea.order) {
-                    while (rights.length && rights.at(-1) === undefined) {
+                    while (rights.length && rights.slice(-1)[0] === undefined) {
                         rights.pop();
                     }
                 } else {
@@ -665,7 +665,7 @@ export class choiceMode {
                 }
             }
             if (eles[0].order) {
-                while (heArray.at(-1) === void 0) {
+                while (heArray.slice(-1)[0] === void 0) {
                     heArray.pop();
                 }
             } else {
@@ -1419,7 +1419,7 @@ export class choiceMode {
                 const type = interfaceEle.type;
                 const buttons = interfaceEle.querySelectorAll(".xjb_dialogButton.xjb-chosen");
                 const triggers = [...buttons]
-                    .map(button => TransCnText.translate(button.triggerCn, { ...NonameCN.TriList, "无期": '"forever"' }).split(":").at(-1));
+                    .map(button => TransCnText.translate(button.triggerCn, { ...NonameCN.TriList, "无期": '"forever"' }).split(":").slice(-1)[0]);
                 if (!triggers.length) continue;
                 if (triggers.includes('"forever"')) { forever = true; break; }
                 result[type] = triggers.length === 1 ? triggers[0] : triggers;

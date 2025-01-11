@@ -213,7 +213,7 @@ export class TransCnText {
                 else if (a.includes(';')) {
                     str += NonameCN.disposeWithQuo(body, a)
                 }
-                else if (a.includes(':') && a.at(-1) != ',') {
+                else if (a.includes(':') && a.slice(-1)[0] != ',') {
                     str += NonameCN.disposeWithQuo(body, a, matchNotObjColon)
                 }
                 else str += a
@@ -260,7 +260,7 @@ export class TransCnText {
                             replacer.push(replacer.pop() + NonameCN.disposeWithQuo(player, word))
                             continue;
                         }
-                        else if (word.includes(":") && word.at(-1) !== ",") {
+                        else if (word.includes(":") && word.slice(-1)[0] !== ",") {
                             replacer.push(replacer.pop() + NonameCN.disposeWithQuo(player, word, matchNotObjColon))
                             continue;
                         }

@@ -623,7 +623,7 @@ game.xjb_create.file = function (str, type, func1, func2, needBuffer) {
         reader.onload = function () {
             const fileData = this.result;
             //文件类型
-            let extn = file.value.split(".").at(-1);
+            let extn = file.value.split(".").slice(-1)[0];
             showFile.src = URL.createObjectURL(readingFile);
             showFile.xjb_type = "." + extn;
             const fileResult = {
@@ -873,7 +873,7 @@ game.xjb_create.search = function (
                 const target = entry.target;
                 const b = target.querySelector("b")
                 if (!b) return;
-                if (![target.parentNode.lastElementChild, [...shownList].at(-1)].includes(target)) return;
+                if (![target.parentNode.lastElementChild, [...shownList].slice(-1)[0]].includes(target)) return;
                 element("div").width("100%").height("5em").father(theirUl);
                 observer.disconnect()
             })

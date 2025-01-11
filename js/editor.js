@@ -344,7 +344,7 @@ game.xjb_skillEditor = function () {
 						if (line != "undefined") {
 							const startIndex = line.contentIndex;
 							let slice = back.skill.content.splice(startIndex, i - startIndex + 2);
-							back.skill.mod[attr].push(...slice.slice(0, -2), output, slice.at(-1));
+							back.skill.mod[attr].push(...slice.slice(0, -2), output, slice.slice(-1)[0]);
 							return;
 						}
 					};
@@ -1084,7 +1084,7 @@ game.xjb_skillEditor = function () {
 			}
 			else {
 				relatedNode.push(ui.create.xjb_button(typeFree, "重置"))
-				relatedNode.at(-1).diyTagNodes = relatedNode.slice(1, -1)
+				relatedNode.slice(-1)[0].diyTagNodes = relatedNode.slice(1, -1)
 			}
 			if (index !== 0) {
 				relatedNode.forEach(node => ui.xjb_hideElement(node))
@@ -1096,7 +1096,7 @@ game.xjb_skillEditor = function () {
 				.setKey("relatedNode", relatedNode)
 				.exit();
 			relatedNode.at(0).loyalTo = changePageNode;
-			relatedNode.at(-1).loyalTo = changePageNode;
+			relatedNode.slice(-1)[0].loyalTo = changePageNode;
 		}
 	})();
 	element().setTarget(typeSeter)
@@ -1260,7 +1260,7 @@ game.xjb_skillEditor = function () {
 			/**
 			 * @type {HTMLElement}
 			 */
-			let target = Array.from(groupFree.querySelectorAll(':not(.xjb_hidden)')).at(-1);
+			let target = Array.from(groupFree.querySelectorAll(':not(.xjb_hidden)')).slice(-1)[0];
 			if (target && target.innerText.includes('>>>')) {
 				target.click();
 				target.dispatchEvent(touchE);
