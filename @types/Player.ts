@@ -128,7 +128,7 @@ declare module "../../../node_modules/@types/noname-typings/nonameModules/noname
          * 该函数用于销毁一些牌
          * @param cards 销毁的牌
          */
-        xjb_destoryCards: (cards: Card[]) => void;
+        xjb_destoryCards: (cards: Card[]) => GameEvent;
     }
 }
 

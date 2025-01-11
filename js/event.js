@@ -248,15 +248,6 @@ const xjb_playerMethod = {
         this.xjb_speaker.text = words;
         speechSynthesis.speak(this.xjb_speaker)
     },
-    "xjb_destoryCards": function (cards) {
-        const player = this;
-        for (const card of cards) {
-            card.fix()
-            card.remove()
-            card.destroyed = true
-        }
-        ui.updatehl();
-    },
 }
 const xjb_likeEvent = {
     "xjb_chooseAllCard": function () {
@@ -310,10 +301,29 @@ const xjb_likeEvent = {
         }
         dialog.hide();
         return player.chooseButton(dialog, select, forced);
-    }
+    },
+
 }
 const xjb_event = {
-
+    "xjb_destoryCards": {
+        player: function (cards) {
+            const player = this;
+            let next = game.createEvent('xjb_destoryCards')
+            next.player = player
+            next.cards = cards
+            next.setContent('xjb_destoryCards');
+            return next
+        },
+        content: async function (event, trigger, player) {
+            await player.lose(event.cards, ui.ordering);
+            for (const card of event.cards) {
+                card.fix()
+                card.remove()
+                card.destroyed = true
+            }
+            ui.updatehl();
+        }
+    },
     "xjb_cardBirth": {
         player: function (num = 1) {
             let next = game.createEvent('xjb_cardBirth')

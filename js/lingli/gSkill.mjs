@@ -133,14 +133,14 @@ const xjb_lingliStruggle = SkillCreater(
             const cardsN = player.xjb_getLingli("negative", pos);
             const dis = cardsP.length - cardsN.length;
             if (dis > 0) {
-                player.xjb_destoryCards(cardsN);
-                player.xjb_destoryCards(cardsP.slice(dis));
+                await player.xjb_destoryCards(cardsN);
+                await player.xjb_destoryCards(cardsP.slice(dis));
             } else if (dis < 0) {
-                player.xjb_destoryCards(cardsP);
-                player.xjb_destoryCards(cardsN.slice(Math.abs(dis)));
+                await player.xjb_destoryCards(cardsP);
+                await player.xjb_destoryCards(cardsN.slice(Math.abs(dis)));
             } else {
-                player.xjb_destoryCards(cardsN);
-                player.xjb_destoryCards(cardsP);
+                await player.xjb_destoryCards(cardsN);
+                await player.xjb_destoryCards(cardsP);
             }
         }
     }
