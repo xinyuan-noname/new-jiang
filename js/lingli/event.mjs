@@ -222,25 +222,25 @@ const lingli_event = {
  * @type {Player}
  */
 const lingli_method = {
-    "xjb_getLingli": function (status) {
+    "xjb_getLingli": function (status, position = "s") {
         const player = this;
-        const allLingli = player.getCards("s", card => card.name === "xjb_lingli" && card.hasGaintag("xjb_lingli"));
+        const allLingli = player.getCards(position, card => card.name === "xjb_lingli");
         if (status === "positive") return allLingli.filter(card => !card.classList.contains("xjb-color-invert"));
         if (status === "negative") return allLingli.filter(card => card.classList.contains("xjb-color-invert"));
         return allLingli;
     },
-    "xjb_hasLingli": function (status) {
+    "xjb_hasLingli": function (status, position) {
         const player = this;
-        return player.xjb_getLingli(status).length > 0;
+        return player.xjb_getLingli(status, position).length > 0;
     },
-    "xjb_countLingli": function (status) {
+    "xjb_countLingli": function (status, position) {
         const player = this;
-        if (!status) return player.xjb_countLingli("positive") - player.xjb_countLingli("negative");
-        return player.xjb_getLingli(status).length;
+        if (!status) return player.xjb_countLingli("positive", position) - player.xjb_countLingli("negative", position);
+        return player.xjb_getLingli(status, position).length;
     },
-    "xjb_getLingliStatus": function () {
+    "xjb_getLingliStatus": function (position) {
         const player = this;
-        switch (Math.sign(player.xjb_countLingli())) {
+        switch (Math.sign(player.xjb_countLingli(void 0, position))) {
             case 1: return "postive";
             case -1: return "negative";
             default: return null;
@@ -263,6 +263,18 @@ const lingli_method = {
         const sign = Math.sign(value), abs = Math.abs(value);
         return sign * player.xjb_getLingliDensity() >= abs;
     },
+    //获取正灵力和反灵力同时存在的区域
+    "xjb_getLingliPeaceless": function () {
+        const player = this;
+        let result = ""
+        for (const position of "hejxs") {
+            if (player.xjb_hasLingli("negative", position) && player.xjb_hasLingli("positive", position)) {
+                result += position;
+            }
+        }
+        return result;
+    },
+    //
     "xjb_canUseLingli": function () {
         const player = this;
         if (!lib.config.xjb_lingli_Allallow) {

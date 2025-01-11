@@ -71,24 +71,32 @@ declare module "../../../node_modules/@types/noname-typings/nonameModules/noname
 
         //
         /**
-         * 返回特殊区域中的灵力
+         * 返回的灵力
          * @param status "postive"代表正灵力 "negative"表示负灵力 不填则两者均算入
+         * @param position 默认为特殊区域s的灵力
          */
-        xjb_getLingli: (status?: "positive" | "negative") => Card[];
+        xjb_getLingli: (status?: "positive" | "negative", position?: string) => Card[];
         /**
-         * 返回特殊区域中的灵力张数
+         * 返回的灵力张数
          * @param status "postive"代表正灵力 "negative"表示负灵力 不填则两者均算入
+         * @param position 默认为特殊区域s的灵力张数
          */
-        xjb_countLingli: (status?: "positive" | "negative") => number;
+        xjb_countLingli: (status?: "positive" | "negative", position?: string) => number;
         /**
          * 判断角色是否有灵力
          * @param status "postive"代表正灵力 "negative"表示负灵力 不填则计算两者的代数和
+         * @param position 默认判断特殊区域s的灵力
          */
-        xjb_hasLingli: (status?: "positive" | "negative") => boolean;
+        xjb_hasLingli: (status?: "positive" | "negative", position?: string) => boolean;
         /**
          * 返回特殊区域灵力的总体状态
+         * @param position 默认为特殊区域s的灵力张数
          */
-        xjb_getLingliStatus: () => "positive" | "negative" | null
+        xjb_getLingliStatus: (position?: string) => "positive" | "negative" | null;
+        /**
+         * 返回同时有正灵力和负灵力的区域
+         */
+        xjb_getLingliPeaceless: () => string;
         /**
          * 获取角色的灵力密度
          */
@@ -112,6 +120,15 @@ declare module "../../../node_modules/@types/noname-typings/nonameModules/noname
          * 增加灵力密度
          */
         xjb_addLingliDensity: (num: number, status: "positive" | "negative") => GameEvent
+
+
+
+        //
+        /**
+         * 该函数用于销毁一些牌
+         * @param cards 销毁的牌
+         */
+        xjb_destoryCards: (cards: Card[]) => void;
     }
 }
 

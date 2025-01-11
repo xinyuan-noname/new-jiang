@@ -247,7 +247,16 @@ const xjb_playerMethod = {
         }
         this.xjb_speaker.text = words;
         speechSynthesis.speak(this.xjb_speaker)
-    }
+    },
+    "xjb_destoryCards": function (cards) {
+        const player = this;
+        for (const card of cards) {
+            card.fix()
+            card.remove()
+            card.destroyed = true
+        }
+        ui.updatehl();
+    },
 }
 const xjb_likeEvent = {
     "xjb_chooseAllCard": function () {
@@ -304,25 +313,7 @@ const xjb_likeEvent = {
     }
 }
 const xjb_event = {
-    "xjb_destoryCards": {
-        player: function (cards) {
-            let next = game.createEvent('xjb_destoryCards')
-            next.player = this
-            next.cards = cards
-            next.setContent('xjb_destoryCards');
-            return next
-        },
-        content: function () {
-            "step 0"
-            for (const card of event.cards) {
-                card.fix()
-                card.remove()
-                card.destroyed = true
-            }
-            "step 1"
-            ui.updatehl();
-        }
-    },
+
     "xjb_cardBirth": {
         player: function (num = 1) {
             let next = game.createEvent('xjb_cardBirth')
@@ -356,11 +347,11 @@ const xjb_event = {
                 event.finish()
             }
             "step 1"
-            let cards = player.getCards(event.position).randomGets(event.num)
+            const cards = player.getCards(event.position).randomGets(event.num)
             player.lose(cards)
             player.xjb_destoryCards(cards)
         },
-    },    
+    },
     "xjb_bianshen": {
         player: function () {
             let next = game.createEvent('xjb_bianshen');
@@ -490,7 +481,7 @@ for (const event in xjb_event) {
     lib.element.content[event] = xjb_event[event].content;
 }
 for (const method in xjb_playerMethod) {
-    lib.element.player[method] = xjb_playerMethod[method];
+    lib.element.Player.prototype[method] = xjb_playerMethod[method];
 }
 for (const method in xjb_likeEvent) {
     lib.element.player[method] = xjb_likeEvent[method];

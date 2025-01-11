@@ -117,3 +117,31 @@ const xjb_lingliDensity = SkillCreater(
         player.popup("灵寂");
     }
 })
+const xjb_lingliStruggle = SkillCreater(
+    "xjb_lingliStruggle", {
+    trigger: {
+        global: ["gainAfter", "equipAfter", "addToExpansionAfter", "loseAsyncAfter", "loseAfter", "addJudgeAfter"]
+    },
+    filter: (event, player) => {
+        return player.xjb_getLingliPeaceless().length;
+    },
+    forced: true,
+    charlotte: true,
+    content: async function (event, trigger, player) {
+        for (const pos of player.xjb_getLingliPeaceless()) {
+            const cardsP = player.xjb_getLingli("positive", pos);
+            const cardsN = player.xjb_getLingli("negative", pos);
+            const dis = cardsP.length - cardsN.length;
+            if (dis > 0) {
+                player.xjb_destoryCards(cardsN);
+                player.xjb_destoryCards(cardsP.slice(dis));
+            } else if (dis < 0) {
+                player.xjb_destoryCards(cardsP);
+                player.xjb_destoryCards(cardsN.slice(Math.abs(dis)));
+            } else {
+                player.xjb_destoryCards(cardsN);
+                player.xjb_destoryCards(cardsP);
+            }
+        }
+    }
+})
