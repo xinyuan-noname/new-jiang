@@ -63,7 +63,7 @@ const xjb_penglai = CardCreater(
         },
     },
     fullskin: true,
-    image: "ext:新将包/xjb_Infinity.png",
+    image: "ext:新将包/image/card_store/xjb_Infinity.png",
     translate: '蓬莱',
     description: '出牌阶段及濒死时，对一名角色使用，其:<br>1.使用一张【酒】并将本回合使用过【酒】的次数清零;<br>2.体力值变为无限，持续回合由抽到的数字决定<br>3.失去技能废除及恢复的能力'
 });
@@ -93,7 +93,7 @@ const xjb_skill_off_card = CardCreater(
         target.turnOver()
     },
     fullskin: true,
-    image: "ext:新将包/xjb_jingu.png",
+    image: "ext:新将包/image/card_store/xjb_jingu.png",
     translate: '禁锢卡',
     description: '出牌阶段，你对一名角色使用此牌，其翻面并封印所有技能，持续回合由抽取数字决定。'
 });
@@ -122,7 +122,7 @@ const xjb_zhihuan = CardCreater(
         }
     },
     fullskin: true,
-    image: "ext:新将包/xjb_zhihuan.png",
+    image: "ext:新将包/image/card_store/xjb_zhihuan.png",
     translate: '置换卡',
     description: '出牌阶段，你对一名角色使用此牌，其弃置至少一张牌，然后你摸等量张牌。<br>最大回收点数:4'
 });
@@ -141,7 +141,7 @@ const xjb_lingliCheck = CardCreater(
         target.xjb_addLingli(14 - cards[0].number).set("lingliSource", "card")
     },
     fullskin: true,
-    image: "ext:新将包/lingli/check.png",
+    image: "ext:新将包/image/card_store/check.png",
     translate: "灵力支票",
     description: '出牌阶段对一名角色使用，其获得灵力。',
     ai: {
@@ -168,7 +168,7 @@ const xjb_shenshapo = CardCreater(
             player: 1,
         },
     },
-    image: "ext:新将包/xjb_shenshapo.png",
+    image: "ext:新将包/image/card_store/xjb_shenshapo.png",
     type: "xjb_unique",
     subtype: "xjb_unique_reusable",
     enable: true,
@@ -225,7 +225,7 @@ const xjb_seizeHpCard = CardCreater(
         }
 
     },
-    image: "ext:新将包/xjb_seizeHpCard.png",
+    image: "ext:新将包/image/card_store/xjb_seizeHpCard.png",
     translate: '体力抓取',
     description: '出牌阶段对一名手牌数小于你的其他角色使用:你与其的拼点，若你赢，你获得其一张体力牌<br>最大回收点数:1',
     ai: {
@@ -241,7 +241,7 @@ const xjb_seizeHpCard = CardCreater(
 })
 const xjb_tianming_huobi2 = CardCreater(
     "xjb_tianming_huobi2", {
-    image: "ext:新将包/xjb_tianming_huobi2.png",
+    image: "ext:新将包/image/card_store/xjb_tianming_huobi2.png",
     audio: true,
     fullskin: true,
     type: "xjb_unique",
@@ -273,7 +273,7 @@ const xjb_tianming_huobi2 = CardCreater(
 })
 const xjb_tianming_huobi1 = CardCreater(
     "xjb_tianming_huobi1", {
-    image: "ext:新将包/xjb_tianming_huobi1.png",
+    image: "ext:新将包/image/card_store/xjb_tianming_huobi1.png",
     audio: true,
     fullskin: true,
     recastable: true,
@@ -331,7 +331,7 @@ const xjb_skillCard = CardCreater(
                 },
             },
             fullskin: true,
-            image: "ext:新将包/skillCard.png"
+            image: "ext:新将包/image/card_store/skillCard.png"
         };
         if (boolean === true) {
             it.subtype = "xjb_unique_SanSkill";
@@ -363,7 +363,8 @@ const xjb_skillCard = CardCreater(
         "xjb_JudgeReversal",
         "xjb_arrangePhase",
         "xjb_seasonChange",
-        "xjb_livelyForever"
+        "xjb_livelyForever",
+        "xjb_yinyangxiangsheng"
     ],
     async content(event, trigger, player) {
         const { control } = await player.chooseControl(["输入id", "神圣技能"]).forResult();
@@ -383,11 +384,13 @@ const xjb_skillCard = CardCreater(
             const { bool, links } = await player.chooseButton(['选择一张神圣技能牌', [list, "vcard"]]).forResult();
             if (bool) {
                 event.target.gain(links[0], "gain2")
+            }else{
+                await player.gain(event.cards)
             }
         }
     },
     fullskin: true,
-    image: "ext:新将包/skillCard.png",
+    image: "ext:新将包/image/card_store/skillCard.png",
     translate: "技能卡",
     description: '出牌阶段，你可使用此牌，然后选择一项:1.输入id，获得一张对应的技能牌;2.获得一张神圣技能牌。'
 })

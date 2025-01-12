@@ -7,15 +7,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "LICENSE",
         "precontent.js",
         "README.md",
-        "skillCard.png",
-        "xin_newCharacter.jpg",
-        "xjb_Infinity.png",
-        "xjb_jingu.png",
-        "xjb_seizeHpCard.png",
-        "xjb_shenshapo.png",
-        "xjb_tianming_huobi1.png",
-        "xjb_tianming_huobi2.png",
-        "xjb_zhihuan.png"
+        "xin_newCharacter.jpg"
     ],
     "@types": [
         "Player.ts"
@@ -71,10 +63,11 @@ window["xjb_xyAPI_Directory_新将包"]={
     "lingli": [
         "blood.jpg",
         "book.jpg",
-        "check.png",
         "dragon.jpg",
         "flower.jpg",
         "gathering.jpg",
+        "lingli.png",
+        "lingli_card.png",
         "sun.jpg",
         "taoyao.jpg",
         "tear.jpg",
@@ -125,13 +118,26 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_xiugengxuzi.png",
         "xjb_zhuqiang.png"
     ],
+    "image/card_store": [
+        "check.png",
+        "skillCard.png",
+        "xjb_Infinity.png",
+        "xjb_jingu.png",
+        "xjb_seizeHpCard.png",
+        "xjb_shenshapo.png",
+        "xjb_tianming_huobi1.png",
+        "xjb_tianming_huobi2.png",
+        "xjb_zhihuan.png"
+    ],
     "image/character_dongzhou": [
         "xjb_guanyiwu.jpg",
         "xjb_jizi_shou.jpg",
         "xjb_qinshihuang.jpg",
         "xjb_qixianggong.jpg",
         "xjb_weiyigong.jpg",
-        "xjb_wuyuan.jpg"
+        "xjb_wuyuan.jpg",
+        "xjb_xianzhen.jpg",
+        "xjb_xunan.jpg"
     ],
     "image/character_soul": [
         "xjb_bat.jpg",
@@ -204,6 +210,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "ui.mjs"
     ],
     "js/lingli": [
+        "card.mjs",
         "event.mjs",
         "gSkill.mjs"
     ],

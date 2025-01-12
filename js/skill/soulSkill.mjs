@@ -243,7 +243,7 @@ const xjb_soul_chanter = SkillCreater(
         while (lib.skill['chant' + num] !== undefined) {
             num++
         }
-        game.xjb_skillEditor()
+        game.xjb_skillEditor(false);
         const touch = new TouchEvent("touchend", {
             bubbles: true,
             cancelable: true,
@@ -388,6 +388,29 @@ const xjb_soul_chanter = SkillCreater(
             player: 2,
         },
     },
+})
+const xjb_soul_miracle = SkillCreater(
+    "xjb_soul_miracle", {
+    translate: "神迹",
+    description: "限定技，出牌阶段，你可以获得一个神圣技能卡。",
+    enable: "phaseUse",
+    usable: 1,
+    limited: true,
+    async content(event, trigger, player) {
+        const list = lib.card.xjb_skillCard.SanSkill.map(id => game.xjb_createSkillCard(id))
+        const { bool, links } = await player.chooseButton(['选择一张神圣技能牌', [list, "vcard"]]).forResult();
+        if (bool) {
+            player.awakenSkill("xjb_soul_miracle");
+            await player.gain(links[0], "gain2");
+        }
+        else player.getStat().skill.xjb_soul_miracle--;
+    },
+    ai: {
+        order: 4,
+        result: {
+            player: 2,
+        },
+    }
 })
 
 

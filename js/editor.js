@@ -73,7 +73,8 @@ window.XJB_EDITOR_LIST = {
 		'你受到伤害后', '你回复体力后',
 		'回合结束时', '摸牌阶段开始时', '摸牌阶段结束时', '弃牌阶段开始时', '弃牌阶段结束时',
 		'你判定牌生效后',
-		'你于回合外失去手牌后', '你于回合外失去牌后',
+		'你失去一张手牌后', '你失去一张装备牌后', '你失去装备区的一张牌后',
+		//'你于回合外失去手牌后', '你于回合外失去牌后',
 		'你使用杀指定目标时', '你使用杀指定目标后',
 		'你成为杀的目标后', '你成为决斗的目标后',
 		'你使用杀后', '你使用决斗后', '你使用桃后'
@@ -116,7 +117,7 @@ game.xjb_judgeType = function (word) {
 		if (lib.xjb_class[k].includes(word)) return k;
 	}
 }
-game.xjb_skillEditor = function () {
+game.xjb_skillEditor = function (readCache = true) {
 	const DEFAULT_EVENT = lib.config.touchscreen ? 'touchend' : 'click';
 	const playerCN = NonameCN.playerCN;
 	const JOINED_PLAYAERCN = playerCN.join("|");
@@ -2512,10 +2513,12 @@ game.xjb_skillEditor = function () {
 	back.contentDoms = [contentContainer1, contentContainer2]
 	back.viewAsDoms = [chooseSeter]
 	back.choose = [choosePage];
-	if (lib.config.xjb_editorCache && typeof lib.config.xjb_editorCache === "object") {
+	if (lib.config.xjb_editorCache && typeof lib.config.xjb_editorCache === "object" && readCache) {
 		back.loadLastCache();
+	} else if (lib.config.xjb_editorConfig && lib.config.xjb_editorConfig.autoCache && readCache) {
+		lib.config.xjb_editorCache = true;
+		back.organize();
 	} else {
-		if (lib.config.xjb_editorConfig && lib.config.xjb_editorConfig.autoCache) lib.config.xjb_editorCache = true;
 		back.organize();
 	}
 	return back;

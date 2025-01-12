@@ -57,7 +57,6 @@ const _xjb_soul_zhizhen = SkillCreater(
     description: "出牌阶段，若你手牌中有技能卡，你可以失去一点体力，将其置于阵法区。",
     enable: "phaseUse",
     filter: function (_, player) {
-        if (!player.xjb_canUseLingli()) return false;
         if (!player.xjb_hasSkillCard()) return false;
         if (player.getHistory("custom", evt => evt.name === "xjb_addZhenFa").length) return false;
         return true;
@@ -101,7 +100,7 @@ const xjb_lingliDensity = SkillCreater(
             return player.xjb_getLingliDensity()
         },
         content: function (storage, player, skill) {
-            return `灵力密度:${player.xjb_getLingliDensity()}`
+            return `灵力密度/灵力上限:${player.xjb_getLingliDensity()}}`
         },
     },
     trigger: {
@@ -144,4 +143,8 @@ const xjb_lingliStruggle = SkillCreater(
             }
         }
     }
+})
+const xjb_lingliNature = SkillCreater(
+    "xjb_lingliNature", {
+
 })

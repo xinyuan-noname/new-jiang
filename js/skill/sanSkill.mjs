@@ -11,6 +11,14 @@ function SkillCreater(name, skill) {
     delete lib.skill[name].description;
     lib.translate[name] = skill.translate;
     lib.translate[name + "_info"] = skill.description
+    if (skill.subTrans) {
+        for (const subname in skill.subTrans) {
+            const [trans, info] = skill.subTrans[subname];
+            lib.translate[name + "_" + subname] = trans;
+            lib.translate[name + "_" + subname + "_info"] = info;
+        }
+        delete lib.translate[name].subTrans;
+    }
     return lib.skill[name];
 };
 const xjb_lunaticMasochist = SkillCreater(
@@ -27,6 +35,7 @@ const xjb_lunaticMasochist = SkillCreater(
         if (!trigger.num) trigger.num = 1
     }
 })
+
 const xjb_reviveDead = SkillCreater(
     "xjb_reviveDead", {
     translate: "起死回生",
@@ -176,7 +185,7 @@ const xjb_livelyForever = SkillCreater(
     lose: false,
     discard: false,
     usable: 1,
-    position:"he",
+    position: "he",
     content: async function (event, trigger, player) {
         const nameList = [];
         event.cards.sort((card1, card2) => get.cardNameLength(card1, false) - get.cardNameLength(card2, false));
@@ -190,5 +199,188 @@ const xjb_livelyForever = SkillCreater(
             number = parseInt(Math.random() * (num2 - num1)) + num1;
         const card = game.createCard(name, suit, number);
         player.gain(card);
+    }
+})
+
+const xjb_yinyangxiangsheng = SkillCreater(
+    "xjb_yinyangxiangsheng", {
+    translate: "阴阳相生",
+    description: "你使用一张牌后，若此牌为红色，你获得一个阳爻；若此牌为黑色，你获得一个阴爻。当你的爻能够组成：乾卦，你可以视为使用任意一张普通锦囊牌；兑卦，你重置武将牌；离卦，你对一名角色造成一点火焰伤害；震卦，你对一名角色造成一点雷电伤害；巽卦，你展示牌堆顶的一张牌，令一名角色将该此花色的牌置入弃牌堆；坎卦，你回复一点体力(未受伤改为摸两张牌)；艮卦，你获得一点护甲；坤卦，你可以视为使用一张基本牌。",
+    nobracket: true,
+    trigger: {
+        player: "useCardAfter"
+    },
+    marktext: "卦",
+    intro: {
+        name: "阴阳相生",
+        content: (storage, player, skill) => {
+            let result = "";
+            if (!storage) return result;
+            for (const yao of storage) {
+                if (yao === "yang") result += "<div class=text>—</div>";
+                else if (yao === "yin") result += "<div class=text>- -</div>";
+            }
+            return result;
+        }
+    },
+    forced: true,
+    subTrans: {
+        "qian": "乾卦",
+        "kun": "坤卦",
+        "dui": "兑卦",
+        "xun": "巽卦",
+        "gen": "艮卦",
+        "li": "离卦",
+        "zhen": "震卦",
+        "kan": "坎卦"
+    },
+    content: async function (event, trigger, player) {
+        game.broadcastAll((player, name) => {
+            if (!player.storage[name]) player.storage[name] = [];
+        }, player, "xjb_yinyangxiangsheng");
+        const card = trigger.card;
+        if (get.color(card) === "red") {
+            player.storage["xjb_yinyangxiangsheng"].push("yang");
+            player.markSkill("xjb_yinyangxiangsheng")
+        } else if (get.color(card) === "black") {
+            player.storage["xjb_yinyangxiangsheng"].push("yin")
+            player.markSkill("xjb_yinyangxiangsheng")
+        } else return;
+        if (player.storage["xjb_yinyangxiangsheng"].length < 3) return;
+        switch (player.storage["xjb_yinyangxiangsheng"].slice(0, 3).join("-")) {
+            // 乾卦 ok
+            case "yang-yang-yang": {
+                player.$skill("乾")
+                const list = [];
+                for (const name of lib.inpile) {
+                    if (get.type(name) === "trick") {
+                        list.push(["锦囊", "", name]);
+                    }
+                }
+                const { result: { bool, links } } = await player.chooseButton(["阴阳相生",
+                    [list, "vcard"]
+                ]);
+                if (!bool) return;
+                await player.chooseUseTarget({ name: links[0][2] });
+            }; break;
+            //兑卦 ok
+            case "yin-yang-yang": {
+                player.$skill("兑")
+                await player.link(false);
+                await player.turnOver(false);
+            }; break;
+            // 离卦 ok
+            case "yang-yin-yang": {
+                player.$skill("离")
+                const targets = await player.chooseTarget("选择目标对其造成一点火焰伤害").forResultTargets();
+                if (targets) await targets[0].damage(1, "fire");
+            }; break;
+            // 震卦 ok
+            case "yin-yin-yang": {
+                player.$skill("震")
+                const targets = await player.chooseTarget("选择目标对其造成一点雷电伤害").forResultTargets();
+                if (targets) await targets[0].damage(1, "thunder");
+            }; break;
+            // 艮卦 ok
+            case "yang-yin-yin": {
+                player.$skill("艮")
+                await player.changeHujia(1, "gain", true)
+            }; break;
+            // 坎卦 ok
+            case "yin-yang-yin": {
+                player.$skill("坎")
+                if (player.isHealthy()) await player.draw(2)
+                else await player.recover();
+            }; break;
+            // 巽卦 ok
+            case "yang-yang-yin": {
+                player.$skill("巽")
+                const [card] = get.cards(1, true);
+                await player.showCards([card]);
+                const targets = await player.chooseTarget(`选择目标将${get.translation(get.suit(card))}牌置入弃牌堆`).forResultTargets();
+                if (targets) {
+                    const suit = get.suit(card);
+                    const cards = targets[0].getCards("he", { suit });
+                    if (cards.length) {
+                        await targets[0].loseToDiscardpile(cards);
+                    }
+                }
+            }; break;
+            // 坤卦 ok
+            case "yin-yin-yin": {
+                player.$skill("坤")
+                const list = [];
+                for (const name of lib.inpile) {
+                    if (get.type(name) === "basic") {
+                        list.push(["基本牌", "", name]);
+                    }
+                }
+                const { result: { bool, links } } = await player.chooseButton([
+                    "阴阳相生",
+                    [list, "vcard"]
+                ]);
+                if (!bool) return;
+                player.chooseUseTarget({ name: links[0][2] }, false);
+            }; break;
+        }
+        game.broadcastAll((player, name) => {
+            player.storage[name] = [];
+            player.markSkill(name);
+        }, player, "xjb_yinyangxiangsheng");
+        for (const tag of ["qian", "kun", "dui", "xun", "kan", "li", "zhen", "gen"]) {
+            player.removeGaintag("xjb_yinyangxiangsheng_" + tag)
+        }
+    },
+    group: ["xjb_yinyangxiangsheng_prompt"],
+    subSkill: {
+        prompt: {
+            trigger: {
+                player: "chooseToUseBefore",
+            },
+            charlotte: true,
+            silent: true,
+            content: async function (event, trigger, player) {
+                game.broadcastAll((player, name) => {
+                    if (!player.storage[name]) player.storage[name] = [];
+                }, player, "xjb_yinyangxiangsheng");
+                const hs = player.getCards("h", card => {
+                    return trigger.filterCard(get.autoViewAs(card), player, event) && get.color(card, player) !== "none";
+                });
+                if (!player.storage.xjb_yinyangxiangsheng.length) return;
+                for (const card of hs) {
+                    switch (player.storage.xjb_yinyangxiangsheng.join("-")) {
+                        case "yang-yang": {
+                            //ok yang-yang-yang
+                            if (get.color(card) === "red") player.addGaintag(card, "xjb_yinyangxiangsheng_qian");
+                            //yang-yang-yin
+                            else if (get.color(card) === "black") player.addGaintag(card, "xjb_yinyangxiangsheng_xun");
+                        }; break;
+                        case "yang-yin": {
+                            //ok yang-yin-yang
+                            if (get.color(card) === "red") player.addGaintag(card, "xjb_yinyangxiangsheng_li");
+                            //yang-yin-yin
+                            else if (get.color(card) === "black") player.addGaintag(card, "xjb_yinyangxiangsheng_gen");
+                        }; break;
+                        case "yin-yang": {
+                            //ok yin-yang-yang
+                            if (get.color(card) === "red") player.addGaintag(card, "xjb_yinyangxiangsheng_dui");
+                            //ok yin-yang-yin
+                            else if (get.color(card) === "black") player.addGaintag(card, "xjb_yinyangxiangsheng_kan");
+                        }; break;
+                        case "yin-yin": {
+                            //yin-yin-yang
+                            if (get.color(card) === "red") player.addGaintag(card, "xjb_yinyangxiangsheng_zhen");
+                            //ok yin-yin-yin
+                            else if (get.color(card) === "black") player.addGaintag(card, "xjb_yinyangxiangsheng_kun");
+                        }; break;
+                    }
+                }
+                player.when({ player: "phaseAfter" }).then(() => {
+                    for (const tag of ["qian", "kun", "dui", "xun", "kan", "li", "zhen", "gen"]) {
+                        player.removeGaintag("xjb_yinyangxiangsheng_" + tag)
+                    }
+                });
+            },
+        }
     }
 })

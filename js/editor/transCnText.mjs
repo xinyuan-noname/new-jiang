@@ -160,7 +160,7 @@ export class TransCnText {
             return TransCnText.translateTri(word.replace(/(开始)[前时]/, "$1"));
         }
         if (/(结束)[时后]/.test(word)) {
-            return TransCnText.translateTri(word.replace(/(结束)[前后]/, "$1"));
+            return TransCnText.translateTri(word.replace(/(结束)[时后]/, "$1"));
         }
         if (/(结算完成|完成结算)[时后]/.test(word)) {
             return TransCnText.translateTri(word.replace(/(结算完成|完成结算)[前时]/, "$1"));
