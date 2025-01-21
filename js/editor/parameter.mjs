@@ -143,7 +143,7 @@ export const EditorParameterList = {
             args: [
                 { cn: "不是被自己弃置的牌", value: "notBySelf", type: "string" },
                 { cn: "插入到弃牌堆中(影响顺序)", value: "insert", type: "string" },
-                { cn: "事件是否可见", value: "blank", type: "string" }
+                { cn: "牌背面朝上", value: "blank", type: "string" }
             ]
         }
     ],

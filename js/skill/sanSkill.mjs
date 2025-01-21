@@ -17,7 +17,7 @@ function SkillCreater(name, skill) {
             lib.translate[name + "_" + subname] = trans;
             lib.translate[name + "_" + subname + "_info"] = info;
         }
-        delete lib.translate[name].subTrans;
+        delete lib.skill[name].subTrans;
     }
     return lib.skill[name];
 };
@@ -207,32 +207,26 @@ const xjb_yinyangxiangsheng = SkillCreater(
     translate: "阴阳相生",
     description: "你使用一张牌后，若此牌为红色，你获得一个阳爻；若此牌为黑色，你获得一个阴爻。当你的爻能够组成：乾卦，你可以视为使用任意一张普通锦囊牌；兑卦，你重置武将牌；离卦，你对一名角色造成一点火焰伤害；震卦，你对一名角色造成一点雷电伤害；巽卦，你展示牌堆顶的一张牌，令一名角色将该此花色的牌置入弃牌堆；坎卦，你回复一点体力(未受伤改为摸两张牌)；艮卦，你获得一点护甲；坤卦，你可以视为使用一张基本牌。",
     nobracket: true,
+    markimage: true,
     trigger: {
         player: "useCardAfter"
     },
-    marktext: "卦",
+    markimage: "extension/新将包/image/@bagua/none.jpg",
     intro: {
         name: "阴阳相生",
         content: (storage, player, skill) => {
-            let result = "";
-            if (!storage) return result;
-            for (const yao of storage) {
-                if (yao === "yang") result += "<div class=text>—</div>";
-                else if (yao === "yin") result += "<div class=text>- -</div>";
-            }
-            return result;
         }
     },
     forced: true,
     subTrans: {
-        "qian": "乾卦",
-        "kun": "坤卦",
-        "dui": "兑卦",
-        "xun": "巽卦",
-        "gen": "艮卦",
-        "li": "离卦",
-        "zhen": "震卦",
-        "kan": "坎卦"
+        "qian": "乾",
+        "kun": "坤",
+        "dui": "兑",
+        "xun": "巽",
+        "gen": "艮",
+        "li": "离",
+        "zhen": "震",
+        "kan": "坎"
     },
     content: async function (event, trigger, player) {
         game.broadcastAll((player, name) => {
@@ -246,8 +240,10 @@ const xjb_yinyangxiangsheng = SkillCreater(
             player.storage["xjb_yinyangxiangsheng"].push("yin")
             player.markSkill("xjb_yinyangxiangsheng")
         } else return;
+        const gua = player.storage["xjb_yinyangxiangsheng"].slice(0, 3).join("-");
+        player.marks.xjb_yinyangxiangsheng.style.backgroundImage = `url("extension/新将包/image/@bagua/${gua}.jpg")`;
         if (player.storage["xjb_yinyangxiangsheng"].length < 3) return;
-        switch (player.storage["xjb_yinyangxiangsheng"].slice(0, 3).join("-")) {
+        switch (gua) {
             // 乾卦 ok
             case "yang-yang-yang": {
                 player.$skill("乾")
@@ -312,7 +308,12 @@ const xjb_yinyangxiangsheng = SkillCreater(
                 const list = [];
                 for (const name of lib.inpile) {
                     if (get.type(name) === "basic") {
-                        list.push(["基本牌", "", name]);
+                        if (get.type(name) === "sha") {
+                            for (const nature of lib.inpile_nature) {
+                                list.push(["基本", "", name, nature]);
+                            }
+                        }
+                        list.push(["基本", "", name]);
                     }
                 }
                 const { result: { bool, links } } = await player.chooseButton([
@@ -320,12 +321,13 @@ const xjb_yinyangxiangsheng = SkillCreater(
                     [list, "vcard"]
                 ]);
                 if (!bool) return;
-                player.chooseUseTarget({ name: links[0][2] }, false);
+                player.chooseUseTarget({ name: links[0][2], nature: links[0][3] }, false);
             }; break;
         }
         game.broadcastAll((player, name) => {
             player.storage[name] = [];
             player.markSkill(name);
+            player.marks.xjb_yinyangxiangsheng.style.backgroundImage = `url("extension/新将包/image/@bagua/none.jpg")`;
         }, player, "xjb_yinyangxiangsheng");
         for (const tag of ["qian", "kun", "dui", "xun", "kan", "li", "zhen", "gen"]) {
             player.removeGaintag("xjb_yinyangxiangsheng_" + tag)

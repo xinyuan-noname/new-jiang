@@ -27,7 +27,7 @@ export function disposeTri(str, number, directory = NonameCN.TriList) {
 }
 const matchNotObjColon = /(?<!\{[ \w"']+):(?![ \w"']+\})/;
 const matchFromTo = /^([bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)到([bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)[张名点枚]$/
-const matchTriKeywords = /火属性|雷属性|冰属性|神属性|梅花|方片|黑桃|红桃|红色|黑色|基本|装备(?!区)|普通锦囊|非延时锦囊|延时锦囊|点数为(?:11|12|13|[AJQK1-9])|一张/
+const matchTriKeywords = /火属性|雷属性|冰属性|神属性|梅花|方片|黑桃|红桃|红色|黑色|基本|装备(?!区)|普通锦囊|非延时锦囊|延时锦囊|点数为(?:11|12|13|[AJQK1-9])|一张|一点/
 const vCardObject = NonameCN.getVirtualCard();
 const player = NonameCN.getVirtualPlayer();
 const vPlayers = NonameCN.getVirtualPlayers();

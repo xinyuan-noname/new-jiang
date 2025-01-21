@@ -7,6 +7,7 @@ const number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 const type = ["basic", "equip", "trick", "delay"];
 const subtype = ["equip1", "equip2", "equip3", "equip4", "equip5"];
 const position = "hejxs"
+const testLoseRegExp = /^lose(?!Hp)/
 export class EditorDataAnalyze {
     static select(line) {
         let result = line, ok = false;
@@ -132,7 +133,7 @@ export class EditorDataAnalyze {
             })
         }
         const triLength = result.player.length + result.target.length + result.global.length + result.source.length;
-        const loseEvts = [...result.player, ...result.target, ...result.global, ...result.source].filter(triName => triName.includes("lose"));
+        const loseEvts = [...result.player, ...result.target, ...result.global, ...result.source].filter(triName => testLoseRegExp.test(triName));
         return [result, triFilterMap, triLength, loseEvts, getIndexMap]
     };
     static triLimitUrl(search) {

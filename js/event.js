@@ -407,7 +407,7 @@ const xjb_event = {
             }
         },
     },
-    xjb_chooseLoseHpMaxHp: {
+    "xjb_chooseLoseHpMaxHp": {
         player: function () {
             let next = game.createEvent('xjb_chooseLoseHpMaxHp', false);
             next.player = this;
@@ -484,7 +484,7 @@ const xjb_event = {
             }
             event.result = result;
         },
-    }
+    },
 }
 for (const event in xjb_event) {
     lib.element.player[event] = xjb_event[event].player;

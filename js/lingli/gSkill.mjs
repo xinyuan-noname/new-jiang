@@ -11,6 +11,14 @@ function SkillCreater(name, skill) {
     delete lib.skill[name].description;
     lib.translate[name] = skill.translate;
     lib.translate[name + "_info"] = skill.description
+    if (skill.subTrans) {
+        for (const subname in skill.subTrans) {
+            const [trans, info] = skill.subTrans[subname];
+            lib.translate[name + "_" + subname] = trans;
+            lib.translate[name + "_" + subname + "_info"] = info;
+        }
+        delete lib.skill[name].subTrans;
+    }
     return lib.skill[name];
 };
 
@@ -91,16 +99,17 @@ const _xjb_zhenfa = SkillCreater(
         if (player.countExpansions("_xjb_zhenfa") > 3) player.xjb_discardZhenfaCard(1);
     },
 })
+
 const xjb_lingliDensity = SkillCreater(
     "xjb_lingliDensity", {
-    markimage: lib.xjb_src + "lingli/lingli.png",
+    markimage: "extension/新将包/lingli/lingli.png",
     intro: {
         name: "灵力",
         markcount(storage, player, string) {
             return player.xjb_getLingliDensity()
         },
         content: function (storage, player, skill) {
-            return `灵力密度/灵力上限:${player.xjb_getLingliDensity()}}`
+            return `灵力上限:${player.xjb_getLingliDensity()}`
         },
     },
     trigger: {
@@ -146,5 +155,43 @@ const xjb_lingliStruggle = SkillCreater(
 })
 const xjb_lingliNature = SkillCreater(
     "xjb_lingliNature", {
-
+    trigger: {
+        player: "xjb_addLingliAfter"
+    },
+    subTrans: {
+        duanti: ["锻体",],
+    },
+    charlotte: true,
+    forced: true,
+    filter: (event, player) => {
+        return !player.storage.xjb_lingliNature || player.storage.xjb_lingliNature.length === 0;
+    },
+    content: async function (event, trigger, player) {
+        const [lingliNature] = await player.chooseButton([
+            "灵力属性",
+            [
+                ["xjb_lingliNature_duanti"],
+                "blank"
+            ]
+        ], true).set("prompt", "选择一个灵力属性获得之").forResultLinks();
+        player.markAuto("xjb_lingliNature", lingliNature);
+        if (player == game.me) {
+            event.dialog = ui.create.dialog("选择的灵力属性", get.translation(lingliNature));
+            if (event.isMine()) {
+                ui.create.confirm("o");
+                game.countChoose();
+                await game.pause();
+            } else {
+                setTimeout(function () {
+                    event.dialog.close();
+                }, 2 * lib.config.duration);
+                await game.delayx(2);
+            }
+        } else if (event.isOnline()) {
+            event.send();
+        }
+        _status.imchoosing = false;
+        if (event.dialog) event.dialog.close();
+        player.markAuto("xjb_lingliNature", lingliNature);
+    }
 })

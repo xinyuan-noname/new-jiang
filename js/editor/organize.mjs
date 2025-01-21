@@ -120,6 +120,8 @@ const testSentenceIsOk = (str) => {
     }
     return true;
 }
+
+const testLoseRegExp = /^lose(?!Hp)/
 export class EditorOrganize {
     static opening(back) {
         let result = '';
@@ -240,9 +242,9 @@ export class EditorOrganize {
         const { player, global, target, source } = getIndex;
         if (player.length + global.length + target.length + source.length === 0) return '';
         result += `getIndex:function(event,player,triggername){\n`;
-        outer:for (const triType in getIndex) {
+        outer: for (const triType in getIndex) {
             for (const triName of getIndex[triType]) {
-                if (triName.includes("lose")) {
+                if (testLoseRegExp.test(triName)) {
                     const who = triType === "global" ? "event.giver || event.player" : "player"
                     for (const triType in triggerFilter) {
                         for (const [_, search] of Object.entries(triggerFilter[triType])) {
@@ -500,8 +502,8 @@ export class EditorOrganize {
         const { id, type, uniqueList, trigger, filter,
             variableArea_filter, filter_ignoreIndex,
             mod, triggerFilter, triLength } = back.skill;
-        const triLose_player = trigger.player.filter(triName => triName.includes("lose"));
-        const triLose_global = trigger.global.filter(triName => triName.includes("lose"));
+        const triLose_player = trigger.player.filter(triName => testLoseRegExp.test(triName));
+        const triLose_global = trigger.global.filter(triName => testLoseRegExp.test(triName));
         const boolZhuSkill = type.includes("zhuSkill");
         const boolGroupSkill = type.includes("groupSkill");
         const boolLose = triLose_global.length + triLose_player.length > 0;

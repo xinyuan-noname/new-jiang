@@ -61,18 +61,11 @@ window["xjb_xyAPI_Directory_新将包"]={
         "1.json"
     ],
     "lingli": [
-        "blood.jpg",
         "book.jpg",
-        "dragon.jpg",
-        "flower.jpg",
         "gathering.jpg",
         "lingli.png",
         "lingli_card.png",
-        "sun.jpg",
-        "taoyao.jpg",
-        "tear.jpg",
-        "timer.jpg",
-        "xuemo.jpg"
+        "timer.jpg"
     ],
     "log": [
         "empty.text",
@@ -99,6 +92,23 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_yin1.png",
         "xjb_yin2.png",
         "xjb_yin3.png"
+    ],
+    "image/@bagua": [
+        "none.jpg",
+        "yang-yang-yang.jpg",
+        "yang-yang-yin.jpg",
+        "yang-yang.jpg",
+        "yang-yin-yang.jpg",
+        "yang-yin-yin.jpg",
+        "yang-yin.jpg",
+        "yang.jpg",
+        "yin-yang-yang.jpg",
+        "yin-yang-yin.jpg",
+        "yin-yang.jpg",
+        "yin-yin-yang.jpg",
+        "yin-yin-yin.jpg",
+        "yin-yin.jpg",
+        "yin.jpg"
     ],
     "image/card_callFellow": [
         "xjb_baiyin.png",
@@ -234,6 +244,15 @@ window["xjb_xyAPI_Directory_新将包"]={
         "math.js",
         "string.js",
         "ui.js"
+    ],
+    "lingli/daomo": [
+        "blood.jpg",
+        "dragon.jpg",
+        "flower.jpg",
+        "sun.jpg",
+        "taoyao.jpg",
+        "tear.jpg",
+        "xuemo.jpg"
     ],
     "skin/image": [],
     "skin/image/xjb_jizi_shou": [
