@@ -7,7 +7,9 @@ import {
     _status
 } from "../../../../noname.js";
 import { moveWordToEnd } from "../tool/string.js";
-import { textareaTool } from "../tool/ui.js";
+import { NonameCN } from "./nonameCN.js";
+const JOINED_PLAYAERCN = NonameCN.playerCN.join("|");
+const JOINED_EVENT = NonameCN.eventRegExpStr.join("|");
 export class EditorArrange {
     static transCnCalculation(that) {
         for (let i = 10; i > 0; i--) {
@@ -91,5 +93,33 @@ export class EditorArrange {
             .replace(/的三分之一/g, ' 除以 3')
             .replace(/的四分之一/g, ' 除以 4')
             .replace(/的八分之一/g, ' 除以 8')
+    }
+    static standardEffect1(that) {
+        that.value = that.value
+            .replace(/可以(失去.+?点体力|受到.+?点伤害|摸.+?张牌)/g, '$1')
+            .replace(new RegExp(`^(${JOINED_PLAYAERCN})(${JOINED_EVENT})并(${JOINED_EVENT})$`, 'img'), '$1 $2\n$1 $3')
+            console.log(new RegExp(`^(${JOINED_PLAYAERCN})(${JOINED_EVENT})并(${JOINED_EVENT})$`, 'img'))
+        that.value = that.value
+            .replace(/额外执行一个/g, "执行一个额外的")
+            .replace(/获得(此牌|cards|card)$/mg, "获得牌 $1")
+            .replace(/受到(.*?)无来源的?(.*?)伤害/g, '受到$1$2伤害 无来源')
+            .replace(/(.+?)对(.+?)造成(.*?)点(火属性|雷属性|冰属性)?伤害/g, '$2 受到伤害 $1 $3点 $4')
+            .replace(/(.+?)\s*(可以)?获得(你|伤害来源|当前回合角色)(.*?)张(手牌|牌)/g, function (match, ...p) {
+                return match.replace("可以", "").replace("获得", "获得角色")
+            })
+            .replace(/(?<=随机)弃(?!置)/g, '弃置')
+            .replace(/(将体力值回复至)([0-9a-z])(?!点)/g, "$1$2点")
+            .replace(/(你使用)?此牌(不可|无法)被(闪避|响应)/g, "不可响应牌的角色 添多 此牌的目标组")
+            .replace(/(你使用)?此牌(不可|无法)被(.+?)(闪避|响应)/g, "不可响应牌的角色 添单 $3")
+            .replace(/(你使用)?此牌无视(.+?)的?防具/g, "$2 本回合被破甲\n无视$2防具的牌 添单 此牌")
+            .replace(/^此牌取消(.+?)为目标$/mg, '此牌的目标组 移除 $1\n此牌的已触发的目标组 移除 $1')
+            .replace(/你?令?此牌对(你)无效/g, "无效的角色 添单 $1")
+            .replace(/^(.+?)视为对(.+?)使用(.+?)张(不可被无懈可击响应)?[的、]?(不计入次数)?[的、]?(不影响ai)?的?(.+?)$/mg, '$1 视为使用$7 $2 $3张 $4 $5 $6')
+            .replace(/(?<=弃置区域内)(?=所有牌)/g, '的')
+            .replace(/(.+?)防止触发事件$/g, '触发事件 取消')
+            .replace(/(.+?)展示牌堆顶的?(.+?张)牌(\(放回\))?$/g, "event.topCards = 获取 牌堆顶牌组$3 $2\n$1 展示牌 event.topCards")
+            .replace(/(.+?)展示牌堆底的?(.+?张)牌(\(放回\))?$/g, "event.bottomCards = 获取 牌堆底牌组$3 $2\n $1 展示牌 event.bottomCards")
+            .replace(/(使用|打出)(杀|闪|桃|酒|无懈可击)次数/g, "$1的$2次数")
+            .replace(/(?<!不能使用|不能打出)(?<=使用|打出)(?=(杀|闪|桃|酒|无懈可击)[ ]*$)/mg, " ")
     }
 }

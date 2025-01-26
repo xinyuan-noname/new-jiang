@@ -363,7 +363,8 @@ export class NonameCN {
     static playerCN = [
         "你", "玩家",
         "当前回合角色",
-        ...new Array(10).fill('所选角色').map((item, index) => '第' + get.cnNumber(index) + '个' + item),
+        // ...new Array(10).fill('所选角色').map((item, index) => '第' + get.cnNumber(index) + '个' + item),
+        '第零个所选角色', '第一个所选角色', '第两个所选角色', '第三个所选角色', '第四个所选角色', '第五个所选角色', '第六个所选角色', '第七个所选角色', '第八个所选角色', '第九个所选角色',
         "所选角色",
         "所有角色",
         "伤害来源", "受伤角色",
@@ -372,7 +373,8 @@ export class NonameCN {
         "触发事件的目标",
         "事件的目标组",
         "事件的目标",
-        ...new Array(10).fill('目标组-').map((item, index) => item + index),
+        // ...new Array(10).fill('目标组-').map((item, index) => item + index),
+        '目标组-0', '目标组-1', '目标组-2', '目标组-3', '目标组-4', '目标组-5', '目标组-6', '目标组-7', '目标组-8', '目标组-9',
         "目标组",
         "目标"
     ]
@@ -500,6 +502,7 @@ export class NonameCN {
         //
         '游戏': 'game',
         '轮数': 'roundNumber',
+        '游戏轮数': "game.roundNumber",
         //颜色和花色
         '红色': '"red"',
         '黑色': '"black"',
@@ -2375,6 +2378,23 @@ export class NonameCN {
             })
         }
     }
+    static eventRegExpStr = [
+        '翻面',
+        '横置或重置',
+        //
+        '(?:从牌堆底)?摸(?:\d+|[一二两三四五六七八九十]+|[a-z]+)张牌',
+        '将手牌摸至(?:\d+|[一二两三四五六七八九十]+|[a-z]+)张',
+        //
+        '回复(?:\d+|[一二两三四五六七八九十]+|[a-z]+)点体力',
+        '将体力回复至(?:\d+|[一二两三四五六七八九十]+|[a-z]+)点',
+        '失去(?:\d+|[一二两三四五六七八九十]+|[a-z]+)点体力',
+        //
+        '失去(?:\d+|[一二两三四五六七八九十]+|[a-z]+)点体力上限',
+        '(?:增加|获得)(?:\d+|[一二两三四五六七八九十]+|[a-z]+)点体力上限',
+        //
+        '受到(?:\d+|[一二两三四五六七八九十]+|[a-z]+)点(?:火属性|雷属性|冰属性)伤害',
+        '对.+?造成(?:\d+|[一二两三四五六七八九十]+|[a-z]+)点(?:火属性|雷属性|冰属性)伤害',
+    ]
     static get AllList() {
         let list = Object.assign({}, NonameCN.basicList, ...Object.values(NonameCN.groupedList));
         return list
@@ -2639,8 +2659,6 @@ export class NonameCN {
             '你进入濒死状态时': '你进入濒死状态时(濒死类)',
             '你脱离濒死状态时': "你脱离濒死状态时(濒死类)",
             "你杀死一名角色后": "你杀死一名角色后(死亡类)",
-
-
         },
         filterTarget: {
             "其他角色": "其他角色"
@@ -2745,38 +2763,10 @@ export class NonameCN {
     static standardShort(that) {
         textareaTool().setTarget(that)
             .replace(/若(你|游戏)/g, "如果 $1")
-            .replace(/游戏轮数/g, '游戏 轮数')
             .replace(/(其他|其它)+/g, "其他")
             .replace(/体力(?!上限|值)/g, '体力值')
             .replace(/区域(里|内)的?/g, "区域内")
             .replace(/然后/g, '\n')
-    }
-    static standardEffectBefore(that) {
-        textareaTool().setTarget(that)
-            .replace(/额外执行一个/g, "执行一个额外的")
-            .replace(/获得(此牌|cards|card)$/mg, "获得牌 $1")
-            .replace(/可以(失去.+?点体力|受到.+?点伤害|摸.+?张牌)/g, function (match, ...p) {
-                return match.replace("可以", "")
-            })
-            .replace(/受到(.*?)无来源的?(.*?)伤害/g, '受到$1$2伤害 无来源')
-            .replace(/(.+?)对(.+?)造成(.*?)点(火属性|雷属性|冰属性)?伤害/g, '$2 受到伤害 $1 $3点 $4')
-            .replace(/(.+?)\s*(可以)?获得(你|伤害来源|当前回合角色)(.*?)张(手牌|牌)/g, function (match, ...p) {
-                return match.replace("可以", "").replace("获得", "获得角色")
-            })
-            .replace(/(?<=随机)弃(?!置)/g, '弃置')
-            .replace(/(将体力值回复至)([0-9a-z])(?!点)/g, "$1$2点")
-            .replace(/(你使用)?此牌(不可|无法)被(闪避|响应)/g, "不可响应牌的角色 添多 此牌的目标组")
-            .replace(/(你使用)?此牌(不可|无法)被(.+?)(闪避|响应)/g, "不可响应牌的角色 添单 $3")
-            .replace(/(你使用)?此牌无视(.+?)的?防具/g, "$2 本回合被破甲\n无视$2防具的牌 添单 此牌")
-            .replace(/^此牌取消(.+?)为目标$/mg, '此牌的目标组 移除 $1\n此牌的已触发的目标组 移除 $1')
-            .replace(/你?令?此牌对(你)无效/g, "无效的角色 添单 $1")
-            .replace(/^(.+?)视为对(.+?)使用(.+?)张(不可被无懈可击响应)?[的、]?(不计入次数)?[的、]?(不影响ai)?的?(.+?)$/mg, '$1 视为使用$7 $2 $3张 $4 $5 $6')
-            .replace(/(?<=弃置区域内)(?=所有牌)/g, '的')
-            .replace(/(.+?)防止触发事件$/g, '触发事件 取消')
-            .replace(/(使用|打出)(杀|闪|桃|酒|无懈可击)次数/g, "$1的$2次数")
-            .replace(/(?<!不能使用|不能打出)(?<=使用|打出)(?=(杀|闪|桃|酒|无懈可击)[ ]*$)/mg, " ")
-            .replace(/(.+?)展示牌堆顶的?(.+?张)牌(\(放回\))?$/g, "event.topCards = 获取 牌堆顶牌组$3 $2\n$1 展示牌 event.topCards")
-            .replace(/(.+?)展示牌堆底的?(.+?张)牌(\(放回\))?$/g, "event.bottomCards = 获取 牌堆底牌组$3 $2\n $1 展示牌 event.bottomCards")
     }
     static standardEeffectMid(that) {
         textareaTool().setTarget(that)

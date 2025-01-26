@@ -308,7 +308,7 @@ const xjb_yinyangxiangsheng = SkillCreater(
                 const list = [];
                 for (const name of lib.inpile) {
                     if (get.type(name) === "basic") {
-                        if (get.type(name) === "sha") {
+                        if (name === "sha") {
                             for (const nature of lib.inpile_nature) {
                                 list.push(["基本", "", name, nature]);
                             }

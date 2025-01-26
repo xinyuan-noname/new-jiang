@@ -57,6 +57,7 @@ window.XJB_EDITOR_LIST = {
 		"你性别不同于触发事件的角色",
 	],
 	effect: [
+		'你翻面并摸四张牌',
 		'你可以摸三张牌或回复一点体力值',
 		'你可以摸两张牌', '你回复一点体力', '你获得一点护甲',
 		'你移动场上一张牌', '你失去一点体力', '你随机弃置两张牌',
@@ -64,7 +65,6 @@ window.XJB_EDITOR_LIST = {
 		'所有角色随机弃置两张牌',
 		'你摸一张牌\n如果\n游戏轮数小于3\n那么\n你再摸一张牌',
 		'你令一名其他角色摸两张牌', '你令一名其他角色回复一点体力',
-		'继承niepan\n', '继承xunxun\n',
 		'继承kurou\n', '继承chengxiang\n',
 		"继承luoshen\n"
 	],
@@ -668,6 +668,7 @@ game.xjb_skillEditor = function (readCache = true) {
 	}
 
 	close.addEventListener(DEFAULT_EVENT, () => {
+		if (!readCache) return;
 		if (lib.config.xjb_editorCache && (typeof lib.config.xjb_editorCache === "object" || lib.config.xjb_editorCache === true)) {
 			back.storeCache();
 		}
@@ -1530,12 +1531,12 @@ game.xjb_skillEditor = function (readCache = true) {
 			return "-&".repeat(6)
 		})
 		//
-		that.changeWord(/【([\u4e00-\u9fa5]+)】/g, '$1')
-		NonameCN.standardShort(that)
-		EditorArrange.standardBoolExp(that)
-		NonameCN.standardModBefore(that)
-		NonameCN.standardEffectBefore(that)
-		NonameCN.underlieVariable(that)
+		that.changeWord(/【([\u4e00-\u9fa5]+)】/g, '$1');
+		NonameCN.standardShort(that);
+		EditorArrange.standardBoolExp(that);
+		NonameCN.standardModBefore(that);
+		EditorArrange.standardEffect1(that);
+		NonameCN.underlieVariable(that);
 		//处理player相关字符
 		that.changeWord(new RegExp(`由(${JOINED_PLAYAERCN})造成的`, 'g'), `$1`);
 		that.changeWord(new RegExp(`对(${JOINED_PLAYAERCN})造成伤害的牌`, 'g'), "造成伤害的牌");
@@ -1551,17 +1552,11 @@ game.xjb_skillEditor = function (readCache = true) {
 		that.changeWord(/(至少)+/g, "至少");
 		that.changeWord(/(其他|其它)+/g, "其他");
 		that.changeWord(/(可以)+/g, "可以");
-		//数字有关处理
-		that.changeWord(/二(名|点)/g, '两$1');
-		for (let i = 1; i <= 10; i++) {
-			that.changeWord(new RegExp("任意" + i + '张', 'g'), i + '张');
-			that.changeWord(new RegExp("任意" + get.cnNumber(i) + '张', 'g'), get.cnNumber(i) + '张');
-			that.changeWord(new RegExp("任意" + i + '名', 'g'), get.cnNumber(i) + '名');
-			that.changeWord(new RegExp("任意" + get.cnNumber(i) + '名', 'g'), get.cnNumber(i) + '名');
-		}
+		//数字参数处理
+		that.changeWord(/任意(\d+|[一二两三四五六七八九十]+)张/g, '$1张');
+		that.changeWord(/任意(\d+|[一二两三四五六七八九十]+)名/g, '$1名');
 		that.changeWord(/可?以?令(至多|至少)?((?:[一两二三四五六七八九十]+|\d+)到(?:[一两二三四五六七八九十]+|\d+)|\d+|[一两二三四五六七八九十]+)名(其他)?角色(.*)$/mg, "选择$1$2名$3角色\n新步骤\n如果\n有选择结果\n那么\n分支开始\n所选角色$4\n分支结束")
 		that.changeWord(/可?以?令任意名(其他)?角色(.*)$/mg, "选择任意名$1角色\n新步骤\n如果\n有选择结果\n那么\n分支开始\n所选角色$2\n分支结束");
-		//数字参数处理
 		EditorArrange.makeNumToEnd(that);
 		//统一写法
 		EditorArrange.transCnCalculation(that);

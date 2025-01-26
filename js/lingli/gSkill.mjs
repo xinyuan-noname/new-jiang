@@ -159,7 +159,7 @@ const xjb_lingliNature = SkillCreater(
         player: "xjb_addLingliAfter"
     },
     subTrans: {
-        duanti: ["锻体",],
+        duanti: ["锻体"],
     },
     charlotte: true,
     forced: true,
@@ -170,13 +170,13 @@ const xjb_lingliNature = SkillCreater(
         const [lingliNature] = await player.chooseButton([
             "灵力属性",
             [
-                ["xjb_lingliNature_duanti"],
+                ["duanti"],
                 "blank"
             ]
         ], true).set("prompt", "选择一个灵力属性获得之").forResultLinks();
-        player.markAuto("xjb_lingliNature", lingliNature);
+        const natureSkill = "xjb_lingliNature_" + lingliNature
         if (player == game.me) {
-            event.dialog = ui.create.dialog("选择的灵力属性", get.translation(lingliNature));
+            event.dialog = ui.create.dialog("选择的灵力属性", get.translation(natureSkill));
             if (event.isMine()) {
                 ui.create.confirm("o");
                 game.countChoose();
@@ -192,6 +192,91 @@ const xjb_lingliNature = SkillCreater(
         }
         _status.imchoosing = false;
         if (event.dialog) event.dialog.close();
-        player.markAuto("xjb_lingliNature", lingliNature);
+        player.markAuto("xjb_lingliNature", natureSkill);
+        game.addGlobalSkill(natureSkill);
+        switch (lingliNature) {
+            case "duanti": {
+                game.addGlobalSkill("xjb_lingliNature_duanti2");
+            }; break;
+        }
+    },
+    subSkill: {
+        duanti: {
+            enable: "phaseUse",
+            filter: (event, player) => {
+                if (!player.storage.xjb_lingliNature || !player.storage.xjb_lingliNature.includes("xjb_lingliNature_duanti")) return false;
+                const lev = get.info("xjb_lingliNature_duanti").changeExpToLevel(player);
+                if (player.xjb_countLingli() >= 1 && player.maxHp < lev) return true;
+                if (player.xjb_countLingli() >= 2 && player.hujia < lev && player.hujia < 5) return true;
+                if (player.xjb_countLingli() >= 3 && player.hp < lev && player.isDamaged()) return true;
+            },
+            changeExpToLevel: (player) => {
+                if (!player.storage.xjb_lingliNature_duanti) return 1;
+                return Math.floor((player.storage.xjb_lingliNature_duanti ** (1 / 2)) / 2) + 1;
+            },
+            filterCard: (card, player) => {
+                return player.xjb_getLingli("positive").includes(card);
+            },
+            selectCard: () => {
+                const player = _status.event.player;
+                const lev = get.info("xjb_lingliNature_duanti").changeExpToLevel(player);
+                const data = [];
+                if (player.maxHp < lev) data.push(1);
+                if (player.hujia < lev && player.hujia < 5) data.push(2);
+                if (player.hp < lev && player.isDamaged()) data.push(3);
+                if (!data.length) return 0;
+                return [Math.min(...data), Math.max(...data)];
+            },
+            prompt: () => {
+                let result = '';
+                const player = _status.event.player;
+                const lev = get.info("xjb_lingliNature_duanti").changeExpToLevel(player);
+                if (player.xjb_countLingli() >= 1 && player.maxHp < lev) result += '失去一点灵力，增加一点体力上限</br>';
+                if (player.xjb_countLingli() >= 2 && player.hujia < lev) result += '失去两点灵力，获得一点护甲</br>';
+                if (player.xjb_countLingli() >= 3 && player.hp < lev && player.isDamaged()) result += '失去三点灵力，回复一点体力';
+                return result;
+            },
+            position: "s",
+            discard: false,
+            lose: false,
+            delay: false,
+            content: async function (event, trigger, player) {
+                if (!player.storage.xjb_lingliNature_duanti) player.storage.xjb_lingliNature_duanti = 0;
+                player.storage.xjb_lingliNature_duanti += event.cards.length;
+                const lv = get.info("xjb_lingliNature_duanti").changeExpToLevel(player);
+                player.addTip("xjb_lingliNature_duanti", `锻体Lv${lv}(${player.storage.xjb_lingliNature_duanti}/${(lv * 2) ** 2})`);
+                await player.xjb_loseLingli(event.cards.length);
+                switch (event.cards.length) {
+                    case 1: {
+                        await player.gainMaxHp();
+                    }; break;
+                    case 2: {
+                        await player.changeHujia();
+                    }; break;
+                    case 3: {
+                        await player.recover();
+                    }; break;
+                };
+            }
+        },
+        duanti2: {
+            trigger: {
+                player: ["damageAfter", "loseHpAfter"]
+            },
+            forced: true,
+            direct: true,
+            filter: (event, player, name) => {
+                if (!player.storage.xjb_lingliNature || !player.storage.xjb_lingliNature.includes("xjb_lingliNature_duanti")) return false;
+                if (name === "changeHujiaAfter" && event.num >= 0) return false;
+                return true;
+            },
+            content: async function (event, trigger, player) {
+                if (!player.storage.xjb_lingliNature_duanti) player.storage.xjb_lingliNature_duanti = 0;
+                player.storage.xjb_lingliNature_duanti += Math.abs(trigger.num);
+                const lv = get.info("xjb_lingliNature_duanti").changeExpToLevel(player);
+                player.addTip("xjb_lingliNature_duanti", `锻体Lv${lv}(${player.storage.xjb_lingliNature_duanti}/${(lv * 2) ** 2})`);
+                await player.xjb_addLingli(trigger.num);
+            }
+        }
     }
 })

@@ -662,7 +662,7 @@ const xjb_xiaojian = SkillCreater(
 const xjb_guizhan = SkillCreater(
 	"xjb_guizhan", {
 	translate: "诡战",
-	description: "出牌阶段限X次，你可以选择任意张牌和等量名角色，你声明一张基本牌或普通锦囊牌，视为对这些角色使用之，此牌不可被响应。(X为本回合进入过濒死状态的角色数+1)。",
+	description: "出牌阶段限X次，你可以选择任意张牌和等量名角色，你声明一张基本牌或普通锦囊牌，视为对这些角色使用之，若这些牌颜色相同，此牌不可被响应。(X为本回合进入过濒死状态的角色数+1)。",
 	enable: "phaseUse",
 	selectTarget: () => {
 		return ui.selected.cards.length;
@@ -704,8 +704,11 @@ const xjb_guizhan = SkillCreater(
 			return;
 		}
 		const [_, __, name, nature] = links[0]
-		await player.useCard({ name, nature }, event.cards, event.targets)
-			.set("directHit", event.targets);
+		const next = player.useCard({ name, nature }, event.cards, event.targets)
+		if (event.cards.every(card => get.color(card) === get.color(event.cards[0]))) {
+			next.set("directHit", event.targets);
+		}
+		await next;
 	},
 	group: ["xjb_guizhan_countDie"],
 	subSkill: {

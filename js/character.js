@@ -408,7 +408,7 @@ game.import("character", () => {
                 sex: "female",
                 group: "xjb_hun",
                 hp: 3,
-                skills: ["xjb_soul_chanter", "xjb_soul_miracle"],
+                skills: ["xjb_soul_chanter"],
                 trashBin: [],
                 names: "索|琪盎特儿"
             },

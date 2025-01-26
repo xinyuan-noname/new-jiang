@@ -134,6 +134,166 @@ setEvent("xjb_chooseSkillToCard", {
         event.result = { bool: result.bool, skills: result.links }
     }
 })
+setEvent("xjb_chant", {
+    player: function (...args) {
+        const player = this;
+        const next = game.createEvent("xjb_chant");
+        for (const arg of args) {
+            if (Array.isArray(arg)) next.tags = arg;
+            else if (typeof arg === "string") next.skillId = arg;
+        }
+        if (!next.skillId) {
+            let i;
+            for (i = 0; lib.skill['chant' + i] !== undefined; i++);
+            next.skillId = "chant" + i;
+            next.skillCnName = "咏唱" + i
+        }
+        next.player = player;
+        next.setContent("xjb_chant");
+        return next
+    },
+    content: async function (event, trigger, player) {
+        game.xjb_skillEditor(false);
+        const touch = new TouchEvent("touchend", {
+            bubbles: true,
+            cancelable: true,
+            composed: true
+        })
+        const skill = event.skillId
+        if (event.skillCnName) game.broadcastAll(skill => {
+            lib.translate[skill] = event.skillCnName
+        }, skill);
+        const functionList = {
+            submitID: function (res) {
+                let list = (skill).split(''), a = 0
+                //输入id
+                let timer = setInterval(i => {
+                    if (a === list.length) {
+                        res();
+                        clearInterval(timer);
+                        game.xjb_back.ele.id.submit();
+                        return;
+                    }
+                    game.xjb_back.ele.id.value += list[a];
+                    a++;
+                }, 100)
+            },
+            nextPage: function (res) {
+                setTimeout(i => {
+                    game.xjb_back.ele.nextPage.click()
+                    game.xjb_back.ele.nextPage.dispatchEvent(touch)
+                    res()
+                }, 200)
+            }
+        }
+        try {
+            // 第一页内容
+            await new Promise(res => functionList.submitID(res));
+            // 模拟点击和触摸操作
+            await new Promise(res => setTimeout(() => {
+                //设置触发技
+                game.xjb_back.skill.kind = "trigger";
+                //设置强制发动标签
+                if (event.tags && event.tags.includes("forced")) game.xjb_back.skill.type.push("forced");
+                game.xjb_back.organize();
+                res();
+            }, 200));
+            // 选择模式
+            await new Promise(res => setTimeout(() => {
+                game.xjb_back.skill.mode = 'mainCode';
+                game.xjb_back.organize();
+                res();
+            }, 200));
+
+            // 换页到第二页
+            await new Promise(res => functionList.nextPage(res));
+
+            // 处理过滤器
+            await new Promise(res => {
+                let list = XJB_EDITOR_LIST['filter'].randomGet(), a = 0;
+                lib.translate[skill + "_info"] = `${list}整理`;
+                let timer = setInterval(() => {
+                    if (a === list.length) {
+                        res(game.xjb_back.ele.filter.value);
+                        clearInterval(timer);
+                        game.xjb_back.ele.filter.arrange();
+                        game.xjb_back.ele.filter.submit();
+                        return;
+                    }
+                    game.xjb_back.ele.filter.value += list[a];
+                    a++;
+                }, 100);
+            });
+
+            // 换页到第三页
+            await new Promise(res => functionList.nextPage(res));
+
+            // 处理效果
+            await new Promise(res => {
+                let list = XJB_EDITOR_LIST['effect'].randomGet(), a = 0;
+                lib.translate[skill + "_info"] += `${list}整理`;
+                let timer = setInterval(() => {
+                    if (a === list.length) {
+                        res();
+                        clearInterval(timer);
+                        game.xjb_back.ele.content.arrange();
+                        game.xjb_back.ele.content.submit();
+                        return;
+                    }
+                    game.xjb_back.ele.content.value += list[a];
+                    game.xjb_back.ele.content.submit();
+                    a++;
+                }, 100);
+            });
+
+            // 换页到第四页
+            await new Promise(res => functionList.nextPage(res));
+
+            // 处理触发器
+            await new Promise(res => {
+                let list = XJB_EDITOR_LIST['trigger'].randomGet(), a = 0;
+                lib.translate[skill + "_info"] += `${list}整理`;
+                let timer = setInterval(() => {
+                    if (a === list.length) {
+                        res();
+                        clearInterval(timer);
+                        game.xjb_back.ele.trigger.arrange();
+                        game.xjb_back.ele.trigger.submit();
+                        return;
+                    }
+                    game.xjb_back.ele.trigger.value += list[a];
+                    a++;
+                }, 100);
+            });
+
+            // 换页到第五页
+            await new Promise(res => functionList.nextPage(res));
+
+            // 最后处理
+            await new Promise(res => setTimeout(() => {
+                let produce = new Function('_status', 'lib', 'game', 'ui', 'get', 'ai', game.xjb_back.target.value);
+                produce(_status, lib, game, ui, get, ai);
+                game.xjb_back.remove();
+                let arr = lib.translate[skill + '_info'].split('整理');
+                if (arr[1].includes("继承")) {
+                    arr[1] = arr[1].replace("继承", "");
+                    arr[1] = arr[1].replace(/[^a-z]/gi, "");
+                    arr[1] = `你"${get.translation(arr[1])}(${arr[1]})"一次`;
+                }
+                let description = '';
+                if (event.tags && event.tags.includes("forced")) description += "锁定技，"
+                description += arr[2] + '，若' + arr[0] + '，' + arr[1] + '。'
+                lib.translate[skill + '_info'] = description;
+                lib.translate[skill + '_info'] = lib.translate[skill + '_info'].replace(/\s/g, "");
+                res();
+            }, 300));
+            const card = game.xjb_createSkillCard(skill);
+            await player.gain(card, "gain2");
+        } catch (error) {
+            console.error("Error processing skill:", error);
+        }
+    }
+})
 
 const xjb_skillCardObserver = SkillCreater(
     "xjb_skillCardObserver", {

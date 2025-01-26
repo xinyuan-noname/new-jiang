@@ -233,154 +233,17 @@ const xjb_soul_guifan = SkillCreater(
 const xjb_soul_chanter = SkillCreater(
     "xjb_soul_chanter", {
     translate: "吟咏",
-    description: "出牌阶段限一次，你可以进行一次<b description=[打开技能编辑器，令系统在线编写并生成一个锁定技]>吟咏</b>。",
+    description: "出牌阶段限三次，若你手牌颜色相同，你可以展示之并进行一次吟咏。",
     enable: "phaseUse",
-    usable: 1,
+    usable: 3,
+    filter: (event, player) => {
+        const hs = player.getCards("h")
+        return hs.every(card => get.color(card) === get.color(hs[0]));
+    },
     async content(event, trigger, player) {
         //player.addTempSkill('xjb_P_gathering', { player: "phaseBegin" })
-        let num = 0;
-        const element = ui.xjb_domTool;
-        while (lib.skill['chant' + num] !== undefined) {
-            num++
-        }
-        game.xjb_skillEditor(false);
-        const touch = new TouchEvent("touchend", {
-            bubbles: true,
-            cancelable: true,
-            composed: true
-        })
-        event.skillId = event.skillId || ("chant" + num)
-        let skill = event.skillId
-        lib.translate[skill] = event.skillCnName || ("咏唱" + num)
-        let functionList = {
-            submitID: function (res) {
-                let list = (skill).split(''), a = 0
-                //输入id
-                let timer = setInterval(i => {
-                    if (a === list.length) {
-                        res();
-                        clearInterval(timer);
-                        game.xjb_back.ele.id.submit();
-                        return;
-                    }
-                    game.xjb_back.ele.id.value += list[a];
-                    a++;
-                }, 100)
-            },
-            nextPage: function (res) {
-                setTimeout(i => {
-                    game.xjb_back.ele.nextPage.click()
-                    game.xjb_back.ele.nextPage.dispatchEvent(touch)
-                    res()
-                }, 200)
-            }
-        }
-        try {
-            // 第一页内容
-            await new Promise(res => functionList.submitID(res));
-            // 模拟点击和触摸操作
-            await new Promise(res => setTimeout(() => {
-                element().setTarget(game.xjb_back.ele.kinds[0])
-                    .clickAndTouch()
-                    .setTarget(game.xjb_back.ele.types[1])
-                    .clickAndTouch();
-                res();
-            }, 200));
-
-            // 选择模式
-            await new Promise(res => setTimeout(() => {
-                element().setTarget(game.xjb_back.ele.modes[2])
-                    .clickAndTouch();
-                res();
-            }, 200));
-
-            // 换页到第二页
-            await new Promise(res => functionList.nextPage(res));
-
-            // 处理过滤器
-            await new Promise(res => {
-                let list = XJB_EDITOR_LIST['filter'].randomGet(), a = 0;
-                lib.translate[skill + "_info"] = `${list}整理`;
-                let timer = setInterval(() => {
-                    if (a === list.length) {
-                        res(game.xjb_back.ele.filter.value);
-                        clearInterval(timer);
-                        game.xjb_back.ele.filter.arrange();
-                        game.xjb_back.ele.filter.submit();
-                        return;
-                    }
-                    game.xjb_back.ele.filter.value += list[a];
-                    a++;
-                }, 100);
-            });
-
-            // 换页到第三页
-            await new Promise(res => functionList.nextPage(res));
-
-            // 处理效果
-            await new Promise(res => {
-                let list = XJB_EDITOR_LIST['effect'].randomGet(), a = 0;
-                lib.translate[skill + "_info"] += `${list}整理`;
-                let timer = setInterval(() => {
-                    if (a === list.length) {
-                        res();
-                        clearInterval(timer);
-                        game.xjb_back.ele.content.arrange();
-                        game.xjb_back.ele.content.submit();
-                        return;
-                    }
-                    game.xjb_back.ele.content.value += list[a];
-                    game.xjb_back.ele.content.submit();
-                    a++;
-                }, 100);
-            });
-
-            // 换页到第四页
-            await new Promise(res => functionList.nextPage(res));
-
-            // 处理触发器
-            await new Promise(res => {
-                let list = XJB_EDITOR_LIST['trigger'].randomGet(), a = 0;
-                lib.translate[skill + "_info"] += `${list}整理`;
-                let timer = setInterval(() => {
-                    if (a === list.length) {
-                        res();
-                        clearInterval(timer);
-                        game.xjb_back.ele.trigger.arrange();
-                        game.xjb_back.ele.trigger.submit();
-                        return;
-                    }
-                    game.xjb_back.ele.trigger.value += list[a];
-                    a++;
-                }, 100);
-            });
-
-            // 换页到第五页
-            await new Promise(res => functionList.nextPage(res));
-
-            // 最后处理
-            await new Promise(res => setTimeout(() => {
-                let produce = new Function('_status', 'lib', 'game', 'ui', 'get', 'ai', game.xjb_back.target.value);
-                produce(_status, lib, game, ui, get, ai);
-                game.xjb_back.remove();
-                for (let k in lib.skill[skill]) {
-                    lib.skill[skill][k] = lib.skill[skill][k];
-                }
-                let arr = lib.translate[skill + '_info'].split('整理');
-                if (arr[1].includes("继承")) {
-                    arr[1] = arr[1].replace("继承", "");
-                    arr[1] = arr[1].replace(/[^a-z]/gi, "");
-                    arr[1] = `你"${get.translation(arr[1])}(${arr[1]})"一次`;
-                }
-                lib.translate[skill + '_info'] = "锁定技，" + arr[2] + '，若' + arr[0] + '，' + arr[1] + '。';
-                lib.translate[skill + '_info'] = lib.translate[skill + '_info'].replace(/\s/g, "");
-                res();
-            }, 300));
-            const card = game.xjb_createSkillCard(skill);
-            await player.gain(card, "gain2");
-        } catch (error) {
-            console.error("Error processing skill:", error);
-        }
+        await player.showHandcards("咏唱");
+        player.xjb_chant(['forced']);
     },
     ai: {
         order: 4,
@@ -388,29 +251,6 @@ const xjb_soul_chanter = SkillCreater(
             player: 2,
         },
     },
-})
-const xjb_soul_miracle = SkillCreater(
-    "xjb_soul_miracle", {
-    translate: "神迹",
-    description: "限定技，出牌阶段，你可以获得一个神圣技能卡。",
-    enable: "phaseUse",
-    usable: 1,
-    limited: true,
-    async content(event, trigger, player) {
-        const list = lib.card.xjb_skillCard.SanSkill.map(id => game.xjb_createSkillCard(id))
-        const { bool, links } = await player.chooseButton(['选择一张神圣技能牌', [list, "vcard"]]).forResult();
-        if (bool) {
-            player.awakenSkill("xjb_soul_miracle");
-            await player.gain(links[0], "gain2");
-        }
-        else player.getStat().skill.xjb_soul_miracle--;
-    },
-    ai: {
-        order: 4,
-        result: {
-            player: 2,
-        },
-    }
 })
 
 
