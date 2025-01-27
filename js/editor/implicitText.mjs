@@ -66,7 +66,6 @@ export class ImplicitTextTool {
             //.replace(/^游戏开始时$/mg, "global phaseBefore\nplayer enterGame\n")
             .replace(/(?<!将牌)置于武将牌[旁上]|将牌置于武将牌旁/g, "将牌置于武将牌上")
             .replace(/(回复|恢复)体力(?!上限)/g, "回复体力值")
-            .replace(/于回合[外内]/g, '')
             .replace(/当(?!前)/g, '')
             .replace(/之([前后])/g, "$1")
         console.log("trigger", result);

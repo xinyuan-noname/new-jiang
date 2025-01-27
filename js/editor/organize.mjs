@@ -442,8 +442,11 @@ export class EditorOrganize {
                                 globalAs = value
                             }
                             if (["inPhase", "outPhase"].includes(value)) {
-                                if (triType === "global") parts.push(`global.${globalAs} ${value === "inPhase" ? "!" : "="}== _status.currentPhase`)
+                                if (triType === "global") parts.push(`event.${globalAs} ${value === "inPhase" ? "!" : "="}== _status.currentPhase`)
                                 else parts.push(`player ${value === "inPhase" ? "!" : "="}== _status.currentPhase`)
+                            }
+                            if (value === "onlyOneTarget") {
+                                parts.push(`event.targets.length > 1`)
                             }
                         }
                     }

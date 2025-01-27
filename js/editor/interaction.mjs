@@ -301,4 +301,24 @@ export class EditorInteraction {
             EditorInteraction.bindInsert(button, input, item[1], item[2]);
         }
     }
+
+    static whenChangeLineHas_content(that) {
+        textareaTool().setTarget(that)
+            .whenChangeLineHas(/(?<!变量).+?选择.*?(卡牌|角色)/, function (e) {
+                //之后这里添加条件可以取消,自行设置
+                if (false) return;
+                this.value += [
+                    "",
+                    "新步骤",
+                    "如果",
+                    "有选择结果",
+                    "那么",
+                    "分支开始",
+                    "所选角色 ",
+                    "分支结束"
+                ].join("\n");
+                this.adjustTab();
+                this.toLastLine();
+            })
+    }
 }

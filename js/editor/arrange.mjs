@@ -48,6 +48,7 @@ export class EditorArrange {
         EditorArrange.makeNumToEnd_dian(that)
         EditorArrange.makeNumToEnd_ming(that)
         EditorArrange.makeNumToEnd_mei(that)
+        that.value = that.value.replace(/^(.*?)(?<=令触发事件的牌(?:增加|增添|添加|减少))((?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)到(?:[bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)|\d+|[一两二三四五六七八九十]+|[bcdefghlmnoprstuvwxyz])个(?=目标)(.*?)$/img, "$1$3 $2个")
     }
     static makeOtherToEnd(that) {
         that.value = moveWordToEnd(that.value, "其他", " ", (p1, p2, p3) => {
@@ -94,11 +95,16 @@ export class EditorArrange {
             .replace(/的四分之一/g, ' 除以 4')
             .replace(/的八分之一/g, ' 除以 8')
     }
+    //这部分用于
+    static standardEffect0(that) {
+        that.value = that.value
+            .replace(/可?以?令(至多|至少)?((?:[一两二三四五六七八九十]+|\d+)到(?:[一两二三四五六七八九十]+|\d+)|\d+|[一两二三四五六七八九十]+)名(其他)?角色(.*)$/mg, `选择$1$2名$3角色 "$&"\n新步骤\n如果\n有选择结果\n那么\n分支开始\n所选角色$4\n分支结束`)
+            .replace(/可?以?令任意名(其他)?角色(.*)$/mg, `选择任意名$1角色 "$&"\n新步骤\n如果\n有选择结果\n那么\n分支开始\n所选角色$2\n分支结束`);
+    }
     static standardEffect1(that) {
         that.value = that.value
             .replace(/可以(失去.+?点体力|受到.+?点伤害|摸.+?张牌)/g, '$1')
             .replace(new RegExp(`^(${JOINED_PLAYAERCN})(${JOINED_EVENT})并(${JOINED_EVENT})$`, 'img'), '$1 $2\n$1 $3')
-            console.log(new RegExp(`^(${JOINED_PLAYAERCN})(${JOINED_EVENT})并(${JOINED_EVENT})$`, 'img'))
         that.value = that.value
             .replace(/额外执行一个/g, "执行一个额外的")
             .replace(/获得(此牌|cards|card)$/mg, "获得牌 $1")

@@ -26,14 +26,16 @@ export function disposeTri(str, number, directory = NonameCN.TriList) {
     return list3;
 }
 const matchNotObjColon = /(?<!\{[ \w"']+):(?![ \w"']+\})/;
-const matchFromTo = /^([bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)到([bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)[张名点枚]$/
-const matchTriKeywords = /火属性|雷属性|冰属性|神属性|梅花|方片|黑桃|红桃|红色|黑色|基本|装备(?!区)|普通锦囊|非延时锦囊|延时锦囊|点数为(?:11|12|13|[AJQK1-9])|一张|一点/
+const matchFromTo = /^([bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)到([bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)[张名点枚个]$/
+const matchTriKeywords = /火属性|雷属性|冰属性|神属性|梅花|方片|黑桃|红桃|红色|黑色|基本|装备(?!区)|普通锦囊|非延时锦囊|延时锦囊|点数为(?:11|12|13|[AJQK1-9])|一张|一点|(?<=指定|成为)唯一(?=目标)|于回合[内外]/
 const vCardObject = NonameCN.getVirtualCard();
 const player = NonameCN.getVirtualPlayer();
 const vPlayers = NonameCN.getVirtualPlayers();
 const vGame = NonameCN.getVirtualGame();
 const eventModel = NonameCN.getVirtualEvent();
 const vStorage = NonameCN.getVirtualStorage();
+const simiAddCnWords = ['增加', '增添', '添加'];
+const simiAddCnWordsRegExp = new RegExp(simiAddCnWords.join("|"))
 const XJB_PUNC = ["!", " || ", " && ", " + ", " - ", " * ", " / ", " % ",
     " += ", " -= ",
     "++", "--",
@@ -41,7 +43,7 @@ const XJB_PUNC = ["!", " || ", " && ", " + ", " - ", " * ", " / ", " % ",
     "(", ")", "."]
 const XJB_NEED_FOLLOW_PUNC = ['++', "--"]
 const XJB_NEED_FELLOW_PUNC = ['!', '~']
-const XJB_NEED_LINK_PUNC = [' || ', ' && ', ' ?? ', ' ? ', ' + ', ' - ', ' * ', ' ** ', ' / ', ' % ', ' += ', ' -= ', ' > ', ' < ', ' >= ', ' <= ', ' == ', ' === ', '(', '.']
+const XJB_NEED_LINK_PUNC = [' || ', ' && ', ' ?? ', ' ? ', ' + ', ' - ', ' * ', ' ** ', ' / ', ' % ', ' += ', ' -= ', ' > ', ' < ', ' >= ', ' <= ', ' == ', ' === ', '(', '.'];
 export class TransCnText {
     /**
     * @param {string} text 
@@ -112,6 +114,12 @@ export class TransCnText {
             return TransCnText.translate(word.replace(/(结算完成|完成结算)[前时]/, "$1"), directory);
         }
         if (word.includes("的")) return TransCnText.translate(word.replace(/的/g, ""), directory);
+        if (simiAddCnWordsRegExp.test(word)) {
+            for (const simiWord of simiAddCnWords) {
+                let wordx = word.replace(simiAddCnWordsRegExp, simiWord)
+                if(wordx in directory) return directory[wordx];
+            }
+        }
         return word;
     }
     static translateLine(lines, directory) {
@@ -154,7 +162,6 @@ export class TransCnText {
     static translateTri(word) {
         if (typeof word != "string") return "";
         const directory = NonameCN.TriList;
-        console.log(word);
         if (word in directory) return directory[word];
         if (/(开始)[前时]/.test(word)) {
             return TransCnText.translateTri(word.replace(/(开始)[前时]/, "$1"));
@@ -175,6 +182,14 @@ export class TransCnText {
             wordx = wordx.replace(/一张|一点/g, (match) => {
                 decoration.push('getIndex=1');
                 return '';
+            })
+            wordx = wordx.replace(/(?<=指定|成为)唯一(?=目标)/, (match) => {
+                decoration.push('onlyOneTarget');
+                return ''
+            })
+            wordx = wordx.replace(/于回合([内外])/, (match, p) => {
+                decoration.push(p === "内" ? "inPhase" : "outPhase");
+                return ''
             })
             if (wordx in directory) {
                 return `${decoration.join(":")}:${directory[wordx]}`;

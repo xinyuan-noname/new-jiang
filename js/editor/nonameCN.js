@@ -444,6 +444,15 @@ export class NonameCN {
         markName: "",
         markContent: "",
     }
+    static viewAsFrequencyList = [
+        "frequency-phase-cardName",
+        "frequency-round-cardName",
+        "frequency-game-cardName"
+    ]
+    static viewAsFrequencyMap = {
+        'frequency-phase-cardName': '{global:"phaseAfter"}',
+        'frequency-round-cardName': '{global:"roundStart"}'
+    }
     static editorInbuiltSkillMap = editorInbuiltSkillMap;
     static basicList = {
         '未定义': "undefined",
@@ -899,6 +908,7 @@ export class NonameCN {
         array_method: {
             "包含": 'includes',
             "不包含": 'includes:denyPrefix',
+            '添加': "add",
             "添单": "add",
             "添多": "addArray",
             "剪接": "splice",
@@ -2174,6 +2184,68 @@ export class NonameCN {
             "Z名": "Z",
             "z枚": "z",
             "Z枚": "Z",
+
+            "1个": "1",
+            "一个": "1",
+            "2个": "2",
+            "两个": "2",
+            "二个": "2",
+            "3个": "3",
+            "三个": "3",
+            "4个": "4",
+            "四个": "4",
+            "5个": "5",
+            "五个": "5",
+            "6个": "6",
+            "六个": "6",
+            "7个": "7",
+            "七个": "7",
+            "8个": "8",
+            "八个": "8",
+            "9个": "9",
+            "九个": "9",
+            "B个": "B",
+            "C个": "C",
+            "D个": "D",
+            "E个": "E",
+            "F个": "F",
+            "G个": "G",
+            "H个": "H",
+            "L个": "L",
+            "M个": "M",
+            "N个": "N",
+            "O个": "O",
+            "P个": "P",
+            "R个": "R",
+            "S个": "S",
+            "T个": "T",
+            "U个": "U",
+            "V个": "V",
+            "W个": "W",
+            "X个": "X",
+            "Y个": "Y",
+            "Z个": "Z",
+            "b个": "b",
+            "c个": "c",
+            "d个": "d",
+            "e个": "e",
+            "f个": "f",
+            "g个": "g",
+            "h个": "h",
+            "l个": "l",
+            "m个": "m",
+            "n个": "n",
+            "o个": "o",
+            "p个": "p",
+            "r个": "r",
+            "s个": "s",
+            "t个": "t",
+            "u个": "u",
+            "v个": "v",
+            "w个": "w",
+            "x个": "x",
+            "y个": "y",
+            "z个": "z"
         },
         suit: getMapOfSuit(),
         type: {
@@ -2211,6 +2283,8 @@ export class NonameCN {
             "发动": "return true;"
         },
         packed_playerCode: {
+            '令触发事件的牌增加目标': "packed_playerCode_addTargets",
+            '令触发事件的牌减少目标': "packed_playerCode_removeTargets",
             '令角色代为打出': 'packed_playerCode_sufferForAnother',
             '令角色代为使用': 'packed_playerCode_sufferForAnother',
             '令角色代为使用或打出': 'packed_playerCode_sufferForAnother',
@@ -2221,15 +2295,6 @@ export class NonameCN {
         packed_gameCode: {
             '同时获得牌': "packed_gameCode_gainAsync"
         },
-    }
-    static viewAsFrequencyList = [
-        "frequency-phase-cardName",
-        "frequency-round-cardName",
-        "frequency-game-cardName"
-    ]
-    static viewAsFrequencyMap = {
-        'frequency-phase-cardName': '{global:"phaseAfter"}',
-        'frequency-round-cardName': '{global:"roundStart"}'
     }
     static packedCodeRePlaceMap = {
         'packed_playerCode_sufferForAnother'(str) {
@@ -2351,6 +2416,58 @@ export class NonameCN {
                 if (subtype) result += `\n && \nget.subtype(evt.card) === ${subtype}`
                 if (nature) result += `\n && \nget.nature(evt.card) === ${nature}`
                 result += `)`
+                return result;
+            })
+        },
+        'packed_playerCode_addTargets'(str) {
+            let match = /(.+)\.packed_playerCode_addTargets(\(.*\))/g;
+            return str.replace(match, function (match, ...p) {
+                const player = p[0]
+                const args = p[1].replace(/[\(\)]/g, '').split(/(?<!\[[^\]]*),/)
+                let select = '', promptStr = '';
+                for (const arg of args) {
+                    if (!isNaN(Number(arg))) select = arg;
+                    else if (/^\[(.+?),(.+?)\]$/.test(arg)) select = arg;
+                    else if (/^'.+?'$/.test(arg)) promptStr = arg;
+                }
+                let result = '';
+                result += `${player}.chooseTarget(${[select, promptStr].join("")})\n`;
+                result += `.set("filterTarget",(card, player, target)=>{\n`;
+                result += `var trigger = _status.event.getTrigger();\n`
+                result += `return !trigger.targets.includes(target) && lib.filter.targetEnabled2(trigger.card, trigger.player, target);\n`
+                result += `})\n`;
+                result += `.set("ai",(card, player, target)=>{\n`;
+                result += `var trigger = _status.event.getTrigger();\n`
+                result += `return get.effect(target, trigger.card, trigger.player, _status.event.player);\n`
+                result += `})\n`;
+                result += `"step"\n`;
+                result += `if(result.bool) trigger.targets.addArray(result.targets);\n`;
+                return result;
+            })
+        },
+        'packed_playerCode_removeTargets'(str) {
+            let match = /(.+)\.packed_playerCode_removeTargets(\(.*\))/g;
+            return str.replace(match, function (match, ...p) {
+                const player = p[0]
+                const args = p[1].replace(/[\(\)]/g, '').split(/(?<!\[[^\]]*),/)
+                let select = '', promptStr = '';
+                for (const arg of args) {
+                    if (!isNaN(Number(arg))) select = arg;
+                    else if (/^\[(.+?),(.+?)\]$/.test(arg)) select = arg;
+                    else if (/^'.+?'$/.test(arg)) promptStr = arg;
+                }
+                let result = '';
+                result += `${player}.chooseTarget(${[select, promptStr].join("")})\n`;
+                result += `.set("filterTarget",(card, player, target)=>{\n`;
+                result += `var trigger = _status.event.getTrigger();\n`
+                result += `return trigger.targets.includes(target);\n`;
+                result += `})\n`;
+                result += `.set("ai",(card, player, target)=>{\n`;
+                result += `var trigger = _status.event.getTrigger();\n`;
+                result += `return -get.effect(target, trigger.card, trigger.player, _status.event.player);\n`;
+                result += `})\n`;
+                result += `"step"\n`;
+                result += `if(result.bool) trigger.getParent("useCard",void 0,true).excluded.addArray(result.targets);\n`;
                 return result;
             })
         },
@@ -3015,14 +3132,12 @@ export class NonameCN {
     static TestFilterOk(str, lineNum) {
         let func
         const test = str.replace("filter:function(event,player,triggername){", '')
-        console.log(test)
         try {
             func = new Function("event", "player", "triggername", test);
         } catch (err) {
-            console.log(err, lineNum);
+            console.error(err, lineNum);
             return false;
         }
-        console.log(func);
         return true;
     }
     /**
@@ -3360,7 +3475,6 @@ export class NonameCN {
                         this.innerText = '查看'
                         this.seeExpanding = false;
                     }
-
                 },
                 function () {
                     const id = this.container.dataset.xjb_id

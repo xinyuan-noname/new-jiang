@@ -142,6 +142,7 @@ window["xjb_xyAPI_Directory_新将包"]={
     "image/character_dongzhou": [
         "xjb_guanyiwu.jpg",
         "xjb_jizi_shou.jpg",
+        "xjb_qinmugong.jpg",
         "xjb_qinshihuang.jpg",
         "xjb_qixianggong.jpg",
         "xjb_weiyigong.jpg",

@@ -34,7 +34,7 @@ import {
 	NonameCN
 } from './editor/nonameCN.js'
 import { EditorInteraction } from './editor/interaction.mjs';
-import { dispose, disposeTri } from './editor/transCnText.mjs';
+import { dispose, disposeTri, TransCnText } from './editor/transCnText.mjs';
 import { EditorArrange } from './editor/arrange.mjs';
 import { ImplicitTextTool } from "./editor/implicitText.mjs";
 import { EditorOrganize } from "./editor/organize.mjs";
@@ -1512,8 +1512,9 @@ game.xjb_skillEditor = function (readCache = true) {
 	};
 	contentFree.arrange = function () {
 		const that = contentFree;
+		EditorArrange.standardEffect0(that);
 		//这部分用不可能出现的字符替换,然后再替换回来
-		const pureEnList = [], strings = [[], [], []];
+		const pureEnList = [], strings = [[], [], [], []];
 		that.changeWord(/(?<=').+?(?=')/g, match => {
 			strings[0].push(match);
 			return "*&dy".repeat(3)
@@ -1547,16 +1548,7 @@ game.xjb_skillEditor = function (readCache = true) {
 		//处理事件有关字符
 		NonameCN.standardEvent(that);
 		NonameCN.standardEeffectMid(that);
-		//限定词处理
-		that.changeWord(/(至多)+/g, "至多");
-		that.changeWord(/(至少)+/g, "至少");
-		that.changeWord(/(其他|其它)+/g, "其他");
-		that.changeWord(/(可以)+/g, "可以");
 		//数字参数处理
-		that.changeWord(/任意(\d+|[一二两三四五六七八九十]+)张/g, '$1张');
-		that.changeWord(/任意(\d+|[一二两三四五六七八九十]+)名/g, '$1名');
-		that.changeWord(/可?以?令(至多|至少)?((?:[一两二三四五六七八九十]+|\d+)到(?:[一两二三四五六七八九十]+|\d+)|\d+|[一两二三四五六七八九十]+)名(其他)?角色(.*)$/mg, "选择$1$2名$3角色\n新步骤\n如果\n有选择结果\n那么\n分支开始\n所选角色$4\n分支结束")
-		that.changeWord(/可?以?令任意名(其他)?角色(.*)$/mg, "选择任意名$1角色\n新步骤\n如果\n有选择结果\n那么\n分支开始\n所选角色$2\n分支结束");
 		EditorArrange.makeNumToEnd(that);
 		//统一写法
 		EditorArrange.transCnCalculation(that);
@@ -1566,21 +1558,20 @@ game.xjb_skillEditor = function (readCache = true) {
 		EditorArrange.makeWordsToEnd(that, ["任意张", "任意名", "从牌堆底"])
 		EditorArrange.makeWordsToEnd(that, ["至多", "至少"])
 		that.value = eachLine(contentFree.value, line => {
-			if (/[ ]访[ ]/.test(line)) return;
 			if (line.startsWith("返回")) return;
+			if (/[ ]访[ ]/.test(line)) return;
 			if (/(变量|常量|块变|令为)/.test(line)) return;
 			if (NonameCN.skillModMap.keys().some(regexp => regexp.test(line))) return;
 			const startsWithAwait = /^\s*等待 /.test(line)
 			if (startsWithAwait) line = line.slice(3)
 			let group = findWordsGroup(line, playerCN, "!的");
-			if (!group.length) return; if (/添单[ ]*你/.test(line)) return;
-			if (/移除 你/.test(line)) return;
-			if (new RegExp(`^无视(${JOINED_PLAYAERCN})防具的牌`).test(line)) return;
-			if (/^选择结果目标[数组]/.test(line)) return;
+			if (!group.length) return;
+			//如果每个次都能成功翻译 则不进行次序调换
+			if (line.split(" ").every(word => /^[\x00-\x7F]*$/.test(TransCnText.translate(word, NonameCN.ContentList)))) return;
+			// if (/^选择结果目标组/.test(line)) return;
 			let restWords = clearWordsGroup(line, playerCN, "!的");
 			return `${startsWithAwait ? "等待 " : ""}${group.shift()} ${restWords} ${group.join(" ")}`
 		})
-		that.changeWord(new RegExp(`(?<!的)(${JOINED_PLAYAERCN})`, 'g'), ' $1 ');
 		NonameCN.standardEeffect(that);
 		NonameCN.standardEvent(that);
 		EditorArrange.makeOccupyLine(that, ["并且", "或者"])
@@ -1664,6 +1655,7 @@ game.xjb_skillEditor = function (readCache = true) {
 	listenAttributeChange(contentFree, 'selectionStart').start();
 	EditorInteraction.addContentOrder_setting(contentFree);
 	EditorInteraction.addContentOrder_area(contentFree);
+	EditorInteraction.whenChangeLineHas_content(contentFree);
 	textareaTool().setTarget(contentFree)
 		.replaceThenOrder('新选择如果', "如果\n有选择结果\n那么\n分支开始\n\n分支结束", back.ele.content.adjustTab)
 		.replaceThenOrder('新选择角色', '变量 选择事件 令为 你 选择角色 一名\n选择事件 设置角色限制条件\n选择事件 设置角色选择数量\n新步骤\n如果\n选择结果布尔\n那么\n分支开始\n\n分支结束', back.ele.content.adjustTab)
@@ -1695,22 +1687,6 @@ game.xjb_skillEditor = function (readCache = true) {
 				);
 			}
 		)
-		.whenChangeLineHas(/(?<!变量).+?选择.*?(卡牌|角色)/, function (e) {
-			//之后这里添加条件可以取消,自行设置
-			if (false) return;
-			this.value += [
-				"",
-				"新步骤",
-				"如果",
-				"有选择结果",
-				"那么",
-				"分支开始",
-				"所选角色 ",
-				"分支结束"
-			].join("\n");
-			this.adjustTab();
-			this.toLastLine();
-		})
 		.addClass("xjb-Ed-contentTextarea")
 		.debounce('keyup', back.ele.content.submit, 200)
 		.listen('keydown', deleteModule)

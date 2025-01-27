@@ -63,6 +63,14 @@ game.import("character", () => {
                 names: "姬|夷吾"
             },
 
+            "xjb_qinmugong": {
+                sex:"male",
+                group:"xjb_qin",
+                hp:3,
+                skills:["xjb_kaidi","xjb_ranrong"],
+                trashBin:[],
+                names:"赢|任好"
+            },
 
             "xjb_xunan": {
                 sex: "male",
@@ -154,6 +162,7 @@ game.import("character", () => {
             "xjb_weiyigong": "卫懿公",
             "xjb_qixianggong": "齐襄公",
             "xjb_guanyiwu": "管夷吾",
+            "xjb_qinmugong": "秦穆公",
             "xjb_xunan": "荀黯",
             "xjb_xianzhen": "先轸",
             "xjb_wuyuan": "伍员",

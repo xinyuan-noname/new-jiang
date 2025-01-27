@@ -499,6 +499,88 @@ const xjb_cangshi = SkillCreater(
 	}
 })
 
+const xjb_kaidi = SkillCreater(
+	"xjb_kaidi", {
+	translate: "开地",
+	description: "当你使用基本牌或普通锦囊牌指定唯一目标后，你可以为此牌多指定任意个目标，若其在你攻击范围外，其可视为对你使用一张普通锦囊牌。",
+	trigger: {
+		player: "useCardToPlayered",
+	},
+	filter: function (event, player, triggername) {
+		if (get.type(event.card) !== "trick" && get.type(event.card) !== "basic") return false;
+		if (event.targets.length > 1) return false;
+		return true;
+	},
+	cost: async function (event, trigger, player) {
+		event.result = await player.chooseTarget([1, Infinity])
+			.set("filterTarget", (card, player, target) => {
+				var trigger = _status.event.getTrigger();
+				return !trigger.targets.includes(target) && lib.filter.targetEnabled2(trigger.card, trigger.player, target);
+			})
+			.set("ai", (card, player, target) => {
+				var trigger = _status.event.getTrigger();
+				return get.effect(target, trigger.card, trigger.player, _status.event.player);
+			})
+			.forResult();
+	},
+	content: async function (event, trigger, player) {
+		trigger.targets.addArray(event.targets)
+		const outTargets = event.targets.filter(curr => !curr.inRangeOf(player));
+		for (const target of outTargets) {
+			const list = [];
+			for (const i of lib.inpile) {
+				if (get.type(i) !== "trick") continue;
+				if (!target.canUse(i, player)) continue;
+				list.push(['锦囊', '', i])
+			}
+			const { bool, links } = await target.chooseButton(['开地', [list, 'vcard']])
+				.set("prompt", "选择一张锦囊牌，对秦穆公使用之。")
+				.set("ai", button => {
+					const evt = _status.event;
+					return get.effect(evt.source, button, evt.player, evt.player);
+				})
+				.set("source", player)
+				.forResult();
+			if (bool) {
+				await target.useCard([player], { name: links[0][2] });
+			}
+		}
+	},
+})
+const xjb_ranrong = SkillCreater(
+	"xjb_ranrong", {
+	translate: "染戎",
+	description: "锁定技，当你未使用【无懈可击】响应其他角色对你使用的普通锦囊牌时，本回合你失去非锁定技。其下一次使用牌指定你为目标时，你摸此牌字数张牌，然后你无法响应此牌。",
+	forced: true,
+	trigger: {
+		global: "useCardAfter"
+	},
+	filter(event, player) {
+		if (!event.targets.includes(player)) return false;
+		if (event.player === player) return false;
+		if (get.type(event.card) !== "trick") return false;
+		if (player.getHistory("useCard", evt => evt.card.name === "wuxie" && evt.respondTo && evt.respondTo[0] === event.player && evt.respondTo[1] === event.card).length) return false;
+		return true;
+	},
+	content: async function (event, trigger, player) {
+		player.addTempSkill("fengyin");
+		trigger.player.markAuto("xjb_ranrong", player);
+		trigger.player.when({ player: "useCardToPlayer" })
+			.filter((event, player) => {
+				return player.storage["xjb_ranrong"].includes(event.target);
+			})
+			.then(() => {
+				trigger.getParent().directHit.add(trigger.target);
+				trigger.target.draw(get.cardNameLength(trigger.card));
+				player.storage["xjb_ranrong"].remove(trigger.target);
+				trigger.target.logSkill("xjb_ranrong");
+			})
+	},
+	ai: {
+		respondSha: true,
+		respondShan: true,
+	}
+})
 
 //荀息
 const xjb_jiatu = SkillCreater(
@@ -535,7 +617,7 @@ const xjb_jiatu = SkillCreater(
 const xjb_gugong = SkillCreater(
 	"xjb_gugong", {
 	translate: "股肱",
-	description: "锁定技，当你使用一张普通锦囊牌后，你须选择本回合未选择一项：1.失去一点体力，重置一个技能；2.摸一张牌，回收此牌。",
+	description: "锁定技，当你使用一张普通锦囊牌后，你须选择本回合未选择的一项：1.失去一点体力，重置一个技能；2.摸一张牌，回收此牌。",
 	trigger: {
 		player: "useCardAfter",
 	},
@@ -548,8 +630,7 @@ const xjb_gugong = SkillCreater(
 	choiceList: ["失去一点体力，重置一个技能", "摸一张牌，回收此牌"],
 	content: async function (event, trigger, player) {
 		const choices = ["选项一", "选项二"]
-		const choiceList = get.info("xjb_gugong").choiceList
-		console.log(player.storage.xjb_gugong);
+		const choiceList = get.info("xjb_gugong").choiceList;
 		const choiceListx = choiceList.map((choice, index) => {
 			if (player.storage.xjb_gugong && player.storage.xjb_gugong.includes(index)) {
 				if (index === 0) choices.remove("选项一")
@@ -662,7 +743,7 @@ const xjb_xiaojian = SkillCreater(
 const xjb_guizhan = SkillCreater(
 	"xjb_guizhan", {
 	translate: "诡战",
-	description: "出牌阶段限X次，你可以选择任意张牌和等量名角色，你声明一张基本牌或普通锦囊牌，视为对这些角色使用之，若这些牌颜色相同，此牌不可被响应。(X为本回合进入过濒死状态的角色数+1)。",
+	description: "出牌阶段限X次，你可以选择任意张牌和等量名角色并声明一张基本牌或普通锦囊牌，视为对这些角色使用之，若这些牌颜色相同，此牌不可被响应。(X为本回合进入过濒死状态的角色数+1)。",
 	enable: "phaseUse",
 	selectTarget: () => {
 		return ui.selected.cards.length;
