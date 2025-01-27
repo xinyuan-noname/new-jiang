@@ -1,8 +1,6 @@
-import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 export const callFellow = {};
 export const callFellowTranslate = {};
 export const callFellowCardSkill = {};
-
 function CardCreater(name, card) {
     callFellow[name] = { ...card }
     delete callFellow[name].translate;
@@ -12,31 +10,28 @@ function CardCreater(name, card) {
     callFellowTranslate[name + "_info"] = card.description
     return callFellow[name];
 };
-/**
- * @param {string} name 
- * @param {Skill} skill 
- */
 function SkillCreater(name, skill) {
     callFellowCardSkill[name] = { ...skill };
+    callFellowCardSkill[name].equipSkill = true;
     callFellowTranslate[name] = skill.translate;
     delete callFellowCardSkill[name].transalte;
-    if (skill.description) {
-        callFellowTranslate[name + "_info"] = skill.description;
-        delete callFellowCardSkill[name].description;
-    }
 }
-
-
 const xjb_qingnangshu = CardCreater(
     "xjb_qingnangshu", {
     type: "equip",
     subtype: "equip5",
-    skills: ["xjb_qinnang2", "xjb_qns"],
+    skills: ["xin_qinnang2", "xin_qns"],
     nomod: true,
     nopower: true,
     cardcolor: "red",
     unique: true,
-    destory: true,
+    onLose: function () {
+        card.fix();
+        card.remove();
+        card.destroyed = true;
+        player.addSkillLog("xin_qinnang2")
+        game.log(card, '被销毁了');
+    },
     ai: {
         equipValue: 7.5,
         basic: {
@@ -91,7 +86,7 @@ const xjb_qingnangshu = CardCreater(
     },
     toself: true,
     translate: '青囊书',
-    description: '1：你可以将一张红色牌当【桃】使用。2：出牌阶段限一次，可对一名角色使用【桃】，每使用一张，则你与其各摸一张牌。',
+    description: '装备此牌，出牌阶段限一次，可对一名角色使用【桃】，每使用一张，则你与其各摸一张牌。',
     fullskin: true,
 })
 const xjb_card_lw = CardCreater(
@@ -158,8 +153,11 @@ const xjb_qinglong = CardCreater(
     distance: {
         attackFrom: -2,
     },
-    destory: true,
     onLose: function () {
+        card.fix();
+        card.remove();
+        card.destroyed = true;
+        game.log(card, '被销毁了');
         player.$skill('二龙互化', 'legend', 'metal');
         player.equip(game.createCard('qinglong', 'spade', 5))
     },
@@ -172,7 +170,7 @@ const xjb_qinglong = CardCreater(
             equipValue: 4.5,
         },
     },
-    skills: ["xjb_yanyue"],
+    skills: ["xin_yanyue", "xin_hlyyd"],
     translate: "黄龙偃月刀",
     description: "<br>偃月:当你对一名角色造成伤害前，你可以弃置两张牌令此伤害+1，你令其获得一个\"梦魇\"标记。<br>二龙互化：你失去此牌时你立即销毁之，你装备【青龙偃月刀】。",
 })
@@ -198,12 +196,14 @@ const xjb_chitu = CardCreater(
         if (cards.length && get.position(cards[0], true) == 'o') target.equip(cards[0]);
     },
     toself: true,
-    destory: true,
     onLose: function () {
+        card.fix();
+        card.remove();
+        card.destroyed = true;
         game.log(card, '被销毁了');
         player.equip(game.createCard('chitu', 'heart', 5))
     },
-    skills: ["xjb_zhuihun", "new_wuhun"],
+    skills: ["xin_zhuihun", "new_wuhun"],
     translate: "梦魇赤兔马",
     description: "增加以下效果:<br>追魂:锁定技，你受到伤害后，伤害来源须弃置一张牌并获得一个\"梦魇\"，然后你额外进行一个回合。<br>关公之魂：你失去此牌时立即销毁之，然后你装备【赤兔】。",
     ai: {
@@ -254,13 +254,15 @@ const xjb_baiyin = CardCreater(
     type: "equip",
     subtype: "equip2",
     loseDelay: false,
-    destory: true,
     onLose: function () {
+        card.fix();
+        card.remove();
+        card.destroyed = true;
         game.log(card, '被销毁了');
         player.equip(game.createCard('baiyin', 'club', 1))
         player.recover();
     },
-    skills: ["xjb_shinu"],
+    skills: ["xin_shinu"],
     tag: {
         recover: 1,
     },
@@ -333,9 +335,18 @@ const xjb_hutou = CardCreater(
     distance: {
         attackFrom: -2,
     },
-    skills: ["xjb_htzjq"],
+    skills: ["xin_htzjq2", "mashu"],
+    loseDelay: false,
+    onLose: function () {
+        card.fix();
+        card.remove();
+        card.destroyed = true;
+        game.log(card, '被销毁了');
+        player.$skill('虎恨', 'legend', 'metal');
+        player.equip(game.createCard(get.typeCard('equip').randomGet()))
+    },
     translate: "虎头湛金枪",
-    description: "当你使用【杀】指定一名角色为目标后，你令其选择失去一点体力/体力上限。",
+    description: "马超之魂：你装备了此牌则视为拥有【横骛】<br>虎恨：当你装备区失去此牌时你立即销毁之，然后你装备任意一张装备牌。",
     ai: {
         basic: {
             equipValue: 2,
@@ -387,9 +398,13 @@ const xjb_qixing = CardCreater(
     type: "equip",
     subtype: "equip2",
     skills: ["qixing", "xjb_xuming"],
-    destory: true,
     onLose: function () {
         player.gain(player.getExpansions('qixing'), 'gain2', 'fromStorage');
+        card.fix();
+        card.remove();
+        card.destroyed = true;
+        game.log(card, '被销毁了');
+        player.removeSkill('guanxing')
     },
     translate: "卧龙七星袍",
     description: "武侯之魂：你装备有此牌时，则拥有技能【七星】;你装备此牌时，立即获得七颗“星”。<br>七星续命：当一名角色濒死时，你可以选择一项执行：1.视为使用一张【奇门遁甲】;2.弃置最后一颗\"星\"，令其恢复1点体力;<br>你失去此牌时，立即销毁之，然后获得你武将牌上的所有“星\"",
@@ -449,16 +464,11 @@ const xjb_qixing = CardCreater(
     },
     toself: true,
 })
-
-
-const xjb_xuming = SkillCreater(
+const xin_xuming = SkillCreater(
     "xjb_xuming", {
-    transalte: "续命",
-    description: "",
     trigger: {
         global: "dying",
     },
-    equipSkill: true,
     direct: true,
     content() {
         "step 0"
@@ -481,171 +491,5 @@ const xjb_xuming = SkillCreater(
             trigger.player.recover()
         }
     },
-
-})
-
-const xjb_yanyue = SkillCreater(
-    "xjb_yanyue", {
-    translate: "偃月",
-    description: "",
-    equipSkill: true,
-    trigger: {
-        source: "damageBegin2",
-    },
-    filter(event, player) {
-        return player.countCards("he") > 1;
-    },
-    check(event, player) {
-        return get.attitude(player, event.target) < 0;
-    },
-    content() {
-        player.chooseToDiscard(2, true, "he", "弃置两张牌令此伤害+1");
-        trigger.num++;
-        trigger.player.addMark('new_wuhun_mark', 1);
-    },
-});
-const xjb_zhuihun = SkillCreater(
-    "xjb_zhuihun", {
-    translate: "追魂",
-    description: "",
-    equipSkill: true,
-    trigger: {
-        player: "damageEnd",
-    },
-    forced: true,
-    check(event, player) {
-        return get.attitude(player, event.source) < 0;
-    },
-    content() {
-        if (trigger.source.countCards('h') > 0) trigger.source.chooseToDiscard('h', 1, true);
-        if (trigger.source) trigger.source.addMark('new_wuhun_mark', 1);
-        player.insertPhase();
-    },
-});
-
-
-const xjb_qns = SkillCreater(
-    "xjb_qns", {
-    translate: "青囊书1",
-    mod: {
-        aiValue: function (player, card, num) {
-            if (get.name(card) != 'tao' && get.color(card) != 'red') return;
-            var cards = player.getCards('hs', function (card) {
-                return get.name(card) == 'tao' || get.color(card) == 'red';
-            });
-            cards.sort(function (a, b) {
-                return (get.name(a) == 'tao' ? 1 : 2) - (get.name(b) == 'tao' ? 1 : 2);
-            });
-            var geti = function () {
-                if (cards.includes(card)) {
-                    return cards.indexOf(card);
-                }
-                return cards.length;
-            };
-            return Math.max(num, [6.5, 4, 3, 2][Math.min(geti(), 2)]);
-        },
-        aiUseful: function () {
-            return lib.skill.kanpo.mod.aiValue.apply(this, arguments);
-        },
-    },
-    enable: "chooseToUse",
-    viewAsFilter: function (player) {
-        return player.countCards('hes', { color: 'red' }) > 0;
-    },
-    filterCard: function (card) {
-        return get.color(card) == 'red';
-    },
-    position: "hes",
-    viewAs: {
-        name: "tao",
-    },
-    prompt: "将一张红色牌当桃使用",
-    check: function (card) { return 15 - get.value(card) },
-    "_priority": 0,
-})
-const xjb_qinnang2 = SkillCreater(
-    "xjb_qinnang2", {
-    translate: "青囊书2",
-    description: "",
-    enable: "phaseUse",
-    usable: 1,
-    filter(event, player) {
-        return player.countCards('h', 'tao') > 0 || (player.hasSkill('xjb_qns') && player.countCards('hes', { color: 'red' }) > 0);
-    },
-    filterTarget(card, player, target) {
-        return player.canUse("tao", target);
-    },
-    async content(event, trigger, player) {
-        while (true) {
-            await player.chooseToUse('使用一张桃', { name: 'tao' }, true, function (card, player, target) {
-                const targetx = _status.event.targetX;
-                if (targetx == target) return true;
-                return false;
-            }).set("targetX", event.target);
-            await game.asyncDraw([event.target, player]);
-            if (!player.canUse("tao", event.target)) return;
-            const { bool } = await player.chooseBool('是否继续出【桃】').forResult();
-            if (!bool) return;
-        }
-    },
-    ai: {
-        order: 4.5,
-        result: {
-            target(player, target) {
-                if (target.hp == 1) return 5;
-                if (player == target && player.countCards('h') > player.hp) return 5;
-                return 2;
-            },
-        },
-        threaten: 3,
-    },
-});
-
-
-const xjb_shinu = SkillCreater(
-    "xjb_shinu", {
-    translate: "狮怒",
-    description: "",
-    equipSkill: true,
-    trigger: {
-        player: "damageBegin2",
-    },
-    filter(event, player) {
-        return event.source;
-    },
-    content() {
-        'step 0'
-        trigger.source.damage(trigger.num);
-        'step 1'
-        if (player.hp <= trigger.num) {
-            trigger.cancel();
-            var s = player.getCards('e', { subtype: 'equip2' });
-            player.lose(s, ui.cardPile);
-        }
-    },
-});
-
-const xjb_htzjq = SkillCreater(
-    "xjb_htzjq", {
-    equipSkill: true,
-    transalte: "铁骑",
-    description: "当你使用【杀】指定一名角色为目标后，你令其选择失去一点体力/体力上限。",
-    trigger: {
-        player: "useCardToPlayered",
-    },
-    check: function (event, player) {
-        return get.attitude(player, event.target) <= 0;
-    },
-    filter: function (event, player) {
-        return event.card.name == 'sha';
-    },
-    logTarget: "target",
-    content: function () {
-        trigger.target.xjb_chooseLoseHpMaxHp(true)
-    },
-    ai: {
-        shaRelated: true,
-        ignoreSkill: true,
-    },
-    "_priority": 0,
+    transalte: "续命"
 })
