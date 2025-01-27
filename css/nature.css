@@ -1,0 +1,52 @@
+.player .identity[data-color='black'],
+div[data-nature='black'],
+span[data-nature='black'] {
+    text-shadow: black 0 0 1px, #040404 0 0 2px, #1a1919 0 0 5px, #121212 0 0 10px, #0c0b0b 0 0 10px
+}
+
+div[data-nature='blackm'],
+span[data-nature='blackm'] {
+    text-shadow: black 0 0 1px, #040404 0 0 2px, #040404 0 0 5px, #262323 0 0 5px, #121212 0 0 5px, black 0 0 1px;
+}
+
+div[data-nature='blackmm'],
+span[data-nature='blackmm'] {
+    text-shadow: black 0 0 1px,#040404 0 0 2px,#040404 0 0 2px,#040404 0 0 2px,#040404 0 0 2px,black 0 0 1px;
+}
+
+
+
+/*魂势力*/
+.player .identity[data-color='xjb_hun'],
+div[data-nature='xjb_hun'],
+span[data-nature='xjb_hun'],
+a[data-nature='xjb_hun'],
+div[data-nature='flower'],
+span[data-nature='flower'] {
+    text-decoration: none;
+    text-shadow: black 0 0 1px, #e75480 0 0 2px, #e75480 0 0 5px, #e75480 0 0 10px, #e75480 0 0 10px
+}
+
+div[data-nature='xjb_hunm'],
+span[data-nature='xjb_hunm'],
+div[data-nature='flowerm'],
+span[data-nature='flowerm'] {
+    text-shadow: black 0 0 1px, #e75480 0 0 2px, #e75480 0 0 5px, #e75480 0 0 5px, #e75480 0 0 5px, black 0 0 1px;
+}
+
+div[data-nature='xjb_hunmm'],
+span[data-nature='xjb_hunmm'],
+div[data-nature='flowermm'],
+span[data-nature='flowermm'] {
+    text-shadow: black 0 0 1px, #e75480 0 0 2px, #e75480 0 0 2px, #e75480 0 0 2px, #e75480 0 0 2px, black 0 0 1px;
+}
+
+div[data-nature='xjb_hunmm'],
+span[data-nature='xjb_hunmm'],
+div[data-nature='xjb_hunm'],
+span[data-nature='xjb_hunm'],
+.player .identity[data-color='xjb_hun'],
+div[data-nature='xjb_hun'],
+span[data-nature='xjb_hun'] {
+    animation: xjb_tran 7s infinite linear
+}

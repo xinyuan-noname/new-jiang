@@ -1,3 +1,4 @@
+import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 export const soulStoreCard = {};
 export const soulStoreCardTranslate = {};
 function CardCreater(name, card) {
@@ -62,7 +63,7 @@ const xjb_penglai = CardCreater(
         },
     },
     fullskin: true,
-    image: "ext:新将包/xjb_Infinity.png",
+    image: "ext:新将包/image/card_store/xjb_Infinity.png",
     translate: '蓬莱',
     description: '出牌阶段及濒死时，对一名角色使用，其:<br>1.使用一张【酒】并将本回合使用过【酒】的次数清零;<br>2.体力值变为无限，持续回合由抽到的数字决定<br>3.失去技能废除及恢复的能力'
 });
@@ -92,7 +93,7 @@ const xjb_skill_off_card = CardCreater(
         target.turnOver()
     },
     fullskin: true,
-    image: "ext:新将包/xjb_jingu.png",
+    image: "ext:新将包/image/card_store/xjb_jingu.png",
     translate: '禁锢卡',
     description: '出牌阶段，你对一名角色使用此牌，其翻面并封印所有技能，持续回合由抽取数字决定。'
 });
@@ -121,7 +122,7 @@ const xjb_zhihuan = CardCreater(
         }
     },
     fullskin: true,
-    image: "ext:新将包/xjb_zhihuan.png",
+    image: "ext:新将包/image/card_store/xjb_zhihuan.png",
     translate: '置换卡',
     description: '出牌阶段，你对一名角色使用此牌，其弃置至少一张牌，然后你摸等量张牌。<br>最大回收点数:4'
 });
@@ -137,12 +138,10 @@ const xjb_lingliCheck = CardCreater(
     },
     content: function () {
         "step 0"
-        var num = xjb_lingli.area["fanchan"]()
-        target.xjb_addlingli(14 - cards[0].number).set("lingliSource", "card")
-
+        target.xjb_addLingli(14 - cards[0].number).set("lingliSource", "card")
     },
     fullskin: true,
-    image: "ext:新将包/lingli/check.png",
+    image: "ext:新将包/image/card_store/check.png",
     translate: "灵力支票",
     description: '出牌阶段对一名角色使用，其获得灵力。',
     ai: {
@@ -169,7 +168,7 @@ const xjb_shenshapo = CardCreater(
             player: 1,
         },
     },
-    image: "ext:新将包/xjb_shenshapo.png",
+    image: "ext:新将包/image/card_store/xjb_shenshapo.png",
     type: "xjb_unique",
     subtype: "xjb_unique_reusable",
     enable: true,
@@ -226,7 +225,7 @@ const xjb_seizeHpCard = CardCreater(
         }
 
     },
-    image: "ext:新将包/xjb_seizeHpCard.png",
+    image: "ext:新将包/image/card_store/xjb_seizeHpCard.png",
     translate: '体力抓取',
     description: '出牌阶段对一名手牌数小于你的其他角色使用:你与其的拼点，若你赢，你获得其一张体力牌<br>最大回收点数:1',
     ai: {
@@ -242,7 +241,7 @@ const xjb_seizeHpCard = CardCreater(
 })
 const xjb_tianming_huobi2 = CardCreater(
     "xjb_tianming_huobi2", {
-    image: "ext:新将包/xjb_tianming_huobi2.png",
+    image: "ext:新将包/image/card_store/xjb_tianming_huobi2.png",
     audio: true,
     fullskin: true,
     type: "xjb_unique",
@@ -274,7 +273,7 @@ const xjb_tianming_huobi2 = CardCreater(
 })
 const xjb_tianming_huobi1 = CardCreater(
     "xjb_tianming_huobi1", {
-    image: "ext:新将包/xjb_tianming_huobi1.png",
+    image: "ext:新将包/image/card_store/xjb_tianming_huobi1.png",
     audio: true,
     fullskin: true,
     recastable: true,
@@ -306,7 +305,6 @@ const xjb_tianming_huobi1 = CardCreater(
 })
 const xjb_skillCard = CardCreater(
     "xjb_skillCard", {
-    audio: "ext:新将包",
     type: "xjb_unique",
     subtype: "xjb_unique_talent",
     enable: true,
@@ -318,7 +316,7 @@ const xjb_skillCard = CardCreater(
         return card.storage.xjb_allowed == true;;
     },
     cardConstructor(id, boolean) {
-        var it = lib.card[id + "_card"] = {
+        const it = lib.card[id + "_card"] = {
             enable: function (event, player) {
                 return false
             },
@@ -333,97 +331,66 @@ const xjb_skillCard = CardCreater(
                 },
             },
             fullskin: true,
-            image: "ext:新将包/skillCard.png"
+            image: "ext:新将包/image/card_store/skillCard.png"
         };
         if (boolean === true) {
             it.subtype = "xjb_unique_SanSkill";
         }
-        if (["xin_guimeng_1"].includes(id)) {
-            it.debuff = true
-            it.ai.basic.value = 0
-            it.ai.basic.useful = 0
-        }
         lib.translate[id + "_card"] = lib.translate[id]
-        lib.translate[id + "_card_info"] = "当你持有或武将牌上存在" + get.translation(id) + "时，你视为拥有技能:【" + get.translation(id) + "】<br><ins><i>" + lib.translate[id + "_info"] + "</i></ins>"
-
-    },
-    skillLeadIn(id, fatherName) {
-        if (!fatherName) fatherName = id
-        var skill = game.xjb_EqualizeSkillObject(id + "_card", lib.skill[id])
-        if (skill.init) skill.init = function (player, skill) { player.storage[skill] = false }
-        if (!skill.filter) {
-            skill.filter = function () { return true }
+        lib.translate[id + "_card_info"] = "当你持有或武将牌上存在" + get.translation(id) + "时，你视为拥有技能:【" + get.translation(id) + "】<br><ins><i>" + lib.translate[id + "_info"] + "</i></ins>";
+        if (!lib.skill.global.includes("xjb_skillCardObserver")) {
+            game.addGlobalSkill("xjb_skillCardObserver");
         }
-        skill.filter2 = skill.filter
+        lib.skill.xjb_skillCardObserver.observeList.add(id + "_card");
+    },
+    skillLeadIn(id) {
+        const skillCardName = id + "_card"
+        const skill = get.copy(lib.skill[id])
+        if (!skill.filter) skill.filter = () => true;
+        skill.filter2 = skill.filter;
+        skill.skillCardName = skillCardName;
         skill.filter = function (event, player) {
-            if (player.countCards("hxs", { name: fatherName + "_card" }) < 1) return false;
+            const name = this.skillCardName;
+            if (player.countCards("hxs", { name }) < 1) return false;
             return this.filter2.apply(this, arguments);
         }
-        if (skill.group) {
-            if (typeof skill.group == "string") {
-                this.skillLeadIn(skill.group, id)
-                skill.group = skill.group + "_card"
-                lib.translate[skill.group + '_card'] = lib.translate[skill.group]
-            }
-            else if (Array.isArray(skill.group)) {
-                skill.group.forEach((item, index) => {
-                    this.skillLeadIn(item, id)
-                    skill.group[index] = item + "_card"
-                    lib.translate[item + "_card"] = lib.translate[item]
-
-                })
-            }
-        }
-        game.addGlobalSkill(id + "_card")
+        lib.skill[skillCardName] = skill;
+        return skill;
     },
     SanSkill: [
-        'xin_zulong',
-        'xjb_xinsheng',
-        'lunaticMasochist',
-        'xjb_sicuan'
+        "xjb_reviveDead",
+        'xjb_lunaticMasochist',
+        "xjb_JudgeReversal",
+        "xjb_arrangePhase",
+        "xjb_seasonChange",
+        "xjb_livelyForever",
+        "xjb_yinyangxiangsheng"
     ],
-    content() {
-        'step 0'
-        var list = ['输入id', '神圣技能']
-        player.chooseControl(list)
-        'step 1'
-        if (result.control == '输入id') event.goto(2);
-        else if (result.control == '神圣技能') event.goto(3)
-        'step 2'
-        game.pause()
-        game.xjb_create.prompt("请输入技能的id", "", function () {
-            game.resume()
-            var id = this.result;
-            if (Object.keys(lib.skill).includes(id)) {
-                if (lib.skill[id].mod) {
-                    player.gain(cards)
-                    return game.xjb_create.alert("该技能不在合法技能名录中！")
-                }
-                game.xjb_createSkillCard(id, target)
+    async content(event, trigger, player) {
+        const { control } = await player.chooseControl(["输入id", "神圣技能"]).forResult();
+        if (control == '输入id') {
+            const { result: id, bool } = await game.xjb_create.promise.chooseSkill(void 0, true);
+            if (bool && id in lib.skill) {
+                const toGain = game.xjb_createSkillCard(id);
+                await event.target.gain(toGain);
             } else {
-                player.gain(cards)
-                game.xjb_create.alert("未找到该技能！")
+                await player.gain(event.cards)
+                if (bool) await game.xjb_create.promise.alert("不是合法技能！")
             }
-        }, function () {
-            game.resume()
-            player.gain(cards)
-        })
-        event.finish()
-        'step 3'
-        var list = []
-        for (let i = 0; i < lib.card.xjb_skillCard.SanSkill.length; i++) {
-            lib.card.xjb_skillCard.cardConstructor(lib.card.xjb_skillCard.SanSkill[i], true)
-            list.push(game.createCard(lib.card.xjb_skillCard.SanSkill[i] + '_card'))
+            return;
         }
-        player.chooseButton(['选择一张神圣技能牌', list], true)
-        'step 4'
-        if (result.links) {
-            player.gain(result.links[0], "gain2")
-            lib.card.xjb_skillCard.skillLeadIn(result.links[0].name.slice(0, result.links[0].name.lastIndexOf('_card')))
+        else if (control == '神圣技能') {
+            const list = lib.card.xjb_skillCard.SanSkill.map(id => game.xjb_createSkillCard(id))
+            const { bool, links } = await player.chooseButton(['选择一张神圣技能牌', [list, "vcard"]]).forResult();
+            if (bool) {
+                event.target.gain(links[0], "gain2")
+            }else{
+                await player.gain(event.cards)
+            }
         }
     },
     fullskin: true,
-    image: "ext:新将包/skillCard.png",
+    image: "ext:新将包/image/card_store/skillCard.png",
     translate: "技能卡",
     description: '出牌阶段，你可使用此牌，然后选择一项:1.输入id，获得一张对应的技能牌;2.获得一张神圣技能牌。'
 })

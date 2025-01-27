@@ -1,8 +1,9 @@
+import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 export const xjbSkill = {};
 export const xjbTranslate = {};
 /**
  * 
- * @param {*} name 
+ * @param {string} name 
  * @param {Skill} skill 
  * @returns 
  */
@@ -15,19 +16,151 @@ function SkillCreater(name, skill) {
     return xjbSkill[name];
 };
 
-const xin_yexi = SkillCreater(
-    "xin_yexi", {
+
+
+//吕蒙技能
+const xjb_xiaomeng = SkillCreater(
+    "xjb_xiaomeng", {
+    translate: "骁猛",
+    description: "你使用【杀】造成伤害时，你可弃置受到伤害的角色的一张牌。若此牌为【杀】，你可以使用之。",
+    trigger: {
+        source: "damageSource",
+    },
+    filter: function (event, player, name) {
+        return (event.card.name === "sha") && (event.player.countDiscardableCards(player, "he"));
+    },
+    content: async function (event, trigger, player) {
+        const { result: { cards } } = await player.discardPlayerCard(trigger.player, "he");
+        if (cards[0].name === "sha") {
+            await player.chooseUseTarget(cards[0], 1);
+        }
+    }
+})
+const xjb_shelie = SkillCreater(
+    "xjb_shelie", {
+    translate: "涉猎",
+    description: "摸牌阶段，你可改为翻出牌堆顶两张牌并获得之，若其中没有普通锦囊牌，你重复此流程。",
+    trigger: {
+        player: "phaseDrawBegin"
+    },
+    check: function (event, player) {
+        return get.attitude(player, event.player) <= 0;
+    },
+    content: async function (event, trigger, player) {
+        trigger.changeToZero();
+        let bool = true;
+        while (bool) {
+            const cards = get.cards(2);
+            await game.cardsGotoOrdering(cards);
+            await player.gain(cards, "gain2");
+            if (cards.some(card => get.type(card, null, false) === "trick")) bool = false;
+        }
+    }
+})
+const xjb_keji = SkillCreater(
+    "xjb_keji", {
+    translate: "克己",
+    description: "摸牌阶段结束后，你可以展示手牌中所有带有伤害标签的牌，这些牌本回合不计入手牌上限且不能被使用或打出",
+    trigger: {
+        player: "phaseDrawEnd"
+    },
+    marktext: "克",
+    intro: {
+        name: "克己",
+        content: "本技能已发动#次"
+    },
+    content: async function (event, trigger, player) {
+        const cards = player.getCards("h", (card) => get.tag(card, "damage"));
+        await player.showCards(cards);
+        player.addGaintag(cards, "xjb_keji");
+        player.when({ player: "phaseAfter" }).then(() => {
+            player.removeGaintag("xjb_keji");
+        })
+        player.addMark("xjb_keji");
+    },
+    mod: {
+        ignoredHandcard: function (card, player) {
+            if (card.hasGaintag("xjb_keji")) {
+                return true;
+            }
+        },
+        cardDiscardable: function (card, player, name) {
+            if (name == "phaseDiscard" && card.hasGaintag("xjb_keji")) return false;
+        },
+        cardEnabled2: function (card, player) {
+            if (card.hasGaintag("xjb_keji") && get.position(card) === "h") return false;
+        },
+    }
+})
+const xjb_guamu = SkillCreater(
+    "xjb_guamu", {
+    translate: "刮目",
+    description: "觉醒技，准备阶段，若你已使用三次〖克己〗，你减少一点体力上限，然后失去〖涉猎〗并获得〖攻心〗。",
+    juexingji: true,
+    animationColor: "wood",
+    skillAnimation: true,
+    forced: true,
+    trigger: {
+        player: "phaseZhunbeiBegin"
+    },
+    derivation: ["xjb_gongxin"],
+    filter: function (event, player, name) {
+        if (player.countMark("xjb_keji") >= 3) return true
+    },
+    content: async function (event, trigger, player) {
+        player.awakenSkill(event.name);
+        player.loseMaxHp();
+        player.addSkill("xjb_gongxin");
+        player.removeSkill("xjb_shelie");
+    }
+})
+const xjb_gongxin = SkillCreater(
+    "xjb_gongxin", {
+    translate: "攻心",
+    description: "出牌阶段限一次，你可以令一名其他角色将一张手牌标记为“心”，然后你观看其手牌并选择一张展示之。若为“心”，你获得之并令其失去一点体力，本回合你可多发动一次该技能。",
+    enable: "phaseUse",
+    usable: 1,
+    filterTarget: function (event, player, target) {
+        return target.countCards("h") > 0 && target != player;
+    },
+    content: async function (event, trigger, player) {
+        const { result: { bool, cards } } = await event.target.chooseCard("h", true).set("ai", card => Math.random() > 0.5);
+        if (bool) {
+            event.target.addGaintag(cards, "xjb_gongxin_xin")
+            const hs = event.target.getCards("h");
+            const { result: { links } } = await player.chooseCardButton("猜测哪张是“心”", hs, true);
+            await player.showCards(links[0], get.translation(player, "猜测", links[0], "是“心”"));
+            if (links[0] === cards[0]) {
+                event.target.loseHp();
+                player.gain(links[0], "gain2")
+                player.getStat().skill.xjb_gongxin--;
+            }
+        }
+    },
+    ai: {
+        order: 8,
+        result: {
+            target: function (player, target, card) {
+                if (target.countCards('h') === 1) return - 3
+                return -2;
+            }
+        }
+    }
+})
+
+//甘宁技能
+const xjb_yexi = SkillCreater(
+    "xjb_yexi", {
     enable: "phaseUse",
     filter: function (event, player) {
         return player.countCards('h') > 0
     },
     filterTarget: function (card, player, target) {
-        game.print(get.itemtype(card))
         return target.countCards("he");
     },
     filterCard: function (card) {
         if (ui.selected.cards.length) {
-            return get.suit(card) == get.suit(ui.selected.cards[0])
+            return get.suit(card) === get.suit(ui.selected.cards[0])
         }
         return true
     },
@@ -39,9 +172,11 @@ const xin_yexi = SkillCreater(
     check: function (card) {
         return 6 - get.value(card)
     },
-    content: function () {
-        player.discardPlayerCard("he", cards.length);
-        if (cards.length > 1) player.useCard({ name: 'sha', nature: "thunder" }, target, false);
+    content: async function (event, trigger, player) {
+        await player.discardPlayerCard("he", event.target, [1, event.cards.length]);
+        if (event.cards.length > 1) {
+            await player.useCard({ name: 'sha', nature: "thunder" }, event.target, false);
+        }
     },
     translate: "夜袭",
     description: "出牌阶段，你可以弃置一种花色的所有手牌，然后你弃置一名角色等量张牌。若你以此弃置的牌数>1，你对其使用一张无距离限制的雷【杀】，此【杀】计入次数限制。",
@@ -56,30 +191,61 @@ const xin_yexi = SkillCreater(
         threaten: 1.5,
     }
 });
+const xjb_zirou = SkillCreater(
+    "xjb_ziruo", {
+    translate: "自若",
+    description: "当你成为其他角色的牌的目标时，你可为此牌减少任意名未横置的目标，然后这些目标横置。",
+    trigger: {
+        target: "useCardToTarget",
+    },
+    filter: function (event, player) {
+        if (event.player == player) return false
+        if (!event.targets || !event.targets.includes(player)) return false;
+        return game.hasPlayer(function (current) {
+            return event.targets.includes(current) && !current.isLinked();
+        });
+    },
+    content: function () {
+        "step 0"
+        player.chooseTarget('为此牌减少任意个目标',
+            [1, Infinity], function (card, player, target) {
+                return _status.event.targets.includes(target) && !target.isLinked();
+            }).set('ai', function (target) {
+                var trigger = _status.event.getTrigger();
+                if (!trigger.excluded.includes(target)) {
+                    return -get.effect(target, trigger.card, trigger.player, _status.event.player);
+                }
+                return -1;
+            }).set('targets', trigger.targets);
+        "step 1"
+        if (result.bool) {
+            trigger.getParent().excluded.addArray(result.targets);
+            game.delay();
+            for (var i = 0; i < result.targets.length; i++) {
+                result.targets[i].link()
+            }
+        }
+    },
+    "_priority": 0,
+})
+
 const xjb_jianxiong = SkillCreater(
     "xjb_jianxiong", {
     trigger: {
         player: "damageEnd"
     },
-    frequent: true,
     getIndex: function (event, player, triggername) {
         return event.num;
     },
     content: async function (event, trigger, player) {
-        const orderingCards = [...ui.ordering.children]
-        const num = orderingCards.length + 1
-        const dialog = ui.create.dialog(`请选择${get.cnNumber(num)}张牌获得之`)
-        dialog.add('<div class="text center" style="margin: 0px;">牌堆顶</div>')
-        dialog.add(get.cards(num))
-        if (orderingCards.length) {
-            dialog.add('<div class="text center" style="margin: 0px;">中央区</div>')
-            dialog.add(orderingCards)
-        }
-        const { links } = await player.chooseButton(dialog, num, true).forResult()
-        await player.gain(links, 'gain2')
+        if (!trigger.cards) trigger.cards = [];
+        const cards = trigger.cards.filterInD();
+        const num = Math.max(2 - cards.length, 0)
+        await player.draw(num);
+        await player.gain(cards, 'gain2')
     },
     translate: "奸雄",
-    description: "当你受到一点伤害后，你可以从牌堆顶的X张牌、此时中央区的牌中选择X张获得之(X为此时中央区的牌数+1)。",
+    description: "当你受到一点伤害后，你可以摸2-X张牌，然后你获得对你造成伤害的牌。(X为位于中央区的对你造成伤害的牌的数量且至多为2)",
     ai: {
         maixie: true,
         "maixie_hp": true,
@@ -95,170 +261,7 @@ const xjb_jianxiong = SkillCreater(
         },
     },
 })
-const xin_shiyin = SkillCreater(
-    "xin_shiyin", {
-    trigger: {
-        player: ["loseAfter", "loseAsyncAfter"],
-    },
-    getType(event, player) {
-        let cards = [];
-        for (const target of [player, player.getPrevious()]) {
-            const evt = event.getl(target);
-            if (evt && evt.cards2 && evt.cards2.some(i => get.position(i) == "d")) {
-                if (
-                    target == player ||
-                    target
-                        .getHistory("lose", evt => {
-                            return evt.type == "discard" && evt.getlx !== false;
-                        })
-                        .indexOf(event) == 0
-                ) {
-                    cards.addArray(evt.cards2.filter(i => get.position(i) == "d"));
-                }
-            }
-        }
-        let types = [];
-        for (let each of cards) {
-            types.add(get.type2(each, player));
-        }
-        return types
-    },
-    filter(event, player) {
-        if (player !== _status.currentPhase) return false;
-        if (event.type != "discard" || event.getlx === false) return false;
-        return get.info("xin_shiyin").getType(event, player).length === 1;
-    },
-    async cost(event, trigger, player) {
-        let type = get.info("xin_shiyin").getType(trigger, player)[0];
-        let number = 0;
-        switch (type) {
-            case 'basic': number = 11; break;
-            case 'trick': number = 12; break;
-            case 'equip': number = 4; break;
-        }
-        event.result = await player.chooseTarget(get.xjb_number(number, 1)).forResult();
-    },
-    async content(event, trigger, player) {
-        let type = get.info("xin_shiyin").getType(trigger, player)[0];
-        let toDo = 0;
-        switch (type) {
-            case 'basic': toDo = "recover"; break;
-            case 'trick': toDo = "loseHp"; break;
-            case 'equip': toDo = "damage"; break;
-        }
-        event.targets[0][toDo](toDo === "loseHp" ? void 0 : player, toDo === "damage" ? "fire" : void 0)
-    },
-    translate: "识音",
-    description: "你于回合内因弃置失去牌后，若你失去的牌均为：基本牌/锦囊牌/装备牌，你可以令场上一名角色：恢复1点体力/失去1点体力/受到一点火属性伤害。"
-})
-const xjb_qizuo = SkillCreater(
-    "xjb_qizuo", {
-    group: ["xjb_qizuo_gain"],
-    trigger: {
-        global: "roundStart",
-    },
-    mark: true,
-    intro: {
-        name: "奇",
-        content: function () {
-            const orderingCards = [...ui.ordering.children].filter(card => card["xjb_qizuo"]);
-            if (orderingCards.length) return `${get.translation(orderingCards[0])}`
-            return `无`
-
-        }
-    },
-    filter: function (event, player) {
-        return player.countCards("h") > 0
-    },
-    frequent: true,
-    content: async function (event, trigger, player) {
-        const { result: { bool, cards } } = await player.chooseCard('h', 1, function (card) {
-            return true;
-        }).set("prompt", "是否将一张牌置于处理区称为'奇'并获得上一张'奇'？")
-        if (bool) {
-            //
-            const orderingCards = [...ui.ordering.children].filter(card => card[event.name]);
-            //
-            event.cardsOrdered = true;
-            event.noOrdering = true;
-            await game.cardsGotoOrdering(cards);
-            await ui.updatehl()
-            player.$throw(cards)
-            cards[0][event.name] = true;
-            await player.gain(orderingCards, "gain2")
-            if (orderingCards.length) delete orderingCards[0][event.name];
-        }
-        else event.finish()
-    },
-    translate: "奇佐",
-    description: "每轮开始时，你可以将一张牌置于处理区称为'奇'并获得上一张'奇'。每回合限一次，当处理区牌数增加时，若此牌与'奇'花色相同，你可令一名角色获得之。",
-    ai: {
-        threaten: 1.3,
-    },
-    subSkill: {
-        "gain": {
-            init(player, skill) {
-                const observer = new MutationObserver(list => {
-                    list.forEach(i => {
-                        if (i.type == "childList" && i.addedNodes.length) {
-                            const cards = [...i.addedNodes].filter(child => child.nodeType === Node.ELEMENT_NODE)
-                            if (cards.length) {
-                                var next = game.createEvent('xjb_orderingAdd');
-                                next.cards = cards;
-                                next.player = _status.event.player;
-                                next.setContent(function () {
-                                    "step 0"
-                                    game.log(event.cards, "进入处理区");
-                                    ui.updatehl()
-                                    "step 1"
-                                    event.trigger("xjb_orderingAdded");
-                                })
-                            }
-                        }
-                    })
-                });
-                observer.observe(ui.ordering, { childList: true });
-            },
-            trigger: {
-                global: ["xjb_orderingAdded"]
-            },
-            filter: function (event, player) {
-                if (player.hasSkill("xjb_qizuo_off")) return;
-                const ordering = [...ui.ordering.children]
-                const orderingCards = [...ui.ordering.children].filter(card => card["xjb_qizuo"]);
-                const orderingCard = orderingCards[0]
-                const cards = event.cards.filter(card => get.suit(card, false) === get.suit(orderingCard, false))
-                return cards.length;
-            },
-            direct: true,
-            content: async function (event, trigger, player) {
-                const ordering = [...ui.ordering.children]
-                const orderingCards = [...ui.ordering.children].filter(card => card["xjb_qizuo"]);
-                const orderingCard = orderingCards[0]
-                const cards = trigger.cards.filter(card => get.suit(card, false) === get.suit(orderingCard, false));
-                const { result: { bool, targets } } = await player.chooseTarget("令一名角色获得" + get.translation(cards)).set("ai", function (target) {
-                    var att = get.attitude(player, target);
-                    if (att <= 0) return 0;
-                    if (att < 3) return att;
-                    att = 10 - get.distance(player, target, 'absolute') / game.players.length;
-                    if (target.hasSkill('gwqinwu')) {
-                        att /= 1.5;
-                    }
-                    if (target.hasJudge('lebu') || target.skipList.includes('phaseUse')) {
-                        att /= 2;
-                    }
-                    return att;
-                })
-                if (bool) {
-                    targets[0].gain(cards, "gain2")
-                    player.addTempSkill("xjb_qizuo_off")
-                }
-            }
-        },
-        "off": {},
-    }
-})
-
+//汉曹操技能
 const xin_zhibang = SkillCreater(
     "xin_zhibang", {
     init: function (player, skill) {
@@ -308,7 +311,6 @@ const xin_zhibang = SkillCreater(
 });
 const xin_chuhui = SkillCreater(
     "xin_chuhui", {
-    audio: "ext:新将包:false",
     enable: "phaseUse",
     filter: function (event, player) {
         return player.getStorage('xin_zhibang').length >= 5;
@@ -335,6 +337,7 @@ const xin_chuhui = SkillCreater(
     description: "出牌阶段，若你\"棒\"数量≥5，你可令一名角色获得全部的\"棒\",然后对其造成x点伤害(x为棒的数量,向下取整)。",
 })
 
+//刘禅技能
 const xjb_fangquan = SkillCreater(
     "xjb_fangquan", {
     enable: "phaseUse",
@@ -351,17 +354,17 @@ const xjb_fangquan = SkillCreater(
     selectCard: -1,
     discard: false,
     lose: false,
-    position: "he",
+    position: "h",
     filterTarget: function (card, player, target) {
         return target != player;
     },
-    prompt: "将带有伤害标签的牌、武器牌、-1马牌，交给一名其他角色并结束你的出牌阶段，令其额外进行一个回合",
+    prompt: "将带有伤害标签的牌、武器牌、-1马牌，交给一名其他角色，令其额外进行一个回合",
     content: function () {
         target.gain(cards, "giveAuto")
         target.insertPhase();
     },
     translate: '放权',
-    description: "出牌阶段限一次，若你本回合未造成过伤害，你可以将所有的带有伤害标签的牌、武器牌、-1马牌，交给一名其他角色并令其进行一个额外的回合。",
+    description: "出牌阶段限一次，若你本回合未造成过伤害，你可以将手牌中所有带有伤害标签的牌、武器牌、-1马牌，交给一名其他角色并令其进行一个额外的回合。",
     ai: {
         order: 2,
         result: {
@@ -382,17 +385,15 @@ const xjb_xiangle = SkillCreater(
         return event.player.countCards('j') > 0 && player != event.player
     },
     prompt2: "是否将其判定区内一张牌移至你的判定区?",
-    content: function () {
-        "step 0"
-        player.choosePlayerCard("j", trigger.player).set("filterButton", function (button) {
-            if (player.canAddJudge(button.link)) return true
+    content: async function (event, trigger, player) {
+        const { result } = await player.choosePlayerCard("j", trigger.player).set("filterButton", function (button) {
+            if (_status.event.player.canAddJudge(button.link)) return true;
         })
-        "step 1"
         if (result.bool) {
             let card = result.buttons[0].link;
             if (card.viewAs) player.addJudge({ name: card.viewAs }, [card])
-            else player.addJudge(card)
-            trigger.player.$give(card, player)
+            else player.addJudge(card);
+            trigger.player.$give(card, player);
         }
     },
     translate: "享乐",
@@ -414,7 +415,7 @@ const xjb_xiangle = SkillCreater(
     }
 })
 
-
+//诸葛亮技能
 const xjb_zhijue = SkillCreater(
     "xjb_zhijue", {
     trigger: {
@@ -426,45 +427,45 @@ const xjb_zhijue = SkillCreater(
             && get.type2(event.card) === 'trick'
     },
     translate: "智绝",
-    description: "一名其他角色使用锦囊牌时，你可以弃置一张相同点数/颜色的牌(虚拟牌则改为任意一张)，取消此牌的所有目标。该角色获得X张残【杀】(X为此牌的目标数且至少为1)",
+    description: "一名其他角色使用锦囊牌时，你可以弃置一张相同点数/颜色的牌(虚拟牌则改为任意一张)，取消此牌的所有目标。",
     cost: async function (event, trigger, player) {
-        const { bool } = await player.chooseToDiscard(
-            card => {
-                const cardx = event.getParent("useCard").card;
-                if (cardx.cards.length === 0) return true;
-                return get.color(card) === get.color(cardx)
-                    || get.number(card) === get.number(cardx)
-            },
+        event.result = await player.chooseToDiscard(
             'he',
             "弃置一张相同点数/颜色的牌，取消此牌的所有目标。"
-        ).forResult();
-        event.result = { bool, cost_data: { cards: event.cards } }
+        ).set("filterCard", (card) => {
+            const cardx = _status.event.cardx;
+            if (cardx.cards.length === 0) return true;
+            return get.color(card) === get.color(cardx) || get.number(card) === get.number(cardx);
+        }).set("cardx", trigger.card)
+            .forResult()
     },
     content: async function (event, trigger, player) {
-        const tl = Math.max(trigger.targets.length, 1)
-        trigger.targets.length = 0;
-        trigger.all_excluded = true;
-        trigger.player.xjb_gainRemnantCard('sha', tl)
+        game.broadcastAll(triggerX => {
+            triggerX.targets.length = 0;
+            triggerX.all_excluded = true;
+        }, trigger);
     },
 })
 const xjb_qiongzhi = SkillCreater(
     "xjb_qiongzhi", {
     enable: "phaseUse",
     translate: "穷智",
-    description: "出牌阶段，你可令一名角色摸一张牌并跳过下一个摸牌阶段，然后其依次使用其手牌中的锦囊牌；若无锦囊牌，本回合你可以视为使用任意一张普通锦囊牌。",
+    description: "出牌阶段，你可令一名角色摸一张牌并跳过下一个摸牌阶段，然后其依次选择使用其手牌中的锦囊牌；若其未使用锦囊牌，本回合你可以视为使用任意一张普通锦囊牌。",
     usable: 1,
     filterTarget: function (card, player, target) {
         if (!(target != player)) return false;
         return true;
     },
     content: async function (event, trigger, player) {
-        event.target.draw();
+        await event.target.draw();
         event.target.skip("phaseDraw");
-        const hs = event.target.getCards('h', card => get.type2(card) === "trick")
+        let count = 0;
+        const hs = event.target.getCards('h', card => get.type2(card) === "trick");
         for (const card of hs) {
-            event.target.chooseUseTarget(card, true);
+            const bool = await event.target.chooseUseTarget(card).forResult("bool");
+            if (bool) count++;
         }
-        if (hs.length === 0) player.addTempSkill("xjb_qiongzhi_useTrick")
+        if (count === 0) player.addTempSkill("xjb_qiongzhi_useTrick");
     },
     subSkill: {
         useTrick: {
@@ -478,7 +479,7 @@ const xjb_qiongzhi = SkillCreater(
                 dialog: function (event, player) {
                     const list = [];
                     for (const i of lib.inpile) {
-                        if (get.type(i, "trick") !== "trick") continue;
+                        if (get.type(i) !== "trick") continue;
                         if (!event.filterCard({ name: i }, player, event)) continue;
                         list.push(["锦囊", "", i]);
                     }
@@ -510,7 +511,7 @@ const xjb_qiongzhi = SkillCreater(
     }
 })
 
-
+//司马懿技能
 const xjb_xianmou = SkillCreater(
     "xjb_xianmou", {
     trigger: {
@@ -518,50 +519,66 @@ const xjb_xianmou = SkillCreater(
         player: "phaseUseBegin"
     },
     translate: "先谋",
-    description: "你的出牌阶段开始时/一张牌判定牌生效前，你可以视为一张【洞烛先机】，然后将至少两张牌置于牌堆顶。",
+    description: "你的出牌阶段开始时/一张牌判定牌生效前，你可以将一张牌当作一张【洞烛先机】使用。你的【洞烛先机】中卜算2改为卜算3",
+    cost: async function (event, trigger, player) {
+        const { bool, cards } = await player.chooseCard("he")
+            .set("prompt", "先谋")
+            .set("prompt", "将一张牌当作【洞烛先机】使用")
+            .forResult();
+        event.result = { bool, cost_data: { cards } }
+    },
     content: async function (event, trigger, player) {
-        await player.chooseUseTarget({ name: "dongzhuxianji", isCard: true }, true);
-        const result = await player.chooseToDiscard(
-            'he',
-            [2, Infinity],
-            '将至少两张牌置于牌堆顶',
-            true,
-        ).forResult();
-        if (result.bool) {
-            while (result.cards.length > 0) {
-                ui.cardPile.insertBefore(result.cards.pop(), ui.cardPile.firstChild);
+        await player.chooseUseTarget({ name: "dongzhuxianji", isCard: true, storage: { xjb_xianmou: true } }, event.cost_data.cards, true);
+    },
+    group: ["xjb_xianmou_dongzhu"],
+    subSkill: {
+        dongzhu: {
+            trigger: {
+                player: "dongzhuxianjiBegin"
+            },
+            direct: true,
+            filter(event, player) {
+                return event.card.storage.xjb_xianmou;
+            },
+            dongzhuContent: async function (event, trigger, player) {
+                const target = event.target;
+                await target.chooseToGuanxing(3);
+                await target.draw(2);
+            },
+            content: async function (event, trigger, player) {
+                trigger.setContent(lib.skill.xjb_xianmou_dongzhu.dongzhuContent)
             }
-            game.log(player, '将', result.cards, '置于牌堆顶');
         }
     }
 })
-const xjb_yinlve = SkillCreater(
-    "xjb_yinlve", {
+const xjb_yintao = SkillCreater(
+    "xjb_yintao", {
     trigger: {
         global: "judgeEnd",
     },
-    translate: "隐略",
-    description: "你对一名角色使用一张锦囊牌时，你可以令其获得一张同名的残牌。",
+    translate: "隐韬",
+    description: "你使用一张有实体牌的普通锦囊牌时，若此时不是你的判定阶段，你可以将蓄谋此牌。",
     trigger: {
         player: ["useCardEnd"],
     },
-    frequent: true,
+    prompt: function (event, player) {
+        return `是否蓄谋${get.translation(event.card)}`
+    },
     filter: function (event, player) {
-        return event.targets && event.card && get.type2(event.card) === 'trick';
+        return event.cards.length && get.type(event.card) === 'trick'
+            && (!event.getParent("phaseJudge", true) || _status.currentPhase !== player);
     },
     content: async function (event, trigger, player) {
-        for (const target of trigger.targets) {
-            target.xjb_gainRemnantCard(trigger.card.name)
-        }
+        player.addJudge({ name: "xumou_jsrg" }, trigger.cards);
     },
 })
 
+//典韦技能
 const xin_huzhu = SkillCreater(
     "xin_huzhu", {
     translate: "护主",
-    description: "当一名其他角色使用【杀】指定目标时，你可以选择以下一项执行之：⑴弃置一张牌，目标角色摸两张牌;⑵失去一点体力，目标角色获得1个“护”。 ",
+    description: "当一名其他角色指定其他角色为【杀】目标时，你可以获得一张同属性的残【杀】令其获得一个“护”",
     derivation: ["xin_huzhu2"],
-    audio: "ext:新将包:false",
     trigger: {
         global: "useCardToTargeted",
     },
@@ -569,28 +586,18 @@ const xin_huzhu = SkillCreater(
         return get.attitude(player, event.target) > 0 && !event.target.hasSkill('xin_huzhu2');
     },
     filter: function (event, player) {
-        if (event.card.name == 'sha' && event.player != player) return true
-        return false
+        if (event.card.name !== 'sha') return false;
+        if (event.target === player) return false;
+        if (event.player === player) return false
+        return true;
     },
     prompt: function (event, player) {
         return '是否对' + get.translation(event.target) + '发动〖护主〗？'
     },
     content: function () {
-        'step 0'
-        player.chooseToDiscard('he', 1, '弃置一张牌，或点取消失去一点体力').set('ai', function (card) {
-            return 8 - get.value(card)
-        })
-        'step 1'
-        if (result.bool) {
-            trigger.target.draw(2)
-        }
-        else {
-            player.loseHp()
-            trigger.target.addTempSkill('xin_huzhu2', { player: 'dieAfter' })
-            trigger.target.storage.xin_huzhu2++
-        }
-        'step 2'
-        trigger.target.update();
+        player.xjb_gainRemnantCard(trigger.card, trigger.nature, 1)
+        trigger.target.addTempSkill('xin_huzhu2', { player: 'dieAfter' })
+        trigger.target.storage.xin_huzhu2++
     },
     ai: {
         threaten: 1.6,
@@ -647,16 +654,28 @@ const xin_xiongli = SkillCreater(
     multitarget: true,
     multiline: true,
     translate: "凶力",
-    description: "出牌阶段限一次，你可以对任意名其他角色造成一点破甲伤害，若此做，对自己使用等量张残【杀】。",
+    description: "出牌阶段限一次，你可以对任意名其他角色造成一点随机属性伤害，若此做，你获得等量张不定属性的残【杀】。",
     selectTarget: [1, Infinity],
     filterTarget: function (card, player, target) {
         return (target != player)
     },
-    qzj: true,
     usable: 1,
     content: function () {
-        player.fc_X(true, 54, { onlyme: targets })
-        player.fc_X(true, "残区", { remnant: 'sha' }, [targets.length])
+        "step 0"
+        const natureList = lib.inpile_nature.slice(0)
+        natureList.push(...lib.inpile_nature.map((nature, index, natures) =>
+            natures.slice(index + 1).map(i => `${nature}|${i}`)).flat())
+        event.remnantNatureList = {}
+        targets.forEach(targetx => {
+            targetx.damage(player, natureList.randomGet())
+            const nature = lib.inpile_nature.randomGet()
+            if (event.remnantNatureList[nature] == null) event.remnantNatureList[nature] = 0;
+            event.remnantNatureList[nature]++;
+        });
+        "step 1"
+        for (const nature in event.remnantNatureList) {
+            player.xjb_gainRemnantCard("sha", event.remnantNatureList[nature], nature)
+        }
     },
     ai: {
         damage: true,
@@ -696,83 +715,37 @@ const xin_mousheng = SkillCreater(
     "_priority": 0,
 })
 
-const xin_bingjie = SkillCreater(
-    "xin_bingjie", {
+//汉荀彧技能
+const xjb_bingjie = SkillCreater(
+    "xjb_bingjie", {
     translate: "秉节",
-    description: "1.一名角色准备阶段前，你可以弃置所有手牌，你令该角色将手牌调至体力上限<br>2.你受到一点伤害后，你可令一名角色将手牌调至体力上限。<br>因该技能获得的牌均记为\"留香\"。",
+    description: "锁定技，每轮开始时/你体力值每减少一点后，你须将弃置牌使你手牌数等于体力上限，然后你令一名角色将手牌摸至体力上限称为“留香”。(至多摸五张)",
     trigger: {
-        global: ["phaseZhunbeiBegin"],
-        player: "damageEnd",
+        global: "roundStart",
+        player: ["damageEnd", "loseHpAfter"]
     },
-    filter: function (event, player) {
-        if (event.name == 'phaseZhunbei') {
-            return event.player.countCards("h") !== event.player.maxHp && player.countCards("h") > 0
-        }
-        return true;
+    forced: true,
+    getIndex: function (event) {
+        return event.num || 1;
     },
-    direct: true,
-    content: function () {
-        'step 0'
-        if (event.triggername == 'damageEnd') event.count = trigger.num
-        'step 1'
-        if (event.triggername == 'damageEnd') {
-            event.count--
-            player.chooseTarget('令一名角色将手牌数调至体力上限', true, function (card, player, target) {
-                return true
-            }).set('ai', function (target) {
-                var att = get.attitude(_status.event.player, target);
-                var draw = Math.min(5, target.maxHp) - target.countCards('h');
-                if (draw >= 0) {
-                    if (target.hasSkillTag('nogain')) att /= 6;
-                    if (att > 2) {
-                        return Math.sqrt(draw + 1) * att;
-                    }
-                    return att / 3;
-                }
-                if (draw < -1) {
-                    if (target.hasSkillTag('nogain')) att *= 6;
-                    if (att < -2) {
-                        return -Math.sqrt(1 - draw) * att;
-                    }
-                }
-                return 0;
-            });
+    content: async function (event, trigger, player) {
+        if (player.countDiscardableCards(player, "h")) {
+            const min = Math.max(0, player.countCards("h") - player.maxHp)
+            await player.chooseToDiscard([min, Infinity], "he", true);
         }
-        else {
-            event.target = trigger.player
-            var a = event.target.maxHp
-            var n = a > 5 ? 5 : a
-            var next = player.chooseBool('是否令' + get.translation(event.target) + '将手牌调至' + n + '张牌，你弃置所有手牌？')
-            next.set('ai', function () {
-                var event = _status.event;
-                if (event.player.hp > 1) {
-                    if (event.source.countCards("h") < event.source.maxHp) return (get.attitude(event.player, event.source) > 0)
-                }
-                return false
-            });
-            next.set('source', event.target);
+        const { result: { targets } } = await player.chooseTarget()
+            .set("prompt2", "令角色将手牌摸至体力上限");
+        if (targets) {
+            const { result: cards } = await targets[0].drawTo(Math.min(targets[0].maxHp, targets[0].countCards("h") + 5));
+            if (cards.length) targets[0].addGaintag(cards, "xjb_liuxiang")
         }
-        'step 2'
-        if (result.bool) {
-            if (event.triggername != 'damageEnd') player.discard(player.getCards("h"))
-            event.target = event.triggername == 'damageEnd' ? result.targets[0] : trigger.player
-            var num = event.target.maxHp > 20 ? 20 : event.target.maxHp
-            event.target.fc_X(true, 46, [num], { toTagCard: 'xin_liuxiang' })
-        }
-        else if (event.count > 0) event.goto(1)
-        else event.finish()
-        'step 3'
-        if (event.triggername != 'damageEnd') { }
-        else if (event.count > 0) event.goto(1)
-        else event.finish()
     },
-    "_priority": 0,
 })
-const xin_liuxiang = SkillCreater(
-    "xin_liuxiang", {
+const xjb_liuxiang = SkillCreater(
+    "xjb_liuxiang", {
     translate: "留香",
-    description: "一名角色每失去X次\"留香\"牌后，你可以令其恢复一点体力值。(X为其体力值)",
-    group: ["xin_liuxiang_xiang", "xin_liuxiang_aid"],
+    description: "一名角色每使用或打出“留香”的次数大于X后，你可以令其恢复一点体力值，然后重新计算失去次数。(X为其体力值，且至少为3)",
+    group: ["xjb_liuxiang_xiang", "xjb_liuxiang_aid"],
     subSkill: {
         xiang: {
             marktext: "香",
@@ -785,7 +758,7 @@ const xin_liuxiang = SkillCreater(
         },
         aid: {
             trigger: {
-                global: ["respondEnd", "useCardEnd", "discardEnd"],
+                global: ["respondEnd", "useCardEnd"],
             },
             forced: true,
             priority: -1,
@@ -793,10 +766,10 @@ const xin_liuxiang = SkillCreater(
                 return event.player.hasHistory('lose', function (evt) {
                     if (evt.getParent() != event) return false;
                     for (var i in evt.gaintag_map) {
-                        if (evt.gaintag_map[i].includes('xin_liuxiang')) {
-                            event.player.addMark('xin_liuxiang_xiang', 1)
+                        if (evt.gaintag_map[i].includes('xjb_liuxiang')) {
+                            event.player.addMark('xjb_liuxiang_xiang', 1)
                             event.player.update()
-                            return event.player.countMark('xin_liuxiang_xiang') >= player.hp && !player.isHealthy();
+                            return event.player.countMark('xjb_liuxiang_xiang') >= Math.max(player.hp, 3) && !event.player.isHealthy();
                         }
                     }
                     return false;
@@ -805,12 +778,11 @@ const xin_liuxiang = SkillCreater(
             content: function () {
                 'step 0'
                 event.target = trigger.player
-                var num = event.target.hp
                 player.chooseBool('对' + get.translation(event.target) + '是否令其恢复一点体力')
                 'step 1'
                 if (result.bool) {
-                    event.target.removeMark('xin_liuxiang_xiang', event.target.countMark('xin_liuxiang_xiang'));
-                    event.target.fc_X(true, "回血")
+                    event.target.removeMark('xjb_liuxiang_xiang', event.target.countMark('xjb_liuxiang_xiang'));
+                    event.target.recover()
                 }
             },
             sub: true,
@@ -820,43 +792,7 @@ const xin_liuxiang = SkillCreater(
     "_priority": 0,
 })
 
-const xin_zirou = SkillCreater(
-    "xin_ziruo", {
-    translate: "自若",
-    description: "当你成为其他角色的牌的目标时，你可为此牌减少任意名未横置的目标，然后这些目标横置。",
-    trigger: {
-        target: "useCardToTarget",
-    },
-    filter: function (event, player) {
-        if (event.player == player) return false
-        if (!event.targets || !event.targets.includes(player)) return false;
-        return game.hasPlayer(function (current) {
-            return event.targets.includes(current) && !current.isLinked();
-        });
-    },
-    content: function () {
-        "step 0"
-        player.chooseTarget('为此牌减少任意个目标',
-            [1, Infinity], function (card, player, target) {
-                return _status.event.targets.includes(target) && !target.isLinked();
-            }).set('ai', function (target) {
-                var trigger = _status.event.getTrigger();
-                if (!trigger.excluded.includes(target)) {
-                    return -get.effect(target, trigger.card, trigger.player, _status.event.player);
-                }
-                return -1;
-            }).set('targets', trigger.targets);
-        "step 1"
-        if (result.bool) {
-            trigger.getParent().excluded.addArray(result.targets);
-            game.delay();
-            for (var i = 0; i < result.targets.length; i++) {
-                result.targets[i].link()
-            }
-        }
-    },
-    "_priority": 0,
-})
+
 
 const xjb_huibian = SkillCreater(
     "xjb_huibian", {
@@ -885,11 +821,11 @@ const xjb_huibian = SkillCreater(
     "_priority": 0,
 })
 
+//庞统技能
 const xjb_fengchu = SkillCreater(
     "xjb_fengchu", {
     translate: "凤雏",
     description: "出牌阶段限一次，你若你手牌数为奇数，你可以回复一点体力并摸一张牌;手牌数为偶数，你可以失去一点体力并摸四张牌。",
-    audio: "ext:新将包:false",
     enable: "phaseUse",
     filter: function (event, player) {
         return true;
@@ -917,84 +853,29 @@ const xjb_fengchu = SkillCreater(
     "_priority": 0,
 })
 
-const xin_tianming = SkillCreater(
-    "xin_tianming", {
-    translate: "天命",
-    description: "锁定技，当你失去一张区域的牌后，若你有未记录该牌的花色，你记录之并摸一张牌。",
-    audio: "ext:新将包:false",
-    trigger: {
-        player: ["loseAfter"],
-    },
-    marktext: "命",
-    init: function (player) {
-        if (!player.storage.xin_tianming) player.storage.xin_tianming = [];
-    },
-    intro: {
-        content: "你已有花色$",
-    },
-    charlotte: true,
-    forced: true,
-    content: function () {
-        player.storage._skill_xin_X[0] = 13
-        for (var i = 0; i < trigger.cards.length; i++) {
-            var suit = get.suit(trigger.cards[i])
-            if (!player.storage.xin_tianming.includes(suit)) {
-                player.storage.xin_tianming.add(suit);
-                player.draw()
-            }
-        }
-        player.markSkill('xin_tianming');
-
-    },
-    ai: {
-        threaten: 0.7,
-    },
-    "_priority": 0,
-})
-const xin_zulong = SkillCreater(
-    "xin_zulong", {
-    translate: "祖龙",
-    description: "当你体力值减少后，可以你获得一个技能。若此技能为觉醒技，则无视发动条件。",
-    audio: "ext:新将包:false",
-    trigger: {
-        player: ["damageEnd", "loseHpEnd"],
-        global: "xjb_bianshenEnd",
-    },
-    frequent: true,
-    content: function () {
-        'step 0'
-        var objects = {
-            choice: ['转换技', '觉醒技', '主公技', '锁定技', '视为技'],
-            storage: "xin_zulong",
-        }
-        player.fc_X(true, 'choose', 'needResult', objects)
-        'step 1'
-        var string = get.xjb_translation(player.storage["xin_zulong"])
-        trigger.player.addSkillrandom(string, 1)
-    },
-    "_priority": 0,
-})
-
-const xin_zaozhong = SkillCreater(
-    "xin_zaozhong", {
+const xjb_yiji = SkillCreater(
+    "xjb_yiji", {
     translate: "遗计",
-    description: "当你受到一点伤害后，你选择一名角色，其使用一张残【兵粮寸断】然后摸三张牌。",
-    audio: "ext:新将包:false",
+    description: "当你受到一点伤害后，令一名角色摸四张牌并获得一个仅有出牌阶段的额外回合，其下一个判定阶段开始前，将牌堆顶一张牌置入判定区视为【兵粮寸断】。",
     frequent: true,
     trigger: {
-        player: ["damageAfter"],
+        player: ["damageEnd"],
     },
-    content: function () {
-        "step 0"
-        event.count = trigger.num;
-        "step 1"
-        player.fc_X(16, 1, "num_2", [1, 3], {
-            promptAdd: "令一名角色使用一张残【兵粮寸断】然后摸三张牌",
-            remnant: "bingliang"
-        });
-        event.count--
-        "step 2"
-        if (event.count > 0) event.goto(1)
+    getIndex: function (event) {
+        return event.num;
+    },
+    cost: async function (event, trigger, player) {
+        event.result = await player.chooseTarget().forResult();
+    },
+    content: async function (event, trigger, player) {
+        const target = event.targets[0];
+        target.draw(4);
+        target.insertPhase().set("phaseList", ["phaseUse"]);
+        target.when("phaseJudgeBefore").filter((event, player) => {
+            return player.canAddJudge("bingliang")
+        }).then(() => {
+            player.addJudge({ name: "bingliang" }, get.cards())
+        })
     },
     ai: {
         maixie: true,
@@ -1015,13 +896,29 @@ const xin_zaozhong = SkillCreater(
         },
         threaten: 0.6,
     },
-    "_priority": 0,
+})
+const xjb_tiandu = SkillCreater(
+    "xjb_tiandu", {
+    translate: "天妒",
+    description: "你的判定牌生效时，你可以获得之。锁定技，每轮开始时，你进行一次判定：若结果为黑色，你受到一点无来源的雷属性伤害。",
+    trigger: {
+        global: "roundStart",
+    },
+    forced: true,
+    content: async function (event, trigger, player) {
+        const { result } = await player.judge()
+        if (result.color == "black") {
+            player.damage("nosource", 1, "thunder")
+        }
+    },
+    group: "tiandu"
 })
 
+//孙策技能
 const xjb_taoni = SkillCreater(
     "xjb_taoni", {
     translate: "讨逆",
-    description: "出牌阶段限X次，你可以重铸一张牌并令一名角色横置;你对已横置的角色使用牌无次数限制。(X为你造成伤害的次数+1)",
+    description: "出牌阶段限X次，你可以重铸一张牌并令一名角色横置;你对已横置的角色使用牌无次数限制。(X为你本回合造成伤害的次数+1)",
     enable: "phaseUse",
     filterCard: (card, player) => player.canRecast(card),
     filterTarget: function (card, player, target) {
@@ -1030,8 +927,8 @@ const xjb_taoni = SkillCreater(
     position: "he",
     filter: function (event, player) {
         if (!player.countCards('he')) return false;
-        if (!player.getStat().skill.xjb_taoni) return true;
-        return player.getHistory("sourceDamage").length + 1 > player.getStat().skill.xjb_taoni;
+        if (!player.countSkill("xjb_taoni")) return true;
+        return player.getHistory("sourceDamage").length + 1 > player.countSkill("xjb_taoni");
     },
     discard: false,
     lose: false,
@@ -1055,28 +952,110 @@ const xjb_taoni = SkillCreater(
     }
 })
 
-const xin_yingfa = SkillCreater(
-    "xin_yingfa", {
+//周瑜技能
+const xjb_shiyin = SkillCreater(
+    "xjb_shiyin", {
+    trigger: {
+        player: ["loseAfter", "loseAsyncAfter"],
+    },
+    getType(event, player) {
+        let cards = [];
+        for (const target of [player, player.getPrevious()]) {
+            const evt = event.getl(target);
+            if (evt && evt.cards2 && evt.cards2.some(i => get.position(i) == "d")) {
+                if (
+                    target == player ||
+                    target
+                        .getHistory("lose", evt => {
+                            return evt.type == "discard" && evt.getlx !== false;
+                        })
+                        .indexOf(event) == 0
+                ) {
+                    cards.addArray(evt.cards2.filter(i => get.position(i) == "d"));
+                }
+            }
+        }
+        let types = [];
+        for (let each of cards) {
+            types.add(get.type2(each, player));
+        }
+        return types
+    },
+    filter(event, player) {
+        if (event.type != "discard" || event.getlx === false) return false;
+
+        return get.info("xjb_shiyin").getType(event, player).length === 1;
+    },
+    async cost(event, trigger, player) {
+        const type = get.info("xjb_shiyin").getType(trigger, player)[0];
+        let chooseStr = "";
+        switch (type) {
+            case 'basic': chooseStr = "你选择一名角色，令其回复一点体力"; break;
+            case 'trick': chooseStr = "你选择一名角色，令其失去一点体力"; break;
+            case 'equip': chooseStr = "你选择一名角色，对其造成一点伤害"; break;
+        }
+        event.result = await player.chooseTarget(chooseStr, type === "basic" ? (card, player, target) => !target.isHealthy() : () => true).forResult();
+    },
+    async content(event, trigger, player) {
+        const type = get.info("xjb_shiyin").getType(trigger, player)[0];
+
+        switch (type) {
+            case 'basic': {
+                event.targets[0].recover();
+            }; break;
+            case 'trick': {
+                event.targets[0].loseHp();
+            }; break;
+            case 'equip': {
+                event.targets[0].damage("fire")
+            }; break;
+        }
+    },
+    translate: "识音",
+    description: "你因弃置失去牌后，若你失去的牌均为：基本牌/锦囊牌/装备牌，你可以令场上一名角色：恢复1点体力/失去1点体力/受到一点火焰伤害。"
+})
+const xjb_yingfa = SkillCreater(
+    "xjb_yingfa", {
+    description: "摸牌阶段，你可以多摸至多X张牌(X为你上一轮造成伤害的次数+1且至多为5)",
+    translate: "英发",
+    trigger: {
+        player: "phaseDrawBegin2"
+    },
+    content: async function (event, trigger, player) {
+        const max = Math.min(player.getRoundHistory("sourceDamage", () => true, 1).length + 1, 5);
+        const list = new Array(max + 1).fill().map((_, index) => index)
+        const next = player.chooseControl(list);
+        next.choice = max;
+        const { result: { control: num } } = await next;
+        if (num) {
+            trigger.num += num;
+        }
+    }
+})
+const xjb_ruijin = SkillCreater(
+    "xjb_ruijin", {
+    translate: "锐进",
+    description: "出牌阶段限X次，你可以失去一点体力，观看一名角色展示一种类型的所有牌，你弃置其中任意张。(X为你本回合造成伤害的次数+1)",
     enable: "phaseUse",
     filterTarget: true,
-    usable: 3,
-    content: function () {
-        "step 0"
-        player.loseHp()
-        player.chooseControl(["基本牌", "装备牌", "锦囊牌"]).set("prompt", "选择一种类别，令其将其区域内所有该类别的牌置入弃牌堆。")
-        "step 1"
+    filter: function (event, player) {
+        return player.countSkill("xjb_ruijin") <= player.getHistory("sourceDamage").length;
+    },
+    content: async function (event, trigger, player) {
+        await player.loseHp()
+        const { result } = await player.chooseControl(["基本牌", "装备牌", "锦囊牌"]).set("prompt", "选择一种类别，令其将其区域内所有该类别的牌置入弃牌堆。")
         const list = {
             "基本牌": "basic",
             "装备牌": "equip",
             "锦囊牌": ["trick", "delay"]
         }
-        const type = list[result.control]
-        const cards = target.getCards("hej", { type: type })
-        target.discard(cards)
-        event.cards = cards
-        "step 2"
-        var s = event.cards
-        if (s.length) player.gain(s.randomGet(), "gain2")
+        const type = list[result.control];
+        const hes = event.target.getCards("he", { type: type });
+        if (!hes) return;
+        const { result: { bool, links: cards } } = await player.chooseCardButton(hes, [1, Infinity]);
+        if (bool) {
+            event.target.discard(cards, player, ui.ordering)
+        }
     },
     ai: {
         order: 9,
@@ -1091,13 +1070,7 @@ const xin_yingfa = SkillCreater(
         },
         threaten: 2,
     },
-    translate: "英发",
-    description: "出牌阶段限三次，你可以失去一点体力，令一名角色失去一种类型的所有牌，你随机获得其中一张牌。",
 })
-
-
-
-
 
 const xjb_liuli = SkillCreater(
     "xjb_liuli", {
@@ -1110,9 +1083,8 @@ const xjb_liuli = SkillCreater(
         return player.countCards('hes', { suit: 'diamond' }) > 0
     },
     direct: true,
-    content: function () {
-        "step 0"
-        player.chooseCardTarget({
+    content: async function (event, trigger, player) {
+        const { result } = await player.chooseCardTarget({
             filterCard: {
                 suit: "diamond",
             },
@@ -1134,18 +1106,11 @@ const xjb_liuli = SkillCreater(
             },
             prompt: '交给另一名其他角色一张♦️牌，你令伤害来源改为这名角色并令其重新分配伤害'
         });
-        "step 1"
-        if (result.bool) {
-            var num = trigger.num
-            result.targets[0].gain(result.cards, player, 'giveAuto');
-            var daqiao = {}
-            if (trigger.nature) {
-                daqiao.nature = [trigger.nature]
-                daqiao.wordsAdd = get.translation(trigger.nature) + '属性'
-            }
-            result.targets[0].fc_X(44, [num], daqiao)
-            trigger.cancel()
-        }
+        if (!result.bool) return;
+        player.give(result.cards, result.targets[0]);
+        trigger.cancel();
+        const { targets, bool } = await result.targets[0].chooseTarget([1, trigger.num], "你对其造成一点伤害").forResult();
+        if (bool) targets.forEach(target => target.damage(trigger.nature));
     },
     ai: {
         "maixie_defend": true,
@@ -1190,42 +1155,4 @@ const xjb_guose = SkillCreater(
 })
 
 
-const xin_longpan = SkillCreater(
-    "xin_longpan", {
-    translate: "龙蟠",
-    description: "你的回合后，若你已有四种花色，你可以移去\"天命\"中的全部个花色，若此做，你令一名角色失去一点体力并摸四张牌。",
-    trigger: {
-        player: "phaseAfter",
-    },
-    filter: function (event, player) {
-        return player.storage.xin_tianming.length >= 4
-    },
-    frequent: true,
-    content: function () {
-        'step 0'
-        var list = []
-        var suit = player.storage.xin_tianming;
-        for (var i = 0; i < suit.length; i++) {
-            var cardname = 'xin_zhaoling_' + suit[i];
-            lib.card[cardname] = {
-                fullimage: true,
-                image: 'character:' + player.name1
-            }
-            lib.translate[cardname] = lib.translate[suit[i]];
-            list.push(game.createCard(cardname, suit[i], ''));
-        }
-        player.chooseButton(['龙蟠：选择移去的花色', list], suit.length)
-        'step 1'
-        if (result.bool) {
-            event.suit = []
-            for (var i = 0; i < result.links.length; i++) {
-                event.suit.push(get.suit(result.links[i]))
-                player.storage.xin_tianming.remove(get.suit(result.links[i]))
-                player.markSkill('xin_tianming');
-            }
-            var num = result.links.length
-            player.fc_X(12, 1, [1, 4], 'num_2', 'again', { promptAdd: "然后摸四张牌" })
-        }
-    },
-    "_priority": 0,
-})
+
