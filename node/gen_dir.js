@@ -129,10 +129,9 @@ class fsPromise {
         })
     }
 }
-fsPromise.unlinkFiles('../', file => file.includes('Thumbs.db'));
-fsPromise.clearContent('../json/1.json');
-fsPromise.clearContent('../log/log.txt');
-fsPromise.clearContent('../xjb_xyAPI.js');
+fsPromise.unlinkFiles('../', file => file.includes('Thumbs.db'))
+fsPromise.clearContent('../json/1.json')
+fsPromise.clearContent('../log/log.txt')
 fsPromise.showDirFilter(
     '../',
     dirName => {
@@ -140,8 +139,6 @@ fsPromise.showDirFilter(
     },
     (file, index) => {
         if (file === 'Thumbs.db') return false;
-        if (file === 'xjb_xyAPI.js') return false;
-        if (file === 'Directory.js') return false;
         return true;
     },
     false
@@ -150,7 +147,6 @@ fsPromise.showDirFilter(
     for (let [dirName, files] of Object.entries(data)) {
         result[dirName.replace(/\\/g, '/')] = files
     }
-    console.log(result);
     fs.writeFile(
         '../Directory.js',
         `window["xjb_xyAPI_Directory_新将包"]=${JSON.stringify(result, null, 4)}`

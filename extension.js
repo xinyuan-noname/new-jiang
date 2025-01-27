@@ -14,7 +14,6 @@ game.import("extension", function () {
         content: XJB_CONTENT,
         precontent: XJB_PRECONTENT,
         editable: false,
-        connect: false,
         help: {},
         config: {},
         package: {
@@ -22,13 +21,8 @@ game.import("extension", function () {
             author: "<a href=https://b23.tv/RHn9COW class=xjb_hunTitle>新元noname</a>",
             diskURL: "",
             forumURL: "",
-            version: "1.2.2",
+            version: "1.2.1",
         },
-        files: {
-            "character": [],
-            "card": [],
-            "skill": [],
-            "audio": []
-        }
+        files: { "character": [], "card": [], "skill": [], "audio": [] }
     }
 });

@@ -1,24 +1,29 @@
 window["xjb_xyAPI_Directory_新将包"]={
     "main": [
         ".gitignore",
+        "card_lw.jpg",
         "content.js",
+        "Directory.js",
         "extension.js",
         "info.json",
         "LICENSE",
         "precontent.js",
         "README.md",
-        "xin_newCharacter.jpg"
-    ],
-    "@types": [
-        "Player.ts"
+        "skillCard.png",
+        "xin_newCharacter.jpg",
+        "xjb_Infinity.png",
+        "xjb_jingu.png",
+        "xjb_seizeHpCard.png",
+        "xjb_shenshapo.png",
+        "xjb_tianming_huobi1.png",
+        "xjb_tianming_huobi2.png",
+        "xjb_zhihuan.png"
     ],
     "audio": [
         "fire1.mp3"
     ],
     "css": [
-        "editor.css",
-        "main.css",
-        "nature.css"
+        "css1.css"
     ],
     "hpCard": [
         "1.jpg",
@@ -51,33 +56,42 @@ window["xjb_xyAPI_Directory_新将包"]={
         "final.js",
         "library.js",
         "lingli.js",
+        "math.js",
+        "nonameCN.js",
         "project.js",
         "raise.js",
         "rpg.js",
         "skills.js",
-        "title.js"
+        "title.js",
+        "translate.js",
+        "Xskill.js"
     ],
     "json": [
         "1.json"
     ],
     "lingli": [
+        "blood.jpg",
         "book.jpg",
+        "check.png",
+        "dragon.jpg",
+        "flower.jpg",
         "gathering.jpg",
-        "lingli.png",
-        "lingli_card.png",
-        "timer.jpg"
+        "sun.jpg",
+        "taoyao.jpg",
+        "tear.jpg",
+        "timer.jpg",
+        "xuemo.jpg"
     ],
     "log": [
-        "empty.text",
         "log.txt"
     ],
     "md": [
-        "skillEditor.md",
-        "usual.md"
+        "skillEditor.md"
     ],
     "node": [
         "gen_dir.js"
     ],
+    "sink": [],
     "skin": [],
     "title": [
         "xjb_boss1.png",
@@ -93,26 +107,8 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_yin2.png",
         "xjb_yin3.png"
     ],
-    "image/@bagua": [
-        "none.jpg",
-        "yang-yang-yang.jpg",
-        "yang-yang-yin.jpg",
-        "yang-yang.jpg",
-        "yang-yin-yang.jpg",
-        "yang-yin-yin.jpg",
-        "yang-yin.jpg",
-        "yang.jpg",
-        "yin-yang-yang.jpg",
-        "yin-yang-yin.jpg",
-        "yin-yang.jpg",
-        "yin-yin-yang.jpg",
-        "yin-yin-yin.jpg",
-        "yin-yin.jpg",
-        "yin.jpg"
-    ],
     "image/card_callFellow": [
         "xjb_baiyin.png",
-        "xjb_card_lw.png",
         "xjb_chitu.png",
         "xjb_hutou.png",
         "xjb_qinglong.png",
@@ -125,30 +121,7 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_lijingtuzhi.png",
         "xjb_qimendunjia.png",
         "xjb_tianqian.png",
-        "xjb_xiugengxuzi.png",
-        "xjb_zhuqiang.png"
-    ],
-    "image/card_store": [
-        "check.png",
-        "skillCard.png",
-        "xjb_Infinity.png",
-        "xjb_jingu.png",
-        "xjb_seizeHpCard.png",
-        "xjb_shenshapo.png",
-        "xjb_tianming_huobi1.png",
-        "xjb_tianming_huobi2.png",
-        "xjb_zhihuan.png"
-    ],
-    "image/character_dongzhou": [
-        "xjb_guanyiwu.jpg",
-        "xjb_jizi_shou.jpg",
-        "xjb_qinmugong.jpg",
-        "xjb_qinshihuang.jpg",
-        "xjb_qixianggong.jpg",
-        "xjb_weiyigong.jpg",
-        "xjb_wuyuan.jpg",
-        "xjb_xianzhen.jpg",
-        "xjb_xunan.jpg"
+        "xjb_xiugengxuzi.png"
     ],
     "image/character_soul": [
         "xjb_bat.jpg",
@@ -171,10 +144,10 @@ window["xjb_xyAPI_Directory_新将包"]={
         "xjb_jiaxu.jpg",
         "xjb_jin_simayi.jpg",
         "xjb_liushan.jpg",
-        "xjb_lvmeng.jpg",
         "xjb_machao.jpg",
         "xjb_pangtong.jpg",
         "xjb_sunce.jpg",
+        "xjb_yingzheng.jpg",
         "xjb_zhouyu.jpg",
         "xjb_zhugeliang.jpg"
     ],
@@ -185,20 +158,14 @@ window["xjb_xyAPI_Directory_新将包"]={
         "redSpace.jpg"
     ],
     "js/card": [
-        "callFellow.mjs",
-        "clearBad.mjs",
-        "store.mjs"
-    ],
-    "js/economy": [
-        "product.mjs"
+        "callFellow.js",
+        "clearBad.js",
+        "store.js"
     ],
     "js/editor": [
         "arrange.mjs",
-        "choiceMode.mjs",
-        "dataAnalyze.mjs",
         "implicitText.mjs",
         "interaction.mjs",
-        "nonameCN.js",
         "organize.mjs",
         "parameter.mjs",
         "skill.js",
@@ -206,22 +173,16 @@ window["xjb_xyAPI_Directory_新将包"]={
     ],
     "js/feature": [
         "hpCard.js",
-        "remnantArea.js",
-        "skillCard.mjs"
+        "remnantArea.js"
     ],
     "js/game": [
         "tetris.js"
-    ],
-    "js/import": [
-        "importEditor.mjs",
-        "url.js"
     ],
     "js/interact": [
         "dialog.mjs",
         "ui.mjs"
     ],
     "js/lingli": [
-        "card.mjs",
         "event.mjs",
         "gSkill.mjs"
     ],
@@ -230,40 +191,19 @@ window["xjb_xyAPI_Directory_新将包"]={
     ],
     "js/skill": [
         "bossSkill.mjs",
-        "dongzhou.mjs",
         "raiseSkill.mjs",
-        "sanSkill.mjs",
-        "skillTag.mjs",
         "soulSkill.mjs",
         "xjbSkill.mjs"
     ],
-    "js/text": [
-        "dongzhouIntro.js"
-    ],
     "js/tool": [
         "canvas.js",
-        "math.js",
         "string.js",
         "ui.js"
     ],
-    "lingli/daomo": [
-        "blood.jpg",
-        "dragon.jpg",
-        "flower.jpg",
-        "sun.jpg",
-        "taoyao.jpg",
-        "tear.jpg",
-        "xuemo.jpg"
-    ],
+    "sink/xin_newCharacter": [],
     "skin/image": [],
-    "skin/image/xjb_jizi_shou": [
-        "寿1.png",
-        "寿2.png",
-        "急子1.png",
-        "急子2.png"
-    ],
-    "skin/image/xjb_newCharacter": [
-        "initial.jpg"
+    "sink/xin_newCharacter/normal": [
+        "xin_newCharacter.jpg"
     ],
     "skin/image/xjb_xuemo": [
         "xuemo1.jpg",

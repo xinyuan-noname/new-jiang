@@ -6,8 +6,7 @@ import {
     ai,
     _status
 } from "../../../../noname.js";
-import { chineseToArabic } from "../tool/math.js";
-import { NonameCN } from "./nonameCN.js";
+import { NonameCN } from "../nonameCN.js";
 export function dispose(str, number, directory = lib.xjb_translate) {
     let list1 = TransCnText.splitLine(str);
     if (number === 1) return list1;
@@ -17,33 +16,13 @@ export function dispose(str, number, directory = lib.xjb_translate) {
     if (number === 3) return list3;
     return TransCnText.linkWords(list3);
 }
-export function disposeTri(str, number, directory = NonameCN.TriList) {
-    let list1 = TransCnText.splitLine(str);
-    if (number === 1) return list1;
-    let list2 = TransCnText.splitWordTri(list1)
-    if (number === 2) return list2;
-    let list3 = TransCnText.translateLineTri(list2);
-    return list3;
-}
 const matchNotObjColon = /(?<!\{[ \w"']+):(?![ \w"']+\})/;
-const matchFromTo = /^([bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)到([bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)[张名点枚个]$/
-const matchTriKeywords = /火属性|雷属性|冰属性|神属性|梅花|方片|黑桃|红桃|红色|黑色|基本|装备(?!区)|普通锦囊|非延时锦囊|延时锦囊|点数为(?:11|12|13|[AJQK1-9])|一张|一点|(?<=指定|成为)唯一(?=目标)|于回合[内外]/
 const vCardObject = NonameCN.getVirtualCard();
 const player = NonameCN.getVirtualPlayer();
 const vPlayers = NonameCN.getVirtualPlayers();
 const vGame = NonameCN.getVirtualGame();
 const eventModel = NonameCN.getVirtualEvent();
 const vStorage = NonameCN.getVirtualStorage();
-const simiAddCnWords = ['增加', '增添', '添加'];
-const simiAddCnWordsRegExp = new RegExp(simiAddCnWords.join("|"))
-const XJB_PUNC = ["!", " || ", " && ", " + ", " - ", " * ", " / ", " % ",
-    " += ", " -= ",
-    "++", "--",
-    " > ", " < ", " >= ", " <= ", " == ", " === ",
-    "(", ")", "."]
-const XJB_NEED_FOLLOW_PUNC = ['++', "--"]
-const XJB_NEED_FELLOW_PUNC = ['!', '~']
-const XJB_NEED_LINK_PUNC = [' || ', ' && ', ' ?? ', ' ? ', ' + ', ' - ', ' * ', ' ** ', ' / ', ' % ', ' += ', ' -= ', ' > ', ' < ', ' >= ', ' <= ', ' == ', ' === ', '(', '.'];
 export class TransCnText {
     /**
     * @param {string} text 
@@ -55,8 +34,8 @@ export class TransCnText {
         const result = [];
         for (const [_, line] of lines.entries()) {
             if (line.startsWith("/*") && line.endsWith("*/")) continue;
-            if (/^\s*$/.test(line)) continue;
-            result.push(line.replace(/\t/g, ""));
+            if (!line.length) continue;
+            result.push(line);
         }
         return result;
     }
@@ -74,21 +53,12 @@ export class TransCnText {
                 continue;
             }
             const newline = line.replace(/([,\{\}\[\]\(\)\:\.]|\.{3})/g, " $1 ");
-            const words = newline.split(/[ ]/);
+            const words = newline.split(/[ \t]/);
             //分词后若中文全带引号,则按不分词的形式进行
             if (words.filter(word => /[\u4e00-\u9fa5]/.test(word)).every(word => /["'`]/.test(word))) {
                 result[num] = [line];
                 continue;
             }
-            result[num] = words
-        }
-        return result;
-    }
-    static splitWordTri(lines) {
-        if (!Array.isArray(lines)) return [[]];
-        const result = new Array(lines.length);
-        for (const [num, line] of lines.entries()) {
-            const words = line.split(/[ \t"'`]/).filter(word => word.length);
             result[num] = words
         }
         return result;
@@ -100,33 +70,15 @@ export class TransCnText {
      */
     static translate(word, directory = {}) {
         if (typeof word != "string") return "";
-        if (matchFromTo.test(word)) {
-            return `[${word.slice(0, -1).split("到").map(item => chineseToArabic(item))}]`
-        }
-        if (word in directory) return directory[word];
-        if (/(开始)[前时]/.test(word)) {
-            return TransCnText.translate(word.replace(/(开始)[前时]/, "$1"), directory);
-        }
-        if (/(结束)[时后]/.test(word)) {
-            return TransCnText.translate(word.replace(/(结束)[前时]/, "$1"), directory);
-        }
-        if (/(结算完成|完成结算)[时后]/.test(word)) {
-            return TransCnText.translate(word.replace(/(结算完成|完成结算)[前时]/, "$1"), directory);
-        }
-        if (word.includes("的")) return TransCnText.translate(word.replace(/的/g, ""), directory);
-        if (simiAddCnWordsRegExp.test(word)) {
-            for (const simiWord of simiAddCnWords) {
-                let wordx = word.replace(simiAddCnWordsRegExp, simiWord)
-                if(wordx in directory) return directory[wordx];
-            }
-        }
-        return word;
+        return directory[word] || directory[word.replaceAll(/[的]/g, "")] || word;
     }
     static translateLine(lines, directory) {
         if (!Array.isArray(lines)) return [[]];
+        /**
+         * @type {string[][]}
+         */
         const result = new Array(lines.length).fill().map(() => []);
         for (const [num, line] of lines.entries()) {
-            //判断该行词数是否为1，且第一行全为非中文
             if (line.length === 1 && /^[^\u4e00-\u9fa5]+$/.test(line[0])) {
                 result[num] = line;
                 continue;
@@ -159,49 +111,6 @@ export class TransCnText {
         }
         return result;
     }
-    static translateTri(word) {
-        if (typeof word != "string") return "";
-        const directory = NonameCN.TriList;
-        if (word in directory) return directory[word];
-        if (/(开始)[前时]/.test(word)) {
-            return TransCnText.translateTri(word.replace(/(开始)[前时]/, "$1"));
-        }
-        if (/(结束)[时后]/.test(word)) {
-            return TransCnText.translateTri(word.replace(/(结束)[时后]/, "$1"));
-        }
-        if (/(结算完成|完成结算)[时后]/.test(word)) {
-            return TransCnText.translateTri(word.replace(/(结算完成|完成结算)[前时]/, "$1"));
-        }
-        if (word.includes("的")) return TransCnText.translateTri(word.replace(/的/g, ""));
-        if (matchTriKeywords.test(word)) {
-            let decoration = [];
-            let wordx = word.replace(/红色|黑色|梅花|方片|黑桃|红桃|火属性|雷属性|冰属性|神属性|基本|装备(?!区)|普通锦囊|非延时锦囊|延时锦囊/g, (match) => {
-                decoration.push(NonameCN.getEn(match));
-                return ''
-            });
-            wordx = wordx.replace(/一张|一点/g, (match) => {
-                decoration.push('getIndex=1');
-                return '';
-            })
-            wordx = wordx.replace(/(?<=指定|成为)唯一(?=目标)/, (match) => {
-                decoration.push('onlyOneTarget');
-                return ''
-            })
-            wordx = wordx.replace(/于回合([内外])/, (match, p) => {
-                decoration.push(p === "内" ? "inPhase" : "outPhase");
-                return ''
-            })
-            if (wordx in directory) {
-                return `${decoration.join(":")}:${directory[wordx]}`;
-            }
-        }
-        return word;
-    }
-    static translateLineTri(lines) {
-        if (!Array.isArray(lines)) return [[]];
-        const result = lines.map(line => line.map(word => TransCnText.translateTri(word)))
-        return result;
-    }
     static linkWords(lines) {
         const result = [];
         lines.forEach(i => {
@@ -228,7 +137,7 @@ export class TransCnText {
                 else if (a.includes(';')) {
                     str += NonameCN.disposeWithQuo(body, a)
                 }
-                else if (a.includes(':') && a.slice(-1)[0] != ',') {
+                else if (a.includes(':') && a.at(-1) != ',') {
                     str += NonameCN.disposeWithQuo(body, a, matchNotObjColon)
                 }
                 else str += a
@@ -275,7 +184,7 @@ export class TransCnText {
                             replacer.push(replacer.pop() + NonameCN.disposeWithQuo(player, word))
                             continue;
                         }
-                        else if (word.includes(":") && word.slice(-1)[0] !== ",") {
+                        else if (word.includes(":") && word.at(-1) !== ",") {
                             replacer.push(replacer.pop() + NonameCN.disposeWithQuo(player, word, matchNotObjColon))
                             continue;
                         }
@@ -291,29 +200,36 @@ export class TransCnText {
             }
             //填写参数
             if (index) {
-                const stack = [];
-                const puncs = XJB_NEED_LINK_PUNC;
-                const fePuncs = XJB_NEED_FELLOW_PUNC;
-                const foPuncs = XJB_NEED_FOLLOW_PUNC;
-                let lastIsPunc = false;
-                const toOrder = i.splice(index).map(word => {
-                    if (word.includes(";")) return NonameCN.disposeWithQuo("ignore", word);
-                    return word;
-                }).filter(word => word);
-                for (const word of toOrder) {
-                    let param = word;
-                    if ((param.startsWith(".") || lastIsPunc || puncs.includes(param) || foPuncs.includes(param)) && stack.length) {
-                        let last = stack.pop();
-                        param = `${last}${param}`;
-                        lastIsPunc = false;
+                let toOrder = i.splice(index);
+                let puncSwtich = false
+                let punc = window.XJB_PUNC;
+                toOrder.forEach((c, b) => {
+                    let string = '', a = c;
+                    //翻译n到m
+                    if (/到/.test(c)) {
+                        let arr = c.split('到');
+                        a = '[';
+                        a += lib.xjb_translate[arr[0]] || arr[0];
+                        a += ',';
+                        a += lib.xjb_translate[arr[1]] || arr[1];
+                        a += ']';
                     }
-                    if (puncs.some(punc => param.endsWith(punc) || fePuncs.includes(param))) {
-                        lastIsPunc = true;
+                    if (a.includes(';')) {
+                        a = NonameCN.disposeWithQuo('ignore', a)
                     }
-                    stack.push(param);
-                }
-                const parameters = stack.map(word => word.replace(/(?<!\.)\.\.(?!\.)/g, "."))
-                str2 = `(${parameters})`;
+                    //非标点符号以,连接
+                    if (b > 0 && !punc.includes(a) && !puncSwtich) {
+                        string = ',' + a + ')';
+                    }
+                    //否则直接连接
+                    else {
+                        if (punc.includes(a)) puncSwtich = true;
+                        else if (puncSwtich) puncSwtich = false;
+                        string = a + ')';
+                    }
+                    //匹配最后一个括号以替换
+                    str2 = str2.replace(/\)(?=[^\)]*$)/, string);
+                })
             }
             let sentence = str + str2;
             if (players && notice.includes('players')) {
@@ -329,4 +245,5 @@ export class TransCnText {
         });
         return result;
     }
+
 }
