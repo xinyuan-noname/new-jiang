@@ -22,7 +22,7 @@ game.import("extension", function () {
             author: "<a href=https://b23.tv/RHn9COW class=xjb_hunTitle>新元noname</a>",
             diskURL: "",
             forumURL: "",
-            version: "1.2.1",
+            version: "1.2.2",
         },
         files: {
             "character": [],
