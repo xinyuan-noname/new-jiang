@@ -1,7 +1,10 @@
+"use script";
 export const PiChar = String.fromCharCode(960);
 export const degChar = String.fromCharCode(176);
 export const cnCharRange = '\u4e00-\u9fa5'
-export const JavascriptOperators = [" = ", " += ", " -= ", " /= ", " *= ", " %= ", " >>= ", " <<= ", " **= ", "++", "--"]
+export const JavascriptOperators = [
+    " = ", " += ", " -= ", " /= ", " *= ", " %= ", " >>= ", " <<= ", " **= ", "++", "--"
+]
 export const JavascriptKeywords = [
     'abstract', 'await', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'class', 'const',
     'continue', 'debugger', 'default', 'delete', 'do', 'double', 'else', 'enum', 'export', 'extends',
@@ -20,14 +23,32 @@ export const JavascriptUsualType = [
     'symbol', 'Symbol',
     'function', 'Function',
     'object', 'Object',
-    'Math', 'Array', 'Date', 'RegExp', 'Map', 'Set'
+    'Array', 'Date', 'RegExp', 'Map', 'Set'
 ]
 export const JavascriptGlobalVariable = [
     'NaN', 'Infinity', '-Infinity',
     'globalThis'
 ]
+export const JavascriptOperatorppsiting = {
+    "===": "!==",
+    "!==": "===",
+    "==": "!=",
+    ">": "<=",
+    "<=": ">",
+    "<": ">=",
+    ">=": "<",
+    "++": "--"
+}
+export function getOppositingOperator(operator) {
+    if (JavascriptOperatorppsiting[operator]) return JavascriptOperatorppsiting[operator];
+    return operator;
+}
+export function stringToRegExp(string, flag) {
+    if (typeof string !== "string") string = String(string);
+    string = string.replace(/([^\w\s])/g, "\\$1");
+    return new RegExp(string, flag);
+}
 /**
- * 
  * @param {string} str - 需要修正的字符串
  * @returns {string}
  */
@@ -39,7 +60,26 @@ export function correctPunctuation(str) {
         .replace(/\,\}/g, '}')
         .replace(/\{\,/g, '{')
         .replace(/(?<!\.)\.{2}(?!\.)/, '.')
+        .replace(/,:/g, ":")
+        .replace(/:,/g, ":")
 }
+export function arrayToString(array) {
+    let result = '[';
+    for (const [index, item] of array.entries()) {
+        if (Array.isArray(item)) result += arrayToString(item);
+        result += item;
+        if (index + 1 < array.length) result += ','
+    }
+    result += "]";
+    return result;
+}
+export function objectToString(object) {
+    if (typeof object === "object" && object.toString() === "[object Object]") {
+        return JSON.stringify(object).replace(/"([a-zA-Z_$][a-zA-Z0-9_$]*)"(?=:)/g, "$1");
+    }
+    return `${object}`;
+}
+
 /**
  * 生成一个随机的36进制字符串。
  * 
@@ -55,6 +95,17 @@ export function randomBase36(length) {
         temp.push(parseInt(Math.random() * 36).toString(36))
     }
     return temp.join("")
+}
+export const replaceAllStr = (raw, replacee, replacer) => {
+    if (typeof raw != "string") throw new Error(raw, `不是一个字符串类型!`);
+    if (replacee instanceof RegExp) {
+        if (!replacee.flags.includes("g")) throw new Error(replacee, "正则表达式必须带有falg:g!")
+        return raw.replace(replacee, replacer)
+    } else {
+        if (typeof replacee !== "string") replacee = String(replacee);
+        if (typeof replacer !== "string") replacer = String(replacer);
+        return raw.split(replacee).join(replacer);
+    }
 }
 /**
  * 
@@ -120,35 +171,7 @@ export function isOpenCnStr(str) {
     const regexp = /(?<!["'`][\u4e00-\u9fa5，。？！“”]*?)[\u4e00-\u9fa5]+(?![\u4e00-\u9fa5，。？！“”]*?["'`])/;
     return regexp.test(str);
 }
-/**
- * 将扑克牌花色符号转换为中文名称
- * @param {string} str - 包含扑克牌花色符号的字符串
- * @returns {string} - 花色符号被转换为中文名称后的字符串
- */
-export function suitSymbolToCN(str) {
-    // 直接操作传入的字符串以避免不必要的复制
-    let result = str;
 
-    // 定义一个映射，用于将扑克牌花色符号转换为中文名称
-    const map = {
-        "♣️": "梅花",
-        "♠️": "黑桃",
-        "♥️": "红桃",
-        "♦️": "方片",
-        '♣': '梅花',
-        '♠': '黑桃',
-        '♥': '红桃',
-        '♦': '方片'
-    }
-
-    // 遍历映射表，将所有的花色符号替换为对应的中文名称
-    for (let [symbol, cn] of Object.entries(map)) {
-        // 使用replaceAll方法全局替换字符串中的花色符号
-        result = result.replaceAll(symbol, cn)
-    }
-
-    return result;
-}
 export function moveWordToEnd(str, word, space = "", judge1 = () => true, judge2 = () => true) {
     const regexp = new RegExp(`^(.*?)(${word.replace(/[-\/\\^$*+?.()|[\]{}]/, "\\$&")})(.*?)$`, "mg");
     return str.replace(regexp, (match, p1, p2, p3) => {

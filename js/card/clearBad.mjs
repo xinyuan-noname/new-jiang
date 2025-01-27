@@ -1,3 +1,4 @@
+import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 export const clearBad = {};
 export const clearBadTranslate = {};
 function CardCreater(name, card) {
@@ -9,6 +10,35 @@ function CardCreater(name, card) {
     clearBadTranslate[name + "_info"] = card.description
     return clearBad[name];
 };
+const xjb_zhuqiang = CardCreater(
+    "xjb_zhuqiang", {
+    translate: "筑墙",
+    description: "此牌可被重铸。出牌阶段，对你自己使用，你获得一点护甲值。",
+    selectTarget: -1,
+    toself: true,
+    enable: true,
+    type: "trick",
+    fullskin: true,
+    recastable: true,
+    filterTarget: function (card, player, target) {
+        return player === target;
+    },
+    content: function () {
+        player.changeHujia(1, "gain", true);
+    },
+    ai: {
+        basic: {
+            order: 1,
+            useful: 2,
+            value: 8,
+        },
+        result: {
+            target: (player, target) => {
+                if (player.hujia < 5) return 3;
+            },
+        },
+    },
+})
 const xjb_lijingtuzhi = CardCreater(
     "xjb_lijingtuzhi", {
     fullskin: true,
@@ -192,7 +222,6 @@ const xjb_qimendunjia = CardCreater(
         }).setContent("chooseToCompareLose");
         event.type = type;
         'step 1'
-        console.log(event.type)
         event.type.forEach((color, i) => {
             if (color !== 'red') targets[i].getDebuff();
             if (color !== 'black') targets[i].getBuff();
@@ -255,6 +284,7 @@ const xjb_tianqian = CardCreater(
                 destory.destoryed = true;
                 game.log(destory, '被销毁了')
             }
+            player.changeHujia(player.hujia);
             player.damage(player.storage.xjb_judge_tianqian, 'nosource', 'damage');
         } else {
             player.addJudge(card, cards);
@@ -264,7 +294,7 @@ const xjb_tianqian = CardCreater(
         player.addJudge(card, cards);
     },
     translate: "天谴",
-    description: "出牌阶段，对一名角色使用。判定结果生效时，其雷劫层数+1。若判定结果为黑色，销毁目标角色所有牌并令其受到x点雷电伤害（x为其雷劫层数）；否则，将此牌再次置入其判定区。",
+    description: "出牌阶段，对一名角色使用。判定结果生效时，其雷劫层数+1。若判定结果为黑色，销毁目标角色所有牌并失去所有护甲，然后令其受到x点雷电伤害（x为其雷劫层数）；否则，将此牌再次置入其判定区。",
     ai: {
         basic: {
             order: 1,
@@ -291,7 +321,7 @@ const xjb_fuci = CardCreater(
     filterTarget: true,
     content: function () {
         if (!target.storage.xjb_judge_fuci) target.storage.xjb_judge_fuci = 0;
-        target.storage.xjb_judge_fuci++;
+        if (target.storage.xjb_judge_fuci < 5) target.storage.xjb_judge_fuci++;
         target.popup('福赐层数:</br>' + target.storage.xjb_judge_fuci);
         game.delay(1.5);
         for (let i = 0; i < target.storage.xjb_judge_fuci; i++) {
@@ -300,7 +330,7 @@ const xjb_fuci = CardCreater(
         }
     },
     translate: "福赐",
-    description: "出牌阶段，对一名角色使用。目标角色福赐层数+1然后随机获得x个增益效果。(x为福赐层数)",
+    description: "出牌阶段，对一名角色使用。目标角色福赐层数+1然后随机获得x个增益效果。(x为福赐层数,最高为5层)",
     ai: {
         basic: {
             order: 1,
@@ -314,3 +344,101 @@ const xjb_fuci = CardCreater(
         },
     },
 })
+
+export const clearBadSettingList = {
+    xjb_lijingtuzhi_1: {
+        counterpart: "励精图治-红桃-7",
+        min: 0,
+        max: 3,
+    },
+    xjb_lijingtuzhi_2: {
+        counterpart: "励精图治-黑桃-7",
+        min: 0,
+        max: 3,
+    },
+    xjb_lijingtuzhi_3: {
+        counterpart: "励精图治-梅花-7",
+        min: 0,
+        max: 3,
+    },
+    xjb_xiugengxuzi_1: {
+        counterpart: "修耕蓄资-黑桃-3",
+        min: 0,
+        max: 2,
+    },
+    xjb_xiugengxuzi_2: {
+        counterpart: "修耕蓄资-梅花-9",
+        min: 0,
+        max: 2,
+    },
+    xjb_chucanquhui_1: {
+        counterpart: "除残去秽-方片-9",
+        min: 0,
+        max: 5,
+    },
+    xjb_chucanquhui_2: {
+        counterpart: "除残去秽-方片-5",
+        min: 0,
+        max: 5,
+    },
+    xjb_qimendunjia_1: {
+        counterpart: "奇门遁甲-红桃-8",
+        min: 0,
+        max: 2
+    },
+    xjb_qimendunjia_2: {
+        counterpart: "奇门遁甲-黑桃-8",
+        min: 0,
+        max: 2
+    },
+    xjb_qimendunjia_3: {
+        counterpart: "奇门遁甲-梅花-8",
+        min: 0,
+        max: 2
+    },
+    xjb_qimendunjia_4: {
+        counterpart: "奇门遁甲-方片-8",
+        min: 0,
+        max: 2
+    },
+    xjb_tianqian_1: {
+        counterpart: "天谴-黑桃-9",
+        min: 0,
+        max: 1
+    },
+    xjb_fuci_1: {
+        counterpart: "福赐-红桃-6",
+        min: 0,
+        max: 2
+    },
+    xjb_fuci_2: {
+        counterpart: "福赐-红桃-8",
+        min: 0,
+        max: 2
+    },
+    xjb_zhuqiang_1: {
+        counterpart: "筑墙-黑桃-3",
+        min: 0,
+        max: 2
+    },
+    xjb_zhuqiang_2: {
+        counterpart: "筑墙-黑桃-4",
+        min: 0,
+        max: 1
+    },
+    xjb_zhuqiang_4: {
+        counterpart: "筑墙-黑桃-6",
+        min: 0,
+        max: 2
+    },
+    xjb_zhuqiang_6: {
+        counterpart: "筑墙-黑桃-8",
+        min: 0,
+        max: 3
+    },
+    xjb_zhuqiang_11: {
+        counterpart: "筑墙-梅花-12",
+        min: 0,
+        max: 4
+    },
+}

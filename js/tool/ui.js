@@ -1,6 +1,7 @@
 import {
     eachLine,
-    addPSFix
+    addPSFix,
+    stringToRegExp
 } from './string.js'
 class elementTool {
     /**
@@ -45,7 +46,6 @@ class elementTool {
         this.ele.innerHTML += str;
         return this;
     }
-
     block() {
         this.ele.style.display = 'block';
         return this;
@@ -96,8 +96,23 @@ class elementTool {
      * @param {function} callback 
      * @returns {elementTool}
      */
-    listen(event, callback) {
-        this.ele.addEventListener(event, callback)
+    listen(event, callback, option) {
+        this.ele.addEventListener(event, callback, option)
+        return this;
+    }
+    listenNotScroll(event, callback, option) {
+        let topScroll = this.ele.scrollTop
+        this.ele.addEventListener(event, function (...args) {
+            if (Math.abs(topScroll - this.scrollTop) > 0.5) {
+                topScroll = this.scrollTop;
+                return;
+            }
+            callback.apply(this, args);
+        }, option);
+        return this;
+    }
+    listenUnderCondition(condition, event, callback) {
+        if (condition) this.ele.addEventListener(event, callback)
         return this;
     }
     listenTransEvent(preEvent, transEvent, listener, isOk = () => true) {
@@ -110,6 +125,19 @@ class elementTool {
             }))
         })
         this.ele.addEventListener(transEvent, listener)
+        return this;
+    }
+    listenTouchEndWithoutMove(callback, condition) {
+        if (!condition) return this;
+        let isMoving = false;
+        this.ele.addEventListener("touchmove", () => {
+            isMoving = true;
+        });
+        this.ele.addEventListener("touchend", function (e) {
+            isMoving = false;
+            if (isMoving) return;
+            callback.call(this, e)
+        });
         return this;
     }
     accesskey(key) {
@@ -163,6 +191,10 @@ class elementTool {
         else this.ele.classList.add(...arguments);
         return this;
     }
+    addClassUnder(condition, ...toAddClass) {
+        if (condition) this.ele.classList.add(toAddClass);
+        return this;
+    }
     /**
      * @param {string} name 
      * @returns {elementTool}
@@ -171,11 +203,6 @@ class elementTool {
         this.ele.className = name;
         return this;
     }
-    /**
-     * @param {string} type 
-     * @param {string} className
-     * @returns {this}
-     */
     shiftClassWhen(type, className) {
         this.ele.addEventListener(type, function () {
             this.classList.toggle(className);
@@ -202,6 +229,10 @@ class elementTool {
     }
     type(type) {
         this.ele.setAttribute(`type`, type);
+        return this;
+    }
+    seteTypeUnder(condition, type) {
+        if (condition) this.ele.setAttribute(`type`, type);
         return this;
     }
     value(value) {
@@ -523,6 +554,24 @@ class TextareaTool extends elementTool {
         this.ele.value = addPSFix(this.ele.value, match, prefix, suffix)
         return this;
     }
+    /**
+     * 
+     * @param {string|RegExp} match 
+     * @param {function} callback 
+     * @returns 
+     */
+    whenChangeLineHas(match, callback) {
+        if (typeof match === "string") match = stringToRegExp(match);
+        this.ele.addEventListener("keyup", function (e) {
+            if (e.key !== "Enter") return;
+            const lastLine = this.value.slice(0, this.selectionStart - 1).split("\n").slice(-1)[0];
+            if (match.test(lastLine)) {
+                callback.apply(this, [e]);
+            }
+        })
+        return this;
+    }
+
 }
 /**
  * @type {TouchEvent}
