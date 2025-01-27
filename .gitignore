@@ -1,8 +1,12 @@
 #忽略的文件夹名
-log/
 json/
+log/*
+skin/image/xjb_newCharacter/*
 
 #忽略的文件后缀
 *.tmp
 xjb_xyAPI.js
 
+#不忽略的文件
+!log/empty.text
+!skin/image/xjb_newCharacter/initial.jpg
