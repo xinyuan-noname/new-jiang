@@ -7,30 +7,6 @@ import {
     _status
 } from "../../noname.js";
 export function XJB_CONTENT(config, pack) {
-    //新的数据处理函数部分            
-    String.prototype.getNumberBefore = function (character) {
-        if (this.indexOf(character) == -1) return []
-        var pList = []
-        this.replace(new RegExp(`(\-{0,1}[0-9][0-9\.\/]*)${character}`, 'g'), function (match, p) {
-            pList.push(p)
-        })
-        return pList
-    }
-    String.prototype.getNumberAfter = function (character) {
-        if (this.indexOf(character) == -1) return []
-        var pList = []
-        this.replace(new RegExp(`${character}(\-{0,1}[0-9][0-9\.\/]*)`, 'g'), function (match, p) {
-            pList.push(p)
-        })
-        return pList
-    }
-    String.prototype.withTogether = function (str, func) {
-        return [func(this), func(str)]
-    }
-    Array.prototype.toEnsureItsPersonality = function () {
-        var list = Array.from(new Set(this))
-        return list
-    }
     //这个是用于设置关卡信息的函数
     lib.arenaReady.push(function () {
         _status.xjb_level = {
@@ -39,23 +15,6 @@ export function XJB_CONTENT(config, pack) {
             Type: "normal"
         }
     });
-    //这个用于把xjb_1中的函数赋给角色
-    lib.arenaReady.push(function () {
-        if (lib.skill.xjb_1) {
-            for (let k in lib.skill.xjb_1.player) {
-                lib.element.player[k] = lib.skill.xjb_1.player[k];
-            }
-        }
-    });
-    //这个用于设置xjb_2的中的事件
-    lib.arenaReady.push(function () {
-        if (lib.skill.xjb_2) {
-            for (let k in lib.skill.xjb_2) {
-                lib.element.player[k] = lib.skill.xjb_2[k].player;
-                lib.element.content[k] = lib.skill.xjb_2[k].content;
-            }
-        }
-    })
     //这个把其他新将包的数据释放出来
     lib.arenaReady.push(function () {
         //这里会创建一个数组，该数组为xjb_3、xjb_4、...
@@ -67,22 +26,27 @@ export function XJB_CONTENT(config, pack) {
         })
         //遍历这个数组，执行其中的函数
         arr.forEach(function (item) {
-            if (!this[item]) return false;
-            for (let i in this[item]) {
-                (typeof this[item][i] === "function") && this[item][i]()
+            if (!lib.skill[item]) {
+                return false;
             }
-        }, lib.skill)
+            for (let i in lib.skill[item]) {
+                if (typeof lib.skill[item][i] === "function") lib.skill[item][i]();
+            }
+        })
     })
     //这个是一定要放在最后处理的新将包数据
     lib.arenaReady.push(function () {
-        if (lib.skill.xjb_final) {
+        const loadFinal = () => {
+            if (!lib.skill.xjb_final) {
+                setTimeout(loadFinal, 100);
+                return;
+            };
             for (let k in lib.skill.xjb_final) {
-                window.requestAnimationFrame(function () {
-                    (typeof lib.skill.xjb_final[k] === "function") &&
-                        lib.skill.xjb_final[k]()
-                })
+                (typeof lib.skill.xjb_final[k] === "function") &&
+                    lib.skill.xjb_final[k]()
             }
         }
+        loadFinal()
     })
     lib.extensionMenu.extension_新将包.delete.name = '<img src="' + lib.xjb_src + 'image/trash.png" width="16">' + '删除'
     lib.extensionMenu.extension_新将包['Eplanation'] = {
@@ -108,7 +72,8 @@ export function XJB_CONTENT(config, pack) {
             update: '刷新工具',
             putout: '输出目录',
             download: '下载更新',
-            downloadSimply: '简易更新'
+            downloadSimply: '简易更新',
+
         },
         visualMenu: function (node) {
             node.className = 'button controlbutton';
@@ -536,7 +501,7 @@ export function XJB_CONTENT(config, pack) {
             }
         }
         if (lib.config.xjb_yangcheng == 1) {
-            lib.xjb_yangcheng1 = lib.extensionMenu.extension_新将包.newCharacter = {
+             lib.extensionMenu.extension_新将包.newCharacter = {
                 name: '<img src="' + lib.xjb_src + 'xin_newCharacter.jpg" height="16">' + '<font color="yellow">武将养成</font>',
                 init: 'name2',
                 item: {
@@ -549,9 +514,9 @@ export function XJB_CONTENT(config, pack) {
                     skill1: '技能槽↑',
                     skill2: '技能回收',
                     skill3: '技能学习',
-                    sink1: '皮肤导入',
-                    sink3: '原皮更改',
-                    sink4: '恢复初始',
+                    skin1: '皮肤导入',
+                    skin3: '原皮更改',
+                    skin4: '恢复原皮',
                 },
                 visualMenu: function (node) {
                     node.className = 'button controlbutton';
@@ -561,9 +526,59 @@ export function XJB_CONTENT(config, pack) {
                     if (lib.config.xjb_systemEnergy < 0) {
                         return game.xjb_NoEnergy()
                     }
-                    function changeSkill(abcde) {
-                        var obj = {}
-                        obj.changeSkill1 = function () {
+                    switch (layout) {
+                        case 'name2': game.xjb_gainJP("免费更改姓名"); break;
+                        case 'sex': {
+                            let sex = lib.config.xjb_newcharacter.sex;
+                            let price = game.xjb_goods.changeSexCard.price;
+                            game.xjb_create.confirm('你当前性别为：' + get.translation(sex) + `，更改性别需要1张性转卡(${price}魂币一张，当前你有` + game.xjb_countIt("changeSexCard") + '张，无则自动购买)确定要更改吗？', function () {
+                                game.xjb_newCharacterChangeSex(1, false);
+                            });
+                        } break;
+                        case 'group': {
+                            let group = lib.config.xjb_newcharacter.group;
+                            let price = game.xjb_goods.changeGroupCard.price;
+                            game.xjb_create.confirm('你当前势力为：' + get.translation(group) + `，更改势力需要1个择木卡(${price}魂币一张，当前你有` + game.xjb_countIt("changeGroupCard") + '张，无则自动购买)，确定要更改吗？', function () {
+                                game.xjb_newCharacterChangeGroup(1, false);
+                            });
+                        } break;
+                        case 'hp': {
+                            let hp = lib.config.xjb_newcharacter.hp;
+                            let max = 0;
+                            function getCost(num) {
+                                let count = 0, i = 0;
+                                while (i < num) {
+                                    count += (hp + i) * (hp + i) * 2;
+                                    i++;
+                                }
+                                return count;
+                            }
+                            for (let add = 0; add < 15; add++) {
+                                let cost = getCost(add);
+                                if (lib.config.xjb_hunbi < cost) break;
+                                max = add;
+                            }
+                            game.xjb_create.range('你已有' + hp + '点体力。增加0点体力需要0个魂币。', 0, max, 0, function () {
+                                const add = this.result;
+                                let cost = getCost(add);
+                                if (lib.config.xjb_hunbi >= cost) {
+                                    game.xjb_newCharacterAddHp(this.result, false);
+                                }
+                            }, function () {
+                                const add = this.value;
+                                let cost = getCost(add);
+                                this.prompt.innerHTML = '你已有' + hp + '点体力。增加' + add + '点体力需要' + cost + '个魂币。';
+                            });
+                        };break;
+                        case 'intro': game.xjb_setInfoDia(); break;
+                        case 'unique':
+                            game.xjb_create.configList({
+                                xjb_newCharacter_isZhu: "设置为常备主公",
+                                xjb_newCharacter_hide: "设置登场时隐匿",
+                                xjb_newCharacter_addGuoZhan: "加入国战模式",
+                            });
+                            break;
+                        case 'skill1': {
                             let num = lib.config.xjb_jnc;
                             let max = 0;
                             function apSum(first, endIndex, difference) {
@@ -590,185 +605,15 @@ export function XJB_CONTENT(config, pack) {
                                 let cost = apSum(first, add, 5)
                                 this.prompt.innerHTML = '你当前有' + num + '个技能槽，开启' + add + '个技能槽,共需' + cost + '个魂币'
                             })
-                        }
-                        obj.changeSkill2 = function () {
-                            game.xjb_raiseCharRemoveUpdateSkillsDia();
-                        }
-                        obj.changeSkill3 = function () {
-                            game.xjb_addHunSkillsDia();
-                        }
-                        if (!lib.config.xjb_jnc) lib.config.xjb_jnc = 0
-                        obj["changeSkill" + abcde]()
+                            if (!lib.config.xjb_jnc) lib.config.xjb_jnc = 0;
+                        } break;
+                        case 'skill2': game.xjb_raiseCharRemoveUpdateSkillsDia(); break;
+                        case 'skill3': game.xjb_addHunSkillsDia(); break;
+                        case 'skin1': game.xjb_importSkinDia(); break;
+                        case 'skin3': game.xjb_changePreSkinDia(); break;
+                        case 'skin4': game.xjb_changeToInitialSkinDia(); break;
+                        default: break;
                     }
-                    var sinks = function (str1) {
-                        if (!lib.config.xjb_newcharacter.sink) lib.config.xjb_newcharacter.sink = []
-                        const downloadByCordova = function () {
-                            const that = this;
-                            var Myalert = game.xjb_create.alert("正在导入中...");
-                            const sucCallback = () => {
-                                Myalert.innerHTML = "导入成功！"
-                                ui.xjb_toBeVisible(Myalert.buttons[0])
-                                lib.config.xjb_newcharacter.sink.add(that.result + that.file.type)
-                                game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                            }
-                            const failCallback = err => {
-                                Myalert.innerHTML = "导入失败！<br>" + err
-                                ui.xjb_toBeVisible(Myalert.buttons[0])
-                            }
-                            const downloadWay = lib.config.xjb_fileURL + "sink/xin_newCharacter/normal/" + that.result + that.file.type;
-                            ui.xjb_toBeHidden(Myalert.buttons[0])
-                            var fileTransfer = new FileTransfer();
-                            fileTransfer.download(
-                                that.file.result,
-                                downloadWay,
-                                sucCallback,
-                                failCallback
-                            )
-                        };
-                        const downloadByNode = function () {
-                            const that = this;
-                            var Myalert = game.xjb_create.alert("正在导入中...");
-                            const sucCallback = () => {
-                                Myalert.innerHTML = "导入成功！"
-                                ui.xjb_toBeVisible(Myalert.buttons[0])
-                                lib.config.xjb_newcharacter.sink.add(that.result + that.file.type)
-                                game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                            }
-                            const failCallback = err => {
-                                Myalert.innerHTML = "导入失败！<br>" + err
-                                ui.xjb_toBeVisible(Myalert.buttons[0])
-                            }
-                            const downloadWay = lib.config.xjb_fileURL + "sink/xin_newCharacter/normal/" + that.result + that.file.type;
-                            ui.xjb_toBeHidden(Myalert.buttons[0])
-                            lib.node.fs.writeFile(
-                                window.decodeURIComponent(new URL(downloadWay).pathname).substring(1),
-                                Buffer.from(new Uint8Array(that.file.result)),
-                                err => {
-                                    if (err) return failCallback(err);
-                                    sucCallback();
-                                }
-                            )
-                        }
-                        game.xjb_create.file(
-                            "请输入你的皮肤名，并选定图片，待确定出现后按确定即可。",
-                            str1,
-                            function () {
-                                const theDownload = lib.node ? downloadByNode : downloadByCordova
-                                if (lib.config.xjb_newcharacter.sink.includes(this.result)) {
-                                    game.xjb_create.confirm("你已有该同名的皮肤，是否覆盖？", theDownload, function () { sinks("img") })
-                                }
-                                else theDownload.apply(this, [])
-                            },
-                            () => { },
-                            lib.node ? true : false
-                        )
-                    }
-                    var object = {
-                        other: _ => 1,
-                        name2: function () {
-                            game.xjb_gainJP("免费更改姓名")
-                        },
-                        sex: function () {
-                            let sex = lib.config.xjb_newcharacter.sex
-                            let price = game.xjb_goods.changeSexCard.price;
-                            game.xjb_create.confirm('你当前性别为：' + get.translation(sex) + `，更改性别需要1张性转卡(${price}魂币一张，当前你有` + game.xjb_countIt("changeSexCard") + '张，无则自动购买)确定要更改吗？', function () {
-                                game.xjb_newCharacterChangeSex(1, false)
-                            })
-                        },
-                        group: function () {
-                            let group = lib.config.xjb_newcharacter.group
-                            let price = game.xjb_goods.changeGroupCard.price;
-                            game.xjb_create.confirm('你当前势力为：' + get.translation(group) + `，更改势力需要1个择木卡(${price}魂币一张，当前你有` + game.xjb_countIt("changeGroupCard") + '张，无则自动购买)，确定要更改吗？', function () {
-                                game.xjb_newCharacterChangeGroup(1, false)
-                            })
-                        },
-                        hp: function () {
-                            let hp = lib.config.xjb_newcharacter.hp;
-                            let max = 0;
-                            function getCost(num) {
-                                let count = 0, i = 0;
-                                while (i < num) {
-                                    count += (hp + i) * (hp + i) * 2
-                                    i++
-                                }
-                                return count;
-                            }
-                            for (let add = 0; add < 15; add++) {
-                                let cost = getCost(add)
-                                if (lib.config.xjb_hunbi < cost) break;
-                                max = add;
-                            }
-                            game.xjb_create.range('你已有' + hp + '点体力。增加0点体力需要0个魂币。', 0, max, 0, function () {
-                                const add = this.result;
-                                let cost = getCost(add)
-                                if (lib.config.xjb_hunbi >= cost) {
-                                    game.xjb_newCharacterAddHp(this.result, false)
-                                }
-                            }, function () {
-                                const add = this.value;
-                                let cost = getCost(add);
-                                this.prompt.innerHTML = '你已有' + hp + '点体力。增加' + add + '点体力需要' + cost + '个魂币。'
-                            })
-                        },
-                        intro: function () {
-                            game.xjb_create.prompt('请输入该角色的背景信息', lib.config.xjb_newcharacter.intro, function () {
-                                lib.config.xjb_newcharacter.intro = this.result
-                                game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                                game.xjb_systemEnergyChange(-1)
-                            }).higher()
-                        },
-                        unique: function () {
-                            game.xjb_create.configList({
-                                xjb_newCharacter_isZhu: "设置为常备主公",
-                                xjb_newCharacter_hide: "设置登场时隐匿",
-                                xjb_newCharacter_addGuoZhan: "加入国战模式",
-                            })
-                        },
-                        skill1: function () {
-                            changeSkill(1)
-                        },
-                        skill2: function () {
-                            changeSkill(2)
-                        },
-                        skill3: function () {
-                            changeSkill(3)
-                        },
-                        sink1: function () {
-                            sinks("img")
-                        },
-                        sink3: function () {
-                            game.xjb_create.button("未选中皮肤", lib.xjb_src + "sink/xin_newCharacter/normal/", lib.config.xjb_newcharacter.sink, function () {
-                                lib.config.xjb_newcharacter.selectedSink = "ext:新将包/sink/xin_newCharacter/normal/" + this.result
-                                game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                                game.xjb_create.alert('更改皮肤为' + this.result + '，重启即生效');
-                                if (lib.character.xjb_newCharacter) {
-                                    lib.character.xjb_newCharacter[4] = [lib.config.xjb_newcharacter.selectedSink];
-                                }
-                            }, () => {
-                                game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                            }, function () {
-                                if (this.src) {
-                                    const src = this.src.replace(lib.xjb_src, lib.xjb_fileURL)
-                                    if (lib.node && lib.node.fs.promises) {
-                                        const path = window.decodeURIComponent(new URL(src).pathname).substring(1)
-                                        lib.node.fs.promises.unlink(path)
-                                    } else {
-                                        game.removeFile('extension/新将包/' + src.replace(lib.xjb_fileURL, ''))
-                                    }
-                                }
-                            })
-                        },
-                        sink4: function () {
-                            lib.config.xjb_newcharacter.selectedSink = "ext:新将包/xin_newCharacter.jpg"
-                            game.saveConfig('xjb_newcharacter', lib.config.xjb_newcharacter)
-                            game.xjb_create.alert('已恢复至原皮，重启即生效');
-                            if (lib.character.xjb_newCharacter) {
-                                lib.characterPack["xjb_soul"].xjb_newCharacter = lib.character.xjb_newCharacter[4] = [lib.config.xjb_newcharacter.selectedSink]
-                            }
-                        },
-                    }
-                    object[layout]()
-                    return object
                 }
             }
         }

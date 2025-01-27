@@ -1,12 +1,26 @@
 import { _status, lib, ui, game, ai, get } from "../../../../noname.js"
 export const soulSkill = {};
 export const soulTranslate = {};
+/**
+ * 
+ * @param {string} name 
+ * @param {Skill} skill 
+ * @returns 
+ */
 function SkillCreater(name, skill) {
     soulSkill[name] = { ...skill }
     delete soulSkill[name].translate;
     delete soulSkill[name].description;
     soulTranslate[name] = skill.translate;
     soulTranslate[name + "_info"] = skill.description
+    if (skill.subTrans) {
+        for (const subname in skill.subTrans) {
+            const [trans, info] = skill.subTrans[subname];
+            soulTranslate[name + "_" + subname] = trans;
+            soulTranslate[name + "_" + subname + "_info"] = info;
+        }
+        delete soulSkill[name].subTrans;
+    }
     return soulSkill[name];
 };
 
@@ -114,27 +128,8 @@ const xjb_soul_fuhong = SkillCreater(
         if (!(player.inRange(target))) return false;
         return true;
     },
-    content: function () {
-        'step 0'
-        if (!target.xjb_HpCardArea) target.xjb_adjustHpCard();
-        const area = target.xjb_HpCardArea.map((content, index) => {
-            return [index, game.xjb_createHpCard(content.obv).outerHTML]
-        });
-        if (area.length > 1) {
-            player.chooseButton([
-                `你选择${get.translation(target)}的一张体力牌，令此体力牌牌翻面。`,
-                [area, "tdnodes"]
-            ])
-        } else {
-            target.xjb_turnOverHpCard(0);
-            event.finish()
-        }
-        'step 1'
-        if (result.bool) {
-            target.xjb_turnOverHpCard(result.links[0])
-        } else {
-            player.storage.counttrigger["xjb_soul_fuxue"] -= 1
-        }
+    async content(event, trigger, player) {
+        player.xjb_turnOverPlayerHpCard(target, true);
     },
     translate: "覆红",
     description: "出牌阶段限一次,你可以翻转你攻击范围内一名角色的一张体力牌。"
@@ -151,7 +146,7 @@ const xjb_soul_hongxi = SkillCreater(
         }).filter(item => {
             return item[2] > 1;
         });
-        console.log(area)
+
         if (area.length > 1) {
             player.chooseButton([
                 `你选择${get.translation(player)}的一张体力牌，将此体力牌用等额的体力牌替换之。`,
@@ -211,7 +206,7 @@ const xjb_soul_guifan = SkillCreater(
     enable: "chooseToUse",
     limited: true,
     content: function () {
-        player.awakenSkill("xjb_guifan")
+        player.awakenSkill("xjb_soul_guifan")
         player.xjb_readStorage()
     },
     ai: {
@@ -238,178 +233,17 @@ const xjb_soul_guifan = SkillCreater(
 const xjb_soul_chanter = SkillCreater(
     "xjb_soul_chanter", {
     translate: "吟咏",
-    description: "出牌阶段限一次，你可以弃置一张卡牌并进入<b description=[进入该空间后，灵力最大可以达到100Ch，在该区域内的的伤害会被魔力吸收，作用到角色上负收益翻倍。]>聚灵区</b>，然后你进行一次<b description=[打开技能编辑器，令系统在线编写并生成一个锁定技，你该技能对应的技能牌置于阵法区]>吟咏</b>。",
+    description: "出牌阶段限三次，若你手牌颜色相同，你可以展示之并进行一次吟咏。",
     enable: "phaseUse",
-    usable: 1,
-    filterCard: true,
-    nextDo: function (player, skill) {
-        let next = game.createEvent("chant")
-        next.player = player
-        next.skill = skill
-        next.setContent(function () {
-            "step 0"
-            game.resume()
-            event.player.xjb_addSkillCard(event.skill)
-        })
-        game.resume()
+    usable: 3,
+    filter: (event, player) => {
+        const hs = player.getCards("h")
+        return hs.every(card => get.color(card) === get.color(hs[0]));
     },
     async content(event, trigger, player) {
-        player.addTempSkill('xjb_P_gathering', { player: "phaseBegin" })
-        game.pause()
-        let num = 0;
-        const element = ui.xjb_domTool;
-        while (lib.skill['chant' + num] !== undefined) {
-            num++
-        }
-        game.xjb_skillEditor()
-        let touch = new TouchEvent("touchend", {
-            bubbles: true,
-            cancelable: true,
-            composed: true
-        })
-        event.skillId = event.skillId || ("chant" + num)
-        let skill = event.skillId
-        lib.translate[skill] = event.skillCnName || ("咏唱" + num)
-        let functionList = {
-            submitID: function (res) {
-                let list = (skill).split(''), a = 0
-                //输入id
-                let timer = setInterval(i => {
-                    if (a === list.length) {
-                        res();
-                        clearInterval(timer);
-                        game.xjb_back.ele.id.submit();
-                        return;
-                    }
-                    game.xjb_back.ele.id.value += list[a];
-                    a++;
-                }, 100)
-            },
-            nextPage: function (res) {
-                setTimeout(i => {
-                    game.xjb_back.ele.nextPage.click()
-                    game.xjb_back.ele.nextPage.dispatchEvent(touch)
-                    res()
-                }, 200)
-            }
-        }
-        new Promise(res => {
-            //这里是第一页内容
-            functionList.submitID(res)
-        }).then(data => {
-            return new Promise(res => {
-                setTimeout(i => {
-                    element().setTarget(game.xjb_back.ele.kinds[0])
-                        .clickAndTouch()
-                        .setTarget(game.xjb_back.ele.types[1])
-                        .clickAndTouch()
-                    res()
-                }, 200)
-            })
-        }).then(data => {
-            return new Promise(res => {
-                setTimeout(i => {
-                    element().setTarget(game.xjb_back.ele.modes[2])
-                        .clickAndTouch()
-                    res()
-                }, 200)
-            })
-        }).then(data => {
-            //这里换页了，第二页
-            return new Promise(res => {
-                functionList.nextPage(res)
-            })
-        }).then(data => {
-            return new Promise(res => {
-                let list = XJB_EDITOR_LIST['filter'].randomGet(), a = 0
-                lib.translate[skill + "_info"] = `${list}整理`
-                let timer = setInterval(i => {
-                    if (a === list.length) {
-                        res(game.xjb_back.ele.filter.value)
-                        clearInterval(timer)
-                        element().setTarget(game.xjb_back.ele.filter)
-                            .callMethod("arrange")
-                            .callMethod("submit");
-                        return
-                    }
-                    game.xjb_back.ele.filter.value += list[a]
-                    a++
-                }, 100)
-            })
-        }).then(data => {
-            //第三页
-            return new Promise(res => {
-                functionList.nextPage(res)
-            })
-        }).then(data => {
-            return new Promise(res => {
-                let list = XJB_EDITOR_LIST['effect'].randomGet(), a = 0
-                lib.translate[skill + "_info"] += `${list}整理`
-                let timer = setInterval(i => {
-                    if (a === list.length) {
-                        res();
-                        clearInterval(timer);
-                        element().setTarget(game.xjb_back.ele.content)
-                            .callMethod("arrange")
-                            .callMethod("submit");
-                        return;
-                    }
-                    game.xjb_back.ele.content.value += list[a];
-                    element().setTarget(game.xjb_back.ele.content)
-                        .callMethod("submit");
-                    a++
-                }, 100)
-            })
-        }).then(data => {
-            //第四页
-            return new Promise(res => {
-                functionList.nextPage(res)
-            })
-        }).then(data => {
-            return new Promise(res => {
-                let list = XJB_EDITOR_LIST['trigger'].randomGet(), a = 0
-                lib.translate[skill + "_info"] += `${list}整理`
-                let timer = setInterval(i => {
-                    if (a === list.length) {
-                        res()
-                        clearInterval(timer)
-                        element().setTarget(game.xjb_back.ele.trigger)
-                            .callMethod("arrange")
-                            .callMethod("submit");
-                        return
-                    }
-                    game.xjb_back.ele.trigger.value += list[a]
-                    a++
-                }, 100)
-            })
-        }).then(data => {
-            //第五页
-            return new Promise(res => {
-                functionList.nextPage(res)
-            })
-        }).then(data => {
-            return new Promise(res => {
-                setTimeout(i => {
-                    let produce = new Function('_status', 'lib', 'game', 'ui', 'get', 'ai', game.xjb_back.target.value)
-                    produce(_status, lib, game, ui, get, ai)
-                    game.xjb_back.remove()
-                    for (let k in lib.skill[skill]) {
-                        lib.skill[skill][k] = lib.skill[skill][k]
-                    }
-                    let arr = lib.translate[skill + '_info'].split('整理')
-                    if (arr[1].includes("继承")) {
-                        arr[1] = arr[1].replace("继承", "");
-                        arr[1] = arr[1].replace(/[^a-z]/gi, "")
-                        arr[1] = `你"${get.translation(arr[1])}(${arr[1]})"一次`;
-                    }
-                    lib.translate[skill + '_info'] = "锁定技，" + arr[2] + '，若' + arr[0] + '，' + arr[1] + '。'
-                    lib.translate[skill + '_info'] = lib.translate[skill + '_info'].replace(/\s/g, "")
-                    res()
-                }, 300)
-            })
-        }).then(data => {
-            get.info(event.name).nextDo(player, skill)
-        })
+        //player.addTempSkill('xjb_P_gathering', { player: "phaseBegin" })
+        await player.showHandcards("咏唱");
+        player.xjb_chant(['forced']);
     },
     ai: {
         order: 4,
@@ -419,28 +253,159 @@ const xjb_soul_chanter = SkillCreater(
     },
 })
 
-const xjb_soul_lingpiao = SkillCreater(
-    "xjb_soul_lingpiao", {
-    translate: "灵票",
-    description: "一名其他角色灵力增加时，你可取消之，并用一张【灵力支票】代替。<br>产生【灵力支票】的消耗由此角色支付。",
-    trigger: {
-        global: ["xjb_addlingliBefore"],
+
+const xjb_soul_zhigong = SkillCreater(
+    "xjb_soul_zhigong", {
+    translate: "智工",
+    description: "限定技，出牌阶段，你可以在你的下位增加一名角色并令其摸四张牌。你获得〖智工主人〗，其获得〖智工仆从〗",
+    enable: "phaseUse",
+    limited: true,
+    skillAnimation: true,
+    seatRelated: true,
+    changeSeat: true,
+    usable: 1,
+    async content(event, trigger, player) {
+        player.awakenSkill(event.name);
+        const characters = Object.keys(lib.character)
+            .removeArray([...game.players, ...game.dead].map(curr => [curr.name1, curr.name2]).flat())
+            .randomGets(3)
+        const [targetName] = await player.chooseButton([
+            "为你的智工仆从选择一张武将牌",
+            [characters, "character"]
+        ])
+            .set("forced", true)
+            .forResult("links");
+        const target = game.addPlayer(Number(player.dataset.position) + 1);
+        target.getId();
+        target.init(targetName)
+        await target.draw(4);
+        player.addSkill("xjb_soul_zhigong_host");
+        target.addSkill("xjb_soul_zhigong_servant");
+        target.markAuto("xjb_soul_zhigong_servant", player);
     },
-    check: function (event, player) {
-        return get.attitude(player, event.player) < 0
+    derivation: ["xjb_soul_zhigong_host", "xjb_zhigong_servant"],
+    subTrans: {
+        host: ["智工主人", "你可以使用或打出一名智工仆从的手牌。"],
+        servant: ["智工仆从", "你跳过出牌阶段和弃牌阶段，取消对智工主人的伤害。"],
     },
-    filter: function (event, player) {
-        return event.lingliSource !== "card";
+    subSkill: {
+        host: {
+            nobracket: true,
+            //目前不知道这样的写法会出什么样的问题
+            hiddenCard(player, name) {
+                const target = game.findPlayer(curr => curr.hasSkill("xjb_soul_zhigong_servant"));
+                if (!target) return false;
+                if (!target.storage.xjb_soul_zhigong_servant) return false;
+                if (!target.storage.xjb_soul_zhigong_servant.includes(player)) return false;
+                return target.hasCard(name, "h");
+            },
+            enable: ["chooseToUse", "chooseToRespond"],
+            filter: function (event, player) {
+                const target = game.findPlayer(curr => curr.hasSkill("xjb_soul_zhigong_servant"));
+                if (!target) return false;
+                if (!target.storage.xjb_soul_zhigong_servant) return false;
+                if (!target.storage.xjb_soul_zhigong_servant.includes(player)) return false;
+                return target.hasCard(card => event.filterCard(get.autoViewAs(card), player, event), "h");
+            },
+            direct: true,
+            chooseButton: {
+                dialog: (event, player) => {
+                    const targets = game.filterPlayer(curr =>
+                        curr.hasSkill("xjb_soul_zhigong_servant")
+                        && curr.storage.xjb_soul_zhigong_servant
+                        && curr.storage.xjb_soul_zhigong_servant.includes(player)
+                    );
+                    const list = []
+                    for (const target of targets) {
+                        list.push(get.translation(target));
+                        list.push([target.getCards("h"), "vcard"]);
+                    }
+                    return ui.create.dialog("智工", ...list);
+                },
+                filter: (button, player) => {
+                    const evt = _status.event.getParent()
+                    return evt.filterCard(
+                        get.autoViewAs(button),
+                        player,
+                        evt
+                    )
+                },
+                backup: (links, player) => {
+                    return {
+                        filterCard: () => false,
+                        selectCard: -1,
+                        precontent() {
+                            delete event.result.skill;
+                            event.result.cards = event.result.card.cards.slice(0);
+                        },
+                        viewAs: get.autoViewAs(links[0])
+                    }
+                }
+            },
+        },
+        servant: {
+            nobracket: true,
+            mark: true,
+            marktext: "仆",
+            intro: {
+                name: "智工-仆从",
+                content: "我是$的智能机械仆从。"
+            },
+            trigger: {
+                player: ["phaseUseBefore", "phaseDiscardBefore", "dieAfter"],
+                source: "damageSource"
+            },
+            filter(event, player) {
+                if (event.name === "damage"
+                    && !event.player.hasSkill("xjb_soul_zhigong_host")
+                    && !player.storage.xjb_soul_zhigong_servant.includes(event.player)) return false;
+                return true;
+            },
+            forceDie: true,
+            charlotte: true,
+            superCharlotte: true,
+            forced: true,
+            async content(event, trigger, player) {
+                if (trigger.name === "die") {
+                    game.removePlayer(player);
+                    return;
+                }
+                trigger.cancel();
+            }
+        }
     },
-    content: function () {
-        "step 0"
-        trigger.cancel()
-        let card = game.createCard("xjb_lingliCheck", 'heart', 13 - trigger.num)
-        card.storage.xjb_allowed = true
-        trigger.player.gain("gain2", card)
-        trigger.player.xjb_eventLine(1)
+});
+const xjb_soul_jihuo = SkillCreater(
+    "xjb_soul_jihuo", {
+    enable: "phaseUse",
+    translate: "激活",
+    description: "出牌阶段，你可以移去一名“智工仆从”体力点的灵力，为其设置一个身份，并令其可自由活动。",
+    filter(event, player) {
+        return game.hasPlayer(curr => {
+            return curr.hasSkill("xjb_soul_zhigong_servant")
+                && curr.storage.xjb_soul_zhigong_servant
+                && curr.storage.xjb_soul_zhigong_servant.includes(player)
+                && player.xjb_countLingli() >= curr.hp;
+        })
     },
+    filterTarget(card, player, target) {
+        return target.hasSkill("xjb_soul_zhigong_servant")
+            && target.storage.xjb_soul_zhigong_servant
+            && target.storage.xjb_soul_zhigong_servant.includes(player)
+            && player.xjb_countLingli() >= target.hp;
+    },
+    async content(event, trigger, player) {
+        player.xjb_loseLingli(event.target.hp);
+        const identityList = game.getIdentityList(event.target);
+        if (identityList) delete identityList.cai;
+        const { result: { links, bool } } = await player.chooseButton([
+            "请为" + get.translation(event.target) + "设置一个身份",
+            [Object.entries(identityList), "tdnodes"]
+        ]);
+        if (bool) {
+            event.target.removeSkill("xjb_soul_zhigong_servant");
+            event.target.identity = links[0];
+            event.target.showIdentity();
+        }
+    }
 })
-
-
-
