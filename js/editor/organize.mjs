@@ -111,7 +111,100 @@ const analyzeViewAsData = (back, i = 0) => {
         viewAsFrequency, id
     }
 }
-
+const triUnkonwn = (value, player, id) => {
+    switch (value) {
+        case "inPhase":
+            return `${player} !== _status.currentPhase`;
+        case "outPhase":
+            return `${player} === _status.currentPhase`;
+        case "inPhaseUse":
+            return `!${player}.isPhaseUsing()`
+        case "outPhaseUse":
+            return `${player}.isPhaseUsing()`
+        //
+        case "onlyOneTarget":
+            return `event.targets.length > 1`;
+        // 
+        case "addSkills":
+            return `event.addSkill.length > 0`;
+        case "removeSkills":
+            return `event.removeSkill.length > 0`;
+        //
+        case "forThisSkill":
+            return (`event.getParent("${id}", true) === null`);
+        case "noForThisSkill":
+            return (`event.getParent("${id}", true) !== null`);
+        //
+        case "yescard":
+            return "!event.card";
+        case "isCard":
+            return "!event.card?.isCard";
+    }
+}
+const triPlayerFilter = (value, player, attr) => {
+    if (attr && attr.endsWith("Group")) {
+        return value.length === 1 ? `${player}.group !== ${value}` : `![${value}].includes(${player}.group)`;
+    }
+    if (attr && attr.endsWith("Sex")) {
+        return value.length === 1 ? `!${player}.hasSex(${value})` : `[${value}].every(sex => !${player}.hasSex(sex))`;
+    }
+    switch (value) {
+        case 'player':
+            return `${player} !== player`;
+        case 'other':
+            return `${player} === player`;
+        case 'inRange':
+            return `!player.inRange(${player})`;
+        case 'inRangeOf':
+            return `!player.inRangeOf(${player})`;
+        case 'noInRange':
+            return `player.inRange(${player})`;
+        case 'noInRangeOf':
+            return `player.inRangeOf(${player})`;
+        case "isDamaged":
+            return `!${player}.isDamaged()`;
+        case "isHealthy":
+            return `!${player}.isHealthy()`;
+        case "sameGroup": {
+            return `player.group === ${player}.group`;
+        }
+        case "differentGroup": {
+            return `player.group === ${player}.group`;
+        }
+        case "sameSex":
+            return `!player.sameSexAs(${player})`;
+        case "differentSex":
+            return `!player.differentSexFrom(${player})`;
+    }
+}
+const triCardsFilter = (attr, values, player) => {
+    const para = [];
+    if (attr === "tag") {
+        if (values.length === 1) return `!get.tag(card, ${values})`;
+        else return `[${values}].some(tag => !get.tag(card, tag))`;
+    } else if (attr === "type") {
+        para.push("card", "null");
+    } else {
+        para.push("card");
+    }
+    if (player) para.push(player);
+    if (values.length === 1) return `get.${attr}(${para.join(", ")}) !== ${values}`;
+    return `![${values}].includes(get.${attr}(${para.join(", ")}))`
+}
+const triCardsFilter2 = (attr, values, player) => {
+    const para = [];
+    if (attr === "tag") {
+        if (values.length === 1) return `get.tag(card, ${values})`;
+        else return `[${values}].some(tag => get.tag(card, tag))`;
+    } else if (attr === "type") {
+        para.push("card", "null");
+    } else {
+        para.push("card");
+    }
+    if (player) para.push(player);
+    if (values.length === 1) return `get.${attr}(${para.join(", ")}) === ${values}`;
+    return `[${values}].includes(get.${attr}(${para.join(", ")}))`
+}
 const testSentenceIsOk = (str) => {
     try {
         new Function(str);
@@ -121,7 +214,8 @@ const testSentenceIsOk = (str) => {
     return true;
 }
 
-const testLoseRegExp = /^lose(?!Hp)/
+const testLoseRegExp = /^lose(?!MaxHp|Hp)/
+const testGainRegExp = /^gain(?!MaxHp)/
 export class EditorOrganize {
     static opening(back) {
         let result = '';
@@ -136,12 +230,24 @@ export class EditorOrganize {
 
     static kind(back) {
         let result = '';
-        const { kind, trigger, triLoseEvts } = back.skill;
+        const { kind, trigger, triLoseEvts, triGainEvts, triGameStart, triLoseReason } = back.skill;
         if (kind === 'trigger') {
             const triggerCopy = get.copy(trigger);
             result += 'trigger:{\n';
-            if (triLoseEvts && triLoseEvts.length === 1) {
-                triggerCopy.global.push("equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter")
+            if (triGameStart) {
+                triggerCopy.global.push("phaseBefore")
+            }
+            else if (triGainEvts && triGainEvts.length === 1) {
+                triggerCopy.global.push("loseAsyncAfter")
+            }
+            else if (triLoseEvts && triLoseEvts.length === 1) {
+                if (triLoseReason === "noUseToDiscardPile") {
+                    triggerCopy.global.push("equipAfter", "loseAsyncAfter", "cardsDiscardAfter")
+                } if (triLoseReason === "discardToDiscardPile") {
+                    triggerCopy.global.push("loseAsyncAfter")
+                } else {
+                    triggerCopy.global.push("equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter")
+                }
             }
             for (const triType of ["player", "source", "target", "global"]) {
                 if (!triggerCopy[triType].length) continue;
@@ -236,50 +342,7 @@ export class EditorOrganize {
         result += '},\n'
         return result
     }
-    static getIndex(back) {
-        let result = '';
-        const { getIndex, triggerFilter } = back.skill;
-        const { player, global, target, source } = getIndex;
-        if (player.length + global.length + target.length + source.length === 0) return '';
-        result += `getIndex:function(event,player,triggername){\n`;
-        outer: for (const triType in getIndex) {
-            for (const triName of getIndex[triType]) {
-                if (testLoseRegExp.test(triName)) {
-                    const who = triType === "global" ? "event.giver || event.player" : "player"
-                    for (const triType in triggerFilter) {
-                        for (const [_, search] of Object.entries(triggerFilter[triType])) {
-                            const map = EditorDataAnalyze.triLimitUrl(search);
-                            result += `if(!event.getl||!event.getl(${who})) return false;\n`
-                            let cards;
-                            if (map.position) {
-                                if (map.position.length === 1) {
-                                    const position = map.position[0];
-                                    cards = (`event.getl(${who}).${position}s`);
-                                }
-                                delete map.position;
-                            } else {
-                                cards = (`event.getl(${who}).cards2`);
-                            }
-                            const filterParts = [];
-                            for (const [attr, values] of Object.entries(map)) {
-                                if (attr === "unknown") continue;
-                                if (values.length === 1) filterParts.push(`get.${attr}(card) === ${values}`)
-                                else filterParts.push(`[${values}].includes(get.${attr}(card))`)
-                            }
-                            if (filterParts.length) result += `return ${cards}.filter(card => ${filterParts.join(" && ")}).length\n`
-                            else result += `return ${cards}.length;\n`;
-                        }
-                    }
-                    result += ``
-                } else {
-                    result += "return event.num;\n"
-                };
-                break outer;
-            };
-        }
-        result += `},\n`
-        return result;
-    }
+
 
     static mod(back) {
         const { mod, custom } = back.skill;
@@ -415,112 +478,364 @@ export class EditorOrganize {
         return result
     }
 
-    static triFilter_noLose(triggerFilter, triLength, trigger) {
-        let result = ''
-        for (const triType of ["global", "player", "source", "target"]) {
-            for (const [triName, search] of Object.entries(triggerFilter[triType])) {
-                if (!search) continue;
-                result += `if(`
-                const parts = [];
-                if (triLength !== 1) result += `triggername === "${triName}" && `;
-                if (triType === "global") {
-                    if (trigger.player.includes(triName)) result += `event.player !== player && `
-                    if (trigger.source.includes(triName)) result += `event.source !== player && `
-                    if (trigger.target.includes(triName)) result += `event.target !== player && `
-                } else if (trigger.global.includes(triName)) {
-                    result += `event.${triType} === player && `
-                }
-                for (const [attr, values] of Object.entries(EditorDataAnalyze.triLimitUrl(search))) {
-                    if (attr != "unknown") {
-                        if (values.length === 1) parts.push(`get.${attr}(event.card) !== ${values}`)
-                        else parts.push(`![${values}].includes(get.${attr}(event.card))`)
-                    } else {
-                        let globalAs = "player";
-                        for (const value of values) {
-                            if (["source", "target"].includes(value) && triType === "global") {
-                                parts.push(`event.player !== event.${value}`);
-                                globalAs = value
-                            }
-                            if (["inPhase", "outPhase"].includes(value)) {
-                                if (triType === "global") parts.push(`event.${globalAs} ${value === "inPhase" ? "!" : "="}== _status.currentPhase`)
-                                else parts.push(`player ${value === "inPhase" ? "!" : "="}== _status.currentPhase`)
-                            }
-                            if (value === "onlyOneTarget") {
-                                parts.push(`event.targets.length > 1`)
+    static getIndex(back) {
+        let result = 'getIndex:function(event,player,triggername){\n';
+        const { getIndex, triggerFilter, trigger } = back.skill;
+        const { player, global, target, source } = getIndex;
+        if (player.length + global.length + target.length + source.length === 0) {
+            if (trigger.global.includes("loseAfter")) {
+                result += `if(event.name === "loseAsync") return game.filterPlayer(curr => event.getl(curr)).sortBySeat();\n`
+                result += `return [event.player];\n`
+            }
+            else if (trigger.global.includes("gainAfter")) {
+                result += `if(event.name === "loseAsync") return game.filterPlayer(curr => event.getg(curr).length).sortBySeat();\n`
+                result += `return [event.player];\n`
+            }
+            else return '';
+        } else {
+            outer: for (const triType in getIndex) {
+                for (const triName of getIndex[triType]) {
+                    if (testLoseRegExp.test(triName) && triType === "player") {
+                        const who = "player"
+                        for (const triType in triggerFilter) {
+                            for (const [_, search] of Object.entries(triggerFilter[triType])) {
+                                const map = EditorDataAnalyze.triLimitUrl(search);
+                                result += `if(!event.getl||!event.getl(${who})) return false;\n`
+                                let cards = `event.getl(${who}).cards2`;
+                                if (map.position) {
+                                    const [position] = map.position;
+                                    if (position.length === 1) {
+                                        cards = (`event.getl(${who}).${position}s`);
+                                    }
+                                    delete map.position;
+                                }
+                                const filterParts = [];
+                                for (const [attr, values] of Object.entries(map)) {
+                                    if (attr === "unknown") continue;
+                                    if (values.length === 1) filterParts.push(`get.${attr}(card) === ${values}`)
+                                    else filterParts.push(`[${values}].includes(get.${attr}(card))`)
+                                }
+                                if (filterParts.length) result += `return ${cards}.filter(card => ${filterParts.join(" && ")}).length\n`
+                                else result += `return ${cards}.length;\n`;
                             }
                         }
                     }
+                    else {
+                        result += "return event.num;\n"
+                    };
+                    break outer;
+                };
+            }
+        }
+
+        result += `},\n`
+        return result;
+    }
+    static triFilter_noLose(triggerFilter, triLength, trigger, id) {
+        let result = ''
+        let triggerNameNeedBool = trigger.global.length > 0 && triLength !== 1;
+        if (!triggerNameNeedBool) {
+            const record = []
+            for (const triType of ["player", "source", "target"]) {
+                for (const triName of trigger[triType]) {
+                    record.add(triggerFilter[triType][triName]);
+                    if (record.length > 1) {
+                        triggerNameNeedBool = true;
+                    }
                 }
-                if (triLength > 1 && parts.length > 1) result += '('
-                result += parts.join(' || ');
-                if (triLength > 1 && parts.length > 1) result += ')';
-                result += ') return false;\n'
+            }
+        }
+        for (const triType of ["global", "player", "source", "target"]) {
+            for (const [triName, search] of Object.entries(triggerFilter[triType])) {
+                if (!search) continue;
+                let globalAs = "player";
+                const preParts = [];
+                const parts0 = [];
+                const parts = [];
+                const map = EditorDataAnalyze.triLimitUrl(search);
+                const boolCardsDiscard = map.cardsDiscardFor;
+                if (triggerNameNeedBool) {
+                    preParts.add(`triggername === "${triName}"`);
+                }
+                if (triType === "global") {
+                    if (trigger.player.includes(triName)) {
+                        preParts.add(`event.player !== player`)
+                    }
+                    if (trigger.source.includes(triName)) {
+                        preParts.add(`event.source !== player`)
+                    }
+                    if (trigger.target.includes(triName)) {
+                        preParts.add(`event.target !== player`)
+                    }
+                } else if (trigger.global.includes(triName)) {
+                    preParts.add(`event.${triType} === player`)
+                }
+                if (triName === "damageSource" && triType === "global") {
+                    globalAs = "source";
+                }
+                if (boolCardsDiscard) {
+                    const values = map.cardsDiscardFor;
+                    if (values.length === 1) parts0.add(`event.getParent()?.relatedEvent?.name !== ${values}`)
+                    else parts0.add(`[${values}].includes(event.getParent()?.relatedEvent?.name)`);
+                    delete map.cardsDiscardFor
+                }
+                if (map.unknown) {
+                    for (const value of map.unknown) {
+                        if (["source", "target"].includes(value) && triType === "global") {
+                            globalAs = value
+                        } else {
+                            parts.add(triUnkonwn(value, global ? `event.${globalAs}` : "player", id))
+                        }
+                    }
+                    delete map.unknown
+                }
+                for (const [attr, values] of Object.entries(map)) {
+                    if (attr === "respondName") {
+                        if (values.length === 1) {
+                            parts.add(`!event.filterCard({ name: ${values}, isCard: true }, player, event)`)
+                            parts.add(`event.responded`)
+                        }
+                    }
+                    //
+                    else if (attr.startsWith("triPlayer")) {
+                        if (attr === "triPlayer") for (const triPlayer of values) {
+                            parts.add(triPlayerFilter(triPlayer, "event.source"))
+                        } else {
+                            parts.add(triPlayerFilter(values, "event.source", attr))
+                        }
+                    } else if (attr.startsWith("triSource")) {
+                        if (attr === "triSource") for (const triSource of values) {
+                            parts.add(triPlayerFilter(triSource, "event.source"))
+                        } else {
+                            parts.add(triPlayerFilter(values, "event.source", attr))
+                        }
+                    } else if (attr.startsWith("triTarget")) {
+                        if (attr === "triTarget") for (const triTarget of values) {
+                            parts.add(triPlayerFilter(triTarget, "event.target"))
+                        } else {
+                            parts.add(triPlayerFilter(values, "event.target", attr))
+                        }
+                    }
+                    //
+                    else if (attr.startsWith("filterPlayer") && triType === "global") {
+                        if (attr === "filterPlayer") for (const value of values) {
+                            parts.add(triPlayerFilter(value, boolCardsDiscard ? "event.getParent().relatedEvent.player" : `event.${globalAs}`))
+                        } else {
+                            parts.add(triPlayerFilter(values, boolCardsDiscard ? "event.getParent().relatedEvent.player" : `event.${globalAs}`, attr))
+                        }
+                    }
+                    else if (attr === "historyAllDamage") {
+                        if (values.length === 1) parts.add(`player.getAllHistory("damage").length % ${values} !== 0`)
+                    } else if (attr === "historyAllSourceDamage") {
+                        if (values.length === 1) parts.add(`player.getAllHistory("sourceDamage").length % ${values} !== 0`)
+                    } else if (attr === "historyAllDamagePlus") {
+                        if (values.length === 1) parts.add(`(player.getAllHistory("damage").length + player.getAllHistory("sourceDamage").length) % ${values} !== 0`)
+                    }
+                    else if (attr === "useSkillFilter") {
+                        for (const filter of values) {
+                            //神孙权考虑了charlotte技 这里暂时这样写
+                            if (filter === "isLocked") {
+                                parts.add(`!get.is.locked(get.sourceSkillFor(event))`);
+                            }
+                            if (filter === "noLocked") {
+                                parts.add(`get.is.locked(get.sourceSkillFor(event))`);
+                            }
+                        }
+                    }
+                    else if (attr === "linked") {
+                        if (values.length === 1) parts.add(`player.isLinked() !== ${values}`)
+                    } else if (attr === "turnedOver") {
+                        if (values.length === 1) parts.add(`player.isTurnedOver() !== ${values}`)
+                    }
+                    else {
+                        if (boolCardsDiscard) {
+                            parts.add(`event.cards.some(card => ${triCardsFilter(attr, values)})`)
+                        } else if (attr === "tag") {
+                            if (values.length === 1) parts.add(`!get.tag(event.card, ${values})`)
+                            else parts.add(`[${values}].some(tag => !get.tag(event.card, tag))`)
+                        } else {
+                            if (values.length === 1) parts.add(`get.${attr}(event.card) !== ${values}`)
+                            else parts.add(`![${values}].includes(get.${attr}(event.card))`)
+                        }
+                    }
+                }
+                if (parts.some(logicJudge => logicJudge.includes("event.source"))) {
+                    parts0.push("!event.source");
+                }
+                if (triggerNameNeedBool) {
+                    if (parts0.length > 1) result += `if(${preParts.join(' && ')} && (${parts0.join(' || ')})) return false;\n`
+                    else result += `if(${preParts.join(' && ')} && ${parts0.join(' || ')}) return false;\n`
+                    if (parts.length > 1) result += `if(${preParts.join(' && ')} && (${parts.join(' || ')})) return false;\n`
+                    else result += `if(${preParts.join(' && ')} && ${parts.join(' || ')}) return false;\n`
+                } else {
+                    if (parts0.length) result += `if(${parts0.join(' || ')}) return false;\n`
+                    if (parts.length) result += `if(${parts.join(' || ')}) return false;\n`;
+                    return result;
+                }
             }
         }
         return result;
     }
-    static triFilter_lose(triggerFilter, global) {
+    static triFilter_gain(triggerFilter, global) {
         let result = ''
-        const who = global ? "event.giver || event.player" : "player"
+        const parts = [];
+        const getgParts = [];
+        const filterParts = [];
+        let who = global ? "target" : "player";
+        let cards = `event.getg(${who})`;
+        const map = EditorDataAnalyze.triLimitUrl(global ? triggerFilter.global.gainAfter : triggerFilter.player.gainAfter);
+        if (map.unknown) {
+            for (const value of map.unknown) {
+                parts.add(triUnkonwn(value, who))
+            }
+        }
+        if (map.noCard) {
+            parts.push(`player.countCards(${map.noCard})`)
+        }
+        if (map.position) delete map.position;
+        for (const [attr, values] of Object.entries(map)) {
+            if (["unknown", "noCard"].includes(attr)) continue;
+            if (attr.startsWith("filterPlayer")) {
+                if (attr === "filterPlayer") for (const value of values) {
+                    parts.add(triPlayerFilter(value, `${who}`))
+                } else {
+                    parts.add(triPlayerFilter(values, `${who}`, attr))
+                }
+            }
+            else {
+                filterParts.push(triCardsFilter2(attr, values, who))
+            }
+        }
+        if (filterParts.length) getgParts.push(`${cards}.some(card => ${filterParts.join(" && ")})`)
+        else if (!global) getgParts.push(`${cards}.length`)
+        if (parts.length) result += `if(${parts.join(' || ')}) return false;\n`
+        if (getgParts.length === 1) result += `if(!${getgParts.join(" && ")}) return false;\n`
+        else if (getgParts.length > 1) result += `if(!(${getgParts.join(" && ")})) return false;\n`
+        return result;
+    }
+    static triFilter_lose(triggerFilter, global, triReason) {
+        let result = ''
+        const parts = [];
+        const getlParts = [];
+        const filterParts = [];
+        let who = global ? "target" : "player";
+        let cards = '';
+        if (triReason === "discardToDiscardPile") parts.push(`event.type !== "discard"`)
+        const map = EditorDataAnalyze.triLimitUrl(global ? triggerFilter.global.loseAfter : triggerFilter.player.loseAfter);
+        if (map.unknown) {
+            for (const value of map.unknown) {
+                parts.add(triUnkonwn(value, who))
+            }
+        }
+        if (map.noCard) {
+            parts.push(`player.countCards(${map.noCard})`)
+        }
+        getlParts.push('event.getl', `event.getl(${who})`);
+        if (map.position) {
+            const [position] = map.position;
+            if (position.length === 1) {
+                cards = `event.getl(${who}).${position}s`;
+            } else {
+                cards = `event.getl(${who}).cards2`;
+                filterParts.push(`"${position}".includes(get.position(card))`)
+            }
+            delete map.position;
+        } else {
+            cards = (`event.getl(${who}).cards2`);
+        }
+        for (const [attr, values] of Object.entries(map)) {
+            if (["unknown", "noCard"].includes(attr)) continue;
+            if (attr.startsWith("filterPlayer")) {
+                if (attr === "filterPlayer") for (const value of values) {
+                    parts.add(triPlayerFilter(value, `${who}`))
+                } else {
+                    parts.add(triPlayerFilter(values, `${who}`, attr))
+                }
+            }
+            else {
+                filterParts.push(triCardsFilter2(attr, values, who))
+            }
+        }
+        if (filterParts.length) getlParts.push(`${cards}.some(card => ${filterParts.join(" && ")})`)
+        else if (!global) getlParts.push(`${cards}.length`)
+        if (parts.length) result += `if(${parts.join(' || ')}) return false;\n`
+        if (getlParts.length === 1) result += `if(!${getlParts.join(" && ")}) return false;\n`
+        else if (getlParts.length > 1) result += `if(!(${getlParts.join(" && ")})) return false;\n`
+        return result;
+    }
+    static triFilter_lose_noUseToDiscardPile(triggerFilter, global) {
+        let result = ''
+        const who = global ? "target" : "player";
+        const commonFilter = [];
+        const getdFilter = [];
+        const disFilter = [];
+        const cardFilter = [];
+        let getdCards = `event.getd(${who}, "cards2")`, disCards = "event.cards";
         for (const triType in triggerFilter) {
             for (const [_, search] of Object.entries(triggerFilter[triType])) {
                 if (!search) continue;
-                result += `if(`
-                const parts = [];
                 const map = EditorDataAnalyze.triLimitUrl(search);
                 if (map.unknown) {
-                    const phaseLim = map.unknown.find(lim => ["inPhase", "outPhase"].includes(lim))
-                    if (phaseLim) {
-                        if (global) parts.push(`(event.giver || event.player) ${phaseLim === "inPhase" ? "!" : "="}== _status.currentPhase`)
-                        else parts.push(`player ${phaseLim === "inPhase" ? "!" : "="}== _status.currentPhase`)
-                        map.unknown.remove(phaseLim);
+                    for (const value of map.unknown) {
+                        parts.add(triUnkonwn(value, who))
                     }
                 }
-                parts.push('!event.getl', `!event.getl(${who})`);
-                let cards;
                 if (map.position) {
-                    if (map.position.length === 1) {
-                        const position = map.position[0];
-                        cards = (`event.getl(${who}).${position}s`);
+                    const [position] = map.position;
+                    if (position.length === 1) {
+                        getdCards = `event.getd(${who}, "${position}s")`;
+                    } else {
+                        cardFilter.push(`"${position}".includes(get.position(card))`)
                     }
                     delete map.position;
-                } else {
-                    cards = (`event.getl(${who}).cards2`);
                 }
-                const filterParts = [];
                 for (const [attr, values] of Object.entries(map)) {
-                    if (attr === "unknown") continue;
-                    if (values.length === 1) filterParts.push(`get.${attr}(card) === ${values}`)
-                    else filterParts.push(`[${values}].includes(get.${attr}(card))`)
+                    if (["unknown", "noCard"].includes(attr)) continue;
+                    cardFilter.push(triCardsFilter(attr, values, who))
                 }
-                if (filterParts.length) parts.push(`!${cards}.filter(card => ${filterParts.join(" && ")}).length`)
-                else parts.push(`!${cards}.length`)
-                result += parts.join(' || ');
-                result += ') return false;\n'
             }
         }
+        disFilter.push(`event.getParent()?.relatedEvent?.name === "useCard"`)
+        if (!global) {
+            disFilter.push(`event.getParent()?.relatedEvent?.player !== player`)
+            disFilter.push(`!player.hasHistory(evt => event.getParent()?.relatedEvent === (evt.relatedEvent || evt.getParent()))`)
+        }
+        if (cardFilter.length) {
+            if (commonFilter.length) {
+                result += `if(${commonFilter.join(" || ")}) return false;\n`;
+            }
+            getdFilter.push(`${getdCards}.every(card => ${cardFilter.join(" && ")})`);
+            disFilter.push(`${disCards}.every(card => ${cardFilter.join(" && ")})`);
+        }
+        if (getdFilter.length) {
+            result += `if(event.name !== "cardsDiscard" && ${getdFilter.length > 1 ? '(' + getdFilter.join(" || ") + ')' : getdFilter}) return false;\n`;
+        }
+        result += `if(event.name === "cardsDiscard" && ${disFilter.length > 1 ? '(' + disFilter.join(" || ") + ')' : disFilter}) return false;\n`;
         return result;
     }
     static filter(back, asCardType) {
         const { id, type, uniqueList, trigger, filter,
             variableArea_filter, filter_ignoreIndex,
+            triGameStart, triLoseReason,
             mod, triggerFilter, triLength } = back.skill;
         const triLose_player = trigger.player.filter(triName => testLoseRegExp.test(triName));
         const triLose_global = trigger.global.filter(triName => testLoseRegExp.test(triName));
+        const triGain_player = trigger.player.filter(triName => testGainRegExp.test(triName));
+        const triGain_global = trigger.global.filter(triName => testGainRegExp.test(triName));
         const boolZhuSkill = type.includes("zhuSkill");
         const boolGroupSkill = type.includes("groupSkill");
         const boolLose = triLose_global.length + triLose_player.length > 0;
-        const boolRespondNeed = (trigger.player.includes("chooseToRespondBegin")
-            || trigger.player.includes("chooseToRespondBefore"));
         const boolfilterHasContent = filter.length > 0;
         const booltriggerFilter = Object.values(triggerFilter).flat().length > 0;
         const boolOnlyMod = mod.length > 0
-            && [boolZhuSkill, boolGroupSkill, boolRespondNeed,
+            && [boolZhuSkill, boolGroupSkill,
+                // boolRespondNeed,
                 booltriggerFilter, boolLose,
                 boolUniqueTrigger, boolfilterHasContent].every(bool => bool === false);
         if (boolOnlyMod) return ''
         let result = '';
-        result += 'filter:function(event,player,triggername){\n'
+        if (triLose_global.length || triGain_global.length) result += 'filter:function(event, player, triggername, target){\n'
+        else result += 'filter:function(event, player, triggername){\n'
         if (variableArea_filter.length) result += variableArea_filter.join("\n") + "\n"
         //主公技
         if (boolZhuSkill) {
@@ -533,23 +848,30 @@ export class EditorOrganize {
                 result += `if(player.group != "${group[0]}") return false;\n`
             }
         }
-        if (triLose_global.length) {
-            result += EditorOrganize.triFilter_lose(triggerFilter, true);
+        if (triGameStart) {
+            result += `if(event.name === "phase" && game.phaseNumber !== 0) return false;\n`
+        }
+        else if (triGain_global.length) {
+            result += EditorOrganize.triFilter_gain(triggerFilter, true);
+        } else if (triGain_player.length) {
+            result += EditorOrganize.triFilter_gain(triggerFilter, false);
+        }
+        else if (triLose_global.length) {
+            if (triLoseReason === "noUseToDiscardPile") {
+                result += EditorOrganize.triFilter_lose_noUseToDiscardPile(triggerFilter, true, triLoseReason)
+            } else {
+                result += EditorOrganize.triFilter_lose(triggerFilter, true, triLoseReason);
+            }
         } else if (triLose_player.length) {
-            result += EditorOrganize.triFilter_lose(triggerFilter);
+            if (triLoseReason === "noUseToDiscardPile") {
+                result += EditorOrganize.triFilter_lose_noUseToDiscardPile(triggerFilter, false, triLoseReason)
+            } else {
+                result += EditorOrganize.triFilter_lose(triggerFilter, false, triLoseReason);
+            }
         }
         if (!boolLose && triggerFilter) {
-            result += EditorOrganize.triFilter_noLose(triggerFilter, triLength, trigger);
+            result += EditorOrganize.triFilter_noLose(triggerFilter, triLength, trigger, id);
         }
-        //respond
-        if (boolRespondNeed) {
-            result += "if(event.responded) return false;\n"
-        }
-        // if (boolTri_filterCardNeed) {
-        //     back.skill.tri_filterCard.forEach(resp => {
-        //         result += `if(!event.filterCard({name:"${resp}",isCard:true},player,event)) return false;\n`
-        //     })
-        // }
         if (asCardType) {
             result += `if(!get.info("${id}").buttonRequire(player,event)) return false;\n`
         }

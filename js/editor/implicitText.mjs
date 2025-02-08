@@ -30,7 +30,7 @@ export class ImplicitTextTool {
         result = result
             .replace(/^(.+?)[ ]*有(".+?"|'.+?')标记$/mg, "$1 有标记 $2")
         result = result
-            .replace(/^触发的伤害事件不因横置传导而?造成$/mg,"触发事件 不涉及横置")
+            .replace(/^触发的伤害事件不因横置传导而?造成$/mg, "触发事件 不涉及横置")
         result = result
             .replace(/(.+?)[ ]*本回合未(使用|造成)过?(牌|伤害)$/mg, '$1 本回合$2$3次数\n为\n0')
             .replace(/(.+?)[ ]*本回合(使用|造成)过(牌|伤害)$/mg, '$1 本回合$2$3次数\n大于\n0')
@@ -68,6 +68,11 @@ export class ImplicitTextTool {
             .replace(/(回复|恢复)体力(?!上限)/g, "回复体力值")
             .replace(/当(?!前)/g, '')
             .replace(/之([前后])/g, "$1")
+            //使用一张杀时，使用一张杀指定目标后
+            .replace(/([红黑])牌/g, '$1色牌')
+            .replace(/(?<=使用|打出)一张/g, "")
+            .replace(/(?<=成为其他角色)使用(?=.+?的?目标[时后])/g, "")
+            .replace(/(?<=使用.+?指定)一名角色为(?=目标[时后])/g, "")
         console.log("trigger", result);
         return result;
     }

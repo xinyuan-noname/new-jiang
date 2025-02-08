@@ -74,6 +74,8 @@ window.XJB_EDITOR_LIST = {
 		'回合结束时', '摸牌阶段开始时', '摸牌阶段结束时', '弃牌阶段开始时', '弃牌阶段结束时',
 		'你判定牌生效后',
 		'你失去一张手牌后', '你失去一张装备牌后', '你失去装备区的一张牌后',
+		"攻击范围包含你的其他角色失去梅花牌后", "攻击范围包含你的其他角色失去黑桃牌后",
+		"攻击范围包含你的其他角色失去红桃牌后", "攻击范围包含你的其他角色失去方片牌后",
 		//'你于回合外失去手牌后', '你于回合外失去牌后',
 		'你使用杀指定目标时', '你使用杀指定目标后',
 		'你成为杀的目标后', '你成为决斗的目标后',
@@ -1804,22 +1806,9 @@ game.xjb_skillEditor = function (readCache = true) {
 	}
 	triggerFree.arrange = function () {
 		const that = triggerFree;
-		that.changeWord(/【([\u4e00-\u9fa5]+)】/g, function (match, ...p) {
-			return p[0];
-		})
-		//逻辑处理
-		that.changeWord(/(?<!使用)或(?!打出)/g, ' ');
-		//省略
-		// that.changeWord(/一张/g, '');
-		// that.changeWord(/^(.*?)(一点)(.*?)$/mg, '$1$3 $2')
-		//统一写法                    
-		that.changeWord(/红牌/g, '红色牌');
-		that.changeWord(/黑牌/g, '黑色牌');
-		NonameCN.standardTriBefore(that);
-		//关于角色
-		that.changeWord(/^(你|每名角色|一名角色)/mg, "$1 ")
+		EditorArrange.standardTri1(that);
 		NonameCN.standardEvent(that);
-		NonameCN.standardTri(that);
+		EditorArrange.standardTri2(that);
 		NonameCN.deleteBlank(that);
 	}
 	back.ele.trigger.init = function () {
@@ -1836,14 +1825,25 @@ game.xjb_skillEditor = function (readCache = true) {
 		// this.value.includes('于回合外失去') && back.skill.uniqueTrigger.push("outPhase:lose");
 		// this.value.includes('于回合内失去') && back.skill.uniqueTrigger.push("inPhase:lose");
 		let list = disposeTri(ImplicitTextTool.trigger(this.value))
-		const [trigger, triggerFilter, triLength, loseEvts, getIndexMap] = EditorDataAnalyze.trigger(list);
+		const [trigger, triggerFilter, triLength, getIndexMap, triLoseReason] = EditorDataAnalyze.trigger(list);
+		const allTrigger = [...trigger.player, ...trigger.target, ...trigger.global, ...trigger.source];
+		const gameStartEvts = allTrigger.filter(triName => triName === "enterGame");
+		const loseEvts = allTrigger.filter(triName => triName.startsWith("lose") && !triName.startsWith("loseHp") && !triName.startsWith("loseMaxHp"));
+		const gainEvts = allTrigger.filter(triName => triName.startsWith("gain") && !triName.startsWith("gainMaxHp"));
 		back.skill.trigger = trigger;
 		back.skill.triggerFilter = triggerFilter;
 		back.skill.triLength = triLength;
+		back.skill.triGainEvts = gainEvts;
 		back.skill.triLoseEvts = loseEvts;
+		back.skill.triLoseReason = triLoseReason;
+		back.skill.triGameStart = gameStartEvts.length > 0;
 		if (getIndexMap) back.skill.getIndex = getIndexMap;
-		if (loseEvts.length && triLength > 1) {
+		if (gainEvts.length && triLength > 1) {
+			await game.xjb_create.promise.alert("涉及到获得牌事件作为触发时机，请仅保留此触发时机为唯一触发时机，否则可能导致编辑器无法正常生成技能！");
+		}else if (loseEvts.length && triLength > 1) {
 			await game.xjb_create.promise.alert("涉及到失去牌事件作为触发时机，请仅保留此触发时机为唯一触发时机，否则可能导致编辑器无法正常生成技能！");
+		} else if (gameStartEvts.length && triLength > 1) {
+			await game.xjb_create.promise.alert("涉及到游戏开始时作为触发时机，请仅保留此触发时机为唯一触发时机，否则可能导致编辑器无法正常生成技能！");
 		}
 		back.ele.filter.submit();
 		back.ele.content.submit();
