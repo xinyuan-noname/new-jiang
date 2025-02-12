@@ -196,7 +196,7 @@ export class EditorDataAnalyze {
             if (!result[attr]) result[attr] = [];
             if (["number", "unknown", 'position',
                 "linked", "turnedOver",
-                "triPlayer", "triTarget", "triSource",
+                "triPlayer", "triTarget", "triSource", "triGiver",
                 "useSkillFilter",
                 'filterPlayer'].includes(attr)) result[attr].push(value)
             else if (attr.startsWith("history")) result[attr].push(value);

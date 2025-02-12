@@ -599,9 +599,9 @@ export class EditorOrganize {
                     //
                     else if (attr.startsWith("triPlayer")) {
                         if (attr === "triPlayer") for (const triPlayer of values) {
-                            parts.add(triPlayerFilter(triPlayer, "event.source"))
+                            parts.add(triPlayerFilter(triPlayer, "event.player"))
                         } else {
-                            parts.add(triPlayerFilter(values, "event.source", attr))
+                            parts.add(triPlayerFilter(values, "event.player", attr))
                         }
                     } else if (attr.startsWith("triSource")) {
                         if (attr === "triSource") for (const triSource of values) {
@@ -695,7 +695,14 @@ export class EditorOrganize {
         if (map.position) delete map.position;
         for (const [attr, values] of Object.entries(map)) {
             if (["unknown", "noCard"].includes(attr)) continue;
-            if (attr.startsWith("filterPlayer")) {
+            if (attr.startsWith("triGiver")) {
+                if (attr === "triGiver") for (const value of values) {
+                    parts.add(triPlayerFilter(value, `event.giver`))
+                } else {
+                    parts.add(triPlayerFilter(values, `event.giver`, attr))
+                }
+            }
+            else if (attr.startsWith("filterPlayer") && global) {
                 if (attr === "filterPlayer") for (const value of values) {
                     parts.add(triPlayerFilter(value, `${who}`))
                 } else {
@@ -868,8 +875,7 @@ export class EditorOrganize {
             } else {
                 result += EditorOrganize.triFilter_lose(triggerFilter, false, triLoseReason);
             }
-        }
-        if (!boolLose && triggerFilter) {
+        } else if (triggerFilter) {
             result += EditorOrganize.triFilter_noLose(triggerFilter, triLength, trigger, id);
         }
         if (asCardType) {

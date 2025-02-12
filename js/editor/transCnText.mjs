@@ -65,12 +65,19 @@ const matchCardAdj = new RegExp(`${adjCard.join("|")}`, "g")
 const matchCardAdjOr = new RegExp(`(${adjCard.join("|")}|锦囊)牌?或(?=(?:${adjCard.join("|")}|锦囊)+牌)`, "g")
 const matchTriDamageTowords = new RegExp(`对((?:${adjPlayer.join("|")}|一名)+角色|你)(?=造成伤害)`, "g");
 const matchTriDamageFromwords = new RegExp(`(?<=受到)由?((?:${adjPlayer.join("|")}|一名)+角色|你)造成(?=伤害)`, "g");
+const matchTriGainFromwords = new RegExp(`(?<=获得)((?:${adjPlayer.join("|")}|一名)+角色|你)(?=牌)`, "g");
 const matchTriTypeKeywords = new RegExp(`(${adjPlayer.join("|")})+(?=角色)`);
 //
 const splitAdjPlayer = new RegExp(`(?<=${adjPlayer.join("|")}|一名)`)
 //
 const simiAddCnWords = ['增加', '增添', '添加'];
 const simiAddCnWordsRegExp = new RegExp(simiAddCnWords.join("|"))
+//
+const triMatchesPlayer = new Map([
+    [matchTriDamageTowords, "triPlayer"],
+    [matchTriDamageFromwords, "triSource"],
+    [matchTriGainFromwords, "triGiver"]
+]);
 //
 const vCardObject = NonameCN.getVirtualCard();
 const player = NonameCN.getVirtualPlayer();
@@ -303,52 +310,31 @@ export class TransCnText {
                 return '';
             })
         }
-        wordx = wordx.replace(matchTriDamageTowords, (_, p) => {
-            if (p === "你") {
-                decoration.push("triPlayer=player");
-                return '';
-            }
-            else {
-                for (const adj of p.split(splitAdjPlayer)) {
-                    if (adj === "其他") decoration.push("triPlayer=other")
-                    else if (adj === "已受伤") decoration.push("triPlayer=isDamaged")
-                    else if (adj === "未受伤") decoration.push("triPlayer=isHealthy")
-                    else if (/在?你攻击范围内的?/.test(adj)) decoration.push("triPlayer=inRange")
-                    else if (/攻击范围包含你的?/.test(adj)) decoration.push("triPlayer=inRangeOf")
-                    else if (/不在你攻击范围内的?/.test(adj)) decoration.push("triPlayer=noInRange")
-                    else if (/攻击范围内不包含你的?/.test(adj)) decoration.push("triPlayer=noInRangeOf")
-                    else {
-                        const en = NonameCN.getEn(adj);
-                        if (["male", "female"].includes(en)) decoration.push(`triPlayerSex=${en}`);
-                        else if (["wei", "shu", "wu", "qun", "jin", "shen", "key", "western"].includes(en)) decoration.push(`triPlayerSex=${en}`);
+        for (const [regexp, label] of triMatchesPlayer.entries()) {
+            wordx = wordx.replace(regexp, (_, p) => {
+                if (p === "你") {
+                    decoration.push(label + "=player");
+                    return '';
+                }
+                else {
+                    for (const adj of p.split(splitAdjPlayer)) {
+                        if (adj === "其他") decoration.push(label + "=other")
+                        else if (adj === "已受伤") decoration.push(label + "=isDamaged")
+                        else if (adj === "未受伤") decoration.push(label + "=isHealthy")
+                        else if (/在?你攻击范围内的?/.test(adj)) decoration.push(label + "=inRange")
+                        else if (/攻击范围包含你的?/.test(adj)) decoration.push(label + "=inRangeOf")
+                        else if (/不在你攻击范围内的?/.test(adj)) decoration.push(label + "=noInRange")
+                        else if (/攻击范围内不包含你的?/.test(adj)) decoration.push(label + "=noInRangeOf")
+                        else {
+                            const en = NonameCN.getEn(adj);
+                            if (["male", "female"].includes(en)) decoration.push(label + `Sex=${en}`);
+                            else if (["wei", "shu", "wu", "qun", "jin", "shen", "key", "western"].includes(en)) decoration.push(label + `Sex=${en}`);
+                        }
                     }
                 }
-            }
-            return '';
-        });
-        wordx = wordx.replace(matchTriDamageFromwords, (_, p) => {
-            if (p === "你") {
-                decoration.push("triSource=player");
                 return '';
-            }
-            else {
-                for (const adj of p.split(splitAdjPlayer)) {
-                    if (adj === "其他") decoration.push("triSource=other")
-                    else if (adj === "已受伤") decoration.push("triSource=isDamaged")
-                    else if (adj === "未受伤") decoration.push("triSource=isHealthy")
-                    else if (/在?你攻击范围内的?/.test(adj)) decoration.push("triSource=inRange")
-                    else if (/攻击范围包含你的?/.test(adj)) decoration.push("triSource=inRangeOf")
-                    else if (/不在你攻击范围内的?/.test(adj)) decoration.push("triSource=noInRange")
-                    else if (/攻击范围内不包含你的?/.test(adj)) decoration.push("triSource=noInRangeOf")
-                    else {
-                        const en = NonameCN.getEn(adj);
-                        if (["male", "female"].includes(en)) decoration.push(`triSourceSex=${en}`);
-                        else if (["wei", "shu", "wu", "qun", "jin", "shen", "key", "western"].includes(en)) decoration.push(`triSourceSex=${en}`);
-                    }
-                }
-            }
-            return '';
-        });
+            });
+        }
         wordx = wordx.replace(matchDamageCount, (_, p1, p2) => {
             let historyType = '';
             if (p1 === "受到") historyType = "historyAllDamage";
