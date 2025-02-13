@@ -69,6 +69,7 @@ export function XJB_CONTENT(config, pack) {
         init: '',
         item: {
             getAPI: '获取工具',
+            changeBranch: "切换分支",
             putout: '输出目录',
             download: '下载更新',
             downloadSimply: '简易更新',
@@ -87,6 +88,12 @@ export function XJB_CONTENT(config, pack) {
                                 .setData(lib, game, ui, get, ai, _status);
                             alert("updator获取成功！");
                         })
+                }; break;
+                case "changeBranch": {
+                    if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
+                    if (game.xjb_updator.mainResName === "main") game.xjb_updator.changeMainRes("PR");
+                    else game.xjb_updator.changeMainRes("main");
+                    alert(`已切换至${game.xjb_updator.mainResName}:${game.xjb_updator.mainURL}`)
                 }; break;
                 case 'putout': {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
