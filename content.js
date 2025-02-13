@@ -118,8 +118,17 @@ export function XJB_CONTENT(config, pack) {
                     const myUpdator = game.xjb_updator;
                     const manager = myUpdator.updateLine();
                     manager.on("downloadSuc", data => {
-                        console.log(data)
+                        console.log(data);
                     });
+                    manager.on("getCache", data => {
+                        console.log(data);
+                    });
+                    manager.on("filterHash",data=>{
+                        console.log(data);
+                    });
+                    manager.on("error", err => {
+                        console.error(err);
+                    })
                 }; break;
                 case 'downloadSimply': {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
