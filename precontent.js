@@ -22,6 +22,12 @@ import "./js/feature/remnantArea.js";
 import "./js/feature/skillCard.mjs";
 import "./js/feature/hpCard.js";
 function provideFunction() {
+	import("https://gitee.com/xinyuanwm/noname-extension-updater/raw/master/updator.js")
+		.then(module => {
+			const Updator = module.Updator;
+			game.xjb_updator = new Updator("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/master")
+				.setData(lib, game, ui, get, ai, _status);
+		})
 	get.xjb_randomNDInt = (mu, sigma) => {
 		return Math.floor(XJB_Math.NDRandom(mu, sigma));
 	}
