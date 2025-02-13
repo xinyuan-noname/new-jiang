@@ -117,6 +117,7 @@ export function XJB_CONTENT(config, pack) {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
                     const myUpdator = game.xjb_updator;
                     const manager = myUpdator.updateLine();
+                    manager.options.tryTimes = 3;
                     manager.on("downloadSuc", data => {
                         console.log(data.processingFile);
                     });
