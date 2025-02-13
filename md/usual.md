@@ -32,11 +32,6 @@ const { result, bool } = await game.xjb_create.promise.range(title, setting, cha
   - value 默认值
 - changeValue 当range控件值改变时 设置的回调函数 用于更新标题内容
 
-### 文件相关
-#### game.xjb_loadAPI(suc,fail,branch)
-用于引入xjb_xyAPI并配置
-#### game.xjb_loadAPI_PR()
-引入xjb_xyAPI并配置,下载的来源为PR分支
 
 
 ## 常用量

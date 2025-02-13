@@ -69,52 +69,46 @@ export function XJB_CONTENT(config, pack) {
         init: '',
         item: {
             getAPI: '获取工具',
-            update: '刷新工具',
             putout: '输出目录',
             download: '下载更新',
             downloadSimply: '简易更新',
-
         },
         visualMenu: function (node) {
             node.className = 'button controlbutton';
         },
-        onclick: function (layout) {
+        onclick: async (layout) => {
             switch (layout) {
                 case 'getAPI': {
-                    game.xjb_loadAPI(function () {
-                        alert("xjb_xyAPI加载成功!")
-                    })
-                }; break;
-                case 'update': {
-                    if (!("xjb_xyAPI" in window)) return game.xjb_create.alert("xjb_xyAPI未引入,请点击获取工具引入!")
-                    xjb_xyAPI.updateServiceTarget('新将包');
-                    alert('工具已刷新')
+                    import("https://gitee.com/xinyuanwm/noname-extension-updater/raw/master/updator.js")
+                        .then(module => {
+                            const Updator = module.Updator;
+                            game.xjb_updator = new Updator("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/master")
+                                .addResUrl("PR", "https://gitee.com/xinyuanwm/new-jiang/raw/PR-branch")
+                                .setData(lib, game, ui, get, ai, _status);
+                            alert("updator获取成功！");
+                        })
                 }; break;
                 case 'putout': {
-                    if (!("xjb_xyAPI" in window)) return alert("xjb_xyAPI未引入,请点击获取工具引入!")
-                    xjb_xyAPI.directoryDownload();
-                    xjb_xyAPI.directoryDownloadFHook = function () {
-                        alert('目录导出失败')
-                    }
-                    xjb_xyAPI.directoryDownloadSHook = function () {
-                        alert('目录导出成功')
-                    }
+                    if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
+                    const fileList = await game.xjb_updator.readDirDefault(
+                        [
+                            "Thumbs.db",
+                        ],
+                        [".vscode", ".git", ".github", ".gitee"]
+                    );
+                    game.xjb_updator.genDir(fileList).then(() => {
+                        alert("目录输出成功！")
+                        console.log(fileList);
+                    }).catch(err => {
+                        alert("目录输出失败！");
+                        console.error(err);
+                    });
                 }; break;
                 case 'download': {
-                    if (!("xjb_xyAPI" in window)) return alert("xjb_xyAPI未引入,请点击获取工具引入!");
-                    xjb_xyAPI.updateOnline();
-                    alert('请耐心等待,直到再次出现alert提示框!此前请不要关闭无名杀!');
-                    xjb_xyAPI.updateDownloadHook = function (list) {
-                        alert('下载完成,失败的文件' + list);
-                    }
+                    if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
                 }; break;
                 case 'downloadSimply': {
-                    if (!("xjb_xyAPI" in window)) return alert("xjb_xyAPI未引入,请点击获取工具引入!");
-                    xjb_xyAPI.updateOnlineSimply();
-                    alert('请耐心等待,直到再次出现alert提示框!此前请不要关闭无名杀!');
-                    xjb_xyAPI.updateDownloadHook = function (list) {
-                        alert('下载完成,失败的文件' + list);
-                    };
+                    if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
                 }; break;
             }
         }
@@ -501,7 +495,7 @@ export function XJB_CONTENT(config, pack) {
             }
         }
         if (lib.config.xjb_yangcheng == 1) {
-             lib.extensionMenu.extension_新将包.newCharacter = {
+            lib.extensionMenu.extension_新将包.newCharacter = {
                 name: '<img src="' + lib.xjb_src + 'xin_newCharacter.jpg" height="16">' + '<font color="yellow">武将养成</font>',
                 init: 'name2',
                 item: {
@@ -569,7 +563,7 @@ export function XJB_CONTENT(config, pack) {
                                 let cost = getCost(add);
                                 this.prompt.innerHTML = '你已有' + hp + '点体力。增加' + add + '点体力需要' + cost + '个魂币。';
                             });
-                        };break;
+                        }; break;
                         case 'intro': game.xjb_setInfoDia(); break;
                         case 'unique':
                             game.xjb_create.configList({

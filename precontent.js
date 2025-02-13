@@ -22,13 +22,6 @@ import "./js/feature/remnantArea.js";
 import "./js/feature/skillCard.mjs";
 import "./js/feature/hpCard.js";
 function provideFunction() {
-	import("https://gitee.com/xinyuanwm/noname-extension-updater/raw/master/updator.js")
-		.then(module => {
-			const Updator = module.Updator;
-			game.xjb_updator = new Updator("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/master")
-				.addResUrl("PR", "https://gitee.com/xinyuanwm/new-jiang/raw/PR-branch")
-				.setData(lib, game, ui, get, ai, _status);
-		})
 	get.xjb_randomNDInt = (mu, sigma) => {
 		return Math.floor(XJB_Math.NDRandom(mu, sigma));
 	}
@@ -358,47 +351,6 @@ function importFile() {
 		})
 		script.type = "module";
 	});
-	//引入api
-	/**
-	 * @property {function} xjb_loadAPI
-	 */
-	game.xjb_loadAPI = function (suc = () => void 0, fail = () => void 0, branch = "master") {
-		if (window.xjb_xyAPI) {
-			alert('工具已引入,无需重新引入!');
-			return;
-		}
-		game.download(
-			'https://gitee.com/xinyuanwm/xy-api/raw/master/xjb_xyAPI.js',
-			'extension/新将包/xjb_xyAPI.js',
-			() => {
-				lib.init.js(
-					lib.xjb_src.slice(0, -1),
-					"xjb_xyAPI",
-					load => {
-						game.print('xjb_xyAPI加载成功');
-						xjb_xyAPI.setGameData(lib, game, ui, get, ai, _status);
-						xjb_xyAPI.autoAddExtension(
-							'新将包',
-							`https://gitee.com/xinyuanwm/new-jiang/raw/${branch}/`
-						);
-						suc(load);
-					},
-					(err) => {
-						game.print('xjb_xyAPI加载失败');
-						game.print(err)
-						fail(err);
-					});
-			},
-			(err) => {
-				fail(err)
-			}
-		);
-	};
-	game.xjb_loadAPI_PR = function () {
-		game.xjb_loadAPI(() => {
-			game.print(window.xjb_xyAPI);
-		}, void 0, "PR-branch");
-	};
 }
 function initialize() {
 	lib.xjb_skillsStore = [];
