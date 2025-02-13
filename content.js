@@ -116,11 +116,10 @@ export function XJB_CONTENT(config, pack) {
                 case 'download': {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
                     const myUpdator = game.xjb_updator;
-                    const cacheMap = await myUpdator.cache();
-                    const toUpdateHashMap = await myUpdator.getToUpdateHashMap();
-                    const fileList = await myUpdator.filterSameHash(cacheMap, toUpdateHashMap);
-                    const result = await myUpdator.update(fileList, data => console.log(data), err => console.error(err));
-                    if (result.failedFiles.length) myUpdator.recover(myUpdator.cacheFilter(cacheMap, result.failedFiles), data => console.log(data), err => console.error(err))
+                    const manager = myUpdator.updateLine();
+                    manager.on("downloadSuc", data => {
+                        console.log(data)
+                    });
                 }; break;
                 case 'downloadSimply': {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");

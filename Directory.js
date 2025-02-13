@@ -1,11 +1,11 @@
 export default [
     [
         "content.js",
-        "a21ea65506ef2da89accfa8ad2fe292b401a4221984b387b26c855d2451d4adb"
+        "501f8cdb2f599666c8436f61c890631013f0b30e842d2f0d6bdbaf79ab11f24a"
     ],
     [
         "Directory.js",
-        "390c118ae1c5c6f218d610c5badac09dba3777d170744fea798e72b38c266235"
+        "8c249fa24f8cc6523783f8b533f599bf7e231be7b73c3f347ff612e9398552ad"
     ],
     [
         "extension.js",
@@ -32,12 +32,12 @@ export default [
         "ce2d0ce80d38e2955e05e52563ea37d649372b69edeea91a51125b7b8b857d63"
     ],
     [
-        "audio/fire1.mp3",
-        "3d674c465a8bdd5381c4c85837d51b9f56fa085b2dcb692dcf1316c875c9580a"
-    ],
-    [
         "@types/Player.ts",
         "fb8e67534732e76b1049b84791316e2808481162793c070250c0f35357d6d76e"
+    ],
+    [
+        "audio/fire1.mp3",
+        "3d674c465a8bdd5381c4c85837d51b9f56fa085b2dcb692dcf1316c875c9580a"
     ],
     [
         "css/editor.css",
@@ -50,6 +50,26 @@ export default [
     [
         "css/nature.css",
         "b3c5536b41f35ba90c0e240fd1ebd28c1ee36f7d2ce495f7e907fe857e412b17"
+    ],
+    [
+        "hpCard/1.jpg",
+        "f2e65a9f26182183692a8e279f7cba419f29dfa85640fc35fc66281ae2710ee1"
+    ],
+    [
+        "hpCard/2.jpg",
+        "d6039d59b7abfc27d6f054d59f850f0ceb8dc6be042b091c86c06abfdf18f7a5"
+    ],
+    [
+        "hpCard/3.jpg",
+        "685ec2c6c9eb7b5186a0bbd789cf0031530e2f28c256898c14de10c35c3965b6"
+    ],
+    [
+        "hpCard/4.jpg",
+        "5a097934960e767bdbafb44d1143b97e02ec6102aa2dac21ba7d3356baed9c24"
+    ],
+    [
+        "hpCard/5.jpg",
+        "8e7288fa9d365307ca7af8b0a2d1f63bde54cc3f3f744009da599e659a771727"
     ],
     [
         "image/edit.png",
@@ -156,30 +176,6 @@ export default [
         "7d95a50d8f99a675b0fe8221a2450ebbf9d04c2cf1481eeee15280a9775f878a"
     ],
     [
-        "hpCard/1.jpg",
-        "f2e65a9f26182183692a8e279f7cba419f29dfa85640fc35fc66281ae2710ee1"
-    ],
-    [
-        "hpCard/2.jpg",
-        "d6039d59b7abfc27d6f054d59f850f0ceb8dc6be042b091c86c06abfdf18f7a5"
-    ],
-    [
-        "hpCard/3.jpg",
-        "685ec2c6c9eb7b5186a0bbd789cf0031530e2f28c256898c14de10c35c3965b6"
-    ],
-    [
-        "hpCard/4.jpg",
-        "5a097934960e767bdbafb44d1143b97e02ec6102aa2dac21ba7d3356baed9c24"
-    ],
-    [
-        "hpCard/5.jpg",
-        "8e7288fa9d365307ca7af8b0a2d1f63bde54cc3f3f744009da599e659a771727"
-    ],
-    [
-        "json/1.json",
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    ],
-    [
         "lingli/book.jpg",
         "35bf7b425cbdcfb8315c043897b37561f22cc709a888f743129e0674c4861241"
     ],
@@ -200,6 +196,14 @@ export default [
         "b989c3824079ac72eb075f28c1d87473acf388674fb59e3c5e2e7f03459ef398"
     ],
     [
+        "json/1.json",
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    [
+        "log/empty.text",
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    [
         "md/skillEditor.md",
         "ae5c580a60a4687d9c59da4f0ca89e83521d5530cbb6a89f4e0a8f5374f0d1c4"
     ],
@@ -208,8 +212,8 @@ export default [
         "3a1e005ca227e9e75820e167ada3f81f9c32c96779bbfc81086020aeaeb10aa9"
     ],
     [
-        "log/empty.text",
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        "node/gen_dir.js",
+        "d147439790a96b35d0f32816b5334fdc0557a5b991f8655b7c2db1c30712ec18"
     ],
     [
         "title/xjb_boss1.png",
@@ -258,10 +262,6 @@ export default [
     [
         "title/xjb_yin3.png",
         "a7f911a059afc3c125bcafda8c4e4467ac4718eecec63814307ba2f3cd4f1893"
-    ],
-    [
-        "node/gen_dir.js",
-        "d147439790a96b35d0f32816b5334fdc0557a5b991f8655b7c2db1c30712ec18"
     ],
     [
         "image/@bagua/none.jpg",
@@ -416,6 +416,22 @@ export default [
         "7cdaa4968b43e48e04458d748c43bcfece1f1cb6662042bf88c303549852c8cc"
     ],
     [
+        "image/character_soul/xjb_bat.jpg",
+        "3569d6ab47b798a2abfa3b89256ac31eb425b9084c897ffed9d6204edabf12dd"
+    ],
+    [
+        "image/character_soul/xjb_chanter.jpg",
+        "b4045f1fb06cfbf440aa3e76d1c89ccc9e1451de13d87ce4c6348c973816e810"
+    ],
+    [
+        "image/character_soul/xjb_Fuaipaiyi.jpg",
+        "751ed7637f8d508efdb8c7146b5f409eee640fd5e28aae3093437e59413cd3b2"
+    ],
+    [
+        "image/character_soul/xjb_timer.jpg",
+        "5e9e7888d2e761846f18119dc58a5d4060a7b78b4f0f5646e21f6f62f82b2828"
+    ],
+    [
         "image/character_dongzhou/xjb_guanyiwu.jpg",
         "edc3214d1e127f7deae124dfbe5ce662cec488bda87e7e5bb8a79fb6e4f5defd"
     ],
@@ -450,22 +466,6 @@ export default [
     [
         "image/character_dongzhou/xjb_xunan.jpg",
         "dbcadf1a3143f316d49b79f7fc8971bf599764ffa6b5bb7dcf9609207d5ef137"
-    ],
-    [
-        "image/character_soul/xjb_bat.jpg",
-        "3569d6ab47b798a2abfa3b89256ac31eb425b9084c897ffed9d6204edabf12dd"
-    ],
-    [
-        "image/character_soul/xjb_chanter.jpg",
-        "b4045f1fb06cfbf440aa3e76d1c89ccc9e1451de13d87ce4c6348c973816e810"
-    ],
-    [
-        "image/character_soul/xjb_Fuaipaiyi.jpg",
-        "751ed7637f8d508efdb8c7146b5f409eee640fd5e28aae3093437e59413cd3b2"
-    ],
-    [
-        "image/character_soul/xjb_timer.jpg",
-        "5e9e7888d2e761846f18119dc58a5d4060a7b78b4f0f5646e21f6f62f82b2828"
     ],
     [
         "image/position/azureSky.jpg",
@@ -576,10 +576,6 @@ export default [
         "b87f62c21d64d019cffdb8c072f99ec56ff3dc4eb000441d2d232df3576a364d"
     ],
     [
-        "js/economy/product.mjs",
-        "2312d7d27d8548b8df4f39fff817a77ff2b62eb8d7f92e2602f8ef1dbd19ec68"
-    ],
-    [
         "js/editor/arrange.mjs",
         "78404f3542b342a2f5aa37d4e19545b59f10a853e94fdeeec57875ca85ab1680"
     ],
@@ -620,6 +616,10 @@ export default [
         "b3620b96f1b97a208503658b44db90e58b25e3723f4acbba5098863bd15896f2"
     ],
     [
+        "js/economy/product.mjs",
+        "2312d7d27d8548b8df4f39fff817a77ff2b62eb8d7f92e2602f8ef1dbd19ec68"
+    ],
+    [
         "js/feature/hpCard.js",
         "7969c4cc47d9ca1e095248d2a8d320d8bd5607b21f88ab0aa7ff9c2196f910bb"
     ],
@@ -634,6 +634,14 @@ export default [
     [
         "js/game/tetris.js",
         "60934303862fec2d347f5de35dc2255a867666728d1820345e5b2df1a4fee4be"
+    ],
+    [
+        "js/interact/dialog.mjs",
+        "45507ea3c6340de81dc35753c874e797dbafb4a4c528b66588781c51388cf715"
+    ],
+    [
+        "js/interact/ui.mjs",
+        "3fe77ed904771e031af8e4b9581f3ede3f644933409a5c2b5c1355704a525d19"
     ],
     [
         "js/import/importEditor.mjs",
@@ -654,14 +662,6 @@ export default [
     [
         "js/lingli/gSkill.mjs",
         "1fe83d85c3614a12d0a581ee66148be8d1d8f85cfd22a2c3a9b3551472d825ba"
-    ],
-    [
-        "js/interact/dialog.mjs",
-        "45507ea3c6340de81dc35753c874e797dbafb4a4c528b66588781c51388cf715"
-    ],
-    [
-        "js/interact/ui.mjs",
-        "3fe77ed904771e031af8e4b9581f3ede3f644933409a5c2b5c1355704a525d19"
     ],
     [
         "js/progress/show.js",
@@ -696,6 +696,10 @@ export default [
         "29b12a13af548d5f0ac35416a712f433d0d6a7b82c25721ebd0fe021b0558d39"
     ],
     [
+        "js/text/dongzhouIntro.js",
+        "40052fa61da069097ffe9e704e372a6b8aa34327b5c832d75932ac924cd1f1cf"
+    ],
+    [
         "js/tool/canvas.js",
         "7f04987b597d44cfe1b4f04e1fb252c47b6e9482ccbbdd86ce88f7302754c4b9"
     ],
@@ -710,10 +714,6 @@ export default [
     [
         "js/tool/ui.js",
         "341bff0758246cdc1975c2ee91f513fe59f81b25bbf5c7f150d964716461af03"
-    ],
-    [
-        "js/text/dongzhouIntro.js",
-        "40052fa61da069097ffe9e704e372a6b8aa34327b5c832d75932ac924cd1f1cf"
     ],
     [
         "lingli/daomo/blood.jpg",
