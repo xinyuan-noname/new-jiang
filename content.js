@@ -103,13 +103,15 @@ export function XJB_CONTENT(config, pack) {
                         ],
                         [".vscode", ".git", ".github", ".gitee"]
                     );
-                    game.xjb_updator.genDir(fileList).then(() => {
-                        alert("目录输出成功！")
-                        console.log(fileList);
-                    }).catch(err => {
-                        alert("目录输出失败！");
-                        console.error(err);
-                    });
+                    const hashMap = await game.xjb_updator.getHashMap();
+                    game.xjb_updator.genDir(Array.from(hashMap))
+                        .then(() => {
+                            alert("目录输出成功！")
+                            console.log(fileList);
+                        }).catch(err => {
+                            alert("目录输出失败！");
+                            console.error(err);
+                        });
                 }; break;
                 case 'download': {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
