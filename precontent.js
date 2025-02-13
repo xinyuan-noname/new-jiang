@@ -26,6 +26,7 @@ function provideFunction() {
 		.then(module => {
 			const Updator = module.Updator;
 			game.xjb_updator = new Updator("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/master")
+				.addResUrl("PR", "https://gitee.com/xinyuanwm/new-jiang/raw/PR-branch")
 				.setData(lib, game, ui, get, ai, _status);
 		})
 	get.xjb_randomNDInt = (mu, sigma) => {
