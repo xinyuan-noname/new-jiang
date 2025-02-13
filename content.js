@@ -118,7 +118,7 @@ export function XJB_CONTENT(config, pack) {
                     const myUpdator = game.xjb_updator;
                     const manager = myUpdator.updateLine();
                     manager.on("downloadSuc", data => {
-                        console.log(data);
+                        console.log(data.processingFile);
                     });
                     manager.on("getCache", data => {
                         console.log(data);
