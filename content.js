@@ -126,6 +126,9 @@ export function XJB_CONTENT(config, pack) {
                     manager.on("filterHash",data=>{
                         console.log(data);
                     });
+                    manager.on("update", err => {
+                        console.log(result);
+                    })
                     manager.on("error", err => {
                         console.error(err);
                     })
