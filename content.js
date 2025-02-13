@@ -106,6 +106,7 @@ export function XJB_CONTENT(config, pack) {
                 }; break;
                 case 'download': {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
+                    game.xjb_updator.update(void 0, 0, data => console.log(data), err => console.error(err));
                 }; break;
                 case 'downloadSimply': {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
