@@ -117,20 +117,21 @@ export function XJB_CONTENT(config, pack) {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
                     const myUpdator = game.xjb_updator;
                     const manager = myUpdator.updateLine();
-                    manager.on("downloadSuc", data => {
-                        console.log(data.processingFile);
-                    });
+                    
                     manager.on("getCache", data => {
                         console.log(data);
                     });
-                    manager.on("filterHash",data=>{
+                    manager.on("filterHash", data => {
                         console.log(data);
                     });
-                    manager.on("makeSureDirSuc",data=>{
-                        console.log(data.processingDir)
+                    manager.on("makeSureDirSuc", data => {
+                        console.log(data.processingDir, "文件夹创建成功")
                     })
                     manager.on("update", data => {
                         console.log(data.result);
+                    });
+                    manager.on("updateSuc", data => {
+                        console.log(data.processingFile, "文件创建成功");
                     });
                     manager.on("error", err => {
                         console.error(err);
