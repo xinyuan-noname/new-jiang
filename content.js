@@ -97,27 +97,23 @@ export function XJB_CONTENT(config, pack) {
                 }; break;
                 case 'putout': {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
-                    const fileList = await game.xjb_updator.readDirDefault(
+                    const myUpdator = game.xjb_updator;
+                    const fileList = await myUpdator.readDirDefault(
                         [
                             "Thumbs.db",
                         ],
                         [".vscode", ".git", ".github", ".gitee"]
                     );
-                    const hashMap = await game.xjb_updator.getHashMap();
-                    game.xjb_updator.genDir(Array.from(hashMap))
-                        .then(() => {
-                            alert("目录输出成功！")
-                            console.log(fileList);
-                        }).catch(err => {
-                            alert("目录输出失败！");
-                            console.error(err);
-                        });
+                    const bufferArray = await myUpdator.cache(fileList);
+                    const hashMap = await myUpdator.getHashMap(bufferArray, true);
+                    myUpdator.genDir(Array.from(hashMap));
                 }; break;
                 case 'download': {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
                     const myUpdator = game.xjb_updator;
-                    const manager = myUpdator.updateLine();
-                    
+                    const manager = myUpdator.updateLine({
+                        rmCR: true
+                    });
                     manager.on("getCache", data => {
                         console.log(data);
                     });
