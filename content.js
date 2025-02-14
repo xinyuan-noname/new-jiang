@@ -131,7 +131,7 @@ export function XJB_CONTENT(config, pack) {
                         console.log(data.result);
                     });
                     manager.on("updateSuc", data => {
-                        console.log(data.processingFile, "文件创建成功");
+                        console.log(data.processingFile, "下载成功");
                     });
                     manager.on("error", err => {
                         console.error(err);

@@ -1,11 +1,11 @@
 export default [
     [
         "content.js",
-        "53ef21decb498623fa687b630b244c864a88ff72cd8d6675f76c29fafb00c78b"
+        "21e270f36fdc565be6c5d74476a234e5ce1b5a342c9c7c33ebb3e343e0e04d9b"
     ],
     [
         "Directory.js",
-        "3d97056889ee5cb9dd3b0a1a952b62e9a0299891b3fda474de40e91b0066520a"
+        "8ad5ad6648e9affcc6c186d430513054aaeae537506372b811358f9075b088a2"
     ],
     [
         "extension.js",
@@ -124,6 +124,10 @@ export default [
         "2f2b9244fbc5b66bc0b0af05e6c73a6165fc5926b075bd7d96f919672610d8a9"
     ],
     [
+        "json/1.json",
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    [
         "js/card.js",
         "327fdafa497bfe82c88d79aa7a6c5d604ab3017dbccbcf68d6ee2355a3367eb8"
     ],
@@ -174,10 +178,6 @@ export default [
     [
         "js/title.js",
         "7d95a50d8f99a675b0fe8221a2450ebbf9d04c2cf1481eeee15280a9775f878a"
-    ],
-    [
-        "json/1.json",
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     ],
     [
         "lingli/book.jpg",
@@ -352,42 +352,6 @@ export default [
         "1ab48c5d556902561c5d45fd9ea8f864e70d031023935bb3ce9d40a4149c50e7"
     ],
     [
-        "image/character_dongzhou/xjb_guanyiwu.jpg",
-        "edc3214d1e127f7deae124dfbe5ce662cec488bda87e7e5bb8a79fb6e4f5defd"
-    ],
-    [
-        "image/character_dongzhou/xjb_jizi_shou.jpg",
-        "8a005c16509dd9ee8f8520de6e27f7af3702368955d556bb5a97c7105cde4245"
-    ],
-    [
-        "image/character_dongzhou/xjb_qinmugong.jpg",
-        "a21737c68ea0e450ebc8ddb1459b8abb2f04193bfe1f63efbc66c9a31b8d6b76"
-    ],
-    [
-        "image/character_dongzhou/xjb_qinshihuang.jpg",
-        "d7b3da2d16824e83d1274631c7a8eca3200dbbd839392517d1dbcbcd0e5d8380"
-    ],
-    [
-        "image/character_dongzhou/xjb_qixianggong.jpg",
-        "c8236806ac3f3e8fc41adbf85898b7c793146f67f7233942fa41f55b6bca5178"
-    ],
-    [
-        "image/character_dongzhou/xjb_weiyigong.jpg",
-        "a0605d089a941ffcb145eb2a02ebcdcbcce23cf31120c7c1057af3ea361ab0cc"
-    ],
-    [
-        "image/character_dongzhou/xjb_wuyuan.jpg",
-        "6878553030c343e157fef2684a3aed8d3fa6d0c5db4f6b5248bf6500cdf6c1a9"
-    ],
-    [
-        "image/character_dongzhou/xjb_xianzhen.jpg",
-        "772604a2e2608163d7fc548df5902c81e06ce13e6494f0873971f24e3a18a487"
-    ],
-    [
-        "image/character_dongzhou/xjb_xunan.jpg",
-        "dbcadf1a3143f316d49b79f7fc8971bf599764ffa6b5bb7dcf9609207d5ef137"
-    ],
-    [
         "image/card_clearBad/xjb_chucanquhui.png",
         "c2e7b3778cd9b189a93a44f721ae14d9d43c91d5ce6338f1195941fe10ad20de"
     ],
@@ -450,6 +414,42 @@ export default [
     [
         "image/card_store/xjb_zhihuan.png",
         "239310f93fb18af3ab990f1e29ed5e21f13391571a9beeb2828771d8803707fd"
+    ],
+    [
+        "image/character_dongzhou/xjb_guanyiwu.jpg",
+        "edc3214d1e127f7deae124dfbe5ce662cec488bda87e7e5bb8a79fb6e4f5defd"
+    ],
+    [
+        "image/character_dongzhou/xjb_jizi_shou.jpg",
+        "8a005c16509dd9ee8f8520de6e27f7af3702368955d556bb5a97c7105cde4245"
+    ],
+    [
+        "image/character_dongzhou/xjb_qinmugong.jpg",
+        "a21737c68ea0e450ebc8ddb1459b8abb2f04193bfe1f63efbc66c9a31b8d6b76"
+    ],
+    [
+        "image/character_dongzhou/xjb_qinshihuang.jpg",
+        "d7b3da2d16824e83d1274631c7a8eca3200dbbd839392517d1dbcbcd0e5d8380"
+    ],
+    [
+        "image/character_dongzhou/xjb_qixianggong.jpg",
+        "c8236806ac3f3e8fc41adbf85898b7c793146f67f7233942fa41f55b6bca5178"
+    ],
+    [
+        "image/character_dongzhou/xjb_weiyigong.jpg",
+        "a0605d089a941ffcb145eb2a02ebcdcbcce23cf31120c7c1057af3ea361ab0cc"
+    ],
+    [
+        "image/character_dongzhou/xjb_wuyuan.jpg",
+        "6878553030c343e157fef2684a3aed8d3fa6d0c5db4f6b5248bf6500cdf6c1a9"
+    ],
+    [
+        "image/character_dongzhou/xjb_xianzhen.jpg",
+        "772604a2e2608163d7fc548df5902c81e06ce13e6494f0873971f24e3a18a487"
+    ],
+    [
+        "image/character_dongzhou/xjb_xunan.jpg",
+        "dbcadf1a3143f316d49b79f7fc8971bf599764ffa6b5bb7dcf9609207d5ef137"
     ],
     [
         "image/character_soul/xjb_bat.jpg",
@@ -632,16 +632,16 @@ export default [
         "bfbab0e1a8ce41982246d38d74b4a78bd34a1bb72305eff0991f40d19b30a168"
     ],
     [
+        "js/game/tetris.js",
+        "60934303862fec2d347f5de35dc2255a867666728d1820345e5b2df1a4fee4be"
+    ],
+    [
         "js/import/importEditor.mjs",
         "b1b666ded527c675070cb43525207d7339a23490f989b3ff8f291530393e3e68"
     ],
     [
         "js/import/url.js",
         "cf62778c6f4c1fe71bd141bb657ad20af4b9ee0ac54c1a7d71d01c23f7c1f972"
-    ],
-    [
-        "js/game/tetris.js",
-        "60934303862fec2d347f5de35dc2255a867666728d1820345e5b2df1a4fee4be"
     ],
     [
         "js/interact/dialog.mjs",
@@ -696,10 +696,6 @@ export default [
         "29b12a13af548d5f0ac35416a712f433d0d6a7b82c25721ebd0fe021b0558d39"
     ],
     [
-        "js/text/dongzhouIntro.js",
-        "40052fa61da069097ffe9e704e372a6b8aa34327b5c832d75932ac924cd1f1cf"
-    ],
-    [
         "js/tool/canvas.js",
         "7f04987b597d44cfe1b4f04e1fb252c47b6e9482ccbbdd86ce88f7302754c4b9"
     ],
@@ -714,6 +710,10 @@ export default [
     [
         "js/tool/ui.js",
         "341bff0758246cdc1975c2ee91f513fe59f81b25bbf5c7f150d964716461af03"
+    ],
+    [
+        "js/text/dongzhouIntro.js",
+        "40052fa61da069097ffe9e704e372a6b8aa34327b5c832d75932ac924cd1f1cf"
     ],
     [
         "lingli/daomo/blood.jpg",
