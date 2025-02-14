@@ -1,11 +1,11 @@
 export default [
     [
         "content.js",
-        "63991937451c698e1ee0c827136e6250dc3d471da5f018851d77ae2efadf410b"
+        "5fb31adffed6737ce3d815c91bd0c66c502ec77fec1811a4922c31ae98f62ab2"
     ],
     [
         "Directory.js",
-        "fa79d0151e914b35d99a7376e6f207636b7058ab6920956200c0fd914af3a497"
+        "fbf595318adb391c1c2161731df70f8dabb24ca388910f4541ef07199bae8658"
     ],
     [
         "extension.js",
@@ -36,6 +36,22 @@ export default [
         "4dd84caf6bff10d5d94094bef082a8cbb5696dbcf0d74b0309c4d033b755a4a7"
     ],
     [
+        "audio/fire1.mp3",
+        "3d674c465a8bdd5381c4c85837d51b9f56fa085b2dcb692dcf1316c875c9580a"
+    ],
+    [
+        "css/editor.css",
+        "6cae9c9c5be5e3a17e60aeaf2a643d4a8d4a3fa393a459b7becfce10b6b022b3"
+    ],
+    [
+        "css/main.css",
+        "a5b9cabd9e5e1227e847250520b517d5b59651400c8ee4a1b6f2909fa9c4fe80"
+    ],
+    [
+        "css/nature.css",
+        "c95f315bc78d74816590d2c21e7c412bb60f7f5682a42870574c8c5e2a38e425"
+    ],
+    [
         "hpCard/1.jpg",
         "f2e65a9f26182183692a8e279f7cba419f29dfa85640fc35fc66281ae2710ee1"
     ],
@@ -54,22 +70,6 @@ export default [
     [
         "hpCard/5.jpg",
         "8e7288fa9d365307ca7af8b0a2d1f63bde54cc3f3f744009da599e659a771727"
-    ],
-    [
-        "audio/fire1.mp3",
-        "3d674c465a8bdd5381c4c85837d51b9f56fa085b2dcb692dcf1316c875c9580a"
-    ],
-    [
-        "css/editor.css",
-        "6cae9c9c5be5e3a17e60aeaf2a643d4a8d4a3fa393a459b7becfce10b6b022b3"
-    ],
-    [
-        "css/main.css",
-        "a5b9cabd9e5e1227e847250520b517d5b59651400c8ee4a1b6f2909fa9c4fe80"
-    ],
-    [
-        "css/nature.css",
-        "c95f315bc78d74816590d2c21e7c412bb60f7f5682a42870574c8c5e2a38e425"
     ],
     [
         "image/edit.png",
@@ -124,30 +124,6 @@ export default [
         "2f2b9244fbc5b66bc0b0af05e6c73a6165fc5926b075bd7d96f919672610d8a9"
     ],
     [
-        "json/1.json",
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    ],
-    [
-        "lingli/book.jpg",
-        "35bf7b425cbdcfb8315c043897b37561f22cc709a888f743129e0674c4861241"
-    ],
-    [
-        "lingli/gathering.jpg",
-        "6f878322e35c0bbce30ecc51708c034b76a914cd7ad0c371d971b76da8f9bf9a"
-    ],
-    [
-        "lingli/lingli.png",
-        "dae793ebf77eca6a95298116e0592f4305d6a6aa0948535729402cb646a2b206"
-    ],
-    [
-        "lingli/lingli_card.png",
-        "2d28b7811dd7c22a1ed482f491c731d3a2d7dd197b6956736f049f4cf7faf675"
-    ],
-    [
-        "lingli/timer.jpg",
-        "b989c3824079ac72eb075f28c1d87473acf388674fb59e3c5e2e7f03459ef398"
-    ],
-    [
         "js/card.js",
         "126635ddc5a6b62d54fd0017cbdd05e9eed4b212728839ca220d198cf6627255"
     ],
@@ -200,6 +176,30 @@ export default [
         "840fa9622789f66fb766ca1bc68fc3ef80695276d61f14a021863a0c66b53c52"
     ],
     [
+        "json/1.json",
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    [
+        "lingli/book.jpg",
+        "35bf7b425cbdcfb8315c043897b37561f22cc709a888f743129e0674c4861241"
+    ],
+    [
+        "lingli/gathering.jpg",
+        "6f878322e35c0bbce30ecc51708c034b76a914cd7ad0c371d971b76da8f9bf9a"
+    ],
+    [
+        "lingli/lingli.png",
+        "dae793ebf77eca6a95298116e0592f4305d6a6aa0948535729402cb646a2b206"
+    ],
+    [
+        "lingli/lingli_card.png",
+        "2d28b7811dd7c22a1ed482f491c731d3a2d7dd197b6956736f049f4cf7faf675"
+    ],
+    [
+        "lingli/timer.jpg",
+        "b989c3824079ac72eb075f28c1d87473acf388674fb59e3c5e2e7f03459ef398"
+    ],
+    [
         "log/empty.text",
         "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     ],
@@ -208,16 +208,16 @@ export default [
         "4677182c72fbe1c6bf149dbbc5291dc2029b0ddd087d8e3b0107196f9f3cda2b"
     ],
     [
-        "node/gen_dir.js",
-        "b35f18436f4935fd59e8508842115c4dd707b7b5f716827a122f22c401007e61"
-    ],
-    [
         "md/skillEditor.md",
         "ae5c580a60a4687d9c59da4f0ca89e83521d5530cbb6a89f4e0a8f5374f0d1c4"
     ],
     [
         "md/usual.md",
         "3a1e005ca227e9e75820e167ada3f81f9c32c96779bbfc81086020aeaeb10aa9"
+    ],
+    [
+        "node/gen_dir.js",
+        "b35f18436f4935fd59e8508842115c4dd707b7b5f716827a122f22c401007e61"
     ],
     [
         "title/xjb_boss1.png",
@@ -392,20 +392,32 @@ export default [
         "239310f93fb18af3ab990f1e29ed5e21f13391571a9beeb2828771d8803707fd"
     ],
     [
-        "image/character_soul/xjb_bat.jpg",
-        "3569d6ab47b798a2abfa3b89256ac31eb425b9084c897ffed9d6204edabf12dd"
+        "image/card_clearBad/xjb_chucanquhui.png",
+        "c2e7b3778cd9b189a93a44f721ae14d9d43c91d5ce6338f1195941fe10ad20de"
     ],
     [
-        "image/character_soul/xjb_chanter.jpg",
-        "b4045f1fb06cfbf440aa3e76d1c89ccc9e1451de13d87ce4c6348c973816e810"
+        "image/card_clearBad/xjb_fuci.png",
+        "c925761e04860bc05ae4621e89a36c3f70e0751c8e0147ede2aa4521b3378c8f"
     ],
     [
-        "image/character_soul/xjb_Fuaipaiyi.jpg",
-        "751ed7637f8d508efdb8c7146b5f409eee640fd5e28aae3093437e59413cd3b2"
+        "image/card_clearBad/xjb_lijingtuzhi.png",
+        "4d23c9ea021ea6ba23e95168fb34c55f92f991ab2c8585c2ad5b01a16ef252d0"
     ],
     [
-        "image/character_soul/xjb_timer.jpg",
-        "5e9e7888d2e761846f18119dc58a5d4060a7b78b4f0f5646e21f6f62f82b2828"
+        "image/card_clearBad/xjb_qimendunjia.png",
+        "b705e618369a38b4a13d9c1406f33542c9f61163951b44730b273dde6ffbfa31"
+    ],
+    [
+        "image/card_clearBad/xjb_tianqian.png",
+        "0874505e7eb3d0dfe4f73371e8c38b09330e52a54faf3e24291a0cb9d82c5de4"
+    ],
+    [
+        "image/card_clearBad/xjb_xiugengxuzi.png",
+        "15ffb5c16122cb12e71c6f8812e10d606eeac0353d01393ee9d06ef9652a0395"
+    ],
+    [
+        "image/card_clearBad/xjb_zhuqiang.png",
+        "7cdaa4968b43e48e04458d748c43bcfece1f1cb6662042bf88c303549852c8cc"
     ],
     [
         "image/character_dongzhou/xjb_guanyiwu.jpg",
@@ -444,48 +456,20 @@ export default [
         "dbcadf1a3143f316d49b79f7fc8971bf599764ffa6b5bb7dcf9609207d5ef137"
     ],
     [
-        "image/card_clearBad/xjb_chucanquhui.png",
-        "c2e7b3778cd9b189a93a44f721ae14d9d43c91d5ce6338f1195941fe10ad20de"
+        "image/character_soul/xjb_bat.jpg",
+        "3569d6ab47b798a2abfa3b89256ac31eb425b9084c897ffed9d6204edabf12dd"
     ],
     [
-        "image/card_clearBad/xjb_fuci.png",
-        "c925761e04860bc05ae4621e89a36c3f70e0751c8e0147ede2aa4521b3378c8f"
+        "image/character_soul/xjb_chanter.jpg",
+        "b4045f1fb06cfbf440aa3e76d1c89ccc9e1451de13d87ce4c6348c973816e810"
     ],
     [
-        "image/card_clearBad/xjb_lijingtuzhi.png",
-        "4d23c9ea021ea6ba23e95168fb34c55f92f991ab2c8585c2ad5b01a16ef252d0"
+        "image/character_soul/xjb_Fuaipaiyi.jpg",
+        "751ed7637f8d508efdb8c7146b5f409eee640fd5e28aae3093437e59413cd3b2"
     ],
     [
-        "image/card_clearBad/xjb_qimendunjia.png",
-        "b705e618369a38b4a13d9c1406f33542c9f61163951b44730b273dde6ffbfa31"
-    ],
-    [
-        "image/card_clearBad/xjb_tianqian.png",
-        "0874505e7eb3d0dfe4f73371e8c38b09330e52a54faf3e24291a0cb9d82c5de4"
-    ],
-    [
-        "image/card_clearBad/xjb_xiugengxuzi.png",
-        "15ffb5c16122cb12e71c6f8812e10d606eeac0353d01393ee9d06ef9652a0395"
-    ],
-    [
-        "image/card_clearBad/xjb_zhuqiang.png",
-        "7cdaa4968b43e48e04458d748c43bcfece1f1cb6662042bf88c303549852c8cc"
-    ],
-    [
-        "image/position/azureSky.jpg",
-        "6bdc5e1ccf699fedc1204270c5278c550a0a6cd6c9595c2ee9a59eb0f7d3fca7"
-    ],
-    [
-        "image/position/lake.jpg",
-        "0ac1e63ccc8b2c1282f0d823899d401ef8a246f6430c60689f3ac903be7c1777"
-    ],
-    [
-        "image/position/library.jpg",
-        "5a74240f552e6dc664305e1ca63d93ecae20c6c74193ffc8802ad3428d9efeb1"
-    ],
-    [
-        "image/position/redSpace.jpg",
-        "697d3123f2a5ab348737f116e652f8d6b3862e920fc858c0a88b68c8d5b3805d"
+        "image/character_soul/xjb_timer.jpg",
+        "5e9e7888d2e761846f18119dc58a5d4060a7b78b4f0f5646e21f6f62f82b2828"
     ],
     [
         "image/character_xjb/xin_fellow.jpg",
@@ -568,32 +552,20 @@ export default [
         "15d8d3945021a23cd8956945699da6303f0e4b5328e49d51f961437d5eefccc2"
     ],
     [
-        "lingli/daomo/blood.jpg",
-        "8946d1da92b79b1fafe896416918a1b3961bfa7598040f6de5fda246c5101edd"
+        "image/position/azureSky.jpg",
+        "6bdc5e1ccf699fedc1204270c5278c550a0a6cd6c9595c2ee9a59eb0f7d3fca7"
     ],
     [
-        "lingli/daomo/dragon.jpg",
-        "7ab86e4e926ae8d64628bf652d29a039109591896097fc20af623781ee9e8491"
+        "image/position/lake.jpg",
+        "0ac1e63ccc8b2c1282f0d823899d401ef8a246f6430c60689f3ac903be7c1777"
     ],
     [
-        "lingli/daomo/flower.jpg",
-        "f8db18366f0c78671f46b61627682b7c293598910a54656a37b9124d61c9302a"
+        "image/position/library.jpg",
+        "5a74240f552e6dc664305e1ca63d93ecae20c6c74193ffc8802ad3428d9efeb1"
     ],
     [
-        "lingli/daomo/sun.jpg",
-        "ab9ef276463bfb23249272a0792122e63f3b1ae1b81649a05848d0d9c3bcd723"
-    ],
-    [
-        "lingli/daomo/taoyao.jpg",
-        "2da0c55d6645ac7d61adef193b4d471d2bb95cfba45ba2471c9846798914d4f1"
-    ],
-    [
-        "lingli/daomo/tear.jpg",
-        "8d1877d4166464849a4e5c20ff4775a64fecfd65478705bce6bd0c35b19b5d4e"
-    ],
-    [
-        "lingli/daomo/xuemo.jpg",
-        "6687fd56eda71f5c1f9f83ddf419704b1fca665e4183c8cf038dd7eec44389ab"
+        "image/position/redSpace.jpg",
+        "697d3123f2a5ab348737f116e652f8d6b3862e920fc858c0a88b68c8d5b3805d"
     ],
     [
         "js/card/callFellow.mjs",
@@ -606,10 +578,6 @@ export default [
     [
         "js/card/store.mjs",
         "d83f5979b081631abfc05b14a6cdaeade3d439a52b47303ed26af5a3eac26567"
-    ],
-    [
-        "js/economy/product.mjs",
-        "da81f9244891714da47dca2c4bc5931238f6746a06818faf6cf06a78d8055060"
     ],
     [
         "js/editor/arrange.mjs",
@@ -666,6 +634,10 @@ export default [
     [
         "js/game/tetris.js",
         "34aceafa2c03ffa5672e0e4c22c9ec4c4e724aedfd016f8686078c3b993e382d"
+    ],
+    [
+        "js/economy/product.mjs",
+        "da81f9244891714da47dca2c4bc5931238f6746a06818faf6cf06a78d8055060"
     ],
     [
         "js/import/importEditor.mjs",
@@ -748,8 +720,32 @@ export default [
         "594b4937ccb2848c56580b6edee60af72ffcc14a0860486537b807aff995d3f4"
     ],
     [
-        "skin/image/xjb_newCharacter/initial.jpg",
-        "ce2d0ce80d38e2955e05e52563ea37d649372b69edeea91a51125b7b8b857d63"
+        "lingli/daomo/blood.jpg",
+        "8946d1da92b79b1fafe896416918a1b3961bfa7598040f6de5fda246c5101edd"
+    ],
+    [
+        "lingli/daomo/dragon.jpg",
+        "7ab86e4e926ae8d64628bf652d29a039109591896097fc20af623781ee9e8491"
+    ],
+    [
+        "lingli/daomo/flower.jpg",
+        "f8db18366f0c78671f46b61627682b7c293598910a54656a37b9124d61c9302a"
+    ],
+    [
+        "lingli/daomo/sun.jpg",
+        "ab9ef276463bfb23249272a0792122e63f3b1ae1b81649a05848d0d9c3bcd723"
+    ],
+    [
+        "lingli/daomo/taoyao.jpg",
+        "2da0c55d6645ac7d61adef193b4d471d2bb95cfba45ba2471c9846798914d4f1"
+    ],
+    [
+        "lingli/daomo/tear.jpg",
+        "8d1877d4166464849a4e5c20ff4775a64fecfd65478705bce6bd0c35b19b5d4e"
+    ],
+    [
+        "lingli/daomo/xuemo.jpg",
+        "6687fd56eda71f5c1f9f83ddf419704b1fca665e4183c8cf038dd7eec44389ab"
     ],
     [
         "skin/image/xjb_jizi_shou/寿1.png",
@@ -766,6 +762,10 @@ export default [
     [
         "skin/image/xjb_jizi_shou/急子2.png",
         "a286cbdbde15cf6fb2d0c07232ad382d88367ba153eb04c9c2cae683f00bf813"
+    ],
+    [
+        "skin/image/xjb_newCharacter/initial.jpg",
+        "ce2d0ce80d38e2955e05e52563ea37d649372b69edeea91a51125b7b8b857d63"
     ],
     [
         "skin/image/xjb_xuemo/xuemo1.jpg",
