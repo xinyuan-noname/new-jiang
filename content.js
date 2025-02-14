@@ -117,7 +117,6 @@ export function XJB_CONTENT(config, pack) {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
                     const myUpdator = game.xjb_updator;
                     const manager = myUpdator.updateLine();
-                    manager.options.tryTimes = 3;
                     manager.on("downloadSuc", data => {
                         console.log(data.processingFile);
                     });
@@ -129,10 +128,10 @@ export function XJB_CONTENT(config, pack) {
                     });
                     manager.on("update", data => {
                         console.log(data.result);
-                    })
+                    });
                     manager.on("error", err => {
                         console.error(err);
-                    })
+                    });
                 }; break;
                 case 'downloadSimply': {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
