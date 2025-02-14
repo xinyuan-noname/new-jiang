@@ -88,6 +88,9 @@ export function XJB_CONTENT(config, pack) {
                                 .setData(lib, game, ui, get, ai, _status);
                             alert("updator获取成功！");
                         })
+                        .catch(err => {
+                            alert(`updator获取失败\n${err}`);
+                        })
                 }; break;
                 case "changeBranch": {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
@@ -113,7 +116,8 @@ export function XJB_CONTENT(config, pack) {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
                     const myUpdator = game.xjb_updator;
                     const manager = myUpdator.updateLine({
-                        rmCR: true
+                        rmCR: true,
+                        timeout: 1,
                     });
                     manager.on("getCache", data => {
                         console.log(data);
