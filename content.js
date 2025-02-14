@@ -106,7 +106,8 @@ export function XJB_CONTENT(config, pack) {
                     );
                     const bufferArray = await myUpdator.cache(fileList);
                     const hashMap = await myUpdator.getHashMap(bufferArray, true);
-                    myUpdator.genDir(Array.from(hashMap));
+                    await myUpdator.genDir(Array.from(hashMap));
+                    alert("目录生成成功");
                 }; break;
                 case 'download': {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
@@ -135,6 +136,9 @@ export function XJB_CONTENT(config, pack) {
                     manager.on("error", err => {
                         console.error(err);
                     });
+                    manager.on("end", data => {
+                        alert("更新成功！")
+                    })
                 }; break;
                 case 'downloadSimply': {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
