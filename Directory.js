@@ -1,19 +1,19 @@
 export default [
     [
         "content.js",
-        "21e270f36fdc565be6c5d74476a234e5ce1b5a342c9c7c33ebb3e343e0e04d9b"
+        "c3b498544507b2f01bbe7ad91fc54eee8d5c598937f2053d06ed50e274509b5a"
     ],
     [
         "Directory.js",
-        "8ad5ad6648e9affcc6c186d430513054aaeae537506372b811358f9075b088a2"
+        "4360ddc8071368ceaa7a7c4241ff57e544688d64c78add106ae6b51801a0de93"
     ],
     [
         "extension.js",
-        "94daaaacf83aa91dfd00c5c425c35d7718999324f3d241f0f1259376d771f6ef"
+        "516d40998b453ab675ac22a1bd3639b8cc6910cb32ae5467788aad2bb1d053e9"
     ],
     [
         "info.json",
-        "eeb24f0f5d74d4a305065ff992489a52145ef25e40de101f96c55f5f33e0361d"
+        "20c8d10824646baf3466e686b2e72d7aa637b4a1526df38a95eee2a5a49de893"
     ],
     [
         "LICENSE",
@@ -21,7 +21,7 @@ export default [
     ],
     [
         "precontent.js",
-        "6137370da08d3b95915dcaff3c0fd49c0c5b50fc90d0d8e4aba4071008a3db93"
+        "8211d64872342b6a57a8e177429136b7d3ee4edae5d5767a8e0383e8e0b21ebb"
     ],
     [
         "README.md",
@@ -33,7 +33,7 @@ export default [
     ],
     [
         "@types/Player.ts",
-        "fb8e67534732e76b1049b84791316e2808481162793c070250c0f35357d6d76e"
+        "4dd84caf6bff10d5d94094bef082a8cbb5696dbcf0d74b0309c4d033b755a4a7"
     ],
     [
         "audio/fire1.mp3",
@@ -41,15 +41,15 @@ export default [
     ],
     [
         "css/editor.css",
-        "f715f63cf2b2ac8300a6059376238a88c338542cd93c683bf8661d81a6694aeb"
+        "6cae9c9c5be5e3a17e60aeaf2a643d4a8d4a3fa393a459b7becfce10b6b022b3"
     ],
     [
         "css/main.css",
-        "e6c4cae53f4687708f0dce3665d6c225b3808ab8976788687f1b4593055e6013"
+        "a5b9cabd9e5e1227e847250520b517d5b59651400c8ee4a1b6f2909fa9c4fe80"
     ],
     [
         "css/nature.css",
-        "b3c5536b41f35ba90c0e240fd1ebd28c1ee36f7d2ce495f7e907fe857e412b17"
+        "c95f315bc78d74816590d2c21e7c412bb60f7f5682a42870574c8c5e2a38e425"
     ],
     [
         "hpCard/1.jpg",
@@ -124,60 +124,60 @@ export default [
         "2f2b9244fbc5b66bc0b0af05e6c73a6165fc5926b075bd7d96f919672610d8a9"
     ],
     [
-        "json/1.json",
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    ],
-    [
         "js/card.js",
-        "327fdafa497bfe82c88d79aa7a6c5d604ab3017dbccbcf68d6ee2355a3367eb8"
+        "126635ddc5a6b62d54fd0017cbdd05e9eed4b212728839ca220d198cf6627255"
     ],
     [
         "js/character.js",
-        "77b7c1a33cafece502609b7f11b8ea80d791321dd49ed931b1afa23e88f2837f"
+        "b88463bcea342b2fdb5ebcd94feea4e2d6c443bf122f8444a22c82cab316ada8"
     ],
     [
         "js/economy.js",
-        "ac1d3d0422df7eca976d0530e331e9cc6ef0c53e904884d8cd4d61de96ac4f9c"
+        "4b25cbb5816542fdd0b5aa7b4f470074024a23ce1d9b53dc96ce87f0054cd1e7"
     ],
     [
         "js/editor.js",
-        "e77517eb21707794cfffa72fb1730de4be59c86f2b6363f055953237ed17fa7a"
+        "3716c36cc833defcbdded3cd5fdeecc14e2f2b323cc779b6bc8e26ad0a7a8cd6"
     ],
     [
         "js/event.js",
-        "11aa51c358044ea2f59c858f15759021713d995205a18f8e6f2adb43e213354a"
+        "50ba1ff0036950e8675f404a9038583aee02c0194f481bf7db56bd503279568b"
     ],
     [
         "js/final.js",
-        "825c73c5aa95a75fdfddf8ebab4986422b11d26509ad51afd45742a0059ee450"
+        "7b2e91b6f6eb0f58c2d928a34c5176d13b6a5d6e99a5f236e94fef5492708035"
     ],
     [
         "js/library.js",
-        "437f13619018564faca5f50f7119413230a89828d220ca7a841358906bc73713"
+        "302cbfd043fbe18317e5a06f7c01afd93171d40e5e6c175572e4bfb45ae1e864"
     ],
     [
         "js/lingli.js",
-        "c15e1069099cc48fd2d2867e2883659a2632f8d2c8cf224d3fd27d4e5793f164"
+        "424ed44e4a7397a590c187f6f18a258bf35034a34f001f0bb6cfdc59f5cbe769"
     ],
     [
         "js/project.js",
-        "99439a9ff0d40b7898599fdba44311dcd96a00ffba66edb03283892ed2d79307"
+        "ef0c4984d2b5304725988a451e413e6809b44f8c48dc2728a0e60b1ae535dc5b"
     ],
     [
         "js/raise.js",
-        "7442ae8eb1e3a386d7a1e169193367fc808ee5a7e53e2934e20e31c77b52aa62"
+        "c2e3bbbc20c4863af4c9ae4ad4f4f11e4a03ba520796d88a915f001cd209199f"
     ],
     [
         "js/rpg.js",
-        "7e83edc912c7c68a0715f81d4551b65d19d457b1416cbaea666aa431b0683fce"
+        "f660de0046ce481b1296a36371053aa1f51a4001607f34be7b5a51a4622eee25"
     ],
     [
         "js/skills.js",
-        "d201e9a216bf38d96b94f84d01d2c9763047aba4a1c1aaa48abe13fc580ab601"
+        "ab7ecfd4f3880d2a75c09781a5a78c8c4489e2f4e0a32ca553192503bae3c4ce"
     ],
     [
         "js/title.js",
-        "7d95a50d8f99a675b0fe8221a2450ebbf9d04c2cf1481eeee15280a9775f878a"
+        "840fa9622789f66fb766ca1bc68fc3ef80695276d61f14a021863a0c66b53c52"
+    ],
+    [
+        "json/1.json",
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     ],
     [
         "lingli/book.jpg",
@@ -200,10 +200,6 @@ export default [
         "b989c3824079ac72eb075f28c1d87473acf388674fb59e3c5e2e7f03459ef398"
     ],
     [
-        "log/empty.text",
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    ],
-    [
         "md/skillEditor.md",
         "ae5c580a60a4687d9c59da4f0ca89e83521d5530cbb6a89f4e0a8f5374f0d1c4"
     ],
@@ -212,8 +208,16 @@ export default [
         "3a1e005ca227e9e75820e167ada3f81f9c32c96779bbfc81086020aeaeb10aa9"
     ],
     [
+        "log/empty.text",
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    [
+        "log/log.txt",
+        "4677182c72fbe1c6bf149dbbc5291dc2029b0ddd087d8e3b0107196f9f3cda2b"
+    ],
+    [
         "node/gen_dir.js",
-        "d147439790a96b35d0f32816b5334fdc0557a5b991f8655b7c2db1c30712ec18"
+        "b35f18436f4935fd59e8508842115c4dd707b7b5f716827a122f22c401007e61"
     ],
     [
         "title/xjb_boss1.png",
@@ -380,6 +384,22 @@ export default [
         "7cdaa4968b43e48e04458d748c43bcfece1f1cb6662042bf88c303549852c8cc"
     ],
     [
+        "image/character_soul/xjb_bat.jpg",
+        "3569d6ab47b798a2abfa3b89256ac31eb425b9084c897ffed9d6204edabf12dd"
+    ],
+    [
+        "image/character_soul/xjb_chanter.jpg",
+        "b4045f1fb06cfbf440aa3e76d1c89ccc9e1451de13d87ce4c6348c973816e810"
+    ],
+    [
+        "image/character_soul/xjb_Fuaipaiyi.jpg",
+        "751ed7637f8d508efdb8c7146b5f409eee640fd5e28aae3093437e59413cd3b2"
+    ],
+    [
+        "image/character_soul/xjb_timer.jpg",
+        "5e9e7888d2e761846f18119dc58a5d4060a7b78b4f0f5646e21f6f62f82b2828"
+    ],
+    [
         "image/card_store/check.png",
         "b862ac2c6eea64446c4cf74194d28dc57c0fd24c0ee46a343015a077bd8237d6"
     ],
@@ -450,22 +470,6 @@ export default [
     [
         "image/character_dongzhou/xjb_xunan.jpg",
         "dbcadf1a3143f316d49b79f7fc8971bf599764ffa6b5bb7dcf9609207d5ef137"
-    ],
-    [
-        "image/character_soul/xjb_bat.jpg",
-        "3569d6ab47b798a2abfa3b89256ac31eb425b9084c897ffed9d6204edabf12dd"
-    ],
-    [
-        "image/character_soul/xjb_chanter.jpg",
-        "b4045f1fb06cfbf440aa3e76d1c89ccc9e1451de13d87ce4c6348c973816e810"
-    ],
-    [
-        "image/character_soul/xjb_Fuaipaiyi.jpg",
-        "751ed7637f8d508efdb8c7146b5f409eee640fd5e28aae3093437e59413cd3b2"
-    ],
-    [
-        "image/character_soul/xjb_timer.jpg",
-        "5e9e7888d2e761846f18119dc58a5d4060a7b78b4f0f5646e21f6f62f82b2828"
     ],
     [
         "image/character_xjb/xin_fellow.jpg",
@@ -565,103 +569,103 @@ export default [
     ],
     [
         "js/card/callFellow.mjs",
-        "a2d23c69de9e25d21cdf80faff0ae7f79a682613194ecb98fcd6babdd3c46ff4"
+        "2c4473504d475d6111adf2fd838e0982f607be3fa270131f5514d075e2d54bc3"
     ],
     [
         "js/card/clearBad.mjs",
-        "715f14c9a36caa9321dc8d6ea0a2a6b262db7e9ec495709424f47e78e2a5eb5d"
+        "3c24f86e63d5a17bb7cdd3db6b75903cd88545ebabda9ee2f067ce891612ee1f"
     ],
     [
         "js/card/store.mjs",
-        "b87f62c21d64d019cffdb8c072f99ec56ff3dc4eb000441d2d232df3576a364d"
+        "d83f5979b081631abfc05b14a6cdaeade3d439a52b47303ed26af5a3eac26567"
     ],
     [
         "js/economy/product.mjs",
-        "2312d7d27d8548b8df4f39fff817a77ff2b62eb8d7f92e2602f8ef1dbd19ec68"
+        "da81f9244891714da47dca2c4bc5931238f6746a06818faf6cf06a78d8055060"
     ],
     [
         "js/editor/arrange.mjs",
-        "78404f3542b342a2f5aa37d4e19545b59f10a853e94fdeeec57875ca85ab1680"
+        "1dbac071a60485aba99490555e3327624dd9a29cc8a73c774ad254a7235789d2"
     ],
     [
         "js/editor/choiceMode.mjs",
-        "47c74ed03a24407c789ca4e962cfa8bdf9f3b8e83bd044ed45040cb64d7c20d7"
+        "3ed50935ae04f7b8e0173acde83c191023d5c62a7a39370ea82c223d091624e2"
     ],
     [
         "js/editor/dataAnalyze.mjs",
-        "96725104c2fa91b6e590dbc3b141fd5a8ec8c9f4f81a6807e030a1fea849ad11"
+        "0f1dbd7b47ea5b430c1bf5ad058246fca40101feab4705bed4b8722828c4edb7"
     ],
     [
         "js/editor/implicitText.mjs",
-        "1962e3d8a819b7a5305655db10facc4d28308aa73f8b817ebbf347984274994c"
+        "41952ce156b1bf40c658fd8f975ead525ce4ccab5eb72329cc87a03d8fc06031"
     ],
     [
         "js/editor/interaction.mjs",
-        "e0970c9b5c0c81b1ff6fb4ee5f783d9fd19460aac17fa042d70e046b940da7f3"
+        "b0d88c4f2769316edc91515b7418fff65c966de7da3fb7ecf5f0893213c3fc81"
     ],
     [
         "js/editor/nonameCN.js",
-        "732fc7263496f48e0e4d22575e2c0f962d9763f769791c29937aca2b72ed6449"
+        "6c76d4a63aea7c1467f19cd6f5e23a89d28808a1eeb794402defddc3d7c6ab53"
     ],
     [
         "js/editor/organize.mjs",
-        "6d821ff200b9bc19c2993b79bd9e2eb588b78e6b1efdc24edf8d77490d2757c0"
+        "2d17d37742c861000d142befd479a90cc2e054b65562e6ec186810b58cb3aba4"
     ],
     [
         "js/editor/parameter.mjs",
-        "8bc6234deec49064af7d29d2c07071c9c3c695e70b5a8a7e3082c1fdcbf3c996"
+        "d12d568c94e21ad73ec67add27b7b7d39e34d8b15828435c5f9aed3c62de108c"
     ],
     [
         "js/editor/skill.js",
-        "f6006e7ef4bf82b30166053778db12f7967ca30d349f7f200b8e85cb0b1b8aa5"
+        "c53a44f76a490dfbb6e0776fda5d012cef1917cb99d5623160fd754a30d126ce"
     ],
     [
         "js/editor/transCnText.mjs",
-        "b3620b96f1b97a208503658b44db90e58b25e3723f4acbba5098863bd15896f2"
-    ],
-    [
-        "js/feature/hpCard.js",
-        "7969c4cc47d9ca1e095248d2a8d320d8bd5607b21f88ab0aa7ff9c2196f910bb"
-    ],
-    [
-        "js/feature/remnantArea.js",
-        "22aef1928155da7e7333d103bf8594b0c4a2985760cc254a3128e6b7f1f0b068"
-    ],
-    [
-        "js/feature/skillCard.mjs",
-        "bfbab0e1a8ce41982246d38d74b4a78bd34a1bb72305eff0991f40d19b30a168"
+        "becb2af662353955ae1491c5f9f81cc7f5ddba69421f919f6d27903522af512d"
     ],
     [
         "js/game/tetris.js",
-        "60934303862fec2d347f5de35dc2255a867666728d1820345e5b2df1a4fee4be"
+        "34aceafa2c03ffa5672e0e4c22c9ec4c4e724aedfd016f8686078c3b993e382d"
+    ],
+    [
+        "js/feature/hpCard.js",
+        "26805d928e5e2fde14d42ab09f29102273e2d8e5182bf2501d5da269150d3102"
+    ],
+    [
+        "js/feature/remnantArea.js",
+        "293f3d7e0f28b2f944cc73f396512f99eba6dc40fe9355148761bd966d351d45"
+    ],
+    [
+        "js/feature/skillCard.mjs",
+        "985a8135681b60d2dd792e1de691d8c2db8b5c010e850836eb8069c92a9b721e"
     ],
     [
         "js/import/importEditor.mjs",
-        "b1b666ded527c675070cb43525207d7339a23490f989b3ff8f291530393e3e68"
+        "a93de8458b2bcd2b55a591afa984fff01d0a9b53ec37e00346f701767b140fdf"
     ],
     [
         "js/import/url.js",
-        "cf62778c6f4c1fe71bd141bb657ad20af4b9ee0ac54c1a7d71d01c23f7c1f972"
+        "3b9ab578afb444b61a7cd7d0f04ae9eb7a6adacef6ec8ba13399af721341866c"
     ],
     [
         "js/interact/dialog.mjs",
-        "45507ea3c6340de81dc35753c874e797dbafb4a4c528b66588781c51388cf715"
+        "84fcc0aaa8e960a9088f752b2323bf8fa2537c7cdfcf1f65918ea8d751c01769"
     ],
     [
         "js/interact/ui.mjs",
-        "3fe77ed904771e031af8e4b9581f3ede3f644933409a5c2b5c1355704a525d19"
+        "9f21c3090c1f17770c1a0261ba346cf294d61b6b96f24b7193f536595d28fd7b"
     ],
     [
         "js/lingli/card.mjs",
-        "db118869a882eb101284631bffb54bcb4e660bb2281c3ecd38e18fb4196f9297"
+        "35890cc797c7ce650db0b22fd38660388d799d9703df4ee898eab06a730da82c"
     ],
     [
         "js/lingli/event.mjs",
-        "ab59d4c629817d07bb90b0e007ecefb7c7e2c845888da6395d487cd34415493d"
+        "7a89ac89e5ed71c700331cfda06465f74318f6400ffca8d0d8ff29927e7bba62"
     ],
     [
         "js/lingli/gSkill.mjs",
-        "1fe83d85c3614a12d0a581ee66148be8d1d8f85cfd22a2c3a9b3551472d825ba"
+        "2b45b981cd74b0138ea434e057d4f923b61c8b82eba7b6c3a6dd26a6008801e1"
     ],
     [
         "js/progress/show.js",
@@ -669,51 +673,51 @@ export default [
     ],
     [
         "js/skill/bossSkill.mjs",
-        "176485ef9e6ebfafd187c63575146a7ae27138f6ddd47a924d64ad82685bf44b"
+        "bdad1c9ca6210cfe1782bbc2cff8d793bfdf12f20f93b91f316499b7c11119f1"
     ],
     [
         "js/skill/dongzhou.mjs",
-        "a15e69838fcf44e722cc14638547ea05aba5f4ff0f7232da56663a4b2533e1a7"
+        "aeff8b01b37c70e87f162547bb21e5f9e02c2b16222f3286094b1c1c71d72bac"
     ],
     [
         "js/skill/raiseSkill.mjs",
-        "f3d9bffc70c95520960d075b622a44032f6e2c4c508370840b304d3725c0a862"
+        "d1689de8a96dee93c97847967ab3595949f0979bae67bf8deaf297af49145e73"
     ],
     [
         "js/skill/sanSkill.mjs",
-        "c23408ff6a6d94837e0465901ae0305fbf55056505b3b87245e8639284435046"
+        "289f4e26e3c961275a572e0f52f61729a506ba5a56d77223473d0c57ee4106c5"
     ],
     [
         "js/skill/skillTag.mjs",
-        "e2d5e5d012db46f9d8fa9d1f2d5c44e6ca64014bf4588c6b43d0168c089af86b"
+        "dfb64b0960fe810f8d46eaaf44a1005acc53c65271fd940802d866df83b8981f"
     ],
     [
         "js/skill/soulSkill.mjs",
-        "b61a402d97c5d0789ae1aeb6584d8a0171494a1d5ea660eae205676f3adaad6d"
+        "3aae30be7a7fe29af9c4a3e5bb5d75b664dbf3d9f7a5e1857f679fe4cb53395f"
     ],
     [
         "js/skill/xjbSkill.mjs",
-        "29b12a13af548d5f0ac35416a712f433d0d6a7b82c25721ebd0fe021b0558d39"
-    ],
-    [
-        "js/tool/canvas.js",
-        "7f04987b597d44cfe1b4f04e1fb252c47b6e9482ccbbdd86ce88f7302754c4b9"
-    ],
-    [
-        "js/tool/math.js",
-        "0724d9755b8a188c620775f91271dc877f4b348c8042b79db09a31acf16587a5"
-    ],
-    [
-        "js/tool/string.js",
-        "c35a644f16d653867376ecf3c4b8d7e2a9caee539c3002520f957764e148e9d0"
-    ],
-    [
-        "js/tool/ui.js",
-        "341bff0758246cdc1975c2ee91f513fe59f81b25bbf5c7f150d964716461af03"
+        "2362978646a54f189888027b85c997dd87a0cedd27531de325629cb96ddf9da7"
     ],
     [
         "js/text/dongzhouIntro.js",
-        "40052fa61da069097ffe9e704e372a6b8aa34327b5c832d75932ac924cd1f1cf"
+        "28b96dfc10c1751527e9230e914152af8977dae2698f535c899f65b958b9ccbf"
+    ],
+    [
+        "js/tool/canvas.js",
+        "feeeaf6ac577c6a5a463257fca1c8e08852b642ebec6b5c1c86cb566927729bc"
+    ],
+    [
+        "js/tool/math.js",
+        "f1760dd2477def75259a73b4e58e8d7f30541333e7c99cf52c8df890a53b5a69"
+    ],
+    [
+        "js/tool/string.js",
+        "bba09937521a09e336588a805daef778ac54b59672bbb91ccc6b8602aeb55272"
+    ],
+    [
+        "js/tool/ui.js",
+        "594b4937ccb2848c56580b6edee60af72ffcc14a0860486537b807aff995d3f4"
     ],
     [
         "lingli/daomo/blood.jpg",
@@ -760,10 +764,6 @@ export default [
         "a286cbdbde15cf6fb2d0c07232ad382d88367ba153eb04c9c2cae683f00bf813"
     ],
     [
-        "skin/image/xjb_newCharacter/initial.jpg",
-        "ce2d0ce80d38e2955e05e52563ea37d649372b69edeea91a51125b7b8b857d63"
-    ],
-    [
         "skin/image/xjb_xuemo/xuemo1.jpg",
         "1007c9a1e8bce8ab0ddea33187eeb1bcd20f4be93a85bb4fe379f00e987e9c51"
     ],
@@ -774,5 +774,9 @@ export default [
     [
         "skin/image/xjb_xuemo/xuemo3.jpg",
         "dc0968282ab76c1057306ea018f22258db691bc6bcf9c2163e772ba685ea7354"
+    ],
+    [
+        "skin/image/xjb_newCharacter/initial.jpg",
+        "ce2d0ce80d38e2955e05e52563ea37d649372b69edeea91a51125b7b8b857d63"
     ]
 ]
