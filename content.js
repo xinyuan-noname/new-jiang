@@ -125,7 +125,7 @@ export function XJB_CONTENT(config, pack) {
                         console.log(data.processingDir, "文件夹创建成功")
                     })
                     manager.on("update", data => {
-                        console.log(data.result);
+                        console.log(data.updateInfo);
                     });
                     manager.on("updateSuc", data => {
                         console.log(data.processingFile, "下载成功");
