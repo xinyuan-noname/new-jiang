@@ -117,7 +117,7 @@ export function XJB_CONTENT(config, pack) {
                     const myUpdator = game.xjb_updator;
                     const manager = myUpdator.updateLine({
                         rmCR: true,
-                        timeout: 1,
+                        timeoutMin: 1,
                     });
                     manager.on("getCache", data => {
                         console.log(data);
