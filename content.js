@@ -126,6 +126,9 @@ export function XJB_CONTENT(config, pack) {
                     manager.on("filterHash",data=>{
                         console.log(data);
                     });
+                    manager.on("makeSureDirSuc",data=>{
+                        console.log(data.processingDir)
+                    })
                     manager.on("update", data => {
                         console.log(data.result);
                     });
