@@ -129,6 +129,9 @@ export function XJB_CONTENT(config, pack) {
                     manager.on("updateSuc", data => {
                         console.log(data.processingFile, "下载成功");
                     });
+                    manager.on("fixFileSuc", data => {
+                        console.log(data.fixingFileInfo);
+                    })
                     manager.on("error", err => {
                         console.error(err);
                     });
