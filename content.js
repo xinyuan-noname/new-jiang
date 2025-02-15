@@ -150,6 +150,7 @@ export function XJB_CONTENT(config, pack) {
                     manager.on("end", data => {
                         alert("更新成功！")
                     })
+                    manager.safeUpdate();
                 }; break;
                 case 'downloadSimply': {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");

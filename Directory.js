@@ -1,11 +1,11 @@
 export default [
     [
         "content.js",
-        "0058d89a10b974f0404388babf6ec90b58ad1bce6e4eeced93a8ff61bb55dd53"
+        "2fcc8b8b7b31d8f1487217f93d9ddbcff52c3b4f2908b4b461575794ac67ee8a"
     ],
     [
         "Directory.js",
-        "8b355a5f64356f6907700294a80d578e040ea3bf2332bacf2ab51d291e03c286"
+        "3d44a5948dae69b719d76a5085d67641d730f32eb5ec87544085a6a49c74dae9"
     ],
     [
         "extension.js",
@@ -40,6 +40,18 @@ export default [
         "3d674c465a8bdd5381c4c85837d51b9f56fa085b2dcb692dcf1316c875c9580a"
     ],
     [
+        "css/editor.css",
+        "6cae9c9c5be5e3a17e60aeaf2a643d4a8d4a3fa393a459b7becfce10b6b022b3"
+    ],
+    [
+        "css/main.css",
+        "a5b9cabd9e5e1227e847250520b517d5b59651400c8ee4a1b6f2909fa9c4fe80"
+    ],
+    [
+        "css/nature.css",
+        "c95f315bc78d74816590d2c21e7c412bb60f7f5682a42870574c8c5e2a38e425"
+    ],
+    [
         "hpCard/1.jpg",
         "f2e65a9f26182183692a8e279f7cba419f29dfa85640fc35fc66281ae2710ee1"
     ],
@@ -58,18 +70,6 @@ export default [
     [
         "hpCard/5.jpg",
         "8e7288fa9d365307ca7af8b0a2d1f63bde54cc3f3f744009da599e659a771727"
-    ],
-    [
-        "css/editor.css",
-        "6cae9c9c5be5e3a17e60aeaf2a643d4a8d4a3fa393a459b7becfce10b6b022b3"
-    ],
-    [
-        "css/main.css",
-        "a5b9cabd9e5e1227e847250520b517d5b59651400c8ee4a1b6f2909fa9c4fe80"
-    ],
-    [
-        "css/nature.css",
-        "c95f315bc78d74816590d2c21e7c412bb60f7f5682a42870574c8c5e2a38e425"
     ],
     [
         "image/edit.png",
@@ -376,6 +376,22 @@ export default [
         "7cdaa4968b43e48e04458d748c43bcfece1f1cb6662042bf88c303549852c8cc"
     ],
     [
+        "image/character_soul/xjb_bat.jpg",
+        "3569d6ab47b798a2abfa3b89256ac31eb425b9084c897ffed9d6204edabf12dd"
+    ],
+    [
+        "image/character_soul/xjb_chanter.jpg",
+        "b4045f1fb06cfbf440aa3e76d1c89ccc9e1451de13d87ce4c6348c973816e810"
+    ],
+    [
+        "image/character_soul/xjb_Fuaipaiyi.jpg",
+        "751ed7637f8d508efdb8c7146b5f409eee640fd5e28aae3093437e59413cd3b2"
+    ],
+    [
+        "image/character_soul/xjb_timer.jpg",
+        "5e9e7888d2e761846f18119dc58a5d4060a7b78b4f0f5646e21f6f62f82b2828"
+    ],
+    [
         "image/card_store/check.png",
         "b862ac2c6eea64446c4cf74194d28dc57c0fd24c0ee46a343015a077bd8237d6"
     ],
@@ -410,22 +426,6 @@ export default [
     [
         "image/card_store/xjb_zhihuan.png",
         "239310f93fb18af3ab990f1e29ed5e21f13391571a9beeb2828771d8803707fd"
-    ],
-    [
-        "image/character_soul/xjb_bat.jpg",
-        "3569d6ab47b798a2abfa3b89256ac31eb425b9084c897ffed9d6204edabf12dd"
-    ],
-    [
-        "image/character_soul/xjb_chanter.jpg",
-        "b4045f1fb06cfbf440aa3e76d1c89ccc9e1451de13d87ce4c6348c973816e810"
-    ],
-    [
-        "image/character_soul/xjb_Fuaipaiyi.jpg",
-        "751ed7637f8d508efdb8c7146b5f409eee640fd5e28aae3093437e59413cd3b2"
-    ],
-    [
-        "image/character_soul/xjb_timer.jpg",
-        "5e9e7888d2e761846f18119dc58a5d4060a7b78b4f0f5646e21f6f62f82b2828"
     ],
     [
         "image/character_dongzhou/xjb_guanyiwu.jpg",
@@ -576,18 +576,6 @@ export default [
         "da81f9244891714da47dca2c4bc5931238f6746a06818faf6cf06a78d8055060"
     ],
     [
-        "js/feature/hpCard.js",
-        "26805d928e5e2fde14d42ab09f29102273e2d8e5182bf2501d5da269150d3102"
-    ],
-    [
-        "js/feature/remnantArea.js",
-        "293f3d7e0f28b2f944cc73f396512f99eba6dc40fe9355148761bd966d351d45"
-    ],
-    [
-        "js/feature/skillCard.mjs",
-        "985a8135681b60d2dd792e1de691d8c2db8b5c010e850836eb8069c92a9b721e"
-    ],
-    [
         "js/editor/arrange.mjs",
         "1dbac071a60485aba99490555e3327624dd9a29cc8a73c774ad254a7235789d2"
     ],
@@ -626,6 +614,18 @@ export default [
     [
         "js/editor/transCnText.mjs",
         "becb2af662353955ae1491c5f9f81cc7f5ddba69421f919f6d27903522af512d"
+    ],
+    [
+        "js/feature/hpCard.js",
+        "26805d928e5e2fde14d42ab09f29102273e2d8e5182bf2501d5da269150d3102"
+    ],
+    [
+        "js/feature/remnantArea.js",
+        "293f3d7e0f28b2f944cc73f396512f99eba6dc40fe9355148761bd966d351d45"
+    ],
+    [
+        "js/feature/skillCard.mjs",
+        "985a8135681b60d2dd792e1de691d8c2db8b5c010e850836eb8069c92a9b721e"
     ],
     [
         "js/game/tetris.js",
@@ -692,10 +692,6 @@ export default [
         "2362978646a54f189888027b85c997dd87a0cedd27531de325629cb96ddf9da7"
     ],
     [
-        "js/text/dongzhouIntro.js",
-        "28b96dfc10c1751527e9230e914152af8977dae2698f535c899f65b958b9ccbf"
-    ],
-    [
         "js/tool/canvas.js",
         "feeeaf6ac577c6a5a463257fca1c8e08852b642ebec6b5c1c86cb566927729bc"
     ],
@@ -710,6 +706,10 @@ export default [
     [
         "js/tool/ui.js",
         "594b4937ccb2848c56580b6edee60af72ffcc14a0860486537b807aff995d3f4"
+    ],
+    [
+        "js/text/dongzhouIntro.js",
+        "28b96dfc10c1751527e9230e914152af8977dae2698f535c899f65b958b9ccbf"
     ],
     [
         "lingli/daomo/blood.jpg",
