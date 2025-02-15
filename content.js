@@ -141,8 +141,11 @@ export function XJB_CONTENT(config, pack) {
                     manager.on("fixFileSuc", data => {
                         console.log(data.fixingFileInfo);
                     })
-                    manager.on("fileAllOk",()=>{
+                    manager.on("fileAllOk", () => {
                         alert("更新成功！")
+                    })
+                    manager.on("fileException", (updateFailFile) => {
+                        alert(`存在下载失败的文件！\n${updateFailFile}`)
                     })
                     manager.on("error", err => {
                         console.error(err);

@@ -1,11 +1,11 @@
 export default [
     [
         "content.js",
-        "2dfd8c907dbad48b68c9c586c82ce2a561a11bb4f87487b4221fce3d82396844"
+        "f0d29e29ed29540bded9be8477fc265dc8f1201de6fa32027b7cfeb595ab7245"
     ],
     [
         "Directory.js",
-        "b4ece5ebb5d5bcec784ad2855b03d7ff777418b27143efb1b32873bf70a1ac66"
+        "678930b39aee2ea64097c4dd907d5fc9e4a2a41598ac6a0fced41a06e70e49c2"
     ],
     [
         "extension.js",
@@ -632,14 +632,6 @@ export default [
         "34aceafa2c03ffa5672e0e4c22c9ec4c4e724aedfd016f8686078c3b993e382d"
     ],
     [
-        "js/import/importEditor.mjs",
-        "a93de8458b2bcd2b55a591afa984fff01d0a9b53ec37e00346f701767b140fdf"
-    ],
-    [
-        "js/import/url.js",
-        "3b9ab578afb444b61a7cd7d0f04ae9eb7a6adacef6ec8ba13399af721341866c"
-    ],
-    [
         "js/interact/dialog.mjs",
         "84fcc0aaa8e960a9088f752b2323bf8fa2537c7cdfcf1f65918ea8d751c01769"
     ],
@@ -648,8 +640,12 @@ export default [
         "9f21c3090c1f17770c1a0261ba346cf294d61b6b96f24b7193f536595d28fd7b"
     ],
     [
-        "js/progress/show.js",
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        "js/import/importEditor.mjs",
+        "a93de8458b2bcd2b55a591afa984fff01d0a9b53ec37e00346f701767b140fdf"
+    ],
+    [
+        "js/import/url.js",
+        "3b9ab578afb444b61a7cd7d0f04ae9eb7a6adacef6ec8ba13399af721341866c"
     ],
     [
         "js/lingli/card.mjs",
@@ -664,8 +660,8 @@ export default [
         "2b45b981cd74b0138ea434e057d4f923b61c8b82eba7b6c3a6dd26a6008801e1"
     ],
     [
-        "js/text/dongzhouIntro.js",
-        "28b96dfc10c1751527e9230e914152af8977dae2698f535c899f65b958b9ccbf"
+        "js/progress/show.js",
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     ],
     [
         "js/skill/bossSkill.mjs",
@@ -694,6 +690,10 @@ export default [
     [
         "js/skill/xjbSkill.mjs",
         "2362978646a54f189888027b85c997dd87a0cedd27531de325629cb96ddf9da7"
+    ],
+    [
+        "js/text/dongzhouIntro.js",
+        "28b96dfc10c1751527e9230e914152af8977dae2698f535c899f65b958b9ccbf"
     ],
     [
         "js/tool/canvas.js",
