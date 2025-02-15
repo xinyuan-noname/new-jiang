@@ -5,7 +5,7 @@ export default [
     ],
     [
         "Directory.js",
-        "09eb4cecd5aa17b689241a815809faaf99bba488c6f161288a467ca3320f9dd8"
+        "b4ece5ebb5d5bcec784ad2855b03d7ff777418b27143efb1b32873bf70a1ac66"
     ],
     [
         "extension.js",
@@ -25,19 +25,19 @@ export default [
     ],
     [
         "README.md",
-        "a0338ffac7de1b577b70d5ac0420ef2baa06e8622f50fb5e5c35a8647e71be37"
+        "e3a1d0c08150939822318244f6cf8d3ae86c9efd8611d6d50f5b29142cb256e8"
     ],
     [
         "xin_newCharacter.jpg",
         "ce2d0ce80d38e2955e05e52563ea37d649372b69edeea91a51125b7b8b857d63"
     ],
     [
-        "@types/Player.ts",
-        "4dd84caf6bff10d5d94094bef082a8cbb5696dbcf0d74b0309c4d033b755a4a7"
-    ],
-    [
         "audio/fire1.mp3",
         "3d674c465a8bdd5381c4c85837d51b9f56fa085b2dcb692dcf1316c875c9580a"
+    ],
+    [
+        "@types/Player.ts",
+        "4dd84caf6bff10d5d94094bef082a8cbb5696dbcf0d74b0309c4d033b755a4a7"
     ],
     [
         "css/editor.css",
@@ -201,11 +201,11 @@ export default [
     ],
     [
         "md/skillEditor.md",
-        "ae5c580a60a4687d9c59da4f0ca89e83521d5530cbb6a89f4e0a8f5374f0d1c4"
+        "d2c359b62dccf8a7e68950f5638683c2c3d9eb3a3f37f8a36b5c38286f7a9663"
     ],
     [
         "md/usual.md",
-        "3a1e005ca227e9e75820e167ada3f81f9c32c96779bbfc81086020aeaeb10aa9"
+        "48703011236a1a3eac10c540262b8b62b0645e16c9ab222998fd2fc87842380d"
     ],
     [
         "node/gen_dir.js",
@@ -640,6 +640,18 @@ export default [
         "3b9ab578afb444b61a7cd7d0f04ae9eb7a6adacef6ec8ba13399af721341866c"
     ],
     [
+        "js/interact/dialog.mjs",
+        "84fcc0aaa8e960a9088f752b2323bf8fa2537c7cdfcf1f65918ea8d751c01769"
+    ],
+    [
+        "js/interact/ui.mjs",
+        "9f21c3090c1f17770c1a0261ba346cf294d61b6b96f24b7193f536595d28fd7b"
+    ],
+    [
+        "js/progress/show.js",
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    [
         "js/lingli/card.mjs",
         "35890cc797c7ce650db0b22fd38660388d799d9703df4ee898eab06a730da82c"
     ],
@@ -652,16 +664,8 @@ export default [
         "2b45b981cd74b0138ea434e057d4f923b61c8b82eba7b6c3a6dd26a6008801e1"
     ],
     [
-        "js/interact/dialog.mjs",
-        "84fcc0aaa8e960a9088f752b2323bf8fa2537c7cdfcf1f65918ea8d751c01769"
-    ],
-    [
-        "js/interact/ui.mjs",
-        "9f21c3090c1f17770c1a0261ba346cf294d61b6b96f24b7193f536595d28fd7b"
-    ],
-    [
-        "js/progress/show.js",
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        "js/text/dongzhouIntro.js",
+        "28b96dfc10c1751527e9230e914152af8977dae2698f535c899f65b958b9ccbf"
     ],
     [
         "js/skill/bossSkill.mjs",
@@ -690,10 +694,6 @@ export default [
     [
         "js/skill/xjbSkill.mjs",
         "2362978646a54f189888027b85c997dd87a0cedd27531de325629cb96ddf9da7"
-    ],
-    [
-        "js/text/dongzhouIntro.js",
-        "28b96dfc10c1751527e9230e914152af8977dae2698f535c899f65b958b9ccbf"
     ],
     [
         "js/tool/canvas.js",
