@@ -121,7 +121,7 @@ export function XJB_CONTENT(config, pack) {
                     const manager = myUpdator.updateLine({
                         rmCR: true,
                         timeoutMinutes: 1,
-                        reCalHash
+                        reCalHash: true
                     });
                     manager.on("getCache", data => {
                         console.log(data);
