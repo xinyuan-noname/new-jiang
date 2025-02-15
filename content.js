@@ -105,7 +105,10 @@ export function XJB_CONTENT(config, pack) {
                         [
                             "Thumbs.db",
                         ],
-                        [".vscode", ".git", ".github", ".gitee"]
+                        [
+                            ".vscode", ".git", ".github", ".gitee",
+                            "log", "skin/image/xjb_newCharacter"
+                        ]
                     );
                     const bufferArray = await myUpdator.cache(fileList);
                     const hashMap = await myUpdator.getHashMap(bufferArray, true);
@@ -118,6 +121,7 @@ export function XJB_CONTENT(config, pack) {
                     const manager = myUpdator.updateLine({
                         rmCR: true,
                         timeoutMinutes: 1,
+                        reCalHash
                     });
                     manager.on("getCache", data => {
                         console.log(data);
