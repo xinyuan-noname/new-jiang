@@ -1,11 +1,11 @@
 export default [
     [
         "content.js",
-        "2fcc8b8b7b31d8f1487217f93d9ddbcff52c3b4f2908b4b461575794ac67ee8a"
+        "2dfd8c907dbad48b68c9c586c82ce2a561a11bb4f87487b4221fce3d82396844"
     ],
     [
         "Directory.js",
-        "3d44a5948dae69b719d76a5085d67641d730f32eb5ec87544085a6a49c74dae9"
+        "09eb4cecd5aa17b689241a815809faaf99bba488c6f161288a467ca3320f9dd8"
     ],
     [
         "extension.js",
@@ -124,6 +124,10 @@ export default [
         "2f2b9244fbc5b66bc0b0af05e6c73a6165fc5926b075bd7d96f919672610d8a9"
     ],
     [
+        "json/1.json",
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    [
         "js/card.js",
         "126635ddc5a6b62d54fd0017cbdd05e9eed4b212728839ca220d198cf6627255"
     ],
@@ -174,10 +178,6 @@ export default [
     [
         "js/title.js",
         "840fa9622789f66fb766ca1bc68fc3ef80695276d61f14a021863a0c66b53c52"
-    ],
-    [
-        "json/1.json",
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     ],
     [
         "lingli/book.jpg",
@@ -376,22 +376,6 @@ export default [
         "7cdaa4968b43e48e04458d748c43bcfece1f1cb6662042bf88c303549852c8cc"
     ],
     [
-        "image/character_soul/xjb_bat.jpg",
-        "3569d6ab47b798a2abfa3b89256ac31eb425b9084c897ffed9d6204edabf12dd"
-    ],
-    [
-        "image/character_soul/xjb_chanter.jpg",
-        "b4045f1fb06cfbf440aa3e76d1c89ccc9e1451de13d87ce4c6348c973816e810"
-    ],
-    [
-        "image/character_soul/xjb_Fuaipaiyi.jpg",
-        "751ed7637f8d508efdb8c7146b5f409eee640fd5e28aae3093437e59413cd3b2"
-    ],
-    [
-        "image/character_soul/xjb_timer.jpg",
-        "5e9e7888d2e761846f18119dc58a5d4060a7b78b4f0f5646e21f6f62f82b2828"
-    ],
-    [
         "image/card_store/check.png",
         "b862ac2c6eea64446c4cf74194d28dc57c0fd24c0ee46a343015a077bd8237d6"
     ],
@@ -464,20 +448,20 @@ export default [
         "dbcadf1a3143f316d49b79f7fc8971bf599764ffa6b5bb7dcf9609207d5ef137"
     ],
     [
-        "image/position/azureSky.jpg",
-        "6bdc5e1ccf699fedc1204270c5278c550a0a6cd6c9595c2ee9a59eb0f7d3fca7"
+        "image/character_soul/xjb_bat.jpg",
+        "3569d6ab47b798a2abfa3b89256ac31eb425b9084c897ffed9d6204edabf12dd"
     ],
     [
-        "image/position/lake.jpg",
-        "0ac1e63ccc8b2c1282f0d823899d401ef8a246f6430c60689f3ac903be7c1777"
+        "image/character_soul/xjb_chanter.jpg",
+        "b4045f1fb06cfbf440aa3e76d1c89ccc9e1451de13d87ce4c6348c973816e810"
     ],
     [
-        "image/position/library.jpg",
-        "5a74240f552e6dc664305e1ca63d93ecae20c6c74193ffc8802ad3428d9efeb1"
+        "image/character_soul/xjb_Fuaipaiyi.jpg",
+        "751ed7637f8d508efdb8c7146b5f409eee640fd5e28aae3093437e59413cd3b2"
     ],
     [
-        "image/position/redSpace.jpg",
-        "697d3123f2a5ab348737f116e652f8d6b3862e920fc858c0a88b68c8d5b3805d"
+        "image/character_soul/xjb_timer.jpg",
+        "5e9e7888d2e761846f18119dc58a5d4060a7b78b4f0f5646e21f6f62f82b2828"
     ],
     [
         "image/character_xjb/xin_fellow.jpg",
@@ -560,6 +544,22 @@ export default [
         "15d8d3945021a23cd8956945699da6303f0e4b5328e49d51f961437d5eefccc2"
     ],
     [
+        "image/position/azureSky.jpg",
+        "6bdc5e1ccf699fedc1204270c5278c550a0a6cd6c9595c2ee9a59eb0f7d3fca7"
+    ],
+    [
+        "image/position/lake.jpg",
+        "0ac1e63ccc8b2c1282f0d823899d401ef8a246f6430c60689f3ac903be7c1777"
+    ],
+    [
+        "image/position/library.jpg",
+        "5a74240f552e6dc664305e1ca63d93ecae20c6c74193ffc8802ad3428d9efeb1"
+    ],
+    [
+        "image/position/redSpace.jpg",
+        "697d3123f2a5ab348737f116e652f8d6b3862e920fc858c0a88b68c8d5b3805d"
+    ],
+    [
         "js/card/callFellow.mjs",
         "2c4473504d475d6111adf2fd838e0982f607be3fa270131f5514d075e2d54bc3"
     ],
@@ -640,14 +640,6 @@ export default [
         "3b9ab578afb444b61a7cd7d0f04ae9eb7a6adacef6ec8ba13399af721341866c"
     ],
     [
-        "js/interact/dialog.mjs",
-        "84fcc0aaa8e960a9088f752b2323bf8fa2537c7cdfcf1f65918ea8d751c01769"
-    ],
-    [
-        "js/interact/ui.mjs",
-        "9f21c3090c1f17770c1a0261ba346cf294d61b6b96f24b7193f536595d28fd7b"
-    ],
-    [
         "js/lingli/card.mjs",
         "35890cc797c7ce650db0b22fd38660388d799d9703df4ee898eab06a730da82c"
     ],
@@ -658,6 +650,14 @@ export default [
     [
         "js/lingli/gSkill.mjs",
         "2b45b981cd74b0138ea434e057d4f923b61c8b82eba7b6c3a6dd26a6008801e1"
+    ],
+    [
+        "js/interact/dialog.mjs",
+        "84fcc0aaa8e960a9088f752b2323bf8fa2537c7cdfcf1f65918ea8d751c01769"
+    ],
+    [
+        "js/interact/ui.mjs",
+        "9f21c3090c1f17770c1a0261ba346cf294d61b6b96f24b7193f536595d28fd7b"
     ],
     [
         "js/progress/show.js",
@@ -692,6 +692,10 @@ export default [
         "2362978646a54f189888027b85c997dd87a0cedd27531de325629cb96ddf9da7"
     ],
     [
+        "js/text/dongzhouIntro.js",
+        "28b96dfc10c1751527e9230e914152af8977dae2698f535c899f65b958b9ccbf"
+    ],
+    [
         "js/tool/canvas.js",
         "feeeaf6ac577c6a5a463257fca1c8e08852b642ebec6b5c1c86cb566927729bc"
     ],
@@ -706,10 +710,6 @@ export default [
     [
         "js/tool/ui.js",
         "594b4937ccb2848c56580b6edee60af72ffcc14a0860486537b807aff995d3f4"
-    ],
-    [
-        "js/text/dongzhouIntro.js",
-        "28b96dfc10c1751527e9230e914152af8977dae2698f535c899f65b958b9ccbf"
     ],
     [
         "lingli/daomo/blood.jpg",

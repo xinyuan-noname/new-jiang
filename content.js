@@ -141,16 +141,13 @@ export function XJB_CONTENT(config, pack) {
                     manager.on("fixFileSuc", data => {
                         console.log(data.fixingFileInfo);
                     })
-                    manager.on("fixFileErr", err => {
-                        console.error(err);
+                    manager.on("fileAllOk",()=>{
+                        alert("更新成功！")
                     })
                     manager.on("error", err => {
                         console.error(err);
                     });
-                    manager.on("end", data => {
-                        alert("更新成功！")
-                    })
-                    manager.safeUpdate();
+                    manager.smartUpdate();
                 }; break;
                 case 'downloadSimply': {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
