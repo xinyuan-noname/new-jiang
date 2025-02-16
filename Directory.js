@@ -1,11 +1,11 @@
 export default [
     [
         "content.js",
-        "4b6a8a7179e772a4e8e048c89628848ed0bbe6bb654c279a5e9172a258f1e496"
+        "ba02756531d01990c5342015ffaca8d567290b1284e1f77a4aaf8614647026c5"
     ],
     [
         "Directory.js",
-        "986e22011c0027a529551d80f90d67f91fe2f139ca946fd47212be2653213432"
+        "2c51f9424820f3ea9bc5e1d3fe816dabe6c2ab2cdaa4e0346fe5a2fc8056377d"
     ],
     [
         "extension.js",
@@ -32,12 +32,24 @@ export default [
         "ce2d0ce80d38e2955e05e52563ea37d649372b69edeea91a51125b7b8b857d63"
     ],
     [
+        "@types/Player.ts",
+        "4dd84caf6bff10d5d94094bef082a8cbb5696dbcf0d74b0309c4d033b755a4a7"
+    ],
+    [
         "audio/fire1.mp3",
         "3d674c465a8bdd5381c4c85837d51b9f56fa085b2dcb692dcf1316c875c9580a"
     ],
     [
-        "@types/Player.ts",
-        "4dd84caf6bff10d5d94094bef082a8cbb5696dbcf0d74b0309c4d033b755a4a7"
+        "css/editor.css",
+        "6cae9c9c5be5e3a17e60aeaf2a643d4a8d4a3fa393a459b7becfce10b6b022b3"
+    ],
+    [
+        "css/main.css",
+        "a5b9cabd9e5e1227e847250520b517d5b59651400c8ee4a1b6f2909fa9c4fe80"
+    ],
+    [
+        "css/nature.css",
+        "c95f315bc78d74816590d2c21e7c412bb60f7f5682a42870574c8c5e2a38e425"
     ],
     [
         "image/edit.png",
@@ -90,18 +102,6 @@ export default [
     [
         "image/π.png",
         "2f2b9244fbc5b66bc0b0af05e6c73a6165fc5926b075bd7d96f919672610d8a9"
-    ],
-    [
-        "css/editor.css",
-        "6cae9c9c5be5e3a17e60aeaf2a643d4a8d4a3fa393a459b7becfce10b6b022b3"
-    ],
-    [
-        "css/main.css",
-        "a5b9cabd9e5e1227e847250520b517d5b59651400c8ee4a1b6f2909fa9c4fe80"
-    ],
-    [
-        "css/nature.css",
-        "c95f315bc78d74816590d2c21e7c412bb60f7f5682a42870574c8c5e2a38e425"
     ],
     [
         "hpCard/1.jpg",
@@ -320,34 +320,6 @@ export default [
         "aaeb3c3f1798aac192b34009c708b4d25134fbd2ab27cfc0fe6d489241b87dbc"
     ],
     [
-        "image/card_clearBad/xjb_chucanquhui.png",
-        "c2e7b3778cd9b189a93a44f721ae14d9d43c91d5ce6338f1195941fe10ad20de"
-    ],
-    [
-        "image/card_clearBad/xjb_fuci.png",
-        "c925761e04860bc05ae4621e89a36c3f70e0751c8e0147ede2aa4521b3378c8f"
-    ],
-    [
-        "image/card_clearBad/xjb_lijingtuzhi.png",
-        "4d23c9ea021ea6ba23e95168fb34c55f92f991ab2c8585c2ad5b01a16ef252d0"
-    ],
-    [
-        "image/card_clearBad/xjb_qimendunjia.png",
-        "b705e618369a38b4a13d9c1406f33542c9f61163951b44730b273dde6ffbfa31"
-    ],
-    [
-        "image/card_clearBad/xjb_tianqian.png",
-        "0874505e7eb3d0dfe4f73371e8c38b09330e52a54faf3e24291a0cb9d82c5de4"
-    ],
-    [
-        "image/card_clearBad/xjb_xiugengxuzi.png",
-        "15ffb5c16122cb12e71c6f8812e10d606eeac0353d01393ee9d06ef9652a0395"
-    ],
-    [
-        "image/card_clearBad/xjb_zhuqiang.png",
-        "7cdaa4968b43e48e04458d748c43bcfece1f1cb6662042bf88c303549852c8cc"
-    ],
-    [
         "image/card_callFellow/xjb_baiyin.png",
         "78e1a0e8ce42c2803288c7dd3befe42c3e18e0d72b1796788e3c2d272454b641"
     ],
@@ -410,6 +382,102 @@ export default [
     [
         "image/card_store/xjb_zhihuan.png",
         "239310f93fb18af3ab990f1e29ed5e21f13391571a9beeb2828771d8803707fd"
+    ],
+    [
+        "image/card_clearBad/xjb_chucanquhui.png",
+        "c2e7b3778cd9b189a93a44f721ae14d9d43c91d5ce6338f1195941fe10ad20de"
+    ],
+    [
+        "image/card_clearBad/xjb_fuci.png",
+        "c925761e04860bc05ae4621e89a36c3f70e0751c8e0147ede2aa4521b3378c8f"
+    ],
+    [
+        "image/card_clearBad/xjb_lijingtuzhi.png",
+        "4d23c9ea021ea6ba23e95168fb34c55f92f991ab2c8585c2ad5b01a16ef252d0"
+    ],
+    [
+        "image/card_clearBad/xjb_qimendunjia.png",
+        "b705e618369a38b4a13d9c1406f33542c9f61163951b44730b273dde6ffbfa31"
+    ],
+    [
+        "image/card_clearBad/xjb_tianqian.png",
+        "0874505e7eb3d0dfe4f73371e8c38b09330e52a54faf3e24291a0cb9d82c5de4"
+    ],
+    [
+        "image/card_clearBad/xjb_xiugengxuzi.png",
+        "15ffb5c16122cb12e71c6f8812e10d606eeac0353d01393ee9d06ef9652a0395"
+    ],
+    [
+        "image/card_clearBad/xjb_zhuqiang.png",
+        "7cdaa4968b43e48e04458d748c43bcfece1f1cb6662042bf88c303549852c8cc"
+    ],
+    [
+        "image/character_dongzhou/xjb_guanyiwu.jpg",
+        "edc3214d1e127f7deae124dfbe5ce662cec488bda87e7e5bb8a79fb6e4f5defd"
+    ],
+    [
+        "image/character_dongzhou/xjb_jizi_shou.jpg",
+        "8a005c16509dd9ee8f8520de6e27f7af3702368955d556bb5a97c7105cde4245"
+    ],
+    [
+        "image/character_dongzhou/xjb_qinmugong.jpg",
+        "a21737c68ea0e450ebc8ddb1459b8abb2f04193bfe1f63efbc66c9a31b8d6b76"
+    ],
+    [
+        "image/character_dongzhou/xjb_qinshihuang.jpg",
+        "d7b3da2d16824e83d1274631c7a8eca3200dbbd839392517d1dbcbcd0e5d8380"
+    ],
+    [
+        "image/character_dongzhou/xjb_qixianggong.jpg",
+        "c8236806ac3f3e8fc41adbf85898b7c793146f67f7233942fa41f55b6bca5178"
+    ],
+    [
+        "image/character_dongzhou/xjb_weiyigong.jpg",
+        "a0605d089a941ffcb145eb2a02ebcdcbcce23cf31120c7c1057af3ea361ab0cc"
+    ],
+    [
+        "image/character_dongzhou/xjb_wuyuan.jpg",
+        "6878553030c343e157fef2684a3aed8d3fa6d0c5db4f6b5248bf6500cdf6c1a9"
+    ],
+    [
+        "image/character_dongzhou/xjb_xianzhen.jpg",
+        "772604a2e2608163d7fc548df5902c81e06ce13e6494f0873971f24e3a18a487"
+    ],
+    [
+        "image/character_dongzhou/xjb_xunan.jpg",
+        "dbcadf1a3143f316d49b79f7fc8971bf599764ffa6b5bb7dcf9609207d5ef137"
+    ],
+    [
+        "image/character_soul/xjb_bat.jpg",
+        "3569d6ab47b798a2abfa3b89256ac31eb425b9084c897ffed9d6204edabf12dd"
+    ],
+    [
+        "image/character_soul/xjb_chanter.jpg",
+        "b4045f1fb06cfbf440aa3e76d1c89ccc9e1451de13d87ce4c6348c973816e810"
+    ],
+    [
+        "image/character_soul/xjb_Fuaipaiyi.jpg",
+        "751ed7637f8d508efdb8c7146b5f409eee640fd5e28aae3093437e59413cd3b2"
+    ],
+    [
+        "image/character_soul/xjb_timer.jpg",
+        "5e9e7888d2e761846f18119dc58a5d4060a7b78b4f0f5646e21f6f62f82b2828"
+    ],
+    [
+        "image/position/azureSky.jpg",
+        "6bdc5e1ccf699fedc1204270c5278c550a0a6cd6c9595c2ee9a59eb0f7d3fca7"
+    ],
+    [
+        "image/position/lake.jpg",
+        "0ac1e63ccc8b2c1282f0d823899d401ef8a246f6430c60689f3ac903be7c1777"
+    ],
+    [
+        "image/position/library.jpg",
+        "5a74240f552e6dc664305e1ca63d93ecae20c6c74193ffc8802ad3428d9efeb1"
+    ],
+    [
+        "image/position/redSpace.jpg",
+        "697d3123f2a5ab348737f116e652f8d6b3862e920fc858c0a88b68c8d5b3805d"
     ],
     [
         "image/character_xjb/xin_fellow.jpg",
@@ -492,74 +560,6 @@ export default [
         "15d8d3945021a23cd8956945699da6303f0e4b5328e49d51f961437d5eefccc2"
     ],
     [
-        "image/character_dongzhou/xjb_guanyiwu.jpg",
-        "edc3214d1e127f7deae124dfbe5ce662cec488bda87e7e5bb8a79fb6e4f5defd"
-    ],
-    [
-        "image/character_dongzhou/xjb_jizi_shou.jpg",
-        "8a005c16509dd9ee8f8520de6e27f7af3702368955d556bb5a97c7105cde4245"
-    ],
-    [
-        "image/character_dongzhou/xjb_qinmugong.jpg",
-        "a21737c68ea0e450ebc8ddb1459b8abb2f04193bfe1f63efbc66c9a31b8d6b76"
-    ],
-    [
-        "image/character_dongzhou/xjb_qinshihuang.jpg",
-        "d7b3da2d16824e83d1274631c7a8eca3200dbbd839392517d1dbcbcd0e5d8380"
-    ],
-    [
-        "image/character_dongzhou/xjb_qixianggong.jpg",
-        "c8236806ac3f3e8fc41adbf85898b7c793146f67f7233942fa41f55b6bca5178"
-    ],
-    [
-        "image/character_dongzhou/xjb_weiyigong.jpg",
-        "a0605d089a941ffcb145eb2a02ebcdcbcce23cf31120c7c1057af3ea361ab0cc"
-    ],
-    [
-        "image/character_dongzhou/xjb_wuyuan.jpg",
-        "6878553030c343e157fef2684a3aed8d3fa6d0c5db4f6b5248bf6500cdf6c1a9"
-    ],
-    [
-        "image/character_dongzhou/xjb_xianzhen.jpg",
-        "772604a2e2608163d7fc548df5902c81e06ce13e6494f0873971f24e3a18a487"
-    ],
-    [
-        "image/character_dongzhou/xjb_xunan.jpg",
-        "dbcadf1a3143f316d49b79f7fc8971bf599764ffa6b5bb7dcf9609207d5ef137"
-    ],
-    [
-        "image/character_soul/xjb_bat.jpg",
-        "3569d6ab47b798a2abfa3b89256ac31eb425b9084c897ffed9d6204edabf12dd"
-    ],
-    [
-        "image/character_soul/xjb_chanter.jpg",
-        "b4045f1fb06cfbf440aa3e76d1c89ccc9e1451de13d87ce4c6348c973816e810"
-    ],
-    [
-        "image/character_soul/xjb_Fuaipaiyi.jpg",
-        "751ed7637f8d508efdb8c7146b5f409eee640fd5e28aae3093437e59413cd3b2"
-    ],
-    [
-        "image/character_soul/xjb_timer.jpg",
-        "5e9e7888d2e761846f18119dc58a5d4060a7b78b4f0f5646e21f6f62f82b2828"
-    ],
-    [
-        "image/position/azureSky.jpg",
-        "6bdc5e1ccf699fedc1204270c5278c550a0a6cd6c9595c2ee9a59eb0f7d3fca7"
-    ],
-    [
-        "image/position/lake.jpg",
-        "0ac1e63ccc8b2c1282f0d823899d401ef8a246f6430c60689f3ac903be7c1777"
-    ],
-    [
-        "image/position/library.jpg",
-        "5a74240f552e6dc664305e1ca63d93ecae20c6c74193ffc8802ad3428d9efeb1"
-    ],
-    [
-        "image/position/redSpace.jpg",
-        "697d3123f2a5ab348737f116e652f8d6b3862e920fc858c0a88b68c8d5b3805d"
-    ],
-    [
         "js/card/callFellow.mjs",
         "2c4473504d475d6111adf2fd838e0982f607be3fa270131f5514d075e2d54bc3"
     ],
@@ -574,6 +574,22 @@ export default [
     [
         "js/economy/product.mjs",
         "da81f9244891714da47dca2c4bc5931238f6746a06818faf6cf06a78d8055060"
+    ],
+    [
+        "js/feature/hpCard.js",
+        "26805d928e5e2fde14d42ab09f29102273e2d8e5182bf2501d5da269150d3102"
+    ],
+    [
+        "js/feature/remnantArea.js",
+        "293f3d7e0f28b2f944cc73f396512f99eba6dc40fe9355148761bd966d351d45"
+    ],
+    [
+        "js/feature/skillCard.mjs",
+        "985a8135681b60d2dd792e1de691d8c2db8b5c010e850836eb8069c92a9b721e"
+    ],
+    [
+        "js/game/tetris.js",
+        "34aceafa2c03ffa5672e0e4c22c9ec4c4e724aedfd016f8686078c3b993e382d"
     ],
     [
         "js/editor/arrange.mjs",
@@ -616,36 +632,12 @@ export default [
         "becb2af662353955ae1491c5f9f81cc7f5ddba69421f919f6d27903522af512d"
     ],
     [
-        "js/feature/hpCard.js",
-        "26805d928e5e2fde14d42ab09f29102273e2d8e5182bf2501d5da269150d3102"
-    ],
-    [
-        "js/feature/remnantArea.js",
-        "293f3d7e0f28b2f944cc73f396512f99eba6dc40fe9355148761bd966d351d45"
-    ],
-    [
-        "js/feature/skillCard.mjs",
-        "985a8135681b60d2dd792e1de691d8c2db8b5c010e850836eb8069c92a9b721e"
-    ],
-    [
-        "js/game/tetris.js",
-        "34aceafa2c03ffa5672e0e4c22c9ec4c4e724aedfd016f8686078c3b993e382d"
-    ],
-    [
         "js/import/importEditor.mjs",
         "a93de8458b2bcd2b55a591afa984fff01d0a9b53ec37e00346f701767b140fdf"
     ],
     [
         "js/import/url.js",
         "3b9ab578afb444b61a7cd7d0f04ae9eb7a6adacef6ec8ba13399af721341866c"
-    ],
-    [
-        "js/interact/dialog.mjs",
-        "84fcc0aaa8e960a9088f752b2323bf8fa2537c7cdfcf1f65918ea8d751c01769"
-    ],
-    [
-        "js/interact/ui.mjs",
-        "9f21c3090c1f17770c1a0261ba346cf294d61b6b96f24b7193f536595d28fd7b"
     ],
     [
         "js/lingli/card.mjs",
@@ -658,6 +650,18 @@ export default [
     [
         "js/lingli/gSkill.mjs",
         "2b45b981cd74b0138ea434e057d4f923b61c8b82eba7b6c3a6dd26a6008801e1"
+    ],
+    [
+        "js/progress/show.js",
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    [
+        "js/interact/dialog.mjs",
+        "84fcc0aaa8e960a9088f752b2323bf8fa2537c7cdfcf1f65918ea8d751c01769"
+    ],
+    [
+        "js/interact/ui.mjs",
+        "9f21c3090c1f17770c1a0261ba346cf294d61b6b96f24b7193f536595d28fd7b"
     ],
     [
         "js/skill/bossSkill.mjs",
@@ -686,10 +690,6 @@ export default [
     [
         "js/skill/xjbSkill.mjs",
         "2362978646a54f189888027b85c997dd87a0cedd27531de325629cb96ddf9da7"
-    ],
-    [
-        "js/progress/show.js",
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     ],
     [
         "js/text/dongzhouIntro.js",
@@ -740,18 +740,6 @@ export default [
         "6687fd56eda71f5c1f9f83ddf419704b1fca665e4183c8cf038dd7eec44389ab"
     ],
     [
-        "skin/image/xjb_xuemo/xuemo1.jpg",
-        "1007c9a1e8bce8ab0ddea33187eeb1bcd20f4be93a85bb4fe379f00e987e9c51"
-    ],
-    [
-        "skin/image/xjb_xuemo/xuemo2.jpg",
-        "2646e99f34a576634a2cfc893be143cb8bb23ab6f3358abe00cecf4b03e42b5d"
-    ],
-    [
-        "skin/image/xjb_xuemo/xuemo3.jpg",
-        "dc0968282ab76c1057306ea018f22258db691bc6bcf9c2163e772ba685ea7354"
-    ],
-    [
         "skin/image/xjb_jizi_shou/寿1.png",
         "f576a9294f9f8b0e2f9e03144aacbbd31bc77c006fca08c4ae6a7aa855c1b9b9"
     ],
@@ -766,5 +754,17 @@ export default [
     [
         "skin/image/xjb_jizi_shou/急子2.png",
         "a286cbdbde15cf6fb2d0c07232ad382d88367ba153eb04c9c2cae683f00bf813"
+    ],
+    [
+        "skin/image/xjb_xuemo/xuemo1.jpg",
+        "1007c9a1e8bce8ab0ddea33187eeb1bcd20f4be93a85bb4fe379f00e987e9c51"
+    ],
+    [
+        "skin/image/xjb_xuemo/xuemo2.jpg",
+        "2646e99f34a576634a2cfc893be143cb8bb23ab6f3358abe00cecf4b03e42b5d"
+    ],
+    [
+        "skin/image/xjb_xuemo/xuemo3.jpg",
+        "dc0968282ab76c1057306ea018f22258db691bc6bcf9c2163e772ba685ea7354"
     ]
 ]

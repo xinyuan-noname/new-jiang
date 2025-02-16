@@ -98,8 +98,8 @@ export function XJB_CONTENT(config, pack) {
                 }; break;
                 case "changeBranch": {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
-                    if (game.xjb_updator.mainResName === "main") game.xjb_updator = game.xjb_updator_master;
-                    else game.xjb_updator = game.xjb_updator_PR;
+                    if (game.xjb_updator.mainResName === "main") game.xjb_updator = game.xjb_updator_PR;
+                    else game.xjb_updator = game.xjb_updator_master;
                     alert(`已切换至${game.xjb_updator.mainResName}:${game.xjb_updator.mainURL}`)
                 }; break;
                 case 'putout': {
