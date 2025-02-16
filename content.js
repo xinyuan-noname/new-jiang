@@ -82,7 +82,7 @@ export function XJB_CONTENT(config, pack) {
                 case 'getAPI': {
                     import("https://gitee.com/xinyuanwm/noname-extension-updater/raw/master/updator.js")
                         .then(module => {
-                            const Updator = module.Updator;
+                            const Updator = module.RawUpdator;
                             game.xjb_updator = new Updator("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/master")
                                 .addResUrl("PR", "https://gitee.com/xinyuanwm/new-jiang/raw/PR-branch")
                                 .setData(lib, game, ui, get, ai, _status);
