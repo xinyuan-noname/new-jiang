@@ -83,9 +83,13 @@ export function XJB_CONTENT(config, pack) {
                     import("https://gitee.com/xinyuanwm/noname-extension-updater/raw/master/updator.js")
                         .then(module => {
                             const Updator = module.RawUpdator;
-                            game.xjb_updator = new Updator("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/master")
-                                .addResUrl("PR", "https://gitee.com/xinyuanwm/new-jiang/raw/PR-branch")
+                            game.xjb_updator_master = new Updator("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/master")
+                                .addResUrl("jihulab", "https://jihulab.com/xinyuanwm/new-jiang/raw/master")
                                 .setData(lib, game, ui, get, ai, _status);
+                            game.xjb_updator_PR = new Updator("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/PR-branch")
+                                .addResUrl("jihulab", "https://jihulab.com/xinyuanwm/new-jiang/raw/PR-branch")
+                                .setData(lib, game, ui, get, ai, _status);
+                            game.xjb_updator = game.xjb_updator_master;
                             alert("updator获取成功！");
                         })
                         .catch(err => {
@@ -94,8 +98,8 @@ export function XJB_CONTENT(config, pack) {
                 }; break;
                 case "changeBranch": {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
-                    if (game.xjb_updator.mainResName === "main") game.xjb_updator.changeMainRes("PR");
-                    else game.xjb_updator.changeMainRes("main");
+                    if (game.xjb_updator.mainResName === "main") game.xjb_updator = game.xjb_updator_master;
+                    else game.xjb_updator = game.xjb_updator_PR;
                     alert(`已切换至${game.xjb_updator.mainResName}:${game.xjb_updator.mainURL}`)
                 }; break;
                 case 'putout': {
