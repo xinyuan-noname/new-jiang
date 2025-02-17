@@ -1,11 +1,11 @@
 export default [
     [
         "content.js",
-        "ba02756531d01990c5342015ffaca8d567290b1284e1f77a4aaf8614647026c5"
+        "a4cd5595ec40e384c4568485b1f38b8ccf6d9d28b323dd9b884f97940567978f"
     ],
     [
         "Directory.js",
-        "2c51f9424820f3ea9bc5e1d3fe816dabe6c2ab2cdaa4e0346fe5a2fc8056377d"
+        "135751b1612af0e72907b128005af9e7392ade807074a2694bdcf9ee25952742"
     ],
     [
         "extension.js",
@@ -104,26 +104,6 @@ export default [
         "2f2b9244fbc5b66bc0b0af05e6c73a6165fc5926b075bd7d96f919672610d8a9"
     ],
     [
-        "hpCard/1.jpg",
-        "f2e65a9f26182183692a8e279f7cba419f29dfa85640fc35fc66281ae2710ee1"
-    ],
-    [
-        "hpCard/2.jpg",
-        "d6039d59b7abfc27d6f054d59f850f0ceb8dc6be042b091c86c06abfdf18f7a5"
-    ],
-    [
-        "hpCard/3.jpg",
-        "685ec2c6c9eb7b5186a0bbd789cf0031530e2f28c256898c14de10c35c3965b6"
-    ],
-    [
-        "hpCard/4.jpg",
-        "5a097934960e767bdbafb44d1143b97e02ec6102aa2dac21ba7d3356baed9c24"
-    ],
-    [
-        "hpCard/5.jpg",
-        "8e7288fa9d365307ca7af8b0a2d1f63bde54cc3f3f744009da599e659a771727"
-    ],
-    [
         "js/card.js",
         "126635ddc5a6b62d54fd0017cbdd05e9eed4b212728839ca220d198cf6627255"
     ],
@@ -174,6 +154,26 @@ export default [
     [
         "js/title.js",
         "840fa9622789f66fb766ca1bc68fc3ef80695276d61f14a021863a0c66b53c52"
+    ],
+    [
+        "hpCard/1.jpg",
+        "f2e65a9f26182183692a8e279f7cba419f29dfa85640fc35fc66281ae2710ee1"
+    ],
+    [
+        "hpCard/2.jpg",
+        "d6039d59b7abfc27d6f054d59f850f0ceb8dc6be042b091c86c06abfdf18f7a5"
+    ],
+    [
+        "hpCard/3.jpg",
+        "685ec2c6c9eb7b5186a0bbd789cf0031530e2f28c256898c14de10c35c3965b6"
+    ],
+    [
+        "hpCard/4.jpg",
+        "5a097934960e767bdbafb44d1143b97e02ec6102aa2dac21ba7d3356baed9c24"
+    ],
+    [
+        "hpCard/5.jpg",
+        "8e7288fa9d365307ca7af8b0a2d1f63bde54cc3f3f744009da599e659a771727"
     ],
     [
         "json/1.json",
@@ -348,42 +348,6 @@ export default [
         "1ab48c5d556902561c5d45fd9ea8f864e70d031023935bb3ce9d40a4149c50e7"
     ],
     [
-        "image/card_store/check.png",
-        "b862ac2c6eea64446c4cf74194d28dc57c0fd24c0ee46a343015a077bd8237d6"
-    ],
-    [
-        "image/card_store/skillCard.png",
-        "159f618e4c1c4ce800c922a622f5c7ab887368efb405c37154ac899647342329"
-    ],
-    [
-        "image/card_store/xjb_Infinity.png",
-        "423a7e7084543e4680e5f3b387dc6f6fca00d45e43f80bf35b79ae99b38e00bb"
-    ],
-    [
-        "image/card_store/xjb_jingu.png",
-        "51be7537f4015c3974903cb42a756df18bf08df45851d37b4f466dfed840e936"
-    ],
-    [
-        "image/card_store/xjb_seizeHpCard.png",
-        "77da9d8861ccaa92ea76a018962c19182c452cc56cb75827ae9790bb21a4bedc"
-    ],
-    [
-        "image/card_store/xjb_shenshapo.png",
-        "912332100c01294e1b8e2fd6ae2908d3f3cc368d1fbcf06ddd0b8a21f2aca2de"
-    ],
-    [
-        "image/card_store/xjb_tianming_huobi1.png",
-        "7c4df8cdc9c3edf26a780c02fffb653a0a7feff8a61a7c71be9e1e2c064a7a72"
-    ],
-    [
-        "image/card_store/xjb_tianming_huobi2.png",
-        "dc065d59fbc05847ef68bc21d0936fd1cc69b488a0480c9998ae3ede5ba33f8e"
-    ],
-    [
-        "image/card_store/xjb_zhihuan.png",
-        "239310f93fb18af3ab990f1e29ed5e21f13391571a9beeb2828771d8803707fd"
-    ],
-    [
         "image/card_clearBad/xjb_chucanquhui.png",
         "c2e7b3778cd9b189a93a44f721ae14d9d43c91d5ce6338f1195941fe10ad20de"
     ],
@@ -464,20 +428,40 @@ export default [
         "5e9e7888d2e761846f18119dc58a5d4060a7b78b4f0f5646e21f6f62f82b2828"
     ],
     [
-        "image/position/azureSky.jpg",
-        "6bdc5e1ccf699fedc1204270c5278c550a0a6cd6c9595c2ee9a59eb0f7d3fca7"
+        "image/card_store/check.png",
+        "b862ac2c6eea64446c4cf74194d28dc57c0fd24c0ee46a343015a077bd8237d6"
     ],
     [
-        "image/position/lake.jpg",
-        "0ac1e63ccc8b2c1282f0d823899d401ef8a246f6430c60689f3ac903be7c1777"
+        "image/card_store/skillCard.png",
+        "159f618e4c1c4ce800c922a622f5c7ab887368efb405c37154ac899647342329"
     ],
     [
-        "image/position/library.jpg",
-        "5a74240f552e6dc664305e1ca63d93ecae20c6c74193ffc8802ad3428d9efeb1"
+        "image/card_store/xjb_Infinity.png",
+        "423a7e7084543e4680e5f3b387dc6f6fca00d45e43f80bf35b79ae99b38e00bb"
     ],
     [
-        "image/position/redSpace.jpg",
-        "697d3123f2a5ab348737f116e652f8d6b3862e920fc858c0a88b68c8d5b3805d"
+        "image/card_store/xjb_jingu.png",
+        "51be7537f4015c3974903cb42a756df18bf08df45851d37b4f466dfed840e936"
+    ],
+    [
+        "image/card_store/xjb_seizeHpCard.png",
+        "77da9d8861ccaa92ea76a018962c19182c452cc56cb75827ae9790bb21a4bedc"
+    ],
+    [
+        "image/card_store/xjb_shenshapo.png",
+        "912332100c01294e1b8e2fd6ae2908d3f3cc368d1fbcf06ddd0b8a21f2aca2de"
+    ],
+    [
+        "image/card_store/xjb_tianming_huobi1.png",
+        "7c4df8cdc9c3edf26a780c02fffb653a0a7feff8a61a7c71be9e1e2c064a7a72"
+    ],
+    [
+        "image/card_store/xjb_tianming_huobi2.png",
+        "dc065d59fbc05847ef68bc21d0936fd1cc69b488a0480c9998ae3ede5ba33f8e"
+    ],
+    [
+        "image/card_store/xjb_zhihuan.png",
+        "239310f93fb18af3ab990f1e29ed5e21f13391571a9beeb2828771d8803707fd"
     ],
     [
         "image/character_xjb/xin_fellow.jpg",
@@ -560,6 +544,22 @@ export default [
         "15d8d3945021a23cd8956945699da6303f0e4b5328e49d51f961437d5eefccc2"
     ],
     [
+        "image/position/azureSky.jpg",
+        "6bdc5e1ccf699fedc1204270c5278c550a0a6cd6c9595c2ee9a59eb0f7d3fca7"
+    ],
+    [
+        "image/position/lake.jpg",
+        "0ac1e63ccc8b2c1282f0d823899d401ef8a246f6430c60689f3ac903be7c1777"
+    ],
+    [
+        "image/position/library.jpg",
+        "5a74240f552e6dc664305e1ca63d93ecae20c6c74193ffc8802ad3428d9efeb1"
+    ],
+    [
+        "image/position/redSpace.jpg",
+        "697d3123f2a5ab348737f116e652f8d6b3862e920fc858c0a88b68c8d5b3805d"
+    ],
+    [
         "js/card/callFellow.mjs",
         "2c4473504d475d6111adf2fd838e0982f607be3fa270131f5514d075e2d54bc3"
     ],
@@ -574,22 +574,6 @@ export default [
     [
         "js/economy/product.mjs",
         "da81f9244891714da47dca2c4bc5931238f6746a06818faf6cf06a78d8055060"
-    ],
-    [
-        "js/feature/hpCard.js",
-        "26805d928e5e2fde14d42ab09f29102273e2d8e5182bf2501d5da269150d3102"
-    ],
-    [
-        "js/feature/remnantArea.js",
-        "293f3d7e0f28b2f944cc73f396512f99eba6dc40fe9355148761bd966d351d45"
-    ],
-    [
-        "js/feature/skillCard.mjs",
-        "985a8135681b60d2dd792e1de691d8c2db8b5c010e850836eb8069c92a9b721e"
-    ],
-    [
-        "js/game/tetris.js",
-        "34aceafa2c03ffa5672e0e4c22c9ec4c4e724aedfd016f8686078c3b993e382d"
     ],
     [
         "js/editor/arrange.mjs",
@@ -632,12 +616,36 @@ export default [
         "becb2af662353955ae1491c5f9f81cc7f5ddba69421f919f6d27903522af512d"
     ],
     [
+        "js/game/tetris.js",
+        "34aceafa2c03ffa5672e0e4c22c9ec4c4e724aedfd016f8686078c3b993e382d"
+    ],
+    [
+        "js/feature/hpCard.js",
+        "26805d928e5e2fde14d42ab09f29102273e2d8e5182bf2501d5da269150d3102"
+    ],
+    [
+        "js/feature/remnantArea.js",
+        "293f3d7e0f28b2f944cc73f396512f99eba6dc40fe9355148761bd966d351d45"
+    ],
+    [
+        "js/feature/skillCard.mjs",
+        "985a8135681b60d2dd792e1de691d8c2db8b5c010e850836eb8069c92a9b721e"
+    ],
+    [
         "js/import/importEditor.mjs",
         "a93de8458b2bcd2b55a591afa984fff01d0a9b53ec37e00346f701767b140fdf"
     ],
     [
         "js/import/url.js",
         "3b9ab578afb444b61a7cd7d0f04ae9eb7a6adacef6ec8ba13399af721341866c"
+    ],
+    [
+        "js/interact/dialog.mjs",
+        "84fcc0aaa8e960a9088f752b2323bf8fa2537c7cdfcf1f65918ea8d751c01769"
+    ],
+    [
+        "js/interact/ui.mjs",
+        "9f21c3090c1f17770c1a0261ba346cf294d61b6b96f24b7193f536595d28fd7b"
     ],
     [
         "js/lingli/card.mjs",
@@ -654,14 +662,6 @@ export default [
     [
         "js/progress/show.js",
         "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    ],
-    [
-        "js/interact/dialog.mjs",
-        "84fcc0aaa8e960a9088f752b2323bf8fa2537c7cdfcf1f65918ea8d751c01769"
-    ],
-    [
-        "js/interact/ui.mjs",
-        "9f21c3090c1f17770c1a0261ba346cf294d61b6b96f24b7193f536595d28fd7b"
     ],
     [
         "js/skill/bossSkill.mjs",

@@ -84,10 +84,8 @@ export function XJB_CONTENT(config, pack) {
                         .then(module => {
                             const Updator = module.RawUpdator;
                             game.xjb_updator_master = new Updator("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/master")
-                                .addResUrl("jihulab", "https://jihulab.com/xinyuanwm/new-jiang/raw/master")
                                 .setData(lib, game, ui, get, ai, _status);
                             game.xjb_updator_PR = new Updator("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/PR-branch")
-                                .addResUrl("jihulab", "https://jihulab.com/xinyuanwm/new-jiang/raw/PR-branch")
                                 .setData(lib, game, ui, get, ai, _status);
                             game.xjb_updator = game.xjb_updator_master;
                             alert("updator获取成功！");
@@ -151,7 +149,7 @@ export function XJB_CONTENT(config, pack) {
                     manager.on("error", err => {
                         console.error(err);
                     });
-                    manager.smartUpdate();
+                    manager.run();
                 }; break;
                 case 'downloadSimply': {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
