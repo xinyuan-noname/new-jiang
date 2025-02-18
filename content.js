@@ -146,6 +146,9 @@ export function XJB_CONTENT(config, pack) {
                     manager.on("fileAllOk", () => {
                         alert("更新成功！")
                     })
+                    manager.on("fileException", (files) => {
+                        alert("存在更新失败的文件" + files);
+                    })
                     manager.on("error", err => {
                         console.error(err);
                     });
