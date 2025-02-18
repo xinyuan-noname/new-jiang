@@ -149,7 +149,6 @@ export function XJB_CONTENT(config, pack) {
                     manager.on("error", err => {
                         console.error(err);
                     });
-                    manager.run();
                 }; break;
                 case 'downloadSimply': {
                     if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
