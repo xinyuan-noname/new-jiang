@@ -80,7 +80,7 @@ export function XJB_CONTENT(config, pack) {
         onclick: async (layout) => {
             switch (layout) {
                 case 'getAPI': {
-                    import("https://gitee.com/xinyuanwm/noname-extension-updater/raw/master/updater.js")
+                    import("./module/noname-extension-updater/updater.js")
                         .then(module => {
                             const Updater = module.RawUpdater;
                             game.xjb_updater_master = new Updater("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/master")
