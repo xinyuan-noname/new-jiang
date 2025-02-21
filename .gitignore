@@ -6,6 +6,7 @@ skin/image/xjb_newCharacter/*
 #忽略的文件后缀
 *.tmp
 xjb_xyAPI.js
+module
 
 #不忽略的文件
 !/log/empty.text
