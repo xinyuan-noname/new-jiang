@@ -1822,8 +1822,6 @@ game.xjb_skillEditor = function (readCache = true) {
 		back.ele.trigger.init();
 		if (triggerFree.value.length === 0) return;
 		triggerFree.inherit();
-		// this.value.includes('于回合外失去') && back.skill.uniqueTrigger.push("outPhase:lose");
-		// this.value.includes('于回合内失去') && back.skill.uniqueTrigger.push("inPhase:lose");
 		let list = disposeTri(ImplicitTextTool.trigger(this.value))
 		const [trigger, triggerFilter, triLength, getIndexMap, triLoseReason] = EditorDataAnalyze.trigger(list);
 		const allTrigger = [...trigger.player, ...trigger.target, ...trigger.global, ...trigger.source];

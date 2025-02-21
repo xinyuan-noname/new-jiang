@@ -80,30 +80,30 @@ export function XJB_CONTENT(config, pack) {
         onclick: async (layout) => {
             switch (layout) {
                 case 'getAPI': {
-                    import("https://gitee.com/xinyuanwm/noname-extension-updater/raw/master/updator.js")
+                    import("https://gitee.com/xinyuanwm/noname-extension-updater/raw/master/updater.js")
                         .then(module => {
-                            const Updator = module.RawUpdator;
-                            game.xjb_updator_master = new Updator("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/master")
+                            const Updater = module.RawUpdater;
+                            game.xjb_updater_master = new Updater("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/master")
                                 .setData(lib, game, ui, get, ai, _status);
-                            game.xjb_updator_PR = new Updator("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/PR-branch")
+                            game.xjb_updater_PR = new Updater("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/PR-branch")
                                 .setData(lib, game, ui, get, ai, _status);
-                            game.xjb_updator = game.xjb_updator_master;
-                            alert("updator获取成功！");
+                            game.xjb_updater = game.xjb_updater_master;
+                            alert("updater获取成功！");
                         })
                         .catch(err => {
-                            alert(`updator获取失败\n${err}`);
+                            alert(`updater获取失败\n${err}`);
                         })
                 }; break;
                 case "changeBranch": {
-                    if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
-                    if (game.xjb_updator.mainResName === "main") game.xjb_updator = game.xjb_updator_PR;
-                    else game.xjb_updator = game.xjb_updator_master;
-                    alert(`已切换至${game.xjb_updator.mainResName}:${game.xjb_updator.mainURL}`)
+                    if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
+                    if (game.xjb_updater.mainResName === "main") game.xjb_updater = game.xjb_updater_PR;
+                    else game.xjb_updater = game.xjb_updater_master;
+                    alert(`已切换至${game.xjb_updater.mainResName}:${game.xjb_updater.mainURL}`)
                 }; break;
                 case 'putout': {
-                    if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
-                    const myUpdator = game.xjb_updator;
-                    const fileList = await myUpdator.readDirDefault(
+                    if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
+                    const myUpdater = game.xjb_updater;
+                    const fileList = await myUpdater.readDirDefault(
                         [
                             "Thumbs.db",
                         ],
@@ -112,15 +112,15 @@ export function XJB_CONTENT(config, pack) {
                             "log", "skin/image/xjb_newCharacter"
                         ]
                     );
-                    const bufferArray = await myUpdator.cache(fileList);
-                    const hashMap = await myUpdator.getHashMap(bufferArray, true);
-                    await myUpdator.genDir(Array.from(hashMap));
+                    const bufferArray = await myUpdater.cache(fileList);
+                    const hashMap = await myUpdater.getHashMap(bufferArray, true);
+                    await myUpdater.genDir(Array.from(hashMap));
                     alert("目录生成成功");
                 }; break;
                 case 'download': {
-                    if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
-                    const myUpdator = game.xjb_updator;
-                    const manager = myUpdator.updateLine({
+                    if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
+                    const myUpdater = game.xjb_updater;
+                    const manager = myUpdater.updateLine({
                         rmCR: true,
                         timeoutMinutes: 1,
                         reCalHash: true
@@ -154,7 +154,7 @@ export function XJB_CONTENT(config, pack) {
                     });
                 }; break;
                 case 'downloadSimply': {
-                    if (!game.xjb_updator) return alert("updator未引入,请点击获取工具引入!");
+                    if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
                 }; break;
             }
         }
