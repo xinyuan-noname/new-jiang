@@ -48,9 +48,9 @@ export function XJB_CONTENT(config, pack) {
         }
         loadFinal()
     })
-    lib.extensionMenu.extension_新将包.delete.name = '<img src="' + lib.xjb_src + 'image/trash.png" width="16">' + '删除'
+    lib.extensionMenu.extension_新将包.delete.name = '<img src="./extension/新将包/image/icon/trash.png" width="16"></img>' + '删除'
     lib.extensionMenu.extension_新将包['Eplanation'] = {
-        name: '<img src="' + lib.xjb_src + 'image/instruction.png" width="16"></img>概念说明',
+        name: '<img src="./extension/新将包/image/icon/instruction.png" width="16"></img>概念说明',
         init: '',
         item: {
             mingxie: '鸣谢',
@@ -126,7 +126,7 @@ export function XJB_CONTENT(config, pack) {
                         ignoreDir: ["log", "skin/image/xjb_newCharacter"]
                     });
                     manager.on("end", () => {
-                    alert("目录生成成功");
+                        alert("目录生成成功");
                     });
                     manager.on("error", (err) => {
                         console.error(err)
@@ -222,7 +222,7 @@ export function XJB_CONTENT(config, pack) {
     }
     if (!lib.config.xjb_hun) {
         lib.extensionMenu.extension_新将包.open = {
-            name: "<font color='blue'>点我开启魂币系统",
+            name: "<font color='blue'>点我开启魂币系统</font>",
             clear: true,
             onclick: function () {
                 if (!lib.config.xjb_hunbi) {
@@ -238,18 +238,18 @@ export function XJB_CONTENT(config, pack) {
     }
     if (lib.config.xjb_hun) {
         lib.extensionMenu.extension_新将包.hunbi = {
-            name: '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="20" >' + '魂币数据',
+            name: '<img src="./extension/新将包/image/xjb_hunbi.png" height="20" >' + '魂币数据',
             clear: true,
             onclick: function () {
                 function hun(num) {
                     var hunbi = ""
                     if (num > 0 && num < 5) {
                         for (var i = 0; i < num; i++) {
-                            hunbi = hunbi + '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="25" >'
+                            hunbi = hunbi + '<img src="./extension/新将包/image/xjb_hunbi.png" height="25" >'
                         }
                     }
                     else {
-                        hunbi = '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="25" >×' + num
+                        hunbi = '<img src="./extension/新将包/image/xjb_hunbi.png" height="25" >×' + num
                     }
                     return hunbi
                 }
@@ -264,7 +264,7 @@ export function XJB_CONTENT(config, pack) {
             }
         }
         lib.extensionMenu.extension_新将包.hunbi_tozero = {
-            name: '<img src="' + lib.xjb_src + 'image/zeroize.png" height="16">清零魂币',
+            name: '<img src="./extension/新将包/image/icon/zero.png" height="16">清零魂币',
             clear: true,
             onclick: function () {
                 if (lib.config.xjb_hunbi === 0) return game.xjb_create.alert('你的魂币无需清零');
@@ -290,21 +290,21 @@ export function XJB_CONTENT(config, pack) {
             }
         }
         lib.extensionMenu.extension_新将包.LZ_project = {
-            name: '<img src="' + lib.xjb_src + 'image/π.png" height="16">刘徽-祖冲之项目',
+            name: '<img src="./extension/新将包/image/icon/pi.png" height="16">刘徽-祖冲之项目',
             clear: true,
             onclick: function () {
                 game.xjb_LZ_project()
             }
         }
         lib.extensionMenu.extension_新将包['information'] = {
-            name: '<img src="' + lib.xjb_src + 'image/instruction.png" width="16">' + '<font color="yellow">角色进度查询!</font>',
+            name: '<img src="./extension/新将包/image/icon/instruction.png" width="16">' + '<font color="yellow">角色进度查询!</font>',
             clear: true,
             onclick: function () {
                 game.xjb_Intro2()
             }
         }
         lib.extensionMenu.extension_新将包['choujiang'] = {
-            name: '<img src="' + lib.xjb_src + 'image/Lucky.png" width="16">' + '<font color="yellow">超值抽奖！</font>',
+            name: '<img src="./extension/新将包/image/Lucky.png" width="16">' + '<font color="yellow">超值抽奖！</font>',
             init: '1',
             item: {
                 1: '一倍',
@@ -423,7 +423,7 @@ export function XJB_CONTENT(config, pack) {
             }
         }
         lib.extensionMenu.extension_新将包.level = {
-            name: '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="16"><font color=yellow>技能附魔！',
+            name: '<img src="./extension/新将包/image/xjb_hunbi.png" height="16"><font color=yellow>技能附魔！',
             init: "openType",
             item: {
                 openType: "开启标签",
@@ -569,7 +569,7 @@ export function XJB_CONTENT(config, pack) {
         }
         if (lib.config.xjb_yangcheng == 1) {
             lib.extensionMenu.extension_新将包.newCharacter = {
-                name: '<img src="' + lib.xjb_src + 'xin_newCharacter.jpg" height="16">' + '<font color="yellow">武将养成</font>',
+                name: '<img src="./extension/新将包/xin_newCharacter.jpg" height="16">' + '<font color="yellow">武将养成</font>',
                 init: 'name2',
                 item: {
                     name2: '姓名更改',
@@ -686,7 +686,7 @@ export function XJB_CONTENT(config, pack) {
         }
         if (!lib.config.xjb_bianshen) {
             lib.extensionMenu.extension_新将包.bianshen_hun_open = {
-                name: '<img src="' + lib.xjb_src + 'image/xjb_locked.png" width="16">' + '点我解锁变身功能',
+                name: '<img src="./extension/新将包/image/icon/locked.png" width="16">' + '点我解锁变身功能',
                 clear: true,
                 onclick: function () {
                     const goods = game.xjb_goods.permission_callFellow
@@ -695,7 +695,7 @@ export function XJB_CONTENT(config, pack) {
                             game.xjb_costHunbi(goods.price, '开启魂将功能权限')
                             game.saveConfig(goods.mapToConfig, 1);
                             game.xjb_create.alert('已解锁变身功能，重启即生效');
-                            this.innerHTML = '<img src="' + lib.xjb_src + 'image/xjb_open.png" width="16">' + '你已解锁变身功能'
+                            this.innerHTML = '<img src="./extension/新将包/image/icon/unlocked.png" width="16">' + '你已解锁变身功能'
                         })
                     }
                     else game.xjb_create.alert('需要' + goods.price + '个魂币，你的魂币不足！');
@@ -704,7 +704,7 @@ export function XJB_CONTENT(config, pack) {
         }
         if (!lib.config.xjb_yangcheng) {
             lib.extensionMenu.extension_新将包.yangcheng_hun_open = {
-                name: '<img src="' + lib.xjb_src + 'image/xjb_locked.png" width="16">' + '点我解锁养成功能',
+                name: '<img src="./extension/新将包/image/icon/locked.png" width="16">' + '点我解锁养成功能',
                 clear: true,
                 onclick: function () {
                     const goods = game.xjb_goods.permission_raise
@@ -713,7 +713,7 @@ export function XJB_CONTENT(config, pack) {
                             game.xjb_costHunbi(goods.price, '开启养成功能权限')
                             game.saveConfig(goods.mapToConfig, 1);
                             game.xjb_create.alert('已解锁养成功能，重启即生效');
-                            this.innerHTML = '<img src="' + lib.xjb_src + 'image/xjb_open.png" width="16">' + '你已解锁变身功能'
+                            this.innerHTML = '<img src="./extension/新将包/image/icon/unlocked.png" width="16">' + '你已解锁变身功能'
                         })
                     }
                     else game.xjb_create.alert('需要' + goods.price + '个魂币，你的魂币不足！');
@@ -722,7 +722,7 @@ export function XJB_CONTENT(config, pack) {
         }
         if (!lib.config.xjb_chupingjisha) {
             lib.extensionMenu.extension_新将包.xjb_chupingjisha_hun_open = {
-                name: '<img src="' + lib.xjb_src + 'image/xjb_locked.png" width="16">' + '点我解锁触屏即杀功能',
+                name: '<img src="./extension/新将包/image/icon/locked.png" width="16">' + '点我解锁触屏即杀功能',
                 clear: true,
                 onclick: function () {
                     const goods = game.xjb_goods.permission_cpjs
@@ -730,7 +730,7 @@ export function XJB_CONTENT(config, pack) {
                         game.xjb_create.confirm('你已有' + lib.config.xjb_hunbi + '个魂币，解锁触屏即杀功能需要' + goods.price + '个魂币，确定要解锁吗？', () => {
                             game.xjb_costHunbi(goods.price, '开启触屏即杀功能权限')
                             game.saveConfig(goods.mapToConfig, 1);
-                            this.innerHTML = '<img src="' + lib.xjb_src + 'image/xjb_open.png" width="16">' + '你已解锁触屏即杀'
+                            this.innerHTML = '<img src="./extension/新将包/image/icon/unlocked.png" width="16">' + '你已解锁触屏即杀'
                         })
                     }
                     else game.xjb_create.alert('需要' + goods.price + '个魂币，你的魂币不足！');
@@ -738,7 +738,7 @@ export function XJB_CONTENT(config, pack) {
             }
         }
         lib.extensionMenu.extension_新将包.hun_close = {
-            name: '<img src="' + lib.xjb_src + 'image/xjb_close.png" width="16">' + '<font color="red">点我关闭魂币系统</font>',
+            name: '<img src="./extension/新将包/image/icon/close.png" width="16">' + '<font color="red">点我关闭魂币系统</font>',
             clear: true,
             onclick: function () {
                 game.saveConfig('xjb_hun', false);
@@ -776,17 +776,24 @@ export function XJB_CONTENT(config, pack) {
         clear: true,
         onclick: function () {
             new Promise(res => {
-                game.xjb_create.prompt("请输入导出文件的路径及名称", lib.config.xjb_fileURL + "json/", function () {
+                game.xjb_create.prompt("请输入导出文件的名称", "", function () {
                     res(this.result)
                 })
-            }).then(data => {
-                let dataxjb = {};
+            }).then(fileName => {
+                const dataxjb = {};
                 lib.xjb_dataGet().forEach(i => { dataxjb[i] = lib.config[i] })
-                let BLOB = new Blob([JSON.stringify(dataxjb, null, 4)], {
+                const file = new File([JSON.stringify(dataxjb, null, 4)], {
                     type: "application/javascript;charset=utf-8"
                 });
-                let fileWay = data + '.json';
-                game.xjb_transferFile(BLOB, fileWay);
+                const dialog = game.xjb_create.alert("正在导出中...");
+
+                game.promises.writeFile(file, "extension/新将包/json/", fileName + ".json")
+                    .then(() => {
+                        dialog.innerHTML = "导出成功！"
+                    })
+                    .catch((err) => {
+                        dialog.innerHTML = "导出失败！<br>" + err;
+                    })
             })
 
         }
@@ -796,7 +803,7 @@ export function XJB_CONTENT(config, pack) {
         clear: true,
         onclick: function () {
             game.xjb_create.file("选择你要读取的json文件", "json", function () {
-                lib.init.json(this.file.result, function (data) {
+                lib.init.json(this.file.url, function (data) {
                     let list = Object.keys(data);
                     list.forEach(i => {
                         lib.config[i] = data[i];

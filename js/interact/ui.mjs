@@ -5,7 +5,7 @@ import {
     get,
     _status
 } from "../../../../noname.js"
-import { EXTENSION_GAME_URL } from "../import/url.js";
+import { EXTENSION_PATH } from "../import/url.js";
 import { element } from "../tool/ui.js";
 const DEFAULT_EVENT = lib.config.touchscreen ? 'touchend' : 'click';
 ui.xjb_domTool = element;
@@ -138,7 +138,7 @@ ui.create.xjb_book = (father, text) => {
     }
     let bookBack = element("div")
         .style({
-            backgroundImage: `url(${EXTENSION_GAME_URL}/lingli/book.jpg)`,
+            backgroundImage: `url(${EXTENSION_PATH}/lingli/book.jpg)`,
             "background-size": "100% 100%",
             "z-index": "10",
             padding: "8%",
@@ -379,7 +379,7 @@ ui.create.xjb_back = function (str) {
     //创建close
     const close = element('img')
         .father(back)
-        .src(EXTENSION_GAME_URL + 'image/xjb_close.png')
+        .src(EXTENSION_PATH + 'image/icon/close.png')
         .addClass('close')
         .addClass('xjb-interact-close')
         .listen(lib.config.touchscreen ? 'touchend' : 'click', closeIt)

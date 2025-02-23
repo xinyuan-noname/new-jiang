@@ -1,5 +1,4 @@
 import { _status, lib, game, ui, get, ai } from "../../../noname.js"
-lib.xjb_raiseCharSkinFolder = `${lib.xjb_src}/skin/image/xjb_newCharacter/`
 lib.xjb_hunList.skill = {
     first: ["xjb_juanqu", "xjb_lunhui", "xjb_hanhua", "xjb_bingdi"],
     second: ["xjb_leijue", "xjb_bingjue", "xjb_jinghua",
@@ -85,7 +84,7 @@ game.xjb_removeSkills = function (skillList) {
 game.xjb_changePreSkinDia = async () => {
     const { result, bool } = await game.xjb_create.promise.chooseImage(
         "",
-        lib.xjb_raiseCharSkinFolder,
+        `./extension/新将包/skin/image/xjb_newCharacter/`,
         lib.config.xjb_newcharacter.skin,
         function () {
             game.removeFile('extension/新将包/skin/image/xjb_newCharacter/' + this.name)
@@ -112,9 +111,20 @@ game.xjb_importSkinDia = async () => {
         const { bool } = await game.xjb_create.promise.confirm("你已有该同名的皮肤，是否覆盖？");
         if (!bool) return game.xjb_importSkinDia()
     }
-    await game.xjb_create.promise.download(fileData, lib.config.xjb_fileURL + "skin/image/xjb_newCharacter/" + result);
-    lib.config.xjb_newcharacter.skin.add(result);
-    game.xjb_saveRaise();
+    const dialog = game.xjb_create.alert("下载中...");
+    ui.xjb_hideElement(dialog.buttons[0]);
+    game.promises.writeFile(fileData, "extension/新将包/skin/image/xjb_newCharacter", result)
+        .then(() => {
+            dialog.innerHTML = "导入成功！"
+            lib.config.xjb_newcharacter.skin.add(result);
+            game.xjb_saveRaise();
+        })
+        .catch(err => {
+            dialog.innerHTML = ["导入失败...", err].join("<br>");
+        })
+        .finally(() => {
+            ui.xjb_showElement(dialog.buttons[0]);
+        })
 }
 game.xjb_addHunSkillsDia = function () {
     const map = {}

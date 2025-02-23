@@ -126,10 +126,6 @@ class Play {
         }
     }
 }
-// let LH = lib.xjb_src + lib.config.xjb_newcharacter.selectedSkin.slice(8)
-// let LHName = lib.config.xjb_newcharacter.name2 || ''
-// let azureSky = lib.xjb_src + "position/azureSky.jpg"
-// let lake = lib.xjb_src + "position/lake.jpg"
 lib.skill.xjb_theLevel = {
     theLevel: {
         //普通读档

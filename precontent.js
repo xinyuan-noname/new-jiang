@@ -290,25 +290,7 @@ function provideFunction() {
 }
 function way() {
 	//新将包路径来源     
-	if (document.body.outerHTML) {
-		let srcs = Array.from(document.scripts).map(function (a) {
-			if (a.outerHTML.indexOf('extension') > -1) return a.src;
-		}).filter(a => a)
-		let src = srcs[0];
-		if (srcs) {
-			src = src.replace("/extension.js", "");
-			let i = src.lastIndexOf("/");
-			src = src.slice(0, i);
-			src += "/新将包/";
-			lib.xjb_src = src;
-		}
-	}
-	if (!lib.config.xjb_fileURL) {
-		const initWay = localStorage.getItem("noname_inited");
-		lib.config.xjb_fileURL = `${initWay}extension/新将包/`;
-		if (initWay === "nodejs") lib.config.xjb_fileURL = lib.xjb_src;
-	}
-	lib.xjb_fileURL = lib.config.xjb_fileURL;
+	lib.xjb_src = location.origin + "extension/新将包/"
 }
 function importFile() {
 	let count = 0;
@@ -325,15 +307,15 @@ function importFile() {
 		"skills"
 	];
 	function loadFiles(fileName) {
-		let script = lib.init.js(lib.xjb_src + "js", fileName, () => {
+		let script = lib.init.js("./extension/新将包/js", fileName, () => {
 			count++;
 		}, (err) => { game.print(err) });
 		script.type = 'module';
 	}
 	new Promise(res => {
 		//引入css文件    
-		lib.init.css(lib.xjb_src + "css", "main");
-		lib.init.css(lib.xjb_src + "css", "nature");
+		lib.init.css("./extension/新将包/css", "main");
+		lib.init.css("./extension/新将包/css", "nature");
 		//引入js文件
 		files.forEach(file => {
 			loadFiles(file)
@@ -346,7 +328,7 @@ function importFile() {
 		}
 		setInterval(interval, 100)
 	}).then(() => {
-		const script = lib.init.js(lib.xjb_src + "js", "final", () => {
+		const script = lib.init.js("./extension/新将包/js", "final", () => {
 			window.XJB_LOAD_FINAL()
 		})
 		script.type = "module";

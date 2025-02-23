@@ -516,7 +516,7 @@ game.import("character", () => {
         translate: {
             xjb_soul: "soul",
 
-            'xjb_hun': '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="22">',
+            'xjb_hun': '<img src="./extension/新将包/image/xjb_hunbi.png" height="22">',
 
             xjb_Fuaipaiyi: "芙艾派依",
             xjb_xuemo: "布劳德",

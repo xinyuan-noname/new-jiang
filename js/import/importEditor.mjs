@@ -1,5 +1,5 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
-import { EXTENSION_GAME_URL } from "./url.js";
+import {EXTENSION_PATH } from "./url.js";
 export function importEditor() {
     if (ui.system.querySelector("xjb-system-ED")) return;
     if (ui.xjb_system_ED) return;
@@ -12,5 +12,5 @@ export function importEditor() {
     }).catch(err => {
         console.error(err, "技能编辑器载入失败");
     });
-    lib.init.css(`${EXTENSION_GAME_URL}/css`, "editor");
+    lib.init.css(`${EXTENSION_PATH}/css`, "editor");
 }

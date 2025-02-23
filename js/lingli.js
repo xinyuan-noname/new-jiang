@@ -10,11 +10,9 @@ lib.skill.xjb_11 = {
         lib.skill.xjb_P_blood = {
             init: function (player) {
                 player.storage.lingliPosition = "blood"
-                player.xjb_updateLingli()
             },
             onremove: function (player) {
                 player.storage.lingliPosition = "air"
-                player.xjb_updateLingli()
             },
             trigger: {
                 player: ['phaseBegin', 'phaseEnd']
@@ -43,12 +41,10 @@ lib.skill.xjb_11 = {
         lib.skill.xjb_P_gathering = {
             init: function (player) {
                 player.storage.lingliPosition = "gathering"
-                player.xjb_updateLingli()
                 player.node.xjb_gathering = ui.create.div(".xjb_gathering", player)
             },
             onremove: function (player) {
                 player.storage.lingliPosition = "air"
-                player.xjb_updateLingli()
                 if (player.node.xjb_gathering) {
                     player.node.xjb_gathering.remove();
                     player.node.xjb_gathering = undefined;

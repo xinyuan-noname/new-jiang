@@ -129,7 +129,7 @@ const xjb_soul_fuhong = SkillCreater(
         return true;
     },
     async content(event, trigger, player) {
-        player.xjb_turnOverPlayerHpCard(target, true);
+        player.xjb_turnOverPlayerHpCard(event.target, true);
     },
     translate: "覆红",
     description: "出牌阶段限一次,你可以翻转你攻击范围内一名角色的一张体力牌。"
