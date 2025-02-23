@@ -96,7 +96,7 @@ export function XJB_CONTENT(config, pack) {
                 }; break;
                 case "changeBranch": {
                     if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
-                    if (game.xjb_updater.mainResName === "main") game.xjb_updater = game.xjb_updater_PR;
+                    if (game.xjb_updater === game.xjb_updater_master) game.xjb_updater = game.xjb_updater_PR;
                     else game.xjb_updater = game.xjb_updater_master;
                     alert(`已切换至${game.xjb_updater.mainResName}:${game.xjb_updater.mainURL}`)
                 }; break;
@@ -121,7 +121,6 @@ export function XJB_CONTENT(config, pack) {
                     if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
                     const myUpdater = game.xjb_updater;
                     const manager = myUpdater.updateLine({
-                        rmCR: true,
                         timeoutMinutes: 1,
                         reCalHash: true
                     });
