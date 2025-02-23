@@ -82,12 +82,24 @@ export function XJB_CONTENT(config, pack) {
                 case 'getAPI': {
                     import("./module/noname-extension-updater/updater.js")
                         .then(module => {
-                            const Updater = module.RawUpdater;
-                            game.xjb_updater_master = new Updater("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/master")
-                                .setData(lib, game, ui, get, ai, _status);
-                            game.xjb_updater_PR = new Updater("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/PR-branch")
-                                .setData(lib, game, ui, get, ai, _status);
-                            game.xjb_updater = game.xjb_updater_master;
+                            const RawUpdater = module.RawUpdater;
+                            const ZipUpdater = module.ZipUpdater;
+                            game.xjb_updaterList = {
+                                master: {
+                                    raw: new RawUpdater("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/master")
+                                        .setData(lib, game, ui, get, ai, _status),
+                                    zip: new ZipUpdater("新将包", "https://ghproxy.net/github.com/xinyuan-noname/new-jiang/archive/master.zip")
+                                        .setData(lib, game, ui, get, ai, _status)
+                                },
+                                PR: {
+                                    raw: new RawUpdater("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/PR-branch")
+                                        .setData(lib, game, ui, get, ai, _status),
+                                    zip: new ZipUpdater("新将包", "https://ghproxy.net/github.com/xinyuan-noname/new-jiang/archive/PR-branch.zip")
+                                        .setData(lib, game, ui, get, ai, _status)
+                                }
+                            }
+                            game.xjb_updater = game.xjb_updaterList.master.raw;
+                            game.xjb_updater_zip = game.xjb_updaterList.master.zip;
                             alert("updater获取成功！");
                         })
                         .catch(err => {
@@ -96,28 +108,41 @@ export function XJB_CONTENT(config, pack) {
                 }; break;
                 case "changeBranch": {
                     if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
-                    if (game.xjb_updater === game.xjb_updater_master) game.xjb_updater = game.xjb_updater_PR;
-                    else game.xjb_updater = game.xjb_updater_master;
+                    if (game.xjb_updater === game.xjb_updaterList.master.raw) {
+                        game.xjb_updater = game.xjb_updaterList.PR.raw;
+                        game.xjb_updater_zip = game.xjb_updaterList.PR.zip;
+                    }
+                    else {
+                        game.xjb_updater = game.xjb_updaterList.master.raw;
+                        game.xjb_updater_zip = game.xjb_updaterList.master.zip;
+                    }
                     alert(`已切换至${game.xjb_updater.mainResName}:${game.xjb_updater.mainURL}`)
                 }; break;
                 case 'putout': {
                     if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
                     const myUpdater = game.xjb_updater;
-                    const fileList = await myUpdater.readDirDefault(
-                        [
-                            "Thumbs.db",
-                        ],
-                        [
-                            ".vscode", ".git", ".github", ".gitee",
-                            "log", "skin/image/xjb_newCharacter"
-                        ]
-                    );
-                    const bufferArray = await myUpdater.cache(fileList);
-                    const hashMap = await myUpdater.getHashMap(bufferArray, true);
-                    await myUpdater.genDir(Array.from(hashMap));
+                    const manager = myUpdater.genDirLine({
+                        ignoreFile: ["Thumbs.db"],
+                        ignoreDir: ["log", "skin/image/xjb_newCharacter"]
+                    });
+                    manager.on("end", () => {
                     alert("目录生成成功");
+                    });
+                    manager.on("error", (err) => {
+                        console.error(err)
+                    })
                 }; break;
                 case 'download': {
+                    if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
+                    const manager = game.xjb_updater_zip.updateLine();
+                    manager.on("error", err => {
+                        console.error(err);
+                    })
+                    manager.on("phaseEnd", data => {
+                        console.log(data);
+                    })
+                }; break;
+                case 'downloadSimply': {
                     if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
                     const myUpdater = game.xjb_updater;
                     const manager = myUpdater.updateLine({
@@ -148,6 +173,9 @@ export function XJB_CONTENT(config, pack) {
                     manager.on("fileException", (files) => {
                         alert("存在更新失败的文件" + files);
                     })
+                    manager.on("recoverSuc", file => {
+                        console.log("成功修复文件", file)
+                    });
                     manager.on("error", err => {
                         console.error(err);
                     });
