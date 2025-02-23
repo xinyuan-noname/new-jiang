@@ -207,7 +207,7 @@ const xjb_shiguo = SkillCreater(
 const xjb_xionghu = SkillCreater(
 	"xjb_xionghu", {
 	translate: "雄狐",
-	description: "出牌阶段限一次，若你已受伤，你可以令一名女性角色弃置两张牌，你与其各回复一点体力",
+	description: "出牌阶段限一次，若你已受伤，你与一名女性角色各弃置一张牌，你与其各回复一点体力。然后你对其距离为1一名角色使用一张刺【杀】。",
 	enable: "phaseUse",
 	usable: 1,
 	filterTarget: (card, player, target) => {
@@ -221,31 +221,12 @@ const xjb_xionghu = SkillCreater(
 		await event.target.chooseToDiscard(2, "he", true);
 		await player.recover();
 		await event.target.recover();
-	}
-})
-const xjb_yanshi = SkillCreater(
-	"xjb_yanshi", {
-	translate: "宴弑",
-	description: "当一名女性角色回复一点体力时，你可以失去一点体力，对其距离为1一名角色使用一张刺【杀】。",
-	trigger: {
-		global: "recoverAfter"
-	},
-	filter: (event, player) => {
-		return event.player.hasSex("female") && event.num != 0
-	},
-	getIndex: (event, player) => {
-		return event.num;
-	},
-	cost: async function (event, trigger, player) {
-		event.result = await player.chooseTarget("是否失去一点体力，然后对选择的角色使用一张刺【杀】？")
+		const { targets } = await player.chooseTarget("是否使用一张刺【杀】？")
 			.set("filterTarget", (_, player, target) => {
 				const { sister } = _status.event;
 				return get.distance(sister, target) === 1;
 			}).set("sister", trigger.player).forResult();
-	},
-	content: async function (event, trigger, player) {
-		await player.loseHp();
-		await player.useCard({ name: "sha", nature: "stab" }, event.targets[0], false);
+		await player.useCard({ name: "sha", nature: "stab" }, targets[0], false);
 	}
 })
 const xjb_xuechou = SkillCreater(
@@ -550,7 +531,7 @@ const xjb_kaidi = SkillCreater(
 const xjb_ranrong = SkillCreater(
 	"xjb_ranrong", {
 	translate: "染戎",
-	description: "锁定技，当你未使用【无懈可击】响应其他角色对你使用的普通锦囊牌时，本回合你失去非锁定技。其下一次使用牌指定你为目标时，你摸此牌字数张牌，然后你无法响应此牌。",
+	description: "锁定技，当你未使用【无懈可击】响应其他角色对你使用的普通锦囊牌时，本回合你失去非锁定技。其下一次使用牌指定你为目标时，你摸一张牌，然后你无法响应此牌。",
 	forced: true,
 	trigger: {
 		global: "useCardAfter"
@@ -571,7 +552,7 @@ const xjb_ranrong = SkillCreater(
 			})
 			.then(() => {
 				trigger.getParent().directHit.add(trigger.target);
-				trigger.target.draw(get.cardNameLength(trigger.card));
+				trigger.target.draw();
 				player.storage["xjb_ranrong"].remove(trigger.target);
 				trigger.target.logSkill("xjb_ranrong");
 			})

@@ -128,4 +128,35 @@ export class EditorArrange {
             .replace(/(使用|打出)(杀|闪|桃|酒|无懈可击)次数/g, "$1的$2次数")
             .replace(/(?<!不能使用|不能打出)(?<=使用|打出)(?=(杀|闪|桃|酒|无懈可击)[ ]*$)/mg, " ")
     }
+
+    static standardTri1(that) {
+        that.value = that.value
+            .replace(/【([\u4e00-\u9fa5]+)】/g, function (match, ...p) {
+                return p[0];
+            })
+        that.value = that.value
+            .replace(/之(前|时|后)/g, "$1")
+        that.value = that.value
+            .replace(/场上(的|有)?(延时)?类?(锦囊)?牌被?置入判定区/g, "一名角色牌置入判定区")
+            .replace(/场上(的|有)?(装备)?牌被?置入判定区/g, "一名角色牌置入装备区")
+        that.value = that.value
+            .replace(/的判定牌生效/g, '判定牌生效')
+        that.value = that.value
+            .replace(/(?<=你|一名角色)的?判定区被?置入(延时)?类?(锦囊)?牌/g, "牌置入判定区")
+            .replace(/(?<=你|一名角色)的?装备区被?置入(装备)?牌/g, "牌置入装备区")
+        that.value = that.value
+            .replace(/体力值?减少(时|前|开始时|结束时|后)/g, "失去体力$1 受到伤害$1")
+        // that.value = that.value
+        //     .replace(/(?<!使用)或(?!打出)/g, ' ')
+        that.value = that.value
+            .replace(/^有角色|^任意角色/mg, "一名角色 ")
+            .replace(/^当?((?:.+?的)*(?:你|每名角色|一名角色|其他角色))的?/mg, "$1 ")
+    }
+    static standardTri2(that) {
+        that.value = that.value
+            .replace(/(?<=濒死)(状态|阶段)/g, "状态")
+            .replace(/([\u4e00-\u9fa5]*?)使用或打出([\u4e00-\u9fa5]+)/g, function (match, ...p) {
+                return `${p[0]}使用${p[1]} ${p[0]}打出${p[1]}`;
+            })
+    }
 }

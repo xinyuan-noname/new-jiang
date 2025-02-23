@@ -50,7 +50,7 @@ game.import("character", () => {
                 sex: "male",
                 group: "xjb_chunqiu_qi",
                 hp: 4,
-                skills: ["xjb_xionghu", "xjb_yanshi", "xjb_xuechou", "xjb_guaqi"],
+                skills: ["xjb_xionghu", "xjb_xuechou", "xjb_guaqi"],
                 trashBin: [],
                 names: "姜|诸儿"
             },
@@ -64,12 +64,12 @@ game.import("character", () => {
             },
 
             "xjb_qinmugong": {
-                sex:"male",
-                group:"xjb_qin",
-                hp:3,
-                skills:["xjb_kaidi","xjb_ranrong"],
-                trashBin:[],
-                names:"赢|任好"
+                sex: "male",
+                group: "xjb_qin",
+                hp: 4,
+                skills: ["xjb_kaidi", "xjb_ranrong"],
+                trashBin: [],
+                names: "赢|任好"
             },
 
             "xjb_xunan": {
@@ -92,7 +92,7 @@ game.import("character", () => {
             "xjb_wuyuan": {
                 sex: "male",
                 group: "xjb_chunqiu_wu",
-                hp: 4,
+                hp: 3,
                 skills: ["xjb_duhen", "xjb_gangli", "xjb_wanxin"],
                 trashBin: []
             },

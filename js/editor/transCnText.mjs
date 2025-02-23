@@ -25,17 +25,67 @@ export function disposeTri(str, number, directory = NonameCN.TriList) {
     let list3 = TransCnText.translateLineTri(list2);
     return list3;
 }
+const adjPlayer = [
+    "[魏蜀吴群晋神西键]势力",
+    "群雄",
+    "与你势力相同",
+    "不在你攻击范围内的?",
+    "在?你攻击范围内的?",
+    "攻击范围内不包含你",
+    "攻击范围包含你的?",
+    "其他",
+    "[男女]性",
+    "[已未]受伤"
+]
+const adjCard = [
+    "火属性",
+    "雷属性",
+    "冰属性",
+    "神属性",
+    "梅花",
+    "方片",
+    "黑桃",
+    "红桃",
+    "无花色",
+    "黑色",
+    "红色",
+    "无颜色",
+    "基本",
+    "装备(?!区)",
+    "普通锦囊",
+    "非延时锦囊",
+    "延时锦囊"
+]
 const matchNotObjColon = /(?<!\{[ \w"']+):(?![ \w"']+\})/;
 const matchFromTo = /^([bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)到([bcdefghlmnoprstuvwxyz]|\d+|[一两二三四五六七八九十]+)[张名点枚个]$/
-const matchTriKeywords = /火属性|雷属性|冰属性|神属性|梅花|方片|黑桃|红桃|红色|黑色|基本|装备(?!区)|普通锦囊|非延时锦囊|延时锦囊|点数为(?:11|12|13|[AJQK1-9])|一张|一点|(?<=指定|成为)唯一(?=目标)|于回合[内外]/
+const matchTriSkillKeyWords = /发动(?:技能)?(.+?)(前|时|开始|结束|后|结算后)/
+const matchDamageCount = /每(受到或造成|造成或受到|受到|造成)(\d+|[一两二三四五六七八九十]+)次(?=伤害)/
+const matchTriKeywords = new RegExp(`${adjCard.join("|")}|锦囊|带有?伤害标签|点数为(?:11|12|13|[AJQK1-9])|非转化|一张|一点|1张|1点|(?<=指定|成为)唯一(?=目标)|于回合[内外]|于出牌阶段内?|于出牌阶段外|不?因为?[此该本]技能而?`)
+const matchCardAdj = new RegExp(`${adjCard.join("|")}`, "g")
+const matchCardAdjOr = new RegExp(`(${adjCard.join("|")}|锦囊)牌?或(?=(?:${adjCard.join("|")}|锦囊)+牌)`, "g")
+const matchTriDamageTowords = new RegExp(`对((?:${adjPlayer.join("|")}|一名)+角色|你)(?=造成伤害)`, "g");
+const matchTriDamageFromwords = new RegExp(`(?<=受到)由?((?:${adjPlayer.join("|")}|一名)+角色|你)造成(?=伤害)`, "g");
+const matchTriGainFromwords = new RegExp(`(?<=获得)((?:${adjPlayer.join("|")}|一名)+角色|你)(?=牌)`, "g");
+const matchTriTypeKeywords = new RegExp(`(${adjPlayer.join("|")})+(?=角色)`);
+//
+const splitAdjPlayer = new RegExp(`(?<=${adjPlayer.join("|")}|一名)`)
+//
+const simiAddCnWords = ['增加', '增添', '添加'];
+const simiAddCnWordsRegExp = new RegExp(simiAddCnWords.join("|"))
+//
+const triMatchesPlayer = new Map([
+    [matchTriDamageTowords, "triPlayer"],
+    [matchTriDamageFromwords, "triSource"],
+    [matchTriGainFromwords, "triGiver"]
+]);
+//
 const vCardObject = NonameCN.getVirtualCard();
 const player = NonameCN.getVirtualPlayer();
 const vPlayers = NonameCN.getVirtualPlayers();
 const vGame = NonameCN.getVirtualGame();
 const eventModel = NonameCN.getVirtualEvent();
 const vStorage = NonameCN.getVirtualStorage();
-const simiAddCnWords = ['增加', '增添', '添加'];
-const simiAddCnWordsRegExp = new RegExp(simiAddCnWords.join("|"))
+
 const XJB_PUNC = ["!", " || ", " && ", " + ", " - ", " * ", " / ", " % ",
     " += ", " -= ",
     "++", "--",
@@ -117,7 +167,7 @@ export class TransCnText {
         if (simiAddCnWordsRegExp.test(word)) {
             for (const simiWord of simiAddCnWords) {
                 let wordx = word.replace(simiAddCnWordsRegExp, simiWord)
-                if(wordx in directory) return directory[wordx];
+                if (wordx in directory) return directory[wordx];
             }
         }
         return word;
@@ -163,37 +213,151 @@ export class TransCnText {
         if (typeof word != "string") return "";
         const directory = NonameCN.TriList;
         if (word in directory) return directory[word];
+
         if (/(开始)[前时]/.test(word)) {
             return TransCnText.translateTri(word.replace(/(开始)[前时]/, "$1"));
         }
         if (/(结束)[时后]/.test(word)) {
             return TransCnText.translateTri(word.replace(/(结束)[时后]/, "$1"));
         }
-        if (/(结算完成|完成结算)[时后]/.test(word)) {
-            return TransCnText.translateTri(word.replace(/(结算完成|完成结算)[前时]/, "$1"));
+        if (/(结算完成|完成结算|结算结束)[时后]/.test(word)) {
+            return TransCnText.translateTri(word.replace(/(结算完成|完成结算|结算结束)[时后]/, "结算后"));
         }
         if (word.includes("的")) return TransCnText.translateTri(word.replace(/的/g, ""));
-        if (matchTriKeywords.test(word)) {
-            let decoration = [];
-            let wordx = word.replace(/红色|黑色|梅花|方片|黑桃|红桃|火属性|雷属性|冰属性|神属性|基本|装备(?!区)|普通锦囊|非延时锦囊|延时锦囊/g, (match) => {
+        if (matchTriTypeKeywords.test(word)) {
+            const decoration = [];
+            let wordx = word;
+            wordx = wordx.replace(/其他/, match => {
+                decoration.push(`filterPlayer=other`)
+                return ''
+            })
+            wordx = wordx.replace(/在?你攻击范围内的?/, match => {
+                decoration.push(`filterPlayer=inRange`)
+                return ''
+            })
+            wordx = wordx.replace(/攻击范围包含你的?/, match => {
+                decoration.push(`filterPlayer=inRangeOf`)
+                return ''
+            })
+            wordx = wordx.replace(/[与和]你势力([相不])同/, (_, p) => {
+                decoration.push(p === "不" ? "filterPlayer=differentGroup" : "filterPlayer=sameGroup")
+                return ''
+            })
+            wordx = wordx.replace(/[魏蜀吴群晋神西键]势力|群雄/, match => {
+                decoration.push(`filterPlayerGroup=${NonameCN.getEn(match)}`)
+                return ''
+            })
+            wordx = wordx.replace(/([已未])受伤/, (_, p) => {
+                decoration.push(`triPlayer=${p === "已" ? "isDamaged" : "isHealthy"}`);
+                return ''
+            })
+            wordx = wordx.replace(/[男女]性/, match => {
+                decoration.push(`filterPlayerSex=${NonameCN.getEn(match)}`)
+                return ''
+            })
+            if (wordx in directory || (wordx = "一名" + wordx) in directory) {
+                return `${decoration.join(":")}:${directory[wordx]}`;
+            }
+        }
+        //
+        const decoration = [];
+        let wordx = word;
+        if (matchTriKeywords.test(wordx)) {
+            wordx = wordx.replace(matchCardAdjOr, (match, p) => {
+                if (p === "锦囊") decoration.push('type2=trick')
+                else decoration.push(NonameCN.getEn(p));
+                return ''
+            });
+            wordx = wordx.replace(/非装备/g, _ => {
+                decoration.push('type2=trick');
+                decoration.push('type2=basic');
+                return '';
+            })
+            wordx = wordx.replace(/带有?伤害标签/g, _ => {
+                decoration.push('tag=damage');
+                return '';
+            })
+            wordx = wordx.replace(matchCardAdj, (match) => {
                 decoration.push(NonameCN.getEn(match));
                 return ''
             });
-            wordx = wordx.replace(/一张|一点/g, (match) => {
+            wordx = wordx.replace(/锦囊/g, _ => {
+                decoration.push('type2=trick');
+                return '';
+            })
+            wordx = wordx.replace(/非转化/g, _ => {
+                decoration.push('isCard');
+                return '';
+            })
+            wordx = wordx.replace(/一张|一点|1张|1点/g, _ => {
                 decoration.push('getIndex=1');
                 return '';
             })
-            wordx = wordx.replace(/(?<=指定|成为)唯一(?=目标)/, (match) => {
+            wordx = wordx.replace(/(?<=指定|成为)唯一(?=目标)/, _ => {
                 decoration.push('onlyOneTarget');
                 return ''
             })
-            wordx = wordx.replace(/于回合([内外])/, (match, p) => {
+            wordx = wordx.replace(/于回合([内外])/, (_, p) => {
                 decoration.push(p === "内" ? "inPhase" : "outPhase");
                 return ''
             })
-            if (wordx in directory) {
-                return `${decoration.join(":")}:${directory[wordx]}`;
-            }
+            wordx = wordx.replace(/于出牌阶段([内外]?)/, (_, p) => {
+                decoration.push(p === "外" ? "outPhaseUse" : "inPhaseUse");
+                return '';
+            })
+            wordx = wordx.replace(/(不?)因为?[此该本]技能/, (_, p) => {
+                decoration.push(p === "不" ? "noForThisSkill" : "forThisSkill");
+                return '';
+            })
+        }
+        for (const [regexp, label] of triMatchesPlayer.entries()) {
+            wordx = wordx.replace(regexp, (_, p) => {
+                if (p === "你") {
+                    decoration.push(label + "=player");
+                    return '';
+                }
+                else {
+                    for (const adj of p.split(splitAdjPlayer)) {
+                        if (adj === "其他") decoration.push(label + "=other")
+                        else if (adj === "已受伤") decoration.push(label + "=isDamaged")
+                        else if (adj === "未受伤") decoration.push(label + "=isHealthy")
+                        else if (/在?你攻击范围内的?/.test(adj)) decoration.push(label + "=inRange")
+                        else if (/攻击范围包含你的?/.test(adj)) decoration.push(label + "=inRangeOf")
+                        else if (/不在你攻击范围内的?/.test(adj)) decoration.push(label + "=noInRange")
+                        else if (/攻击范围内不包含你的?/.test(adj)) decoration.push(label + "=noInRangeOf")
+                        else {
+                            const en = NonameCN.getEn(adj);
+                            if (["male", "female"].includes(en)) decoration.push(label + `Sex=${en}`);
+                            else if (["wei", "shu", "wu", "qun", "jin", "shen", "key", "western"].includes(en)) decoration.push(label + `Sex=${en}`);
+                        }
+                    }
+                }
+                return '';
+            });
+        }
+        wordx = wordx.replace(matchDamageCount, (_, p1, p2) => {
+            let historyType = '';
+            if (p1 === "受到") historyType = "historyAllDamage";
+            else if (p1 === "造成") historyType = "historyAllSourceDamage";
+            else historyType = "historyAllDamagePlus";
+            decoration.push(`${historyType}=${chineseToArabic(p2)}`);
+            return p1;
+        });
+        if (wordx in directory) {
+            if (!decoration.length) return directory[wordx];
+            return `${decoration.join(":")}:${directory[wordx]}`;
+        }
+        //
+        if (matchTriSkillKeyWords.test(wordx)) {
+            const [_, p1, p2] = wordx.match(matchTriSkillKeyWords);
+            let result = p1;
+            if (p2 === "前") result += "Before"
+            else if (p2 === "时") result += "Begin"
+            else if (p2 === "开始") result += "Begin"
+            else if (p2 === "结束") result += "End"
+            else result += "After"
+            if (!decoration.length) return result;
+            return `${decoration.join(":")}:${result}`;
         }
         return word;
     }

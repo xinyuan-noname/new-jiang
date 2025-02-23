@@ -69,52 +69,119 @@ export function XJB_CONTENT(config, pack) {
         init: '',
         item: {
             getAPI: '获取工具',
-            update: '刷新工具',
+            changeBranch: "切换分支",
             putout: '输出目录',
             download: '下载更新',
             downloadSimply: '简易更新',
-
         },
         visualMenu: function (node) {
             node.className = 'button controlbutton';
         },
-        onclick: function (layout) {
+        onclick: async (layout) => {
             switch (layout) {
                 case 'getAPI': {
-                    game.xjb_loadAPI(function () {
-                        alert("xjb_xyAPI加载成功!")
-                    })
+                    import("./module/noname-extension-updater/updater.js")
+                        .then(module => {
+                            const RawUpdater = module.RawUpdater;
+                            const ZipUpdater = module.ZipUpdater;
+                            game.xjb_updaterList = {
+                                master: {
+                                    raw: new RawUpdater("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/master")
+                                        .setData(lib, game, ui, get, ai, _status),
+                                    zip: new ZipUpdater("新将包", "https://ghproxy.net/github.com/xinyuan-noname/new-jiang/archive/master.zip")
+                                        .setData(lib, game, ui, get, ai, _status)
+                                },
+                                PR: {
+                                    raw: new RawUpdater("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/PR-branch")
+                                        .setData(lib, game, ui, get, ai, _status),
+                                    zip: new ZipUpdater("新将包", "https://ghproxy.net/github.com/xinyuan-noname/new-jiang/archive/PR-branch.zip")
+                                        .setData(lib, game, ui, get, ai, _status)
+                                }
+                            }
+                            game.xjb_updater = game.xjb_updaterList.master.raw;
+                            game.xjb_updater_zip = game.xjb_updaterList.master.zip;
+                            alert("updater获取成功！");
+                        })
+                        .catch(err => {
+                            alert(`updater获取失败\n${err}`);
+                        })
                 }; break;
-                case 'update': {
-                    if (!("xjb_xyAPI" in window)) return game.xjb_create.alert("xjb_xyAPI未引入,请点击获取工具引入!")
-                    xjb_xyAPI.updateServiceTarget('新将包');
-                    alert('工具已刷新')
+                case "changeBranch": {
+                    if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
+                    if (game.xjb_updater === game.xjb_updaterList.master.raw) {
+                        game.xjb_updater = game.xjb_updaterList.PR.raw;
+                        game.xjb_updater_zip = game.xjb_updaterList.PR.zip;
+                    }
+                    else {
+                        game.xjb_updater = game.xjb_updaterList.master.raw;
+                        game.xjb_updater_zip = game.xjb_updaterList.master.zip;
+                    }
+                    alert(`已切换至${game.xjb_updater.mainResName}:${game.xjb_updater.mainURL}`)
                 }; break;
                 case 'putout': {
-                    if (!("xjb_xyAPI" in window)) return alert("xjb_xyAPI未引入,请点击获取工具引入!")
-                    xjb_xyAPI.directoryDownload();
-                    xjb_xyAPI.directoryDownloadFHook = function () {
-                        alert('目录导出失败')
-                    }
-                    xjb_xyAPI.directoryDownloadSHook = function () {
-                        alert('目录导出成功')
-                    }
+                    if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
+                    const myUpdater = game.xjb_updater;
+                    const manager = myUpdater.genDirLine({
+                        ignoreFile: ["Thumbs.db"],
+                        ignoreDir: ["log", "skin/image/xjb_newCharacter"]
+                    });
+                    manager.on("end", () => {
+                    alert("目录生成成功");
+                    });
+                    manager.on("error", (err) => {
+                        console.error(err)
+                    })
                 }; break;
                 case 'download': {
-                    if (!("xjb_xyAPI" in window)) return alert("xjb_xyAPI未引入,请点击获取工具引入!");
-                    xjb_xyAPI.updateOnline();
-                    alert('请耐心等待,直到再次出现alert提示框!此前请不要关闭无名杀!');
-                    xjb_xyAPI.updateDownloadHook = function (list) {
-                        alert('下载完成,失败的文件' + list);
-                    }
+                    if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
+                    const manager = game.xjb_updater_zip.updateLine();
+                    manager.on("error", err => {
+                        console.error(err);
+                    })
+                    manager.on("phaseEnd", data => {
+                        console.log(data);
+                    })
                 }; break;
                 case 'downloadSimply': {
-                    if (!("xjb_xyAPI" in window)) return alert("xjb_xyAPI未引入,请点击获取工具引入!");
-                    xjb_xyAPI.updateOnlineSimply();
-                    alert('请耐心等待,直到再次出现alert提示框!此前请不要关闭无名杀!');
-                    xjb_xyAPI.updateDownloadHook = function (list) {
-                        alert('下载完成,失败的文件' + list);
-                    };
+                    if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
+                    const myUpdater = game.xjb_updater;
+                    const manager = myUpdater.updateLine({
+                        timeoutMinutes: 1,
+                        reCalHash: true
+                    });
+                    manager.on("getCache", data => {
+                        console.log(data);
+                    });
+                    manager.on("filterHash", data => {
+                        console.log(data);
+                    });
+                    manager.on("makeSureDirSuc", data => {
+                        console.log(data.processingDir, "文件夹创建成功")
+                    })
+                    manager.on("update", data => {
+                        console.log(data.updateInfo);
+                    });
+                    manager.on("updateSuc", data => {
+                        console.log(data.processingFile, "下载成功");
+                    });
+                    manager.on("fixFileSuc", data => {
+                        console.log(data.fixingFileInfo);
+                    })
+                    manager.on("fileAllOk", () => {
+                        alert("更新成功！")
+                    })
+                    manager.on("fileException", (files) => {
+                        alert("存在更新失败的文件" + files);
+                    })
+                    manager.on("recoverSuc", file => {
+                        console.log("成功修复文件", file)
+                    });
+                    manager.on("error", err => {
+                        console.error(err);
+                    });
+                }; break;
+                case 'downloadSimply': {
+                    if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
                 }; break;
             }
         }
@@ -501,7 +568,7 @@ export function XJB_CONTENT(config, pack) {
             }
         }
         if (lib.config.xjb_yangcheng == 1) {
-             lib.extensionMenu.extension_新将包.newCharacter = {
+            lib.extensionMenu.extension_新将包.newCharacter = {
                 name: '<img src="' + lib.xjb_src + 'xin_newCharacter.jpg" height="16">' + '<font color="yellow">武将养成</font>',
                 init: 'name2',
                 item: {
@@ -569,7 +636,7 @@ export function XJB_CONTENT(config, pack) {
                                 let cost = getCost(add);
                                 this.prompt.innerHTML = '你已有' + hp + '点体力。增加' + add + '点体力需要' + cost + '个魂币。';
                             });
-                        };break;
+                        }; break;
                         case 'intro': game.xjb_setInfoDia(); break;
                         case 'unique':
                             game.xjb_create.configList({

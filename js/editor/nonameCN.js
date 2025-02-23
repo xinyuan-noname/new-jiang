@@ -131,13 +131,6 @@ function getMapOfGroup(bool = true) {
     }
     return map;
 }
-function getMapOfColorCard() {
-    const map = {};
-    for (let [cn, attr] of Object.entries({ ...getMapOfColor(false), ...getMapOfSuit(false) })) {
-        map[cn + "牌"] = `${attr}`;
-    }
-    return map;
-}
 
 function getMapOfgetParent() {
     const list = {}
@@ -150,22 +143,78 @@ function getMapOfgetParent() {
 
 function getMapOfTri_Target() {
     const map = {}
-    for (let [cn, attr] of Object.entries({ ...getMapOfCard(false), ...getMapOfColorCard() })) {
-        map["成为" + cn + '的目标时'] = 'target:' + attr + ':' + 'useCardToTarget';
-        map["成为" + cn + '的目标后'] = 'target:' + attr + ':' + 'useCardToTargeted';
-        map["使用" + cn + '指定目标时'] = 'player:' + attr + ':' + 'useCardToPlayer';
-        map["使用" + cn + '指定目标后'] = 'player:' + attr + ':' + 'useCardToPlayered';
+    for (let [cn, attr] of Object.entries({
+        ...getMapOfCard(false),
+    })) {
+        map["成为" + cn + '目标时'] = 'target:' + attr + ':useCardToTarget';
+        map["成为" + cn + '目标后'] = 'target:' + attr + ':useCardToTargeted';
+        map["使用" + cn + '指定目标时'] = 'player:' + attr + ':useCardToPlayer';
+        map["使用" + cn + '指定目标后'] = 'player:' + attr + ':useCardToPlayered';
+        //
+        map["对你使用" + cn + "时"] = 'triTarget=player:' + attr + ':useCardToTarget'
+        map["对你使用" + cn + "后"] = 'triTarget=player:' + attr + ':useCardToTargeted'
+        map["使用" + cn + '指定你为目标时'] = 'triTarget=player:' + attr + ':useCardToPlayer';
+        map["使用" + cn + '指定你为目标后'] = 'triTarget=player:' + attr + ':useCardToPlayered';
+        map["成为其他角色" + cn + '目标时'] = 'target:triPlayer=other:' + attr + ':useCardToTarget';
+        map["成为其他角色" + cn + '目标后'] = 'target:triPlayer=other:' + attr + ':useCardToTargeted';
+        //
+        map["对其他角色使用" + cn + "时"] = 'triTarget=other:' + attr + ':useCardToPlayer'
+        map["对其他角色使用" + cn + "后"] = 'triTarget=other:' + attr + ':useCardToPlayered'
+        map["对男性角色使用" + cn + "时"] = 'triTargetSex=male:' + attr + ':useCardToPlayer'
+        map["对男性角色使用" + cn + "后"] = 'triTargetSex=male:' + attr + ':useCardToPlayered'
+        map["对女性角色使用" + cn + "时"] = 'triTargetSex=female:' + attr + ':useCardToPlayer'
+        map["对女性角色使用" + cn + "后"] = 'triTargetSex=female:' + attr + ':useCardToPlayered'
+        //
+
     }
     return map;
 }
 function getMapOfTri_Use() {
     const map = {}
-    for (let [cn, attr] of Object.entries({ ...getMapOfCard(false), ...getMapOfColorCard() })) {
+    for (let [cn, attr] of Object.entries({
+        ...getMapOfCard(false)
+    })) {
         map["使用" + cn + '前'] = attr + ':' + 'useCardBefore';
-        map["使用" + cn + '时'] = attr + ':' + 'useCardBegin';
-        map["使用" + cn] = attr + ':' + 'useCard';
+        map["使用" + cn + '开始'] = attr + ':' + 'useCardBegin';
+        map["使用" + cn + '时0'] = attr + ':' + 'useCard0';
+        map["使用" + cn + '时1'] = attr + ':' + 'useCard1';
+        map["使用" + cn + '时2'] = attr + ':' + 'useCard2';
+        map["使用" + cn + '时'] = attr + ':' + 'useCard';
+        map["使用" + cn + '结束'] = attr + ':' + 'useCardEnd';
+        map["使用" + cn + '结算后'] = attr + ':' + 'useCardAfter';
         map["使用" + cn + '后'] = attr + ':' + 'useCardAfter';
-
+    }
+    return map;
+}
+function getMapOfTri_damageSource() {
+    const map = {}
+    for (let [cn, attr] of Object.entries({
+        ...getMapOfCard(false)
+    })) {
+        //
+        map["受到由" + cn + '造成伤害前'] = "yescard:" + attr + ':' + 'damageBefore';
+        map["受到由" + cn + '造成伤害时'] = "yescard:" + attr + ':' + 'damageBegin';
+        map["受到由" + cn + '造成伤害时1'] = "yescard:" + attr + ':' + 'damageBegin1';
+        map["受到由" + cn + '造成伤害时2'] = "yescard:" + attr + ':' + 'damageBegin2';
+        map["受到由" + cn + '造成伤害时3'] = "yescard:" + attr + ':' + 'damageBegin3';
+        map["受到由" + cn + '造成伤害时4'] = "yescard:" + attr + ':' + 'damageBegin4';
+        map["受到由" + cn + '造成伤害后'] = "yescard:" + attr + ':' + 'damageAfter';
+        //
+        map["使用" + cn + '造成伤害前'] = "source:yescard:" + attr + ':' + 'damageBefore';
+        map["使用" + cn + '造成伤害时'] = "source:yescard:" + attr + ':' + 'damageBegin';
+        map["使用" + cn + '造成伤害时1'] = "source:yescard:" + attr + ':' + 'damageBegin1';
+        map["使用" + cn + '造成伤害时2'] = "source:yescard:" + attr + ':' + 'damageBegin2';
+        map["使用" + cn + '造成伤害时3'] = "source:yescard:" + attr + ':' + 'damageBegin3';
+        map["使用" + cn + '造成伤害时4'] = "source:yescard:" + attr + ':' + 'damageBegin4';
+        map["使用" + cn + '造成伤害后'] = "source:yescard:" + attr + ':' + 'damageAfter';
+        //
+        map[cn + '造成伤害前'] = "source:yescard:" + attr + ':' + 'damageBefore';
+        map[cn + '造成伤害时'] = "source:yescard:" + attr + ':' + 'damageBegin';
+        map[cn + '造成伤害时1'] = "source:yescard:" + attr + ':' + 'damageBegin1';
+        map[cn + '造成伤害时2'] = "source:yescard:" + attr + ':' + 'damageBegin2';
+        map[cn + '造成伤害时3'] = "source:yescard:" + attr + ':' + 'damageBegin3';
+        map[cn + '造成伤害时4'] = "source:yescard:" + attr + ':' + 'damageBegin4';
+        map[cn + '造成伤害后'] = "source:yescard:" + attr + ':' + 'damageAfter';
     }
     return map;
 }
@@ -671,6 +720,17 @@ export class NonameCN {
     }
     static freeQuotation = {
         cardName: getMapOfCard(false),
+        group: {
+            "魏势力": "wei",
+            "蜀势力": "shu",
+            "吴势力": "wu",
+            "晋势力": "jin",
+            "群势力": "qun",
+            "群雄": "qun",
+            "神势力": "shen",
+            "西势力": "western",
+            "键势力": "key",
+        },
         typeCard: {
             "基本牌": "basic",
             "装备牌": "equip",
@@ -725,11 +785,13 @@ export class NonameCN {
             "方片": "diamond",
             "梅花": "club",
             "红桃": "heart",
-            "黑桃": "spade"
+            "黑桃": "spade",
+            "无花色": "none"
         },
         color: {
             "红色": "red",
-            "黑色": "black"
+            "黑色": "black",
+            "无颜色": "none"
         },
         nature: {
             '火属性': 'fire',
@@ -1502,11 +1564,20 @@ export class NonameCN {
             '一名角色': 'global',
             '一位角色': 'global',
         },
+        trigger_only: {
+            '攻击范围包含你的角色': "filterPlayer=inRangeOf:global",
+            '在你攻击范围内的角色': "filterPlayer=inRange:global",
+            '你攻击范围内的角色': "filterPlayer=inRange:global",
+            '其他角色': "filterPlayer=other:global",
+        },
         triggerList: {
             ...getMapOfTri_Target(),
             ...getMapOfTri_Use(),
-            "进入游戏时": "enterGame",
+            ...getMapOfTri_damageSource(),
+
+            "游戏开始时": "enterGame",
             "每轮开始时": "roundStart",
+            "一轮游戏开始时": "roundStart",
 
             "回合前": "phaseBefore",
             "回合开始后2": "phaseBeforeStart",
@@ -1535,7 +1606,10 @@ export class NonameCN {
 
             "摸牌阶段前": "phaseDrawBefore",
             "摸牌阶段开始": "phaseDrawBegin",
+            "摸牌阶段开始时1": "phaseDrawBegin1",
+            "摸牌阶段开始时2": "phaseDrawBegin2",
             "摸牌阶段": "phaseDrawBegin",
+            "摸牌阶段1": "phaseDrawBegin1",
             "摸牌阶段2": "phaseDrawBegin2",
             "摸牌阶段结束": "phaseDrawEnd",
             "摸牌阶段后": "phaseDrawAfter",
@@ -1546,6 +1620,16 @@ export class NonameCN {
             "出牌阶段结束": "phaseUseEnd",
             "出牌阶段后": "phaseUseAfter",
             "出牌阶段结算后": "phaseUseAfter",
+            //
+            "出牌阶段开始时和结束时": "phaseUseBegin|phaseUseEnd",
+
+            "弃牌阶段前": "phaseDiscardBefore",
+            //参见吕蒙修改
+            "弃牌阶段开始": "phaseDiscardBefore",
+            "弃牌阶段": "phaseDiscardBegin",
+            "弃牌阶段结束": "phaseDiscardEnd",
+            "弃牌阶段后": "phaseDiscardAfter",
+            "弃牌阶段结算后": "phaseDiscardAfter",
 
             "结束阶段前": "phaseJieShuBefore",
             "结束阶段开始": "phaseJieShuBegin",
@@ -1555,11 +1639,28 @@ export class NonameCN {
             "结束阶段后": "phaseJieShuAfter",
             "结束阶段结算后": "phaseJieShuAfter",
 
-            "弃牌阶段前": "phaseDiscardBefore",
-            "弃牌阶段开始": "phaseDiscardBegin",
-            "弃牌阶段结束": "phaseDiscardEnd",
-            "弃牌阶段后": "phaseDiscardAfter",
-            "弃牌阶段结算后": "phaseDiscardAfter",
+            //阶段跳过类
+            "准备阶段跳过后": "phaseZhunbeiSkipped",
+            "判定阶段跳过后": "phaseJudgeSkipped",
+            "摸牌阶段跳过后": "phaseDrawSkipped",
+            "出牌阶段跳过后": "phaseUseSkipped",
+            "弃牌阶段跳过后": "phaseDiscardSkipped",
+            "结束阶段跳过后": "phaseJieShuSkipped",
+
+            //阶段取消类
+            "准备阶段取消后": "phaseZhunbeiCancelled",
+            "判定阶段取消后": "phaseJudgeCancelled",
+            "摸牌阶段取消后": "phaseDrawCancelled",
+            "出牌阶段取消后": "phaseUseCancelled",
+            "弃牌阶段取消后": "phaseDiscardCancelled",
+            "结束阶段取消后": "phaseJieShuCancelled",
+            //
+            "跳过准备阶段后": "phaseZhunbeiSkipped|phaseZhunbeiCancelled",
+            "跳过判定阶段后": "phaseJudgeSkipped|phaseJudgeCancelled",
+            "跳过摸牌阶段后": "phaseDrawSkipped|phaseDrawCancelled",
+            "跳过出牌阶段后": "phaseUseSkipped|phaseUseCancelled",
+            "跳过弃牌阶段后": "phaseDiscardSkipped|phaseDiscardCancelled",
+            "跳过结束阶段后": "phaseJieShuSkipped|phaseJieShuCancelled",
 
             "摸牌前": "drawBefore",
             "摸牌开始": "drawBegin",
@@ -1584,15 +1685,9 @@ export class NonameCN {
             "令一名角色判定前": "source:judgeBefore",
             "令一名角色判定后": "source:judgeAfter",
 
-            "响应牌前": "respondBefore",
-            "响应牌开始": "respondBegin",
-            "响应牌时": "respondBegin",
-            "响应牌结束": "respondEnd",
-            "响应牌后": "respondAfter",
-            "响应牌结算后": "respondAfter",
             "打出牌前": "respondBefore",
             "打出牌开始": "respondBegin",
-            "打出牌时": "respondBegin",
+            "打出牌时": "respond",
             "打出牌结束": "respondEnd",
             "打出牌后": "respondAfter",
             "打出牌结算后": "respondAfter",
@@ -1604,20 +1699,37 @@ export class NonameCN {
             "令一名角色打出牌结束": "source:respondEnd",
             "令一名角色打出牌前": "source:respondBefore",
             "令一名角色打出牌后": "source:respondAfter",
+            //
+            "打出杀前": "sha:respondBefore",
+            "打出杀开始": "sha:respondBegin",
+            "打出杀时": "sha:respond",
+            "打出杀结束": "sha:respondEnd",
+            "打出杀后": "sha:respondAfter",
+            "打出杀结算后": "sha:respondAfter",
+            "打出闪前": "shan:respondBefore",
+            "打出闪开始": "shan:respondBegin",
+            "打出闪时": "shan:respond",
+            "打出闪结束": "shan:respondEnd",
+            "打出闪后": "shan:respondAfter",
+            "打出闪结算后": "shan:respondAfter",
+
 
             "使用牌前": "useCardBefore",
             "使用牌开始": "useCardBegin",
-            "使用牌时": "useCard",
             "使用卡牌0": "useCard0",
             "使用卡牌1": "useCard1",
+            //参看神张飞巡使
+            '使用牌选择目标后': "useCard2",
             "使用卡牌2": "useCard2",
+            "使用牌时": "useCard",
+            '使用牌指定目标时': "useCardToPlayer",
+            '使用牌指定目标后': "useCardToPlayered",
             "使用牌结束": "useCardEnd",
             "使用牌后": "useCardAfter",
             "使用牌结算后": "useCardAfter",
-            '使用牌指定目标时': "useCardToPlayer",
-            '使用牌指定目标后': "useCardToPlayered",
+
             //
-            "令一名角色使用牌开始": "source:useCard",
+            "令一名角色使用牌开始": "source:useCardBegin",
             "令一名角色使用牌时": "source:useCard",
             "令一名角色使用牌结束": "source:useCardEnd",
             "令一名角色使用牌前": "source:useCardBefore",
@@ -1625,6 +1737,21 @@ export class NonameCN {
             //
             '成为牌的目标时': "target:useCardToTarget",
             '成为牌的目标后': "target:useCardToTargeted",
+            "对你使用牌时": "triTarget=player:useCardToTarget",
+            "对你使用牌后": "triTarget=player:useCardToTargeted",
+            "成为其他角色使用牌目标时": "target:triPlayer=other:useCardToTarget",
+            "成为其他角色使用牌目标后": "target:triPlayer=other:useCardToTargeted",
+            "使用牌指定你为目标时": "triTarget=player:useCardToPlayer",
+            "使用牌指定你为目标后": "triTarget=player:useCardToPlayered",
+
+            //使用打出联合事件
+            "使用或打出牌前": "useCardBefore|respondBefore",
+            "使用或打出牌开始": "useCardBegin|respondBegin",
+            "使用或打出牌时": "useCard|respond",
+            "使用或打出牌结束": "useCardEnd|respondEnd",
+            "使用或打出牌后": "useCardAfter|respondAfter",
+            "使用或打出牌结算后": "useCardAfter|respondAfter",
+
 
             "弃置牌前": "discardBefore",
             "弃置牌开始": "discardBegin",
@@ -1658,9 +1785,38 @@ export class NonameCN {
             "令一名角色失去牌结束": "source:loseEnd",
             "令一名角色失去牌前": "source:loseBefore",
             "令一名角色失去牌后": "source:loseAfter",
+            //
+            "失去最后牌后": "noCard=he:loseAfter",
+            "失去最后一张牌后": "noCard=he:loseAfter",
+            "失去最后牌时": "noCard=he:loseAfter",
+            "失去最后一张牌时": "noCard=he:loseAfter",
+            //
+            "失去最后手牌后": "h:noCard=h:loseAfter",
+            "失去最后一张手牌后": "h:noCard=h:loseAfter",
+            "失去最后手牌时": "h:noCard=h:loseAfter",
+            "失去最后一张手牌时": "h:noCard=h:loseAfter",
             "失去手牌后": "h:loseAfter",
+            "失去最后装备区牌后": "e:noCard=e:loseAfter",
+            "失去最后一张装备区牌后": "e:noCard=e:loseAfter",
+            "失去最后装备区牌时": "e:noCard=e:loseAfter",
+            "失去最后一张装备区牌时": "e:noCard=e:loseAfter",
             "失去装备区牌后": "e:loseAfter",
+            "失去最后判定区牌后": "j:noJudge=j:loseAfter",
+            "失去最后一张判定区牌时": "j:noJudge=j:loseAfter",
+            "失去最后判定区牌时": "j:noJudge=j:loseAfter",
+            "失去最后一张判定区牌后": "j:noJudge=j:loseAfter",
             "失去判定区牌后": "j:loseAfter",
+
+            //
+            "牌不因使用而进入弃牌堆后": "loseFor=noUseToDiscardPile:loseAfter",
+            "牌不因使用进入弃牌堆后": "loseFor=noUseToDiscardPile:loseAfter",
+            "牌因弃置而进入弃牌堆后": "loseFor=discardToDiscardPile:loseAfter",
+            "牌因弃置进入弃牌堆后": "loseFor=discardToDiscardPile:loseAfter",
+
+
+            "不属于任何角色牌进入弃牌堆后": "cardsDiscardAfter",
+            "牌因判定进入弃牌堆后": "cardsDiscardFor=judge:cardsDiscardAfter",
+            "牌因判定而进入弃牌堆后": "cardsDiscardFor=judge:cardsDiscardAfter",
 
             "牌置入装备区前": "equipBefore",
             "牌置入装备区开始": "equipBegin",
@@ -1674,6 +1830,16 @@ export class NonameCN {
             "令一名角色牌置入装备区后": "source:equipAfter",
 
 
+            "牌进入判定区前": "addJudgeBefore",
+            "牌进入判定区开始": "addJudgeBegin",
+            "牌进入判定区时": "addJudgeBegin",
+            "牌进入判定区结束": "addJudgeEnd",
+            "牌进入判定区后": "addJudgeAfter",
+            "牌进入判定区结算后": "addJudgeAfter",
+            "令一名角色牌进入判定区时": "source:addJudgeBegin",
+            "令一名角色牌进入判定区结束": "source:addJudgeEnd",
+            "令一名角色牌进入判定区前": "source:addJudgeBefore",
+            "令一名角色牌进入判定区后": "source:addJudgeAfter",
             "牌置入判定区前": "addJudgeBefore",
             "牌置入判定区开始": "addJudgeBegin",
             "牌置入判定区时": "addJudgeBegin",
@@ -1695,7 +1861,7 @@ export class NonameCN {
             "令一名角色置于武将牌上结束": "source:addToExpansionEnd",
             "令一名角色置于武将牌上前": "source:addToExpansionBefore",
             "令一名角色置于武将牌上后": "source:addToExpansionAfter",
-
+            //
             "将牌置于武将牌上前": "addToExpansionBefore",
             "将牌置于武将牌上开始": "addToExpansionBegin",
             "将牌置于武将牌上时": "addToExpansionBegin",
@@ -1707,19 +1873,30 @@ export class NonameCN {
             "令一名角色将牌置于武将牌上前": "source:addToExpansionBefore",
             "令一名角色将牌置于武将牌上后": "source:addToExpansionAfter",
 
+            "回复体力前": "recoverBefore",
+            "回复体力开始": "recoverBegin",
+            //参看shushen
+            "回复体力时": "recoverAfter",
+            "回复体力结束": "recoverEnd",
+            "回复体力后": "recoverAfter",
+            "回复体力结算后": "recoverAfter",
             "回复体力值前": "recoverBefore",
             "回复体力值开始": "recoverBegin",
-            "回复体力值时": "recoverBegin",
+            "回复体力值时": "recoverAfter",
             "回复体力值结束": "recoverEnd",
             "回复体力值后": "recoverAfter",
             "回复体力值结算后": "recoverAfter",
-            "令一名角色回复体力值时": "source:recoverBegin",
+            "令一名角色回复体力时": "source:recoverAfter",
+            "令一名角色回复体力结束": "source:recoverEnd",
+            "令一名角色回复体力前": "source:recoverBefore",
+            "令一名角色回复体力后": "source:recoverAfter",
+            "令一名角色回复体力值时": "source:recoverAfter",
             "令一名角色回复体力值结束": "source:recoverEnd",
             "令一名角色回复体力值前": "source:recoverBefore",
             "令一名角色回复体力值后": "source:recoverAfter",
 
-
             "受伤前": "damageBefore",
+            "即将受到伤害时": "damageBefore",
             "受伤开始": "damageBegin",
             "伤害开始时1": "damageBegin1",
             "伤害开始时2": "damageBegin2",
@@ -1736,10 +1913,14 @@ export class NonameCN {
             "受到伤害后": "damageEnd",
             "受到伤害结算后": "damageAfter",
             //
-            '造成伤害': 'damageSource',
-            "造成伤害开始时": "source:damageBefore",
-            "造成伤害前": "source:damageBegin",
-            '造成伤害时': 'damageSource',
+            "造成伤害前": "source:damageBefore",
+            "即将造成伤害时": "source:damageBefore",
+            "造成伤害开始": "source:damageBegin",
+            '造成伤害时1': "source:damageBegin1",
+            '造成伤害时2': "source:damageBegin2",
+            '造成伤害时3': "source:damageBegin3",
+            '造成伤害时4': "source:damageBegin4",
+            '造成伤害时': 'damageBegin',
             '造成伤害后': 'damageSource',
             "令一名角色受伤时": "source:damageBegin",
             "令一名角色受伤结束": "source:damageEnd",
@@ -1751,6 +1932,24 @@ export class NonameCN {
             "令一名角色受到伤害后": "source:damageAfter",
             "受到零点伤害时": "damageZero",
             "受到0点伤害时": "damageZero",
+            //
+            '牌造成伤害时1': "source:yescard:triPlayer=other:damageBegin1",
+            '牌造成伤害时2': "source:yescard:triPlayer=other:damageBegin2",
+            '牌造成伤害时3': "source:yescard:triPlayer=other:damageBegin3",
+            '牌造成伤害时4': "source:yescard:triPlayer=other:damageBegin4",
+            '牌造成伤害后': "source:yescard:triPlayer=other:damageEnd",
+            //
+            '使用牌造成伤害时': "source:yescard:triPlayer=other:damageBegin",
+            '使用牌造成伤害时1': "source:yescard:triPlayer=other:damageBegin1",
+            '使用牌造成伤害时2': "source:yescard:triPlayer=other:damageBegin2",
+            '使用牌造成伤害时3': "source:yescard:triPlayer=other:damageBegin3",
+            '使用牌造成伤害时4': "source:yescard:triPlayer=other:damageBegin4",
+            '使用牌造成伤害后': "source:yescard:triPlayer=other:damageEnd",
+            //
+            '受到或造成伤害后': "damageEnd|damageSource",
+            '造成或受到伤害后': "damageEnd|damageSource",
+            '受到或造成伤害结算后': "damageAfter|damageSource",
+            '造成或受到伤害结算后': "damageAfter|damageSource",
 
             "失去体力前": "loseHpBefore",
             "失去体力开始": "loseHpBegin",
@@ -1825,6 +2024,28 @@ export class NonameCN {
             "令一名角色横置或重置结束": "source:linkEnd",
             "令一名角色横置或重置前": "source:linkBefore",
             "令一名角色横置或重置后": "source:linkAfter",
+            //
+            "横置前": "linked=false:linkBefore",
+            "横置开始": "linked=false:linkBegin",
+            "横置时": "linked=false:linkBegin",
+            "横置结束": "linked=false:linkEnd",
+            "横置后": "linked=false:linkAfter",
+            "横置结算后": "linked=false:linkAfter",
+            "令一名角色横置时": "source:linked=false:linkBegin",
+            "令一名角色横置结束": "source:linked=false:linkEnd",
+            "令一名角色横置前": "source:linked=false:linkBefore",
+            "令一名角色横置后": "source:linked=false:linkAfter",
+            //
+            "重置前": "linked=true:linkBefore",
+            "重置开始": "linked=true:linkBegin",
+            "重置时": "linked=true:linkBegin",
+            "重置结束": "linked=true:linkEnd",
+            "重置后": "linked=true:linkAfter",
+            "重置结算后": "linked=true:linkAfter",
+            "令一名角色重置时": "source:linked=true:linkBegin",
+            "令一名角色重置结束": "source:linked=true:linkEnd",
+            "令一名角色重置前": "source:linked=true:linkBefore",
+            "令一名角色重置后": "source:linked=true:linkAfter",
 
             "翻面前": "turnOverBefore",
             "翻面开始": "turnOverBegin",
@@ -1862,45 +2083,66 @@ export class NonameCN {
             "令一名角色死亡前": "source:dieBefore",
             "令一名角色死亡后": "source:dieAfter",
 
-            "获得技能前": "addSkillsBefore",
-            "获得技能开始": "addSkillsBegin",
-            "获得技能时": "addSkillsBegin",
-            "获得技能结束": "addSkillsEnd",
-            "获得技能后": "addSkillsAfter",
-            "获得技能结算后": "addSkillsAfter",
-            "令一名角色获得技能时": "source:addSkillsBegin",
-            "令一名角色获得技能结束": "source:addSkillsEnd",
-            "令一名角色获得技能前": "source:addSkillsBefore",
-            "令一名角色获得技能后": "source:addSkillsAfter",
+            "获得技能前": "addSkills:changeSkillsBefore",
+            "获得技能开始": "addSkills:changeSkillsBegin",
+            "获得技能时": "addSkills:changeSkillsBegin",
+            "获得技能结束": "addSkills:changeSkillsEnd",
+            "获得技能后": "addSkills:changeSkillsAfter",
+            "获得技能结算后": "addSkills:changeSkillsAfter",
+            "令一名角色获得技能时": "source:addSkills:changeSkillsBegin",
+            "令一名角色获得技能结束": "source:addSkills:changeSkillsEnd",
+            "令一名角色获得技能前": "source:addSkills:changeSkillsBefore",
+            "令一名角色获得技能后": "source:addSkills:changeSkillsAfter",
 
-            "失去技能前": "removeSkillsBefore",
-            "失去技能开始": "removeSkillsBegin",
-            "失去技能时": "removeSkillsBegin",
-            "失去技能结束": "removeSkillsEnd",
-            "失去技能后": "removeSkillsAfter",
-            "失去技能结算后": "removeSkillsAfter",
-            "令一名角色失去技能时": "source:removeSkillsBegin",
-            "令一名角色失去技能结束": "source:removeSkillsEnd",
-            "令一名角色失去技能前": "source:removeSkillsBefore",
-            "令一名角色失去技能后": "source:removeSkillsAfter",
+            "失去技能前": "removeSkills:changeSkillsBefore",
+            "失去技能开始": "removeSkills:changeSkillsBegin",
+            "失去技能时": "removeSkills:changeSkillsBegin",
+            "失去技能结束": "removeSkills:changeSkillsEnd",
+            "失去技能后": "removeSkills:changeSkillsAfter",
+            "失去技能结算后": "removeSkills:changeSkillsAfter",
+            "令一名角色失去技能时": "source:removeSkills:changeSkillsBegin",
+            "令一名角色失去技能结束": "source:removeSkills:changeSkillsEnd",
+            "令一名角色失去技能前": "source:removeSkills:changeSkillsBefore",
+            "令一名角色失去技能后": "source:removeSkills:changeSkillsAfter",
 
-            //牌事件
+            //
+            "技能数改变前": "changeSkillsBefore",
+            "技能数改变开始": "changeSkillsBegin",
+            "技能数改变时": "changeSkillsBegin",
+            "技能数改变结束": "changeSkillsEnd",
+            "技能数改变后": "changeSkillsAfter",
+            "技能数改变结算后": "changeSkillsAfter",
+            "令一名角色技能数改变时": "source:changeSkillsBegin",
+            "令一名角色技能数改变结束": "source:changeSkillsEnd",
+            "令一名角色技能数改变前": "source:changeSkillsBefore",
+            "令一名角色技能数改变后": "source:changeSkillsAfter",
+
+            "发动非锁定技时": "useSkillFilter=noLocked:useSkill|logSkillBegin",
+            "发动锁定技时": "useSkillFilter=isLocked:useSkill|logSkillBegin",
+            "发动技能时": "useSkill|logSkillBegin",
+            "发动非锁定技后": "useSkillFilter=noLocked:useSkill|logSkillAfter",
+            "发动锁定技后": "useSkillFilter=isLocked:useSkill|logSkillAfter",
+            "发动技能后": "useSkill|logSkillAfter",
+
             "使用技能时": "useSkill",
+            //牌事件
             "洗牌时": "washCard",
             "应变时": "yingbian",
-
             '牌被弃置后': 'discard:loseAfter',
             //
             "杀造成伤害时": "shaDamage",
             "杀命中时": "shaHit",
             "杀未命中时": "shaMiss",
-            //拼点
+            //
+            '发起拼点后': "chooseToCompareAfter|compareMultipleAfter",
+            '回应拼点后': "target:chooseToCompareAfter|compareMultipleAfter",
+            '拼点后': "target+:chooseToCompareAfter|compareMultipleAfter",
             '亮出拼点牌前': 'compareCardShowBefore',
 
             //使用打出事件
-            '需要打出闪时': 'chooseToRespondBefore:shan',
-            '需要使用闪时': 'chooseToUseBefore:shan',
-            '需要打出杀时': 'chooseToRespondBefore:sha',
+            '需要打出闪时': 'respondName=shan:chooseToRespondBefore',
+            '需要使用闪时': 'respondName=shan:chooseToUseBefore',
+            '需要打出杀时': 'respondName=sha:chooseToRespondBefore',
         },
         game_method: {
             '创卡': 'createCard',
@@ -2520,7 +2762,8 @@ export class NonameCN {
         let list = Object.assign({},
             NonameCN.groupedList.event_name,
             NonameCN.groupedList.triggerList,
-            NonameCN.groupedList.trigger_type
+            NonameCN.groupedList.trigger_type,
+            NonameCN.groupedList.trigger_only,
         );
         return list
     }
@@ -2528,7 +2771,7 @@ export class NonameCN {
         const back = game.xjb_back
         let list = Object.assign({}, NonameCN.basicList);
         for (let k in NonameCN.groupedList) {
-            if (['filter_only'].includes(k)) continue;
+            if (['filter_only', 'trigger_only'].includes(k)) continue;
             list = Object.assign(list, NonameCN.groupedList[k]);
         }
         if (!back) return list;
@@ -2544,6 +2787,7 @@ export class NonameCN {
         let list = Object.assign({}, NonameCN.basicList);
         const id = back.getID()
         for (let k in NonameCN.groupedList) {
+            if (['trigger_only'].includes(k)) continue;
             list = Object.assign(list, NonameCN.groupedList[k]);
         }
         list["获取名为" + back.getSourceID() + "的父事件的名字"] = `getParent:"${back.getSourceID()}"://!?name`
@@ -2924,23 +3168,6 @@ export class NonameCN {
             .replace(/(?<=置)于(?=判定区|装备区|弃牌堆)/g, "入")
             .replace("扣置", "置")
             .replace("恢复体力", "回复体力")
-    }
-    static standardTriBefore(that) {
-        textareaTool().setTarget(that)
-            .replace(/之(前|时|后)/g, "$1")
-            .replace(/的判定牌生效/g, '判定牌生效')
-            .replace(/(?<=你|一名角色)的?判定区被?置入(延时)?类?(锦囊)?牌/g, "牌置入判定区")
-            .replace(/(?<=你|一名角色)的?装备区被?置入(装备)?牌/g, "牌置入装备区")
-            .replace(/场上(的|有)?(延时)?类?(锦囊)?牌被?置入判定区/g, "一名角色牌置入判定区")
-            .replace(/场上(的|有)?(装备)?牌被?置入判定区/g, "一名角色牌置入装备区")
-            .replace(/体力值?减少(时|前|开始时|结束时|后)/g, "失去体力$1 受到伤害$1")
-    }
-    static standardTri(that) {
-        textareaTool().setTarget(that)
-            .replace(/(?<=濒死)(状态|阶段)/g, "状态")
-            .replace(/([\u4e00-\u9fa5]*?)使用或打出([\u4e00-\u9fa5]+)/g, function (match, ...p) {
-                return `${p[0]}使用${p[1]} ${p[0]}打出${p[1]}`;
-            })
     }
     //处理模拟代码块
     static replace(undisposed) {

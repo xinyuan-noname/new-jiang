@@ -8,5 +8,5 @@ skin/image/xjb_newCharacter/*
 xjb_xyAPI.js
 
 #不忽略的文件
-!log/empty.text
-!skin/image/xjb_newCharacter/initial.jpg
+!/log/empty.text
+!/skin/image/xjb_newCharacter/initial.jpg
