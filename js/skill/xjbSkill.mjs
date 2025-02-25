@@ -16,8 +16,71 @@ function SkillCreater(name, skill) {
     return xjbSkill[name];
 };
 
-
-
+const xjb_jushou = SkillCreater(
+    "xjb_jushou", {
+    translate: "据守",
+    description: "结束阶段，你可以令你与任意名其他角色选择是否翻面并摸4张牌(X为该角色已损失的体力值，且至多为5)。",
+    trigger: {
+        player: "phaseJieshuBegin"
+    },
+    cost: async function (event, trigger, player) {
+        const chooser = [player]
+        const { result } = await player.chooseTarget((event, player, target) => {
+            return player != target;
+        }, target => {
+            return get.attitude2(target);
+        }, [1, Infinity]);
+        if (result.bool) chooser.push(...result.targets);
+        const targets = [];
+        for (const target of chooser) {
+            const { result: { bool } } = await target.chooseBool(`是否翻面并摸${Math.min(5, target.getDamagedHp()) + 4}张牌？`)
+                .set("ai", player => {
+                    return player.hp === 1 && player.countCards("h") <= 3
+                });
+            if (bool) targets.push(target);
+        }
+        event.result = { targets, bool: targets.length > 0 }
+    },
+    content: async function (event, trigger, player) {
+        for(const target of event.targets){
+            await target.turnOver()
+        }
+        await game.asyncDraw(event.targets, target => {
+            return Math.min(5, target.getDamagedHp()) + 4;
+        });
+    }
+})
+const xjb_jiewei = SkillCreater(
+    "xjb_jiewei", {
+    enable: "chooseToUse",
+    filterCard: true,
+    position: "e",
+    viewAs: { name: "wuxie" },
+    viewAsFilter(player) {
+        return player.countCards("e") > 0;
+    },
+    prompt: "将一张装备区内的牌当无懈可击使用",
+    check(card) {
+        return 8 - get.equipValue(card);
+    },
+    threaten: 1.2,
+    subSkill: {
+        move: {
+            trigger: {
+                player: ["turnOverAfter", "damageEnd"]
+            },
+            filter: (event, player) => {
+                return player.canMoveCard();
+            },
+            content: async function (event, trigger, player) {
+                await player.moveCard();
+            }
+        }
+    },
+    group: "xjb_jiewei_move",
+    translate: "解围",
+    description: "你可以将你的装备牌当作【无懈可击】使用。你翻面后/受到伤害后，你可以移动场上一张牌。",
+})
 //吕蒙技能
 const xjb_xiaomeng = SkillCreater(
     "xjb_xiaomeng", {

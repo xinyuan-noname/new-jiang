@@ -1808,6 +1808,8 @@ export class NonameCN {
             "失去判定区牌后": "j:loseAfter",
 
             //
+            "于弃牌阶段弃牌后": "loseFor=discardInDiscardPhase:loseAfter",
+            "于弃牌阶段弃置牌后": "loseFor=discardInDiscardPhase:loseAfter",
             "牌不因使用而进入弃牌堆后": "loseFor=noUseToDiscardPile:loseAfter",
             "牌不因使用进入弃牌堆后": "loseFor=noUseToDiscardPile:loseAfter",
             "牌因弃置而进入弃牌堆后": "loseFor=discardToDiscardPile:loseAfter",

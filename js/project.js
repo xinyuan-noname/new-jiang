@@ -340,9 +340,9 @@ lib.skill.xjb_9 = {
             })
             intro.right.appendChild(div)
             let player = ui.create.player()
-            player.init("xin_fellow")
+            player.init("xjb_rider")
             intro.right.player = player
-            intro.right.character_id = playerName || "xin_fellow"
+            intro.right.character_id = playerName || "xjb_rider"
             //调整样式
             ui.xjb_giveStyle(player, {
                 marginTop: "-48px",
@@ -529,7 +529,7 @@ lib.skill.xjb_9 = {
                 })
             }
             game.xjb_Introduction.style.display = "block"
-            game.xjb_Introduction.right.character_id = playerName || "xin_fellow"
+            game.xjb_Introduction.right.character_id = playerName || "xjb_rider"
             game.xjb_Introduction.right.clear()
             return game.xjb_Introduction
         }

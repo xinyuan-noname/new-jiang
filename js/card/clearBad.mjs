@@ -312,38 +312,6 @@ const xjb_tianqian = CardCreater(
     },
     allowMultiple: false,
 })
-const xjb_fuci = CardCreater(
-    "xjb_fuci", {
-    fullskin: true,
-    type: "trick",
-    selectTarget: 1,
-    enable: true,
-    filterTarget: true,
-    content: function () {
-        if (!target.storage.xjb_judge_fuci) target.storage.xjb_judge_fuci = 0;
-        if (target.storage.xjb_judge_fuci < 5) target.storage.xjb_judge_fuci++;
-        target.popup('福赐层数:</br>' + target.storage.xjb_judge_fuci);
-        game.delay(1.5);
-        for (let i = 0; i < target.storage.xjb_judge_fuci; i++) {
-            target.getBuff();
-            game.delay(1.5)
-        }
-    },
-    translate: "福赐",
-    description: "出牌阶段，对一名角色使用。目标角色福赐层数+1然后随机获得x个增益效果。(x为福赐层数,最高为5层)",
-    ai: {
-        basic: {
-            order: 1,
-            useful: 2,
-            value: 8,
-        },
-        result: {
-            target: (player, target) => {
-                return 10;
-            },
-        },
-    },
-})
 
 export const clearBadSettingList = {
     xjb_lijingtuzhi_1: {
@@ -405,16 +373,6 @@ export const clearBadSettingList = {
         counterpart: "天谴-黑桃-9",
         min: 0,
         max: 1
-    },
-    xjb_fuci_1: {
-        counterpart: "福赐-红桃-6",
-        min: 0,
-        max: 2
-    },
-    xjb_fuci_2: {
-        counterpart: "福赐-红桃-8",
-        min: 0,
-        max: 2
     },
     xjb_zhuqiang_1: {
         counterpart: "筑墙-黑桃-3",

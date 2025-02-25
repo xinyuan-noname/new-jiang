@@ -118,9 +118,9 @@ const triUnkonwn = (value, player, id) => {
         case "outPhase":
             return `${player} === _status.currentPhase`;
         case "inPhaseUse":
-            return `!${player}.isPhaseUsing()`
+            return `!${player}.isPhaseUsing()`;
         case "outPhaseUse":
-            return `${player}.isPhaseUsing()`
+            return `${player}.isPhaseUsing()`;
         //
         case "onlyOneTarget":
             return `event.targets.length > 1`;
@@ -243,7 +243,7 @@ export class EditorOrganize {
             else if (triLoseEvts && triLoseEvts.length === 1) {
                 if (triLoseReason === "noUseToDiscardPile") {
                     triggerCopy.global.push("equipAfter", "loseAsyncAfter", "cardsDiscardAfter")
-                } if (triLoseReason === "discardToDiscardPile") {
+                } if (triLoseReason === "discardToDiscardPile" || triLoseReason === "discardInDiscardPhase") {
                     triggerCopy.global.push("loseAsyncAfter")
                 } else {
                     triggerCopy.global.push("equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter")
@@ -619,9 +619,9 @@ export class EditorOrganize {
                     //
                     else if (attr.startsWith("filterPlayer") && triType === "global") {
                         if (attr === "filterPlayer") for (const value of values) {
-                            parts.add(triPlayerFilter(value, boolCardsDiscard ? "event.getParent().relatedEvent.player" : `event.${globalAs}`))
+                            parts.add(triPlayerFilter(value, boolCardsDiscard ? "event.getParent()?.relatedEvent?.player" : `event.${globalAs}`))
                         } else {
-                            parts.add(triPlayerFilter(values, boolCardsDiscard ? "event.getParent().relatedEvent.player" : `event.${globalAs}`, attr))
+                            parts.add(triPlayerFilter(values, boolCardsDiscard ? "event.getParent()?.relatedEvent?.player" : `event.${globalAs}`, attr))
                         }
                     }
                     else if (attr === "historyAllDamage") {
@@ -727,7 +727,11 @@ export class EditorOrganize {
         const filterParts = [];
         let who = global ? "target" : "player";
         let cards = '';
-        if (triReason === "discardToDiscardPile") parts.push(`event.type !== "discard"`)
+        if (triReason === "discardToDiscardPile") parts.push(`event.type !== "discard"`);
+        else if (triReason === "discardInDiscardPhase"){
+            parts.push(`event.type !== "discard"`)
+            parts.push(`event.getParent("discardPhase", true)?.player !== ${who}`);
+        } 
         const map = EditorDataAnalyze.triLimitUrl(global ? triggerFilter.global.loseAfter : triggerFilter.player.loseAfter);
         if (map.unknown) {
             for (const value of map.unknown) {
@@ -737,18 +741,17 @@ export class EditorOrganize {
         if (map.noCard) {
             parts.push(`player.countCards(${map.noCard})`)
         }
-        getlParts.push('event.getl', `event.getl(${who})`);
         if (map.position) {
             const [position] = map.position;
             if (position.length === 1) {
-                cards = `event.getl(${who}).${position}s`;
+                cards = `event?.getl?.(${who})?.${position}s`;
             } else {
-                cards = `event.getl(${who}).cards2`;
+                cards = `event?.getl?.(${who})?.cards2`;
                 filterParts.push(`"${position}".includes(get.position(card))`)
             }
             delete map.position;
         } else {
-            cards = (`event.getl(${who}).cards2`);
+            cards = `event?.getl?.(${who})?.cards2`;
         }
         for (const [attr, values] of Object.entries(map)) {
             if (["unknown", "noCard"].includes(attr)) continue;
@@ -763,8 +766,8 @@ export class EditorOrganize {
                 filterParts.push(triCardsFilter2(attr, values, who))
             }
         }
-        if (filterParts.length) getlParts.push(`${cards}.some(card => ${filterParts.join(" && ")})`)
-        else if (!global) getlParts.push(`${cards}.length`)
+        if (filterParts.length) getlParts.push(`${cards}?.some?.(card => ${filterParts.join(" && ")})`)
+        else if (!global) getlParts.push(`${cards}?.length`)
         if (parts.length) result += `if(${parts.join(' || ')}) return false;\n`
         if (getlParts.length === 1) result += `if(!${getlParts.join(" && ")}) return false;\n`
         else if (getlParts.length > 1) result += `if(!(${getlParts.join(" && ")})) return false;\n`
@@ -777,7 +780,7 @@ export class EditorOrganize {
         const getdFilter = [];
         const disFilter = [];
         const cardFilter = [];
-        let getdCards = `event.getd(${who}, "cards2")`, disCards = "event.cards";
+        let getdCards = `event.getd(${who}, "cards2")`, disCards = `event?.getl?.(${who}, "cards2")`;
         for (const triType in triggerFilter) {
             for (const [_, search] of Object.entries(triggerFilter[triType])) {
                 if (!search) continue;
@@ -791,6 +794,7 @@ export class EditorOrganize {
                     const [position] = map.position;
                     if (position.length === 1) {
                         getdCards = `event.getd(${who}, "${position}s")`;
+                        disCards = `event.getl(${who}, "${position}s")`
                     } else {
                         cardFilter.push(`"${position}".includes(get.position(card))`)
                     }
@@ -812,7 +816,7 @@ export class EditorOrganize {
                 result += `if(${commonFilter.join(" || ")}) return false;\n`;
             }
             getdFilter.push(`${getdCards}.every(card => ${cardFilter.join(" && ")})`);
-            disFilter.push(`${disCards}.every(card => ${cardFilter.join(" && ")})`);
+            disFilter.push(`${disCards}?.every?.(card => ${cardFilter.join(" && ")})`);
         }
         if (getdFilter.length) {
             result += `if(event.name !== "cardsDiscard" && ${getdFilter.length > 1 ? '(' + getdFilter.join(" || ") + ')' : getdFilter}) return false;\n`;

@@ -71,7 +71,7 @@ export function XJB_CONTENT(config, pack) {
             getAPI: '获取工具',
             changeBranch: "切换分支",
             putout: '输出目录',
-            download: '下载更新',
+            download: '完整更新',
             downloadSimply: '简易更新',
         },
         visualMenu: function (node) {
@@ -137,9 +137,13 @@ export function XJB_CONTENT(config, pack) {
                     const manager = game.xjb_updater_zip.updateLine();
                     manager.on("error", err => {
                         console.error(err);
+                        alert("更新出错" + err);
                     })
                     manager.on("phaseEnd", data => {
                         console.log(data);
+                    })
+                    manager.on("end", () => {
+                        alert("更新成功！")
                     })
                 }; break;
                 case 'downloadSimply': {
@@ -157,12 +161,14 @@ export function XJB_CONTENT(config, pack) {
                     });
                     manager.on("makeSureDirSuc", data => {
                         console.log(data.processingDir, "文件夹创建成功")
+                        game.print(data.processingDir, "文件夹创建成功")
                     })
                     manager.on("update", data => {
                         console.log(data.updateInfo);
                     });
                     manager.on("updateSuc", data => {
                         console.log(data.processingFile, "下载成功");
+                        game.print(data.processingFile, "文件夹创建成功")
                     });
                     manager.on("fixFileSuc", data => {
                         console.log(data.fixingFileInfo);
@@ -171,7 +177,7 @@ export function XJB_CONTENT(config, pack) {
                         alert("更新成功！")
                     })
                     manager.on("fileException", (files) => {
-                        alert("存在更新失败的文件" + files);
+                        alert("存在更新失败的文件" + files + '\n请选择完整更新！（这将比较花费时间）');
                     })
                     manager.on("recoverSuc", file => {
                         console.log("成功修复文件", file)
