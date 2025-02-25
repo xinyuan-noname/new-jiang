@@ -37,7 +37,7 @@ game.import("card", function () {
         translate: {
             "xjb_hunbiStore_card_config": "魂市",
             _xjb_cardStore: "魂市",
-            xjb_unique: '<img src="' + lib.xjb_src + 'image/xjb_hunbi.png" height="24">',
+            xjb_unique: '<img src="./extension/新将包/image/xjb_hunbi.png" height="24">',
             xjb_unique_SanSkill: "🐉神圣技能🐉",
             xjb_unique_talent: "💡天赋卡💡",
             xjb_unique_money: "💎货币卡💎",

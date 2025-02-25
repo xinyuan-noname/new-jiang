@@ -1,46 +1,5 @@
 import { XJB_Math } from "./tool/math.js";
 import { _status, lib, game, ui, get, ai } from "../../../noname.js"
-/*file*/
-game.xjb_transferFile = function (BLOB, fileWay, silent) {
-    function download() {
-        const obj = {}
-        if (!silent) obj.Myalert = game.xjb_create.alert("正在导出中...")
-        const sucCallback = e => obj.Myalert && (obj.Myalert.innerHTML = "导出成功！");
-        const failCallback = err => obj.Myalert && (obj.Myalert.innerHTML = "导出失败！<br>" + err);
-        try {
-            if ("FileTransfer" in window) var fileTransfer = new FileTransfer();
-            if (fileTransfer) return fileTransfer.download(
-                this.result,
-                fileWay,
-                sucCallback,
-                failCallback
-            );
-            if (lib.node) return lib.node.fs.writeFile(
-                window.decodeURIComponent(new URL(fileWay).pathname).substring(1),
-                Buffer.from(new Uint8Array(this.result)),
-                err => {
-                    if (err) return failCallback(err);
-                    sucCallback();
-                }
-            )
-        } catch (err) {
-            failCallback(err);
-        }
-    }
-    if (typeof BLOB === "string") {
-        const myTarget = {
-            result: BLOB,
-        }
-        download.apply(myTarget, []);
-        return;
-    }
-    else {
-        var reader = new FileReader()
-        reader.onload = download;
-        if (lib.node) return reader.readAsArrayBuffer(BLOB)
-        reader.readAsDataURL(BLOB, "UTF-8")
-    }
-};
 game.xjb_checkCharacterCount = function (id, attr, preValue) {
     if (!lib.config.xjb_count[id]) lib.config.xjb_count[id] = {}
     if (!lib.config.xjb_count[id][attr]) lib.config.xjb_count[id][attr] = preValue;

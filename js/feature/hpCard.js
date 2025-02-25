@@ -92,7 +92,7 @@ game.xjb_createHpCard = function (num, num2 = 100) {
     HpCard.setAttribute("number", get.cnNumber(num))
     HpCard.number = num;
     HpCard.innerHTML =
-        `<img src="${lib.xjb_src}HpCard/${HpCard.number}.jpg" height =${num2}px>`
+        `<img src="./extension/新将包/HpCard/${HpCard.number}.jpg" height =${num2}px>`
     return HpCard;
 }
 

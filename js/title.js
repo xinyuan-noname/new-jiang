@@ -7,21 +7,21 @@ lib.skill.xjb_5 = {
                 lib.config.xjb_title[i] = ["", []];
             }
         }
-        lib.config.xjb_title[0][0] = `<img src=${lib.xjb_src}title/xjb_kill1.png height=50px></img>`
-        lib.config.xjb_title[1][0] = `<img src=${lib.xjb_src}title/xjb_fire.png height=20px></img>`
-        lib.config.xjb_title[2][0] = `<img src=${lib.xjb_src}title/xjb_thunder.png height=20px></img>`
-        lib.config.xjb_title[3][0] = `<img src=${lib.xjb_src}title/xjb_ice.png height=20px></img>`
-        lib.config.xjb_title[4][0] = `<img src=${lib.xjb_src}title/xjb_loseMaxHp.png height=20px></img>`
-        lib.config.xjb_title[5][0] = `<img src=${lib.xjb_src}title/xjb_gainMaxHp.png height=20px></img>`
-        lib.config.xjb_title[6][0] = `<img src=${lib.xjb_src}title/xjb_kill2.png height=40px></img>`
-        lib.config.xjb_title[7][0] = `<img src=${lib.xjb_src}title/xjb_boss1.png height=50px></img>`
-        lib.config.xjb_title[8][0] = `<img src=${lib.xjb_src}title/xjb_yin1.png height=50px></img>`
-        lib.config.xjb_title[9][0] = `<img src=${lib.xjb_src}title/xjb_yin2.png height=60px></img>`
-        lib.config.xjb_title[10][0] = `<img src=${lib.xjb_src}title/xjb_yin3.png height=70px></img>`
-        lib.config.xjb_title[11][0] = `<img src=${lib.xjb_src}title/xjb_yin1.png height=50px></img>`
-        lib.config.xjb_title[12][0] = `<img src=${lib.xjb_src}title/xjb_yin2.png height=60px></img>`
-        lib.config.xjb_title[13][0] = `<img src=${lib.xjb_src}title/xjb_yin3.png height=70px></img>`
-        lib.config.xjb_title[14][0] = `<img src=${lib.xjb_src}title/xjb_damageZero.png height=60px></img>`
+        lib.config.xjb_title[0][0] = `<img src=./extension/新将包/title/xjb_kill1.png height=50px></img>`
+        lib.config.xjb_title[1][0] = `<img src=./extension/新将包/title/xjb_fire.png height=20px></img>`
+        lib.config.xjb_title[2][0] = `<img src=./extension/新将包/title/xjb_thunder.png height=20px></img>`
+        lib.config.xjb_title[3][0] = `<img src=./extension/新将包/title/xjb_ice.png height=20px></img>`
+        lib.config.xjb_title[4][0] = `<img src=./extension/新将包/title/xjb_loseMaxHp.png height=20px></img>`
+        lib.config.xjb_title[5][0] = `<img src=./extension/新将包/title/xjb_gainMaxHp.png height=20px></img>`
+        lib.config.xjb_title[6][0] = `<img src=./extension/新将包/title/xjb_kill2.png height=40px></img>`
+        lib.config.xjb_title[7][0] = `<img src=./extension/新将包/title/xjb_boss1.png height=50px></img>`
+        lib.config.xjb_title[8][0] = `<img src=./extension/新将包/title/xjb_yin1.png height=50px></img>`
+        lib.config.xjb_title[9][0] = `<img src=./extension/新将包/title/xjb_yin2.png height=60px></img>`
+        lib.config.xjb_title[10][0] = `<img src=./extension/新将包/title/xjb_yin3.png height=70px></img>`
+        lib.config.xjb_title[11][0] = `<img src=./extension/新将包/title/xjb_yin1.png height=50px></img>`
+        lib.config.xjb_title[12][0] = `<img src=./extension/新将包/title/xjb_yin2.png height=60px></img>`
+        lib.config.xjb_title[13][0] = `<img src=./extension/新将包/title/xjb_yin3.png height=70px></img>`
+        lib.config.xjb_title[14][0] = `<img src=./extension/新将包/title/xjb_damageZero.png height=60px></img>`
         game.saveConfig('xjb_title', lib.config.xjb_title);
     },
     Func: function () {

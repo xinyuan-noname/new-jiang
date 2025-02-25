@@ -1,50 +1,40 @@
 import { _status, lib, game, ui, get, ai } from "../../../noname.js"
-//log
+const encoder = new TextEncoder();
 game.xjb_writeHunbiLog = function (log) {
-    var time = game.xjb_getCurrentDate();
-    var str = `${time[0]}-${time[1]}-${time[2]}-${time[3]}-${time[4]}:`;
-    str += log
-    const fileWay = lib.xjb_fileURL + "log/log.txt";
-    const xhr = new XMLHttpRequest();
-    let file
-    xhr.onreadystatechange = function () {
-        if (xhr.responseText) {
-            file = new Blob([xhr.responseText + str], {
-                type: "text/plain;charset=utf-8"
-            });
-        } else {
-            file = new Blob([str], {
-                type: "text/plain;charset=utf-8"
-            });
-        }
-        if (lib.config.xjb_developer) {
-            file = new Blob([''], {
-                type: "text/plain;charset=utf-8"
-            });
-        }
-        game.xjb_transferFile(file, fileWay, true);
-    };
-    xhr.open("GET", lib.xjb_src + "log/log.txt");
-    xhr.send();
+    const time = game.xjb_getCurrentDate();
+    const appendStr = `${time[0]}-${time[1]}-${time[2]}-${time[3]}-${time[4]}:${log}\n`;
+    fetch(`${location.origin}/extension/新将包/log/log.txt`)
+        .then(response => {
+            if (!response.ok){
+                if (response.status === 404) return "";
+                else throw new Error(response.statusText);
+            } 
+            return response.text();
+        })
+        .then(text => {
+            const buffer = encoder.encode(text + appendStr).buffer
+            return game.promises.writeFile(buffer, "extension/新将包/log", "log.txt");
+        })
+        .catch(err => {
+            console.error("writing error", err);
+        });
 }
 game.xjb_clearHunbiLog = function () {
-    const fileWay = lib.config.xjb_fileURL + "log/log.txt";
-    const xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function () {
-        if (xhr.responseText) {
-            const file = new Blob([''], {
-                type: "text/plain;charset=utf-8"
-            });
-            game.xjb_transferFile(file, fileWay, true);
-        } else {
-            const file = new Blob([''], {
-                type: "text/plain;charset=utf-8"
-            });
-            game.xjb_transferFile(file, fileWay, true);
-        }
-    };
-    xhr.open("GET", lib.xjb_src + "log/log.txt");
-    xhr.send();
+    fetch(`${location.origin}/extension/新将包/log/log.txt`)
+        .then(response => {
+            if (!response.ok) {
+                if (response.status === 404) return "";
+                else throw new Error(response.statusText);
+            }
+            return response.text();
+        })
+        .then(text => {
+            const buffer = encoder.encode(text).buffer
+            return game.promises.writeFile(buffer, "extension/新将包/log", "log.txt");
+        })
+        .catch(err => {
+            console.error("log写入失败", err)
+        });
 }
 /*Getcurrency*/
 class CurrencyRate {

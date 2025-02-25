@@ -1,11 +1,7 @@
 export default [
     [
         "content.js",
-        "89b8df1e0d97f72d85bb81ebdfbffc3a18bb68156648c3463b9be29341fe14e0"
-    ],
-    [
-        "Directory.js",
-        "75a6fb27a46d92cc7dd56f848119162b3edd14130341ca167df5fc4c7dea0995"
+        "c743727efdda5ef40ff315d74753068a3f376e54a4cb783fe72b961b0e540f91"
     ],
     [
         "extension.js",
@@ -21,11 +17,11 @@ export default [
     ],
     [
         "precontent.js",
-        "8211d64872342b6a57a8e177429136b7d3ee4edae5d5767a8e0383e8e0b21ebb"
+        "6554249b5d5ad8a56ca7ff8f85f2f92a048f6ad03759e30bccf34c4f5f85e428"
     ],
     [
         "README.md",
-        "e3a1d0c08150939822318244f6cf8d3ae86c9efd8611d6d50f5b29142cb256e8"
+        "c97a5a602c6980f6493849f5d659a9cacef55feb24324e7621de7267c3830eb1"
     ],
     [
         "xin_newCharacter.jpg",
@@ -34,6 +30,18 @@ export default [
     [
         "@types/Player.ts",
         "4dd84caf6bff10d5d94094bef082a8cbb5696dbcf0d74b0309c4d033b755a4a7"
+    ],
+    [
+        "css/editor.css",
+        "6cae9c9c5be5e3a17e60aeaf2a643d4a8d4a3fa393a459b7becfce10b6b022b3"
+    ],
+    [
+        "css/main.css",
+        "a5b9cabd9e5e1227e847250520b517d5b59651400c8ee4a1b6f2909fa9c4fe80"
+    ],
+    [
+        "css/nature.css",
+        "c95f315bc78d74816590d2c21e7c412bb60f7f5682a42870574c8c5e2a38e425"
     ],
     [
         "audio/fire1.mp3",
@@ -60,72 +68,32 @@ export default [
         "8e7288fa9d365307ca7af8b0a2d1f63bde54cc3f3f744009da599e659a771727"
     ],
     [
-        "image/edit.png",
-        "46238d415ccb0553f38e90b3060598224264f6c832aab25a22a042c8e01e85da"
-    ],
-    [
         "image/god.jpg",
         "6668ac33597b3e70b75fc2b5eabe626986119be16a81042e30d4d04832117f6c"
-    ],
-    [
-        "image/instruction.png",
-        "47c48654169fe75f22aa1db432ea5971e0883b3e27e9a1e5c5b31095bc1ede52"
     ],
     [
         "image/Lucky.png",
         "3f1a95772d5e303e4762975f1b8a6ac56c5ff96799431aeb48d3671642831036"
     ],
     [
-        "image/tool.png",
-        "7156b14915275c7acea90328bfab228f0008a1140a1d21943adb77eb54b52d24"
-    ],
-    [
-        "image/trash.png",
-        "151ad582b91479f8fffb896b0f7b3540755989f5006c32696c091dbc0f6b7d18"
-    ],
-    [
-        "image/xjb_close.png",
-        "c564771e2256e44da57c5687356d134d42103584a5f9741a2ccb672a9edd8fa6"
-    ],
-    [
         "image/xjb_hunbi.png",
         "dae793ebf77eca6a95298116e0592f4305d6a6aa0948535729402cb646a2b206"
     ],
     [
-        "image/xjb_locked.png",
-        "a7276429fe01a0da1729f8ef6fa10dddd7cd1eeb95947a495f6f944df66c0353"
-    ],
-    [
-        "image/xjb_open.png",
-        "c9c322a5ed97e08b3fe2a21e9d94d4eeaa4c9d71a26a57630b24460fa38c4369"
-    ],
-    [
-        "image/xjb_shop.png",
-        "de1f8333c393eb8ba4e05d3a77f7fa5bd07d178aac626dbf01d5af806d13c0e0"
-    ],
-    [
-        "image/zeroize.png",
-        "9c06d7f62d4871673ff8562e01c7400e9ae48ef8477e32b54172d64bd8cf7fd4"
-    ],
-    [
-        "image/π.png",
-        "2f2b9244fbc5b66bc0b0af05e6c73a6165fc5926b075bd7d96f919672610d8a9"
-    ],
-    [
         "js/card.js",
-        "126635ddc5a6b62d54fd0017cbdd05e9eed4b212728839ca220d198cf6627255"
+        "d08de013a069b4b371c65a1529d25b7890c07c472f7ae4e9d900e5354ed6dc29"
     ],
     [
         "js/character.js",
-        "b88463bcea342b2fdb5ebcd94feea4e2d6c443bf122f8444a22c82cab316ada8"
+        "be6f9cc858ea0625e8342a82e4442d2ef2d53c13e7e4c070abbaed81a53d88fe"
     ],
     [
         "js/economy.js",
-        "4b25cbb5816542fdd0b5aa7b4f470074024a23ce1d9b53dc96ce87f0054cd1e7"
+        "2c9459f11745034fea30406dd4bae883423e9c124100739dd87260bed8dcdb04"
     ],
     [
         "js/editor.js",
-        "3716c36cc833defcbdded3cd5fdeecc14e2f2b323cc779b6bc8e26ad0a7a8cd6"
+        "874b159c7bfd1176b6a9c55077a0ca242c689e47675f021ab79cfec4a54b0274"
     ],
     [
         "js/event.js",
@@ -141,19 +109,19 @@ export default [
     ],
     [
         "js/lingli.js",
-        "424ed44e4a7397a590c187f6f18a258bf35034a34f001f0bb6cfdc59f5cbe769"
+        "a859f317a3da7f399ade1af5ae9a7a785eb68b045db66495a5fd82e52a0f63ff"
     ],
     [
         "js/project.js",
-        "ef0c4984d2b5304725988a451e413e6809b44f8c48dc2728a0e60b1ae535dc5b"
+        "09bb5804f2f34559e6de01da330daddd957b5fe09893ce5184019465339e40e3"
     ],
     [
         "js/raise.js",
-        "c2e3bbbc20c4863af4c9ae4ad4f4f11e4a03ba520796d88a915f001cd209199f"
+        "8a025d05c7929c1a5bc35a3aa5464c7e66f824ed74615c04a31582ee9beb663d"
     ],
     [
         "js/rpg.js",
-        "f660de0046ce481b1296a36371053aa1f51a4001607f34be7b5a51a4622eee25"
+        "7e391aba4d5598424959d19c09f2a347bbed65ac40f3f54c840a56cfd0abe11e"
     ],
     [
         "js/skills.js",
@@ -161,19 +129,7 @@ export default [
     ],
     [
         "js/title.js",
-        "840fa9622789f66fb766ca1bc68fc3ef80695276d61f14a021863a0c66b53c52"
-    ],
-    [
-        "css/editor.css",
-        "6cae9c9c5be5e3a17e60aeaf2a643d4a8d4a3fa393a459b7becfce10b6b022b3"
-    ],
-    [
-        "css/main.css",
-        "a5b9cabd9e5e1227e847250520b517d5b59651400c8ee4a1b6f2909fa9c4fe80"
-    ],
-    [
-        "css/nature.css",
-        "c95f315bc78d74816590d2c21e7c412bb60f7f5682a42870574c8c5e2a38e425"
+        "908413a2de5e92a7218996e6d171c65add7a333a8e4ac794e30023a3fc9e961c"
     ],
     [
         "lingli/book.jpg",
@@ -202,10 +158,6 @@ export default [
     [
         "md/usual.md",
         "48703011236a1a3eac10c540262b8b62b0645e16c9ab222998fd2fc87842380d"
-    ],
-    [
-        "json/1.json",
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     ],
     [
         "node/gen_dir.js",
@@ -376,42 +328,6 @@ export default [
         "7cdaa4968b43e48e04458d748c43bcfece1f1cb6662042bf88c303549852c8cc"
     ],
     [
-        "image/card_store/check.png",
-        "b862ac2c6eea64446c4cf74194d28dc57c0fd24c0ee46a343015a077bd8237d6"
-    ],
-    [
-        "image/card_store/skillCard.png",
-        "159f618e4c1c4ce800c922a622f5c7ab887368efb405c37154ac899647342329"
-    ],
-    [
-        "image/card_store/xjb_Infinity.png",
-        "423a7e7084543e4680e5f3b387dc6f6fca00d45e43f80bf35b79ae99b38e00bb"
-    ],
-    [
-        "image/card_store/xjb_jingu.png",
-        "51be7537f4015c3974903cb42a756df18bf08df45851d37b4f466dfed840e936"
-    ],
-    [
-        "image/card_store/xjb_seizeHpCard.png",
-        "77da9d8861ccaa92ea76a018962c19182c452cc56cb75827ae9790bb21a4bedc"
-    ],
-    [
-        "image/card_store/xjb_shenshapo.png",
-        "912332100c01294e1b8e2fd6ae2908d3f3cc368d1fbcf06ddd0b8a21f2aca2de"
-    ],
-    [
-        "image/card_store/xjb_tianming_huobi1.png",
-        "7c4df8cdc9c3edf26a780c02fffb653a0a7feff8a61a7c71be9e1e2c064a7a72"
-    ],
-    [
-        "image/card_store/xjb_tianming_huobi2.png",
-        "dc065d59fbc05847ef68bc21d0936fd1cc69b488a0480c9998ae3ede5ba33f8e"
-    ],
-    [
-        "image/card_store/xjb_zhihuan.png",
-        "239310f93fb18af3ab990f1e29ed5e21f13391571a9beeb2828771d8803707fd"
-    ],
-    [
         "image/character_dongzhou/xjb_guanyiwu.jpg",
         "edc3214d1e127f7deae124dfbe5ce662cec488bda87e7e5bb8a79fb6e4f5defd"
     ],
@@ -448,6 +364,42 @@ export default [
         "dbcadf1a3143f316d49b79f7fc8971bf599764ffa6b5bb7dcf9609207d5ef137"
     ],
     [
+        "image/card_store/check.png",
+        "b862ac2c6eea64446c4cf74194d28dc57c0fd24c0ee46a343015a077bd8237d6"
+    ],
+    [
+        "image/card_store/skillCard.png",
+        "159f618e4c1c4ce800c922a622f5c7ab887368efb405c37154ac899647342329"
+    ],
+    [
+        "image/card_store/xjb_Infinity.png",
+        "423a7e7084543e4680e5f3b387dc6f6fca00d45e43f80bf35b79ae99b38e00bb"
+    ],
+    [
+        "image/card_store/xjb_jingu.png",
+        "51be7537f4015c3974903cb42a756df18bf08df45851d37b4f466dfed840e936"
+    ],
+    [
+        "image/card_store/xjb_seizeHpCard.png",
+        "77da9d8861ccaa92ea76a018962c19182c452cc56cb75827ae9790bb21a4bedc"
+    ],
+    [
+        "image/card_store/xjb_shenshapo.png",
+        "912332100c01294e1b8e2fd6ae2908d3f3cc368d1fbcf06ddd0b8a21f2aca2de"
+    ],
+    [
+        "image/card_store/xjb_tianming_huobi1.png",
+        "7c4df8cdc9c3edf26a780c02fffb653a0a7feff8a61a7c71be9e1e2c064a7a72"
+    ],
+    [
+        "image/card_store/xjb_tianming_huobi2.png",
+        "dc065d59fbc05847ef68bc21d0936fd1cc69b488a0480c9998ae3ede5ba33f8e"
+    ],
+    [
+        "image/card_store/xjb_zhihuan.png",
+        "239310f93fb18af3ab990f1e29ed5e21f13391571a9beeb2828771d8803707fd"
+    ],
+    [
         "image/character_soul/xjb_bat.jpg",
         "3569d6ab47b798a2abfa3b89256ac31eb425b9084c897ffed9d6204edabf12dd"
     ],
@@ -462,6 +414,46 @@ export default [
     [
         "image/character_soul/xjb_timer.jpg",
         "5e9e7888d2e761846f18119dc58a5d4060a7b78b4f0f5646e21f6f62f82b2828"
+    ],
+    [
+        "image/icon/close.png",
+        "c564771e2256e44da57c5687356d134d42103584a5f9741a2ccb672a9edd8fa6"
+    ],
+    [
+        "image/icon/edit.png",
+        "46238d415ccb0553f38e90b3060598224264f6c832aab25a22a042c8e01e85da"
+    ],
+    [
+        "image/icon/instruction.png",
+        "47c48654169fe75f22aa1db432ea5971e0883b3e27e9a1e5c5b31095bc1ede52"
+    ],
+    [
+        "image/icon/locked.png",
+        "a7276429fe01a0da1729f8ef6fa10dddd7cd1eeb95947a495f6f944df66c0353"
+    ],
+    [
+        "image/icon/pi.png",
+        "2f2b9244fbc5b66bc0b0af05e6c73a6165fc5926b075bd7d96f919672610d8a9"
+    ],
+    [
+        "image/icon/shop.png",
+        "de1f8333c393eb8ba4e05d3a77f7fa5bd07d178aac626dbf01d5af806d13c0e0"
+    ],
+    [
+        "image/icon/tool.png",
+        "7156b14915275c7acea90328bfab228f0008a1140a1d21943adb77eb54b52d24"
+    ],
+    [
+        "image/icon/trash.png",
+        "151ad582b91479f8fffb896b0f7b3540755989f5006c32696c091dbc0f6b7d18"
+    ],
+    [
+        "image/icon/unloked.png",
+        "c9c322a5ed97e08b3fe2a21e9d94d4eeaa4c9d71a26a57630b24460fa38c4369"
+    ],
+    [
+        "image/icon/zero.png",
+        "9c06d7f62d4871673ff8562e01c7400e9ae48ef8477e32b54172d64bd8cf7fd4"
     ],
     [
         "image/character_xjb/xin_fellow.jpg",
@@ -576,6 +568,22 @@ export default [
         "da81f9244891714da47dca2c4bc5931238f6746a06818faf6cf06a78d8055060"
     ],
     [
+        "js/game/tetris.js",
+        "34aceafa2c03ffa5672e0e4c22c9ec4c4e724aedfd016f8686078c3b993e382d"
+    ],
+    [
+        "js/feature/hpCard.js",
+        "ff93066b87fd5600890833cf8069a62278167774e6ddebda2251fea75224982e"
+    ],
+    [
+        "js/feature/remnantArea.js",
+        "293f3d7e0f28b2f944cc73f396512f99eba6dc40fe9355148761bd966d351d45"
+    ],
+    [
+        "js/feature/skillCard.mjs",
+        "985a8135681b60d2dd792e1de691d8c2db8b5c010e850836eb8069c92a9b721e"
+    ],
+    [
         "js/editor/arrange.mjs",
         "1dbac071a60485aba99490555e3327624dd9a29cc8a73c774ad254a7235789d2"
     ],
@@ -616,36 +624,12 @@ export default [
         "becb2af662353955ae1491c5f9f81cc7f5ddba69421f919f6d27903522af512d"
     ],
     [
-        "js/game/tetris.js",
-        "34aceafa2c03ffa5672e0e4c22c9ec4c4e724aedfd016f8686078c3b993e382d"
-    ],
-    [
         "js/import/importEditor.mjs",
-        "a93de8458b2bcd2b55a591afa984fff01d0a9b53ec37e00346f701767b140fdf"
+        "1a0679704c8140982d71ed7360db14fa37679bbee374efca0e8fc8fbd525a168"
     ],
     [
         "js/import/url.js",
-        "3b9ab578afb444b61a7cd7d0f04ae9eb7a6adacef6ec8ba13399af721341866c"
-    ],
-    [
-        "js/feature/hpCard.js",
-        "26805d928e5e2fde14d42ab09f29102273e2d8e5182bf2501d5da269150d3102"
-    ],
-    [
-        "js/feature/remnantArea.js",
-        "293f3d7e0f28b2f944cc73f396512f99eba6dc40fe9355148761bd966d351d45"
-    ],
-    [
-        "js/feature/skillCard.mjs",
-        "985a8135681b60d2dd792e1de691d8c2db8b5c010e850836eb8069c92a9b721e"
-    ],
-    [
-        "js/interact/dialog.mjs",
-        "84fcc0aaa8e960a9088f752b2323bf8fa2537c7cdfcf1f65918ea8d751c01769"
-    ],
-    [
-        "js/interact/ui.mjs",
-        "9f21c3090c1f17770c1a0261ba346cf294d61b6b96f24b7193f536595d28fd7b"
+        "52d4f048ebf678e68c214fabc895befefe2c576ba3d4dcd9219073ed4d93d85d"
     ],
     [
         "js/lingli/card.mjs",
@@ -660,24 +644,16 @@ export default [
         "2b45b981cd74b0138ea434e057d4f923b61c8b82eba7b6c3a6dd26a6008801e1"
     ],
     [
+        "js/interact/dialog.mjs",
+        "b6a65aa08a0fabe23a2676e20a643f8e6d6a65590a5c997f570250a01c61d242"
+    ],
+    [
+        "js/interact/ui.mjs",
+        "f0be2cbd60d8d600e2a2a5c46b0d90fba8088c4c55e568c29d1ccd0c0b7355b0"
+    ],
+    [
         "js/progress/show.js",
         "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    ],
-    [
-        "js/tool/canvas.js",
-        "feeeaf6ac577c6a5a463257fca1c8e08852b642ebec6b5c1c86cb566927729bc"
-    ],
-    [
-        "js/tool/math.js",
-        "f1760dd2477def75259a73b4e58e8d7f30541333e7c99cf52c8df890a53b5a69"
-    ],
-    [
-        "js/tool/string.js",
-        "bba09937521a09e336588a805daef778ac54b59672bbb91ccc6b8602aeb55272"
-    ],
-    [
-        "js/tool/ui.js",
-        "594b4937ccb2848c56580b6edee60af72ffcc14a0860486537b807aff995d3f4"
     ],
     [
         "js/skill/bossSkill.mjs",
@@ -701,7 +677,7 @@ export default [
     ],
     [
         "js/skill/soulSkill.mjs",
-        "3aae30be7a7fe29af9c4a3e5bb5d75b664dbf3d9f7a5e1857f679fe4cb53395f"
+        "3bf58c993efff03357a016e84daa5f066489e85bd462782138c155762ca1d36e"
     ],
     [
         "js/skill/xjbSkill.mjs",
@@ -710,6 +686,22 @@ export default [
     [
         "js/text/dongzhouIntro.js",
         "28b96dfc10c1751527e9230e914152af8977dae2698f535c899f65b958b9ccbf"
+    ],
+    [
+        "js/tool/canvas.js",
+        "feeeaf6ac577c6a5a463257fca1c8e08852b642ebec6b5c1c86cb566927729bc"
+    ],
+    [
+        "js/tool/math.js",
+        "f1760dd2477def75259a73b4e58e8d7f30541333e7c99cf52c8df890a53b5a69"
+    ],
+    [
+        "js/tool/string.js",
+        "bba09937521a09e336588a805daef778ac54b59672bbb91ccc6b8602aeb55272"
+    ],
+    [
+        "js/tool/ui.js",
+        "594b4937ccb2848c56580b6edee60af72ffcc14a0860486537b807aff995d3f4"
     ],
     [
         "lingli/daomo/blood.jpg",
@@ -740,6 +732,26 @@ export default [
         "6687fd56eda71f5c1f9f83ddf419704b1fca665e4183c8cf038dd7eec44389ab"
     ],
     [
+        "module/noname-extension-updater/updater.d.ts",
+        "77bba0a74f74ea5a3f541a7047224b660c2e1037012be552e6bef7fffc95c045"
+    ],
+    [
+        "module/noname-extension-updater/updater.js",
+        "ddd347eaac57cf7ecf14a17bc5764d49e73c4f228129b8040a16b8b23ab987ec"
+    ],
+    [
+        "skin/image/xjb_xuemo/xuemo1.jpg",
+        "1007c9a1e8bce8ab0ddea33187eeb1bcd20f4be93a85bb4fe379f00e987e9c51"
+    ],
+    [
+        "skin/image/xjb_xuemo/xuemo2.jpg",
+        "2646e99f34a576634a2cfc893be143cb8bb23ab6f3358abe00cecf4b03e42b5d"
+    ],
+    [
+        "skin/image/xjb_xuemo/xuemo3.jpg",
+        "dc0968282ab76c1057306ea018f22258db691bc6bcf9c2163e772ba685ea7354"
+    ],
+    [
         "skin/image/xjb_jizi_shou/寿1.png",
         "f576a9294f9f8b0e2f9e03144aacbbd31bc77c006fca08c4ae6a7aa855c1b9b9"
     ],
@@ -754,17 +766,5 @@ export default [
     [
         "skin/image/xjb_jizi_shou/急子2.png",
         "a286cbdbde15cf6fb2d0c07232ad382d88367ba153eb04c9c2cae683f00bf813"
-    ],
-    [
-        "skin/image/xjb_xuemo/xuemo1.jpg",
-        "1007c9a1e8bce8ab0ddea33187eeb1bcd20f4be93a85bb4fe379f00e987e9c51"
-    ],
-    [
-        "skin/image/xjb_xuemo/xuemo2.jpg",
-        "2646e99f34a576634a2cfc893be143cb8bb23ab6f3358abe00cecf4b03e42b5d"
-    ],
-    [
-        "skin/image/xjb_xuemo/xuemo3.jpg",
-        "dc0968282ab76c1057306ea018f22258db691bc6bcf9c2163e772ba685ea7354"
     ]
 ]
