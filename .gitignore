@@ -7,7 +7,6 @@ skin/image/xjb_newCharacter/*
 *.tmp
 xjb_xyAPI.js
 
-module/
 #不忽略的文件
 !/log/empty.text
 !/skin/image/xjb_newCharacter/initial.jpg
