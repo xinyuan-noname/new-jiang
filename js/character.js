@@ -202,7 +202,7 @@ game.import("character", () => {
         name: "XJB",
         connect: true,
         character: {
-            "xin_fellow": {
+            "xjb_rider": {
                 sex: "male",
                 group: "shen",
                 hp: 5,
@@ -358,7 +358,7 @@ game.import("character", () => {
 
             'xjb_han': '汉',
 
-            "xin_fellow": "秦兵",
+            "xjb_rider": "骑兵",
 
             "xjbhan_caocao": "曹操",
             "xjbhan_xunyu": "荀彧",

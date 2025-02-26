@@ -255,6 +255,60 @@ class UpdateManager extends Manager {
             }
         );
     }
+    static updateUI(parent, titleText = "") {
+        const back = document.createElement("div");
+        back.style.cssText =
+            `background-color: rgba(0, 0, 0, 0.3);
+            box-shadow: 10px 5px 5px rgba(0,0,0,0.3);
+            height: 25%;
+            width: 50%;
+            margin: auto auto;
+            top: 20%;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            position: absolute;
+            z-index: 10;
+            border-radius: 5%;
+            display:flex;
+            flex-direction: column;
+            text-align:center;
+            padding:10px;`;
+        const title = document.createElement("h4");
+        title.innerHTML = titleText;
+        const statusText = document.createElement("div");
+        statusText.innerHTML = "更新准备中";
+        statusText.style.cssText =
+            `position:relative;
+            font-size:calc(1em + 5px);`
+        const progress = document.createElement("div");
+        progress.style.cssText = "position:relative;";
+        const progressBar = document.createElement("progress");
+        progressBar.value = 0;
+        progressBar.max = 100;
+        progressBar.style.cssText =
+            `position: relative;
+            margin: 20px auto;
+            height: calc( 1em + 5px);`;
+        const progressPercentage = document.createElement("div");
+        progressPercentage.innerHTML = "-0%-";
+        progressPercentage.style.cssText = "position:relative;";
+        progress.append(progressBar, progressPercentage);
+        back.append(title, statusText, progressBar);
+        if (parent) parent.appendChild(back);
+        return {
+            back,
+            title,
+            statusText,
+            progress,
+            changeProgress: (percentage) => {
+                if (percentage > 1) percentage = 1;
+                percentage *= 100;
+                progressBar.value = percentage;
+                progressPercentage = percentage.toFixed(2) + "%";
+            }
+        }
+    }
 }
 export class Updater {
     globalVar;
@@ -739,6 +793,9 @@ export class RawUpdater extends Updater {
                 })
                 await manager.executeLine();
             },
+            ui: async () => {
+                UpdateManager.updateUI(`${this.extensionName}正在更新`)
+            }
         }
         Object.setPrototypeOf(manager, UpdateManager.prototype);
         manager.init(this);

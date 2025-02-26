@@ -10,9 +10,6 @@ import {
 import {
 	xjb_library
 } from "./js/library.js";
-import {
-	LOAD_GAME_TETRIS
-} from "./js/game/tetris.js";
 import { XJB_Math } from "./js/tool/math.js";
 
 import "./js/interact/dialog.mjs";
@@ -316,6 +313,8 @@ function importFile() {
 		//引入css文件    
 		lib.init.css("./extension/新将包/css", "main");
 		lib.init.css("./extension/新将包/css", "nature");
+		lib.init.css("./extension/新将包/css", "back");
+		lib.init.css("./extension/新将包/css", "animation");
 		//引入js文件
 		files.forEach(file => {
 			loadFiles(file)
@@ -628,15 +627,11 @@ function initialize() {
 		}
 	}
 }
-function LOAD_SMALL_GAME() {
-	LOAD_GAME_TETRIS(lib, game, ui, get, ai, _status)
-}
 export function XJB_PRECONTENT() {
 	provideFunction();
 	way();
 	initialize();
 	importFile();
-	LOAD_SMALL_GAME();
 	window.xjb_library = xjb_library;
 	//折头折百花联动
 	// if (lib.config.extensions.includes('枝头折百花') && lib.config.extension_枝头折百花_enable) {

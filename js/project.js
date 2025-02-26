@@ -290,7 +290,6 @@ lib.skill.xjb_9 = {
                 paddingLeft: "0px",
                 width: "100%",
                 height: "300px",
-                backgroundColor: "#3c4151"
             })
             Object.keys(lib.config.xjb_count).forEach(function (item) {
                 if (!lib.character[item]) return;
@@ -403,7 +402,7 @@ lib.skill.xjb_9 = {
             intro.right.dataSet = data
             data.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function () {
                 if (intro.left.I) intro.left.I.remove()
-                let xjb_count_data = document.createElement("ul")
+                    let xjb_count_data = document.createElement("ul")
                 ui.xjb_giveStyle(xjb_count_data, {
                     fontSize: "20px",
                     "list-style": "none",
@@ -411,7 +410,8 @@ lib.skill.xjb_9 = {
                 })
                 intro.right.appendChild(xjb_count_data)
                 intro.left.I = xjb_count_data
-                let count = lib.config.xjb_count[intro.right.character_id]
+                game.xjb_checkCharCountAll(intro.right.character_id)
+                let count = lib.config.xjb_count[intro.right.character_id];
                 //排序
                 let arr1 = Object.keys(count).filter(item => {
                     if (["selectedTitle", "HpCard", "uniqueSkill", "titles", "skill", "xjb_storage", "dialog", "book", "daomo", "lingtan", "lingfa"].includes(item))
