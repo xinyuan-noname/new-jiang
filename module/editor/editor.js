@@ -84,7 +84,7 @@ class SkillEditorData {
 
 	}
 }
-class SkillEditor {
+export class SkillEditor {
 	view;
 	data;
 	constructor() {

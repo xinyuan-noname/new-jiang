@@ -306,6 +306,27 @@ class UpdateManager extends Manager {
                 percentage *= 100;
                 progressBar.value = percentage;
                 progressPercentage = percentage.toFixed(2) + "%";
+            },
+            animate: (callback) => {
+                if (typeof callback !== "function") throw new Error("Callback should be a function.");
+                let animation, anmiationRunning;
+                const animationLoop = () => {
+                    if (!anmiationRunning) return;
+                    animation = requestAnimationFrame(() => {
+                        callback();
+                        animationLoop();
+                    })
+                }
+                return {
+                    start: () => {
+                        anmiationRunning = true;
+                        animationLoop();
+                    },
+                    end: () => {
+                        anmiationRunning = false;
+                        cancelAnimationFrame(animation)
+                    }
+                }
             }
         }
     }
