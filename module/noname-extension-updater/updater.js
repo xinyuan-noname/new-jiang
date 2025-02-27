@@ -155,7 +155,7 @@ class Manager {
                 this.skipped(phaseName);
                 return;
             }
-            await this.trigger("phaseBegin");
+            await this.trigger("phaseBegin", this.data, this.phase, this.status);
             this.phase = phaseName;
             await this[phaseName]();
             if (phaseName !== "start" && phaseName !== "end") {
@@ -288,13 +288,14 @@ class UpdateManager extends Manager {
         progressBar.max = 100;
         progressBar.style.cssText =
             `position: relative;
+            display:block;
             margin: 20px auto;
             height: calc( 1em + 5px);`;
         const progressPercentage = document.createElement("div");
-        progressPercentage.innerHTML = "-0%-";
-        progressPercentage.style.cssText = "position:relative;";
+        progressPercentage.innerHTML = "0%";
+        progressPercentage.style.cssText = "position:relative;display:block;font-size:1em;";
         progress.append(progressBar, progressPercentage);
-        back.append(title, statusText, progressBar);
+        back.append(title, statusText, progress);
         if (parent) parent.appendChild(back);
         return {
             back,
@@ -305,7 +306,7 @@ class UpdateManager extends Manager {
                 if (percentage > 1) percentage = 1;
                 percentage *= 100;
                 progressBar.value = percentage;
-                progressPercentage = percentage.toFixed(2) + "%";
+                progressPercentage.innerHTML = percentage.toFixed(2) + "%";
             },
             animate: (callback) => {
                 if (typeof callback !== "function") throw new Error("Callback should be a function.");
@@ -327,6 +328,12 @@ class UpdateManager extends Manager {
                         cancelAnimationFrame(animation)
                     }
                 }
+            },
+            changeStatus: (text) => {
+                statusText.innerHTML = text;
+            },
+            close: () => {
+                back.remove();
             }
         }
     }
@@ -704,7 +711,7 @@ export class RawUpdater extends Updater {
                 const { reCalHash, rmCR } = manager.options;
                 const fileHashMap = reCalHash ? await this.getCacheHashMap(rmCR) : cacheHashMap;
                 const updateFileList = this.filterSameHash(fileHashMap, toUpdateHashMap);
-                manager.data.updateFileList = updateFileList
+                manager.data.updateFileList = updateFileList;
                 manager.data.fileHashMap = fileHashMap;
                 manager.data.dirList = updateFileList.map(file => file.includes("/") ? file.split(matchLastSlash)[0] : "");
             },
@@ -814,13 +821,70 @@ export class RawUpdater extends Updater {
                 })
                 await manager.executeLine();
             },
-            ui: async () => {
-                UpdateManager.updateUI(`${this.extensionName}正在更新`)
+            ui: () => {
+                const { changeStatus, changeProgress, close } = UpdateManager.updateUI(ui.window, `${this.extensionName}正在更新`);
+                manager.on("phaseBegin", (data, phase, status) => {
+                    switch (phase) {
+                        case "getCache": {
+                            changeStatus("正在缓存中");
+                        }; break;
+                        case "getUpdateList": {
+                            changeStatus("正在获取更新文件列表");
+                        }; break;
+                        case "filterHash": {
+                            changeStatus("正在检测需要更新的文件");
+                        }; break;
+                        case "makeSureDir": {
+                            changeStatus("正在创建文件夹");
+                        }; break;
+                        case "update": {
+                            changeStatus("正在下载文件")
+                        }; break;
+                    }
+                });
+                manager.on("updateSuc", (data) => {
+                    const { succeededFiles, failedFiles, toUpdateFiles } = data.updateInfo;
+                    changeStatus(data.processingFile + "下载成功!");
+                    changeProgress((succeededFiles.length + failedFiles.length) / toUpdateFiles.length);
+                })
+                manager.on("updateErr", (data) => {
+                    const { succeededFiles, failedFiles, toUpdateFiles } = data.updateInfo;
+                    changeStatus(data.processingFile + "下载失败...");
+                    changeProgress((succeededFiles.length + failedFiles.length) / toUpdateFiles.length);
+                })
+                manager.on("fileAllOk", () => {
+                    changeStatus("更新成功!");
+                    setTimeout(close, 300);
+                })
+                manager.on("fileException", async (files) => {
+                    changeStatus("更新完成!存在更新出错的文件。");
+                    await new Promise(res => {
+                        setTimeout(() => {
+                            close();
+                            alert(`存在更新出错的文件：共 ${files.length} 个\n${files.join(", ")}`);
+                            res()
+                        }, 300)
+                    })
+                })
+                manager.on("ProgressErr", async err => {
+                    changeStatus("更新出错!");
+                    await new Promise(res => {
+                        setTimeout(() => {
+                            close();
+                            alert("更新出错！");
+                            res();
+                        }, 800);
+                    })
+
+                })
             }
         }
         Object.setPrototypeOf(manager, UpdateManager.prototype);
         manager.init(this);
-        autoRun && manager.run();
+        if (autoRun) {
+            manager.run();
+            manager.ui();
+        }
         return manager;
     }
 }
@@ -896,7 +960,7 @@ export class ZipUpdater extends Updater {
                 const { bufferMap } = manager.data;
                 manager.data.updateInfo = {
                     succeededFiles: [],
-                    failedFiles: []
+                    failedFiles: [],
                 };
                 await this.update(
                     bufferMap,
@@ -918,11 +982,61 @@ export class ZipUpdater extends Updater {
             run: async () => {
                 manager.appendPhases("getCache", "fetchZip", "unzip", "makeSureDir", "update", "fixFile");
                 manager.executeLine();
+            },
+            ui: () => {
+                const { changeStatus, changeProgress, close } = UpdateManager.updateUI(ui.window, `${this.extensionName}正在更新`);
+                manager.on("phaseBegin", (data, phase, status) => {
+                    console.log(phase, manager);
+                    switch (phase) {
+                        case "getCache": {
+                            changeStatus("正在缓存中");
+                        }; break;
+                        case "fetchZip": {
+                            changeStatus("正在拉取压缩包");
+                        }; break;
+                        case "unzip": {
+                            changeStatus("正在解压中");
+                        }; break;
+                        case "makeSureDir": {
+                            changeStatus("正在创建文件夹");
+                        }; break;
+                        case "update": {
+                            changeStatus("正在下载文件");
+                        }; break;
+                    }
+                });
+                manager.on("updateSuc", (data) => {
+                    const { updateInfo: { succeededFiles, failedFiles }, bufferMap, processingFile } = data;
+                    changeStatus(processingFile + "下载成功!");
+                    changeProgress((succeededFiles.length + failedFiles.length) / bufferMap.size);
+                })
+                manager.on("updateErr", (data) => {
+                    const { updateInfo: { succeededFiles, failedFiles }, bufferMap, processingFile } = data;
+                    changeStatus(processingFile + "下载失败...");
+                    changeProgress((succeededFiles.length + failedFiles.length) / bufferMap.size);
+                })
+                manager.on("end", () => {
+                    changeStatus("更新成功!");
+                    setTimeout(close, 300);
+                })
+                manager.on("ProgressErr", async err => {
+                    changeStatus("更新出错!");
+                    await new Promise(res => {
+                        setTimeout(() => {
+                            close();
+                            alert("更新出错！");
+                            res();
+                        }, 800);
+                    })
+                })
             }
         }
         Object.setPrototypeOf(manager, UpdateManager.prototype);
         manager.init(this);
-        autoRun && manager.run();
+        if (autoRun) {
+            manager.run();
+            manager.ui();
+        }
         return manager;
     }
 }

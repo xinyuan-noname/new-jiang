@@ -177,7 +177,7 @@ export function XJB_CONTENT(config, pack) {
                         alert("更新成功！")
                     })
                     manager.on("fileException", (files) => {
-                        alert("存在更新失败的文件" + files + '\n请选择完整更新！（这将比较花费时间）');
+                        alert('请选择完整更新！（这可能比较花费时间吧）');
                     })
                     manager.on("recoverSuc", file => {
                         console.log("成功修复文件", file)
