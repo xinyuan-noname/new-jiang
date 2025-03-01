@@ -85,7 +85,7 @@
     position: relative;
 }
 
-.xjb-ED-ButtonContainer> *{
+.xjb-ED-ButtonContainer>* {
     color: #041322;
     text-align: center;
     font-size: 36px;
@@ -191,4 +191,97 @@
     background: purple;
     opacity: 0.95;
     z-index: 4;
+}
+
+/*以下是mindmap节点的内容*/
+@font-face {
+    font-family: "smily-sans";
+    src: url(../font/SmileySans-Oblique.otf.woff2);
+}
+
+.xjb-mindmap-back {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    margin: auto;
+    position: absolute;
+    z-index: 20;
+    background-color: rgba(60, 65, 81, 0.7);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+}
+
+.xjb-mindmap-back * {
+    font-family: "smily-sans";
+    position: relative;
+}
+
+.xjb-mindmap-contentArea {
+    flex: auto;
+}
+
+.xjb-mindmap-canvas {
+    height: 500px;
+    width: 1000px;
+    background-color: #000;
+    border-radius: 1%;
+    margin: auto 0;
+}
+
+.xjb-mindmap-back-scale {
+    height: 10px;
+}
+
+.xjb-mindmap-footer {
+    height: 96px;
+    width: 100%;
+    background-color: rgba(42, 44, 52, 0.9);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.xjb-mindmap-footer>div {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.xjb-mindmap-footer>div:nth-child(1) {
+    border-right: rgb(57 56 81 / 90%) solid 2px;
+    justify-content: space-evenly;
+    flex: auto;
+}
+
+.xjb-mindmap-footer>div>button {
+    font-size: 32px;
+    font-weight: 900;
+    display: block;
+    border-radius: 10px;
+    cursor: pointer;
+    transform: rotateZ(-45deg);
+    transition: 0.2s;
+    box-shadow: -15px -15px 15px #0000;
+}
+
+.xjb-mindmap-footer>div>button:not(.xjb-mindmap-chosen):hover {
+    box-shadow: 0px 0px 4px 2px #d5d1d1;
+    transform: rotateZ(6deg);
+}
+
+.xjb-mindmap-footer>div:nth-child(1)>button.xjb-mindmap-chosen {
+    transform-style: preserve-3d;
+    transform: rotateZ(6deg) rotateX(30deg);
+    perspective: 50px;
+}
+
+.xjb-mindmap-footer>div:nth-child(2)>button {
+    color: rgba(195, 67, 67, 0.9);
+    background-color: aquamarine;
+    margin: 0 15px;
 }

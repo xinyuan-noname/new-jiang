@@ -500,7 +500,7 @@ export class EditorOrganize {
                         for (const triType in triggerFilter) {
                             for (const [_, search] of Object.entries(triggerFilter[triType])) {
                                 const map = EditorDataAnalyze.triLimitUrl(search);
-                                result += `if(!event.getl||!event.getl(${who})) return false;\n`
+                                result += `if(!event.getl?.(${who})) return false;\n`
                                 let cards = `event.getl(${who}).cards2`;
                                 if (map.position) {
                                     const [position] = map.position;
@@ -728,10 +728,10 @@ export class EditorOrganize {
         let who = global ? "target" : "player";
         let cards = '';
         if (triReason === "discardToDiscardPile") parts.push(`event.type !== "discard"`);
-        else if (triReason === "discardInDiscardPhase"){
+        else if (triReason === "discardInDiscardPhase") {
             parts.push(`event.type !== "discard"`)
             parts.push(`event.getParent("discardPhase", true)?.player !== ${who}`);
-        } 
+        }
         const map = EditorDataAnalyze.triLimitUrl(global ? triggerFilter.global.loseAfter : triggerFilter.player.loseAfter);
         if (map.unknown) {
             for (const value of map.unknown) {
@@ -840,9 +840,8 @@ export class EditorOrganize {
         const booltriggerFilter = Object.values(triggerFilter).flat().length > 0;
         const boolOnlyMod = mod.length > 0
             && [boolZhuSkill, boolGroupSkill,
-                // boolRespondNeed,
                 booltriggerFilter, boolLose,
-                boolUniqueTrigger, boolfilterHasContent].every(bool => bool === false);
+                boolfilterHasContent].every(bool => bool === false);
         if (boolOnlyMod) return ''
         let result = '';
         if (triLose_global.length || triGain_global.length) result += 'filter:function(event, player, triggername, target){\n'
@@ -856,11 +855,11 @@ export class EditorOrganize {
         if (boolGroupSkill) {
             const group = findPrefix(uniqueList, "group").map(k => k.slice(6))
             if (group.length > 0) {
-                result += `if(player.group != "${group[0]}") return false;\n`
+                result += `if(player.group != "${group[0]}") return false;\n`;
             }
         }
         if (triGameStart) {
-            result += `if(event.name === "phase" && game.phaseNumber !== 0) return false;\n`
+            result += `if(event.name === "phase" && game.phaseNumber !== 0) return false;\n`;
         }
         else if (triGain_global.length) {
             result += EditorOrganize.triFilter_gain(triggerFilter, true);
@@ -922,19 +921,13 @@ export class EditorOrganize {
                 }).join("\n");
                 result = format(result);
             }
-            result += "\n"
+            result += "\n";
         }
-        if (!back.returnIgnore && !result.endsWith('\n')) result += '\n'
-        // if (boolUniqueTrigger) {
-        //     // } else if (uniqueTrigger.includes('player:loseAfter:discard')) {
-        //     //     result += `if(!(event.type==='discard'&&event.getl(player).cards2.length>0)) return false;\n`
-        //     // }
-        // }
+        if (!back.returnIgnore && !result.endsWith('\n')) result += '\n';
         if (!back.returnIgnore && !result.split("\n").at(-2).startsWith("return")) result += 'return true;\n';
         result += '},\n';
-        return result
+        return result;
     }
-
     static position(back) {
         const { position } = back.skill;
         if (!position.length || position.toString() === "h") return '';
