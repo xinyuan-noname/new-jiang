@@ -1,19 +1,20 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
-export const xjbSkill = {};
-export const xjbTranslate = {};
+const skill = {};
+export default skill;
+export const skillTranslate = {};
 /**
  * 
  * @param {string} name 
- * @param {Skill} skill 
+ * @param {Skill} skillInfo 
  * @returns 
  */
-function SkillCreater(name, skill) {
-    xjbSkill[name] = { ...skill }
-    delete xjbSkill[name].translate;
-    delete xjbSkill[name].description;
-    xjbTranslate[name] = skill.translate;
-    xjbTranslate[name + "_info"] = skill.description
-    return xjbSkill[name];
+function SkillCreater(name, skillInfo) {
+    skill[name] = { ...skillInfo }
+    delete skill[name].translate;
+    delete skill[name].description;
+    skillTranslate[name] = skillInfo.translate;
+    skillTranslate[name + "_info"] = skillInfo.description
+    return skill[name];
 };
 
 const xjb_jushou = SkillCreater(
@@ -42,7 +43,7 @@ const xjb_jushou = SkillCreater(
         event.result = { targets, bool: targets.length > 0 }
     },
     content: async function (event, trigger, player) {
-        for(const target of event.targets){
+        for (const target of event.targets) {
             await target.turnOver()
         }
         await game.asyncDraw(event.targets, target => {
@@ -1216,6 +1217,3 @@ const xjb_guose = SkillCreater(
         }
     },
 })
-
-
-

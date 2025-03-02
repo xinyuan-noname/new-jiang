@@ -14,7 +14,6 @@ lib.skill.xjb_5 = {
         lib.config.xjb_title[4][0] = `<img src=./extension/新将包/title/xjb_loseMaxHp.png height=20px></img>`
         lib.config.xjb_title[5][0] = `<img src=./extension/新将包/title/xjb_gainMaxHp.png height=20px></img>`
         lib.config.xjb_title[6][0] = `<img src=./extension/新将包/title/xjb_kill2.png height=40px></img>`
-        lib.config.xjb_title[7][0] = `<img src=./extension/新将包/title/xjb_boss1.png height=50px></img>`
         lib.config.xjb_title[8][0] = `<img src=./extension/新将包/title/xjb_yin1.png height=50px></img>`
         lib.config.xjb_title[9][0] = `<img src=./extension/新将包/title/xjb_yin2.png height=60px></img>`
         lib.config.xjb_title[10][0] = `<img src=./extension/新将包/title/xjb_yin3.png height=70px></img>`
@@ -142,10 +141,6 @@ lib.skill.xjb_5 = {
                 }
                 if (lib.config.xjb_count[name].kill >= 250 && !lib.config.xjb_title[0][6].includes(name)) {
                     game.xjb_titleGain(player, 6)
-                }
-                if (trigger.player.name1 === "xjb_Boss_Start" && trigger.player != game.me) {
-                    if (!trigger.source) event.finish()
-                    if (lib.config.xjb_title[7][1].length < 1) game.xjb_titleGain(player, 7)
                 }
             }
         }

@@ -205,7 +205,6 @@ game.xjb_purchaseIt = function (name, num = 1,) {
     return true;
 }
 /**
- * 
  * @param {string} name 
  * @param {number} num 
  * -能量花费,默认花费30,如果是商品,则按照商品能量花费扣减

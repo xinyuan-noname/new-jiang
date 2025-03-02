@@ -1,0 +1,27 @@
+div[data-nature='xjb_hunmm'],
+span[data-nature='xjb_hunmm'],
+div[data-nature='xjb_hunm'],
+span[data-nature='xjb_hunm'],
+.player .identity[data-color='xjb_hun'],
+div[data-nature='xjb_hun'],
+span[data-nature='xjb_hun'] {
+    animation: xjb_trans 7s infinite linear
+}
+
+div[data-nature='xjb_hunmm'],
+span[data-nature='xjb_hunmm'] {
+    text-shadow: black 0 0 1px, #e75480 0 0 2px, #e75480 0 0 2px, #e75480 0 0 2px, #e75480 0 0 2px, black 0 0 1px;
+}
+
+.player .identity[data-color='xjb_hun'],
+div[data-nature='xjb_hun'],
+span[data-nature='xjb_hun'],
+a[data-nature='xjb_hun'] {
+    text-decoration: none;
+    text-shadow: black 0 0 1px, #e75480 0 0 2px, #e75480 0 0 5px, #e75480 0 0 10px, #e75480 0 0 10px
+}
+
+div[data-nature='xjb_hunm'],
+span[data-nature='xjb_hunm'] {
+    text-shadow: black 0 0 1px, #e75480 0 0 2px, #e75480 0 0 5px, #e75480 0 0 5px, #e75480 0 0 5px, black 0 0 1px;
+}

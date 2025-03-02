@@ -1,25 +1,26 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
-export const dongzhouSkill = {};
-export const dongzhouTranslate = {};
+const skill = {};
+export default skill;
+export const skillTranslate = {};
 /**
  * 
  * @param {string} name 
- * @param {Skill} skill 
+ * @param {Skill} skillInfo 
  * @returns 
  */
-function SkillCreater(name, skill) {
-	dongzhouSkill[name] = { ...skill }
-	delete dongzhouSkill[name].translate;
-	delete dongzhouSkill[name].description;
-	delete dongzhouSkill[name].$audio;
-	dongzhouTranslate[name] = skill.translate;
-	dongzhouTranslate[name + "_info"] = skill.description
-	if (skill.$audio && skill.$audio.length) {
-		for (const [i, audioWords] of skill.$audio.entries()) {
-			dongzhouTranslate[`#${name}${i + 1}`] = audioWords;
+function SkillCreater(name, skillInfo) {
+	skill[name] = { ...skillInfo };
+	delete skill[name].translate;
+	delete skill[name].description;
+	delete skill[name].$audio;
+	skillTranslate[name] = skillInfo.translate;
+	skillTranslate[name + "_info"] = skillInfo.description;
+	if (skillInfo.$audio && skillInfo.$audio.length) {
+		for (const [i, audioWords] of skillInfo.$audio.entries()) {
+			skillTranslate[`#${name}${i + 1}`] = audioWords;
 		}
 	}
-	return dongzhouSkill[name];
+	return skill[name];
 };
 
 
@@ -480,6 +481,7 @@ const xjb_cangshi = SkillCreater(
 	}
 })
 
+//赢任好
 const xjb_kaidi = SkillCreater(
 	"xjb_kaidi", {
 	translate: "开地",
@@ -531,7 +533,7 @@ const xjb_kaidi = SkillCreater(
 const xjb_ranrong = SkillCreater(
 	"xjb_ranrong", {
 	translate: "染戎",
-	description: "锁定技，当你未使用【无懈可击】响应其他角色对你使用的普通锦囊牌时，本回合你失去非锁定技。其下一次使用牌指定你为目标时，你摸一张牌，然后你无法响应此牌。",
+	description: "锁定技，当你未使用【无懈可击】响应其他角色对你使用的非红色普通锦囊牌时，本回合你失去非锁定技。其下一次使用牌指定你为目标时，你摸一张牌，然后你无法响应此牌。",
 	forced: true,
 	trigger: {
 		global: "useCardAfter"
@@ -539,7 +541,7 @@ const xjb_ranrong = SkillCreater(
 	filter(event, player) {
 		if (!event.targets.includes(player)) return false;
 		if (event.player === player) return false;
-		if (get.type(event.card) !== "trick") return false;
+		if (get.type(event.card) !== "trick" || get.color(event.card) !== "red") return false;
 		if (player.getHistory("useCard", evt => evt.card.name === "wuxie" && evt.respondTo && evt.respondTo[0] === event.player && evt.respondTo[1] === event.card).length) return false;
 		return true;
 	},
@@ -983,7 +985,7 @@ const xjb_duhen = SkillCreater(
 	}
 })
 
-//秦政
+//嬴政
 const xjb_zulong = SkillCreater(
 	"xjb_zulong", {
 	translate: "祖龙",
@@ -1035,4 +1037,4 @@ const xjb_longwei = SkillCreater(
 		await player.gainMaxHp(event.num);
 		trigger.cancel()
 	}
-})
+});

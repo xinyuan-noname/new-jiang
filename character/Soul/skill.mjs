@@ -1,27 +1,28 @@
 import { _status, lib, ui, game, ai, get } from "../../../../noname.js"
-export const soulSkill = {};
-export const soulTranslate = {};
+const skill = {};
+export default skill;
+export const skillTranslate = {};
 /**
  * 
  * @param {string} name 
- * @param {Skill} skill 
+ * @param {Skill} skillInfo 
  * @returns 
  */
-function SkillCreater(name, skill) {
-    soulSkill[name] = { ...skill }
-    delete soulSkill[name].translate;
-    delete soulSkill[name].description;
-    soulTranslate[name] = skill.translate;
-    soulTranslate[name + "_info"] = skill.description
-    if (skill.subTrans) {
-        for (const subname in skill.subTrans) {
-            const [trans, info] = skill.subTrans[subname];
-            soulTranslate[name + "_" + subname] = trans;
-            soulTranslate[name + "_" + subname + "_info"] = info;
+function SkillCreater(name, skillInfo) {
+    skill[name] = { ...skillInfo }
+    delete skill[name].translate;
+    delete skill[name].description;
+    skillTranslate[name] = skillInfo.translate;
+    skillTranslate[name + "_info"] = skillInfo.description
+    if (skillInfo.subTrans) {
+        for (const subname in skillInfo.subTrans) {
+            const [trans, info] = skillInfo.subTrans[subname];
+            skillTranslate[name + "_" + subname] = trans;
+            skillTranslate[name + "_" + subname + "_info"] = info;
         }
-        delete soulSkill[name].subTrans;
+        delete skill[name].subTrans;
     }
-    return soulSkill[name];
+    return skill[name];
 };
 
 const xjb_soul_fuhua = SkillCreater(

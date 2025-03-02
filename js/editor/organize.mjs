@@ -484,11 +484,11 @@ export class EditorOrganize {
         const { player, global, target, source } = getIndex;
         if (player.length + global.length + target.length + source.length === 0) {
             if (trigger.global.includes("loseAfter")) {
-                result += `if(event.name === "loseAsync") return game.filterPlayer(curr => event.getl(curr)).sortBySeat();\n`
+                result += `if(event.name === "loseAsync") return game.filterPlayer(curr => event.getl(curr).length > 0).sortBySeat();\n`
                 result += `return [event.player];\n`
             }
             else if (trigger.global.includes("gainAfter")) {
-                result += `if(event.name === "loseAsync") return game.filterPlayer(curr => event.getg(curr).length).sortBySeat();\n`
+                result += `if(event.name === "loseAsync") return game.filterPlayer(curr => event.getg(curr).length > 0).sortBySeat();\n`
                 result += `return [event.player];\n`
             }
             else return '';

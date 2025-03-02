@@ -103,7 +103,7 @@ export function XJB_CONTENT(config, pack) {
                             alert("updater获取成功！");
                         })
                         .catch(err => {
-                            alert(`updater获取失败\n${err}`);
+                            alert(`updater获取失败\n${err.message}`);
                         })
                 }; break;
                 case "changeBranch": {
@@ -129,7 +129,7 @@ export function XJB_CONTENT(config, pack) {
                         alert("目录生成成功");
                     });
                     manager.on("error", (err) => {
-                        console.error(err)
+                        console.error(err);
                     })
                 }; break;
                 case 'download': {
@@ -153,41 +153,9 @@ export function XJB_CONTENT(config, pack) {
                         timeoutMinutes: 1,
                         reCalHash: true
                     });
-                    manager.on("getCache", data => {
-                        console.log(data);
-                    });
-                    manager.on("filterHash", data => {
-                        console.log(data);
-                    });
-                    manager.on("makeSureDirSuc", data => {
-                        console.log(data.processingDir, "文件夹创建成功")
-                        game.print(data.processingDir, "文件夹创建成功")
-                    })
-                    manager.on("update", data => {
-                        console.log(data.updateInfo);
-                    });
-                    manager.on("updateSuc", data => {
-                        console.log(data.processingFile, "下载成功");
-                        game.print(data.processingFile, "文件夹创建成功")
-                    });
-                    manager.on("fixFileSuc", data => {
-                        console.log(data.fixingFileInfo);
-                    })
-                    manager.on("fileAllOk", () => {
-                        alert("更新成功！")
-                    })
                     manager.on("fileException", (files) => {
                         alert('请选择完整更新！（这可能比较花费时间吧）');
                     })
-                    manager.on("recoverSuc", file => {
-                        console.log("成功修复文件", file)
-                    });
-                    manager.on("error", err => {
-                        console.error(err);
-                    });
-                }; break;
-                case 'downloadSimply': {
-                    if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
                 }; break;
             }
         }

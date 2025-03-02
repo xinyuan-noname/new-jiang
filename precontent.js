@@ -1,23 +1,15 @@
 "use script"
-import {
-	lib,
-	game,
-	ui,
-	get,
-	ai,
-	_status
-} from "../../noname.js";
-import {
-	xjb_library
-} from "./js/library.js";
+import { lib, game, ui, get, ai, _status } from "../../noname.js";
+import { xjb_library } from "./js/library.js";
 import { XJB_Math } from "./js/tool/math.js";
-
 import "./js/interact/dialog.mjs";
 import "./js/interact/ui.mjs";
-
 import "./js/feature/remnantArea.js";
 import "./js/feature/skillCard.mjs";
 import "./js/feature/hpCard.js";
+import loadCharacterPack_EasternZhou from "./character/EasternZhou/index.mjs";
+import loadCharacterPack_XJB from "./character/XJB/index.mjs";
+import loadCharacterPack_Soul from "./character/Soul/index.mjs";
 function provideFunction() {
 	get.xjb_randomNDInt = (mu, sigma) => {
 		return Math.floor(XJB_Math.NDRandom(mu, sigma));
@@ -285,10 +277,6 @@ function provideFunction() {
 		return translation
 	}
 }
-function way() {
-	//新将包路径来源     
-	lib.xjb_src = location.origin + "extension/新将包/"
-}
 function importFile() {
 	let count = 0;
 	const files = [
@@ -297,7 +285,6 @@ function importFile() {
 		"title",
 		"project",
 		"rpg",
-		"character",
 		"economy",
 		"raise",
 		"event",
@@ -312,7 +299,6 @@ function importFile() {
 	new Promise(res => {
 		//引入css文件    
 		lib.init.css("./extension/新将包/css", "main");
-		lib.init.css("./extension/新将包/css", "nature");
 		lib.init.css("./extension/新将包/css", "back");
 		lib.init.css("./extension/新将包/css", "animation");
 		//引入js文件
@@ -627,50 +613,15 @@ function initialize() {
 		}
 	}
 }
+const loadCharacterPack = () => {
+	loadCharacterPack_EasternZhou();
+	loadCharacterPack_XJB();
+	loadCharacterPack_Soul();
+}
 export function XJB_PRECONTENT() {
 	provideFunction();
-	way();
 	initialize();
 	importFile();
+	loadCharacterPack();
 	window.xjb_library = xjb_library;
-	//折头折百花联动
-	// if (lib.config.extensions.includes('枝头折百花') && lib.config.extension_枝头折百花_enable) {
-	//     lib.nature && lib.nature.push && lib.nature.push('flower')
-	//     game.addNature && game.addNature('flower')
-	//     lib.skill._ztzbh_flowerDamage = {
-	//         trigger: {
-	//             source: ["damageBegin"],
-	//         },
-	//         filter: function (event, player) {
-	//             if (game.roundNumber % 4 == 1) lib.translate._ztzbh_flowerDamage = '春雷'
-	//             if (game.roundNumber % 4 == 2) lib.translate._ztzbh_flowerDamage = '炎夏'
-	//             if (game.roundNumber % 4 == 3) lib.translate._ztzbh_flowerDamage = '寂秋'
-	//             if (game.roundNumber % 4 == 0) lib.translate._ztzbh_flowerDamage = '凌冬'
-	//             if (!(event.nature == "flower")) return false;
-	//             return true;
-	//         },
-	//         content: function () {
-	//             "step 0"
-	//             trigger.cancel()
-	//             if (game.roundNumber % 4 == 1) trigger.player.damage(1, "thunder", player) && player.popup('春雷')
-	//             if (game.roundNumber % 4 == 2) trigger.player.damage(1, "fire", player) && player.popup('炎夏')
-	//             if (game.roundNumber % 4 == 3) trigger.player.loseHp(1, player) && player.popup('寂秋')
-	//             if (game.roundNumber % 4 == 0) trigger.player.damage(1, "ice", player) && player.popup('凌冬')
-	//         },
-	//     }
-	//     lib.translate._ztzbh_flowerDamage = '花伤'
-	//     lib.skill._ztzbh_liandong = {
-	//         trigger: {
-	//             player: [],
-	//         },
-	//         filter: function (event, player) {
-	//             return player === game.me
-	//         },
-	//         direct: true,
-	//         content: function () {
-	//             let name = player.name
-	//             game.xjb_getDaomo(player, "flower")
-	//         }
-	//     }
-	// }
 }

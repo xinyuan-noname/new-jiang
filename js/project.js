@@ -73,7 +73,7 @@ lib.skill.xjb_6 = {
             let list = new Array(num).fill(value)
             lib.config.xjb_count[player].HpCard.push(...list)
             game.saveConfig('xjb_count', lib.config.xjb_count);
-            var dialog = ui.create.dialog(get.translation(player) + '获得了体力卡', game.createHpCard(value))
+            var dialog = ui.create.dialog(get.translation(player) + '获得了体力卡', game.xjb_createHpCard(value))
             dialog.add('(计' + num + '个)')
             dialog.style['z-index'] = '15'
             setTimeout(function () {
@@ -133,7 +133,7 @@ lib.skill.xjb_6 = {
                     i.style.display = "block";
                     i.style.height = h + "px";
                     i.style.width = w + "px";
-                    i.style.backgroundImage = `url(${lib.xjb_src + str})`;
+                    i.style.backgroundImage = `url(./extension/新将包/${str})`;
                     i.style.backgroundSize = "100% 100%"
                     i.style.position = "relative"
                     return i
@@ -142,7 +142,7 @@ lib.skill.xjb_6 = {
                 {
                     game.xjb_checkCharacterCount(player, "HpCard")
                     let dataSource = lib.config.xjb_count[player].HpCard;
-                    let dataList = game.countHpCard(dataSource)
+                    let dataList = game.xjb_countHpCard(dataSource)
                     new Array(1, 2, 3, 4, 5).forEach(function (item) {
                         if (dataList["" + item]) result.push(new Means(
                             item + "点体力牌",
@@ -402,7 +402,7 @@ lib.skill.xjb_9 = {
             intro.right.dataSet = data
             data.addEventListener(lib.config.touchscreen ? 'touchend' : 'click', function () {
                 if (intro.left.I) intro.left.I.remove()
-                    let xjb_count_data = document.createElement("ul")
+                let xjb_count_data = document.createElement("ul")
                 ui.xjb_giveStyle(xjb_count_data, {
                     fontSize: "20px",
                     "list-style": "none",

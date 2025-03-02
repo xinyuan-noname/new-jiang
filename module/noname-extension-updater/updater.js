@@ -177,6 +177,11 @@ class Manager {
             await this.trigger("error", err, this.data);
         }
     }
+    /**
+     * @param {string} from 
+     * @param {function(Manager):void} before 
+     * @returns 
+     */
     reExecuteLine(from = "start", before) {
         const index = this.phaseList.indexOf(from);
         if (index === -1) return;
@@ -189,6 +194,9 @@ class Manager {
     }
 }
 class UpdateManager extends Manager {
+    /**
+     * @param {Updater} target 
+     */
     init(target) {
         super.init(target);
         this.appendPhases("getCache");
@@ -255,6 +263,11 @@ class UpdateManager extends Manager {
             }
         );
     }
+    /**
+     * @param {HTMLElement} parent 
+     * @param {string} titleText 
+     * @returns 
+     */
     static updateUI(parent, titleText = "") {
         const back = document.createElement("div");
         back.style.cssText =
@@ -342,6 +355,9 @@ export class Updater {
     globalVar;
     extensionName;
     extensionPath;
+    /**
+     * @param {string} extensionName 
+     */
     constructor(extensionName) {
         if (!extensionName) throw new Error("传入参数不全！缺少extensionName");
         this.extensionName = extensionName;
@@ -351,7 +367,10 @@ export class Updater {
         this.globalVar = { lib, game, ui, get, ai, _status };
         return this;
     }
-    //
+    /**
+     * @param  {...string} parts 
+     * @returns {string}
+     */
     linkPath(...parts) {
         return parts.filter(Boolean).join("/");
     }
@@ -852,9 +871,15 @@ export class RawUpdater extends Updater {
                     changeStatus(data.processingFile + "下载失败...");
                     changeProgress((succeededFiles.length + failedFiles.length) / toUpdateFiles.length);
                 })
-                manager.on("fileAllOk", () => {
+                manager.on("fileAllOk", async () => {
                     changeStatus("更新成功!");
-                    setTimeout(close, 300);
+                    await new Promise(res => {
+                        setTimeout(() => {
+                            close();
+                            alert("更新成功！");
+                            res();
+                        }, 800);
+                    })
                 })
                 manager.on("fileException", async (files) => {
                     changeStatus("更新完成!存在更新出错的文件。");
@@ -866,16 +891,16 @@ export class RawUpdater extends Updater {
                         }, 300)
                     })
                 })
-                manager.on("ProgressErr", async err => {
+                manager.on("progressErr", async err => {
                     changeStatus("更新出错!");
                     await new Promise(res => {
                         setTimeout(() => {
                             close();
-                            alert("更新出错！");
+                            alert("更新出错！" + err.message);
+                            console.error(err);
                             res();
                         }, 800);
                     })
-
                 })
             }
         }
@@ -1015,16 +1040,23 @@ export class ZipUpdater extends Updater {
                     changeStatus(processingFile + "下载失败...");
                     changeProgress((succeededFiles.length + failedFiles.length) / bufferMap.size);
                 })
-                manager.on("end", () => {
+                manager.on("end", async () => {
                     changeStatus("更新成功!");
-                    setTimeout(close, 300);
+                    await new Promise(res => {
+                        setTimeout(() => {
+                            close();
+                            alert("更新成功！");
+                            res();
+                        }, 800);
+                    })
                 })
-                manager.on("ProgressErr", async err => {
+                manager.on("progressErr", async err => {
                     changeStatus("更新出错!");
                     await new Promise(res => {
                         setTimeout(() => {
                             close();
-                            alert("更新出错！");
+                            alert("更新出错！" + err.message);
+                            console.error(err);
                             res();
                         }, 800);
                     })
