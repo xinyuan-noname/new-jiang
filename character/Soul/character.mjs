@@ -31,7 +31,7 @@ const character = {
         hp: 2,
         skills: ["xjb_soul_xueqi", "xjb_soul_fuhong", "xjb_soul_hongxi", "xjb_soul_fuhua"],
         get trashBin() {
-            return [`${extPath}image/character/xuemo${[1, 2, 3].randomGet()}.jpg`]
+            return [`${extPath}/image/character/xuemo${[1, 2, 3].randomGet()}.jpg`]
         },
         names: "索|布劳德"
     },
@@ -46,6 +46,6 @@ const character = {
     }
 }
 for (const id in character) {
-    if (!character[id].trashBin.length) character[id].trashBin.push(`${extPath}image/character/${id}.jpg`);
+    if (!character[id].trashBin.length) character[id].trashBin.push(`${extPath}/image/character/${id}.jpg`);
 }
 export default character;

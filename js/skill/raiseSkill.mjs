@@ -1,6 +1,5 @@
 import { _status, lib, ui, game, ai, get } from "../../../../noname.js"
 /**
- * 
  * @param {*} name 
  * @param {Skill} skill 
  * @returns 
@@ -398,7 +397,7 @@ const xjb_bingjue = SkillCreater(
         player.gain(cardsGain, "gain2")
     },
     translate: "冰诀",
-    description: "出牌阶段限一次，你可弃置所有梅花手牌，然后获得等量张冰【杀♣️A】。你使用冰【杀】无次数限制。",
+    description: "出牌阶段限一次，你可弃置所有梅花手牌，然后获得等量张冰【杀♣A】。你使用冰【杀】无次数限制。",
 })
 const xjb_hanhua = SkillCreater(
     "xjb_hanhua", {

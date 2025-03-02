@@ -12,5 +12,5 @@ export function importEditor() {
     }).catch(err => {
         console.error(err, "技能编辑器载入失败");
     });
-    lib.init.css(`${EXTENSION_PATH}/css`, "editor");
+    lib.init.css(`${EXTENSION_PATH}css`, "editor");
 }
