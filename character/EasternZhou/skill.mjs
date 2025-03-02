@@ -23,10 +23,92 @@ function SkillCreater(name, skillInfo) {
 	return skill[name];
 };
 
+SkillCreater("xjb_duozhu", {
+	translate: "夺朱",
+	description: "宗族技，弃牌阶段，若存在曲沃姬姓角色手牌数为全场最多，你可以跳过此阶段，然后令一名非曲沃姬姓角色获得一个只有弃牌阶段的额外回合。",
+	clanSkill: true,
+	trigger: {
+		player: "phaseDiscardBegin"
+	},
+	filter: (event, player) => {
+		return game.hasPlayer(curr => curr.hasClan("曲沃姬姓") && curr.isMaxHandcard());
+	},
+	async content(event, trigger, player) {
+		player.skip(trigger.name);
+		const { result: { targets, bool } } = await player.chooseTarget()
+			.set("filterTarget", (_card, player, target) => {
+				return !target.hasClan("曲沃姬姓");
+			})
+			.set("ai", (target) => {
+				const player = _status.event.player;
+				if (player.countCards("h") <= player.getHandcardLimit()) return 0;
+				return -get.attitude(player, target)
+			});
+		if (bool) {
+			const [target] = targets;
+			target.insertPhase().set("phaseList", ["phaseDiscard"]);
+		}
+	}
+})
+
+SkillCreater("xjb_zhaoxian", {
+	translate: "昭贤",
+	description: "转化技，出牌阶段限一次，你可以展示一张手牌，然后视为使用一张：阴：【五谷丰登】；阳：【桃园结义】。",
+	intro: {
+		content(_storage, player) {
+			if (player.storage.xjb_zhaoxian == true) return "出牌阶段限一次，你可以展示一张手牌，然后视为使用一张【桃园结义】。";
+			return "出牌阶段限一次，你可以展示一张手牌，然后视为使用一张【五谷丰登】。";
+		},
+	},
+	enable: "phaseUse",
+	filterCard: true,
+	lose: false,
+	discard: false,
+	zhuanhuanji: true,
+	mark: true,
+	marktext: "☯",
+	async content(event, trigger, player) {
+		await player.showCards(event.cards);
+		await player.chooseUseTarget(player.storage.xjb_zhaoxian ? "taoyuan" : "wugu");
+		player.changeZhuanhuanji("xjb_zhaoxian");
+	}
+})
+SkillCreater("xjb_yiben", {
+	translate: "移本",
+	description: "当你成为一张目标数不为1的普通锦囊牌后，你可以为此牌减少至多X个目标并令此牌对你额外结算等量次。（X为你被展示过的牌）",
+	trigger: {
+		target: "useCardToTarget"
+	},
+	filter: (event, player) => {
+		return player.countCards("h", card => card.hasGaintag("xjb_yiben")).length;
+	},
+	async cost(event, trigger, player) {
+		const max = player.countCards("h", card => card.hasGaintag("xjb_yiben")).length;
+		event.result = await player.chooseTarget([1, max]).forResult();
+	},
+	async content(event, trigger, player) {
+		trigger.getParent().excluded.add(event.targets);
+		const repeatedPlayers = new Array(event.targets.length).fill(player)
+		trigger.getParent().targets = trigger.getParent().targets.concat(repeatedPlayers);
+		trigger.getParent().triggeredTargets4 = trigger.getParent().triggeredTargets4.concat(repeatedPlayers);
+	},
+	group: ["xjb_yiben_countShow"],
+	subSkill: {
+		countShow: {
+			trigger: {
+				player: "showCardsAfter"
+			},
+			charlotte: true,
+			forced: true,
+			async content(event, trigger, player) {
+				player.addGaintag(trigger.cards, "xjb_yiben");
+			}
+		}
+	}
+})
 
 //急子&寿
-const xjb_tongzhou = SkillCreater(
-	"xjb_tongzhou", {
+SkillCreater("xjb_tongzhou", {
 	translate: "同舟",
 	description: "准备阶段和结束阶段,你可以摸两张牌",
 	trigger: {
@@ -39,8 +121,7 @@ const xjb_tongzhou = SkillCreater(
 		threaten: 2,
 	}
 })
-const xjb_fuwei = SkillCreater(
-	"xjb_fuwei", {
+SkillCreater("xjb_fuwei", {
 	translate: "赴危",
 	description: "限定技，当你受到致命伤害时，你可以防止此伤害，然后将〖同舟〗的触发时机改为准备阶段。",
 	trigger: {
@@ -58,8 +139,7 @@ const xjb_fuwei = SkillCreater(
 		player.addSkillTrigger("xjb_tongzhou");
 	},
 })
-const xjb_taihuo = SkillCreater(
-	"xjb_taihuo", {
+SkillCreater("xjb_taihuo", {
 	translate: "台祸",
 	description: "其他角色的出牌阶段限一次,其可以弃置X张牌,对你使用一张刺杀(X为你的体力值)",
 	global: "xjb_taihuo_cisha",

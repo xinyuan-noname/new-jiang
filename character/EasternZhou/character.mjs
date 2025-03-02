@@ -1,6 +1,14 @@
 import { extPath } from "./url.mjs"
 const character = {
     //names按照无名杀规则，写成姓+名吧，毕竟屈原写的芈|原，但是为什么不是芈|平？
+    "xjb_qvwohuanshu": {
+        sex: "male",
+        group: "xjb_chunqiu_jin",
+        hp: 3,
+        skills: ["xjb_duozhu", "xjb_zhaoxian", "xjb_yiben"],
+        trashBin: [],
+        names: "姬|成师"
+    },
     "xjb_jizi_shou": {
         sex: "male",
         group: "xjb_chunqiu_wei",

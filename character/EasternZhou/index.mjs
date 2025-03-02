@@ -7,7 +7,6 @@ import skill from "./skill.mjs";
 import translate from "./translate.mjs";
 import url from "./url.mjs"
 export default () => {
-    
     lib.init.promises.css(`./${url}/style`, "nature")
         .catch(err => {
             throw err;

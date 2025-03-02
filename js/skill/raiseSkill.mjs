@@ -246,7 +246,6 @@ const xjb_wu_yushou = SkillCreater(
                     const playerx = _status.event.player;
                     const targetx = _status.event.target;
                     const cardName = _status.event.cardName;
-                    
                     if (get.attitude(playerx, targetx) <= 0) return -1000;
                     if (_status.event.dyingEvent && card.name == "jiu") return 6;
                     if (cardName === "sha" && card.name == "shan") return 6;
