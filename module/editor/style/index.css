@@ -1,0 +1,106 @@
+.xy-ED-nonameEditor {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    width: 100%;
+    height: 100%;
+}
+
+.xy-ED-nonameEditor * {
+    position: relative;
+}
+
+.xy-ED-nonameEditor>* {
+    position: relative;
+    z-index: 100;
+}
+
+.xy-ED-minimizeControl {
+    position: absolute;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background-color: rgb(149, 149, 149);
+    border: 5px whitesmoke solid;
+    font-size: 24px;
+    height: 50px;
+    width: 50px;
+    transition: 0.1s;
+    opacity: 0.5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.xy-ED-minimizeControl:hover {
+    opacity: 1;
+    cursor: pointer;
+}
+
+.xy-ED-operationPage {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.xy-ED-operationPage>header {
+    height: 20px;
+    width: 100%;
+    background-color: rgb(185, 185, 185);
+    box-shadow: 0 0 1px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+}
+
+.xy-ED-operationPage>header .xy-ED-header-right,
+.xy-ED-operationPage>header .xy-ED-header-left {
+    width: 100px;
+    font-size: 20px;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 10px;
+}
+
+.xy-ED-operationPage>header [class^="xy-ED-control"] {
+    opacity: 0.8;
+    transition: 0.1s;
+    height: 20px;
+    width: 20px;
+    background-size: cover;
+    box-sizing: border-box;
+}
+
+.xy-ED-operationPage>header .xy-ED-control-minize {
+    background-image: url(../image/icon/minimize.png);
+}
+
+.xy-ED-operationPage>header .xy-ED-control-close {
+    background-image: url(../image/icon/close.png);
+}
+
+.xy-ED-operationPage>header [class^="xy-ED-control"]:hover {
+    background-color: rgba(126, 107, 107, 0.5);
+    border: whitesmoke 1px solid;
+}
+
+.xy-ED-viewArea {
+    display: flex;
+    flex: 1;
+}
+
+.xy-ED-viewArea>.xy-ED-mainArea {
+    flex: 3;
+    background-color: rgb(220, 220, 220);
+}
+
+.xy-ED-viewArea>.xy-ED-sideBar {
+    flex: 1;
+    background-color: rgb(137, 137, 137);
+}

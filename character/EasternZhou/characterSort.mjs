@@ -1,6 +1,6 @@
 export default {
     xjb_easternZhou: {
-        xjb_qvwodaiyi: ["xjb_quwowugong"],
+        xjb_qvwodaiyi: ["xjb_qvwowugong"],
         xjb_weiqingbuning: ["xjb_jizi_shou", "xjb_weiyigong"],
         xjb_biqizhijiang: ["xjb_qixianggong"],
         xjb_zunwangrangyi: ["xjb_guanyiwu"],

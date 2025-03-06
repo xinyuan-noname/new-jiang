@@ -40,7 +40,6 @@ import { ImplicitTextTool } from "./editor/implicitText.mjs";
 import { EditorOrganize } from "./editor/organize.mjs";
 import { choiceMode } from "./editor/choiceMode.mjs";
 import { EditorDataAnalyze } from "./editor/dataAnalyze.mjs"
-import {SkillEditor} from "./../module/editor/editor.js";
 const DEFAULT_EVENT = lib.config.touchscreen ? 'touchend' : 'click';
 if (!lib.config.xjb_editorConfig) lib.config.xjb_editorConfig = {};
 lib.xjb_class = {
@@ -71,7 +70,6 @@ lib.xjb_class = {
 get.xjb_en = (str) => NonameCN.getEn(str);
 lib.xjb_translate = { ...NonameCN.AllList }
 lib.xjb_editorUniqueFunc = NonameCN.uniqueFunc;
-game.SkillEditor = SkillEditor;
 //判定类型
 game.xjb_judgeType = function (word) {
 	if (!word || !word.length) return;

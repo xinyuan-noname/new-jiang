@@ -1,0 +1,11 @@
+.xy-ED-hidden {
+    display: none;
+}
+
+.xy-ED-high-z-index{
+    z-index: 100;
+}
+
+[class^=".xy-ED"][class *="hidden"] {
+    display: none;
+}

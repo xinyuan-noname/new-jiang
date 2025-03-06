@@ -23,9 +23,10 @@ function SkillCreater(name, skillInfo) {
 	return skill[name];
 };
 
+//曲沃姬姓宗族技
 SkillCreater("xjb_duozhu", {
 	translate: "夺朱",
-	description: "宗族技，弃牌阶段，若存在曲沃姬姓角色手牌数为全场最多，你可以跳过此阶段，然后令一名非曲沃姬姓角色获得一个只有弃牌阶段的额外回合。",
+	description: "宗族技，弃牌阶段，若存在曲沃姬姓角色手牌数为全场最多，你可以跳过此阶段并可以令一名非曲沃姬姓角色获得一个只有弃牌阶段的额外回合。",
 	clanSkill: true,
 	trigger: {
 		player: "phaseDiscardBegin"
@@ -34,11 +35,12 @@ SkillCreater("xjb_duozhu", {
 		return game.hasPlayer(curr => curr.hasClan("曲沃姬姓") && curr.isMaxHandcard());
 	},
 	async content(event, trigger, player) {
-		player.skip(trigger.name);
+		trigger.cancel();
 		const { result: { targets, bool } } = await player.chooseTarget()
 			.set("filterTarget", (_card, player, target) => {
 				return !target.hasClan("曲沃姬姓");
 			})
+			.set("prompt", "令一名非曲沃姬姓角色获得一个只有弃牌阶段的额外回合。")
 			.set("ai", (target) => {
 				const player = _status.event.player;
 				if (player.countCards("h") <= player.getHandcardLimit()) return 0;
@@ -51,46 +53,51 @@ SkillCreater("xjb_duozhu", {
 	}
 })
 
+//成师
 SkillCreater("xjb_zhaoxian", {
 	translate: "昭贤",
-	description: "转化技，出牌阶段限一次，你可以展示一张手牌，然后视为使用一张：阴：【五谷丰登】；阳：【桃园结义】。",
-	intro: {
-		content(_storage, player) {
-			if (player.storage.xjb_zhaoxian == true) return "出牌阶段限一次，你可以展示一张手牌，然后视为使用一张【桃园结义】。";
-			return "出牌阶段限一次，你可以展示一张手牌，然后视为使用一张【五谷丰登】。";
-		},
-	},
+	description: "出牌阶段限一次，你可以展示一张未展示过的红桃/非红桃手牌，然后视为使用一张【桃园结义】/【五谷丰登】。",
 	enable: "phaseUse",
+	usable: 1,
 	filterCard: true,
 	lose: false,
 	discard: false,
 	zhuanhuanji: true,
 	mark: true,
-	marktext: "☯",
+	filterCard: card => !card.hasGaintag("xjb_yiben"),
 	async content(event, trigger, player) {
 		await player.showCards(event.cards);
-		await player.chooseUseTarget(player.storage.xjb_zhaoxian ? "taoyuan" : "wugu");
+		await player.chooseUseTarget(true, get.suit(event.cards[0]) === "heart" ? "taoyuan" : "wugu");
 		player.changeZhuanhuanji("xjb_zhaoxian");
 	}
 })
 SkillCreater("xjb_yiben", {
 	translate: "移本",
-	description: "当你成为一张目标数不为1的普通锦囊牌后，你可以为此牌减少至多X个目标并令此牌对你额外结算等量次。（X为你被展示过的牌）",
+	description: "当你成为一张目标数不为1的牌后，你可以代替至多X名角色结算此牌。（X为你被展示过的牌）",
 	trigger: {
-		target: "useCardToTarget"
+		target: "useCardToTargeted"
 	},
 	filter: (event, player) => {
-		return player.countCards("h", card => card.hasGaintag("xjb_yiben")).length;
+		return player.countCards("h", card => card.hasGaintag("xjb_yiben"))
+			&& event.getParent().targets.length > 1
+			&& event.getParent().targets.filter(curr => curr === player).length <= 1;
 	},
 	async cost(event, trigger, player) {
-		const max = player.countCards("h", card => card.hasGaintag("xjb_yiben")).length;
-		event.result = await player.chooseTarget([1, max]).forResult();
+		const max = player.countCards("h", card => card.hasGaintag("xjb_yiben"));
+		event.result = await player.chooseTarget([1, max])
+			.set("prompt", "选择至多" + get.cnNumber(max) + "角色，你代替这些角色结算此牌。")
+			.set("filterTarget", (card, player, target) => trigger.targets.includes(target) && target != player)
+			.forResult();
 	},
 	async content(event, trigger, player) {
-		trigger.getParent().excluded.add(event.targets);
-		const repeatedPlayers = new Array(event.targets.length).fill(player)
-		trigger.getParent().targets = trigger.getParent().targets.concat(repeatedPlayers);
-		trigger.getParent().triggeredTargets4 = trigger.getParent().triggeredTargets4.concat(repeatedPlayers);
+		const targets = trigger.getParent().targets;
+		const triggeredTargets4 = trigger.getParent().triggeredTargets4;
+		for (let i = 0; i < targets.length; i++) {
+			if (event.targets.includes(targets[i])) targets[i] = player;
+		}
+		for (let i = 0; i < triggeredTargets4.length; i++) {
+			if (event.targets.includes(triggeredTargets4[i])) triggeredTargets4[i] = player;
+		}
 	},
 	group: ["xjb_yiben_countShow"],
 	subSkill: {
@@ -106,6 +113,9 @@ SkillCreater("xjb_yiben", {
 		}
 	}
 })
+
+//曲沃庄伯
+SkillCreater("xjb_",{})
 
 //急子&寿
 SkillCreater("xjb_tongzhou", {
@@ -176,8 +186,7 @@ SkillCreater("xjb_taihuo", {
 })
 
 //卫赤
-const xjb_haohe = SkillCreater(
-	"xjb_haohe", {
+SkillCreater("xjb_haohe", {
 	translate: "好鹤",
 	description: "锁定技，游戏开始时，你声明一张不是【闪】且合法的非装备牌。结束阶段，你可以将一张与之牌同名的牌置于一名角色的武将牌旁，其手牌均视为与之同名牌直到失去“鹤”。",
 	forced: true,
@@ -252,8 +261,7 @@ const xjb_haohe = SkillCreater(
 
 	}
 })
-const xjb_shiguo = SkillCreater(
-	"xjb_shiguo", {
+SkillCreater("xjb_shiguo", {
 	translate: "失国",
 	description: "锁定技，你的装备牌和【闪】均视为〖好鹤〗声明的牌。结束阶段，武将牌旁有“鹤”的角色可以弃置“鹤”，令你失去一点体力。",
 	mod: {
@@ -285,8 +293,7 @@ const xjb_shiguo = SkillCreater(
 })
 
 //诸儿
-const xjb_xionghu = SkillCreater(
-	"xjb_xionghu", {
+SkillCreater("xjb_xionghu", {
 	translate: "雄狐",
 	description: "出牌阶段限一次，若你已受伤，你与一名女性角色各弃置一张牌，你与其各回复一点体力。然后你对其距离为1一名角色使用一张刺【杀】。",
 	enable: "phaseUse",
@@ -310,8 +317,7 @@ const xjb_xionghu = SkillCreater(
 		await player.useCard({ name: "sha", nature: "stab" }, targets[0], false);
 	}
 })
-const xjb_xuechou = SkillCreater(
-	"xjb_xuechou", {
+SkillCreater("xjb_xuechou", {
 	translate: "雪仇",
 	description: "限定技，出牌阶段，你可以选择一名上下位均阵亡的其他角色，你依次将手牌视为【决斗】对其使用。此过程中，你对其造成伤害后，你获得其一张牌；你受到伤害后，你摸一张牌。",
 	$audio: [
@@ -363,8 +369,7 @@ const xjb_xuechou = SkillCreater(
 		}
 	}
 })
-const xjb_guaqi = SkillCreater(
-	"xjb_guaqi", {
+SkillCreater("xjb_guaqi", {
 	global: "xjb_guaqi_shubian",
 	translate: "瓜期",
 	description: "出牌阶段限一次，你可以将一张牌交给一名其他角色，称为“瓜”。手牌中拥有瓜的角色：1.回合开始时，失去一点体力；2.回合内使用牌无次数限制；3.其本轮获得的牌不计入手牌上限。每轮开始时，你可以获得场上的所有瓜。",
@@ -434,8 +439,7 @@ const xjb_guaqi = SkillCreater(
 })
 
 //管仲
-const xjb_zhangwei = SkillCreater(
-	"xjb_zhangwei", {
+SkillCreater("xjb_zhangwei", {
 	translate: '张维',
 	description: "每轮开始时，你可以重置任意张牌，令至多等量名角色下个摸牌阶段多摸一张牌，这些角色本轮视为拥有〖货殖〗、〖仓实〗和〖尊攘〗",
 	derivation: ["xjb_huozhi", "xjb_cangshi", "xjb_zunrang"],
@@ -462,8 +466,7 @@ const xjb_zhangwei = SkillCreater(
 		}
 	}
 })
-const xjb_zunrang = SkillCreater(
-	"xjb_zunrang", {
+SkillCreater("xjb_zunrang", {
 	translate: "尊攘",
 	description: "回合开始时，你可以获得一名其他角色一张牌，然后你令另一名其他角色摸一张牌",
 	trigger: {
@@ -493,8 +496,7 @@ const xjb_zunrang = SkillCreater(
 		targets2[0].draw();
 	}
 })
-const xjb_huozhi = SkillCreater(
-	"xjb_huozhi", {
+SkillCreater("xjb_huozhi", {
 	translate: "货殖",
 	description: "出牌阶段限一次，你可与一名本回合未发动过本技能的其他角色各展示一张手牌，称为“货”，并用另一张手牌拼点。拼点结算后，双方交换“货”，赢的角色获得拼点牌，若赢的角色是你，重置此技能的发动次数。",
 	enable: "phaseUse",
@@ -531,8 +533,7 @@ const xjb_huozhi = SkillCreater(
 		}
 	}
 })
-const xjb_cangshi = SkillCreater(
-	"xjb_cangshi", {
+SkillCreater("xjb_cangshi", {
 	translate: "仓实",
 	description: "出牌阶段，你可以弃置两张基本牌，令你手牌上限+1",
 	enable: "phaseUse",
@@ -562,8 +563,7 @@ const xjb_cangshi = SkillCreater(
 })
 
 //赢任好
-const xjb_kaidi = SkillCreater(
-	"xjb_kaidi", {
+SkillCreater("xjb_kaidi", {
 	translate: "开地",
 	description: "当你使用基本牌或普通锦囊牌指定唯一目标后，你可以为此牌多指定任意个目标，若其在你攻击范围外，其可视为对你使用一张普通锦囊牌。",
 	trigger: {
@@ -610,8 +610,7 @@ const xjb_kaidi = SkillCreater(
 		}
 	},
 })
-const xjb_ranrong = SkillCreater(
-	"xjb_ranrong", {
+SkillCreater("xjb_ranrong", {
 	translate: "染戎",
 	description: "锁定技，当你未使用【无懈可击】响应其他角色对你使用的非红色普通锦囊牌时，本回合你失去非锁定技。其下一次使用牌指定你为目标时，你摸一张牌，然后你无法响应此牌。",
 	forced: true,
@@ -646,8 +645,7 @@ const xjb_ranrong = SkillCreater(
 })
 
 //荀息
-const xjb_jiatu = SkillCreater(
-	"xjb_jiatu", {
+SkillCreater("xjb_jiatu", {
 	translate: "假道",
 	description: "出牌阶段限一次，你可以交给一名角色一张牌，你对其攻击范围的一名角色造成一点伤害。若你以此法使该角色阵亡，你可以选择一名本回合获得过你牌的角色，你获得其一张牌并对其造成一点伤害。",
 	enable: "phaseUse",
@@ -677,8 +675,7 @@ const xjb_jiatu = SkillCreater(
 		}
 	},
 })
-const xjb_gugong = SkillCreater(
-	"xjb_gugong", {
+SkillCreater("xjb_gugong", {
 	translate: "股肱",
 	description: "锁定技，当你使用一张普通锦囊牌后，你须选择本回合未选择的一项：1.失去一点体力，重置一个技能；2.摸一张牌，回收此牌。",
 	trigger: {
@@ -782,8 +779,7 @@ const xjb_gugong = SkillCreater(
 })
 
 //先轸
-const xjb_xiaojian = SkillCreater(
-	"xjb_xiaojian", {
+SkillCreater("xjb_xiaojian", {
 	translate: "崤歼",
 	description: "当你造成伤害后，你可以将受到伤害的角色至多X张牌置入弃牌堆。（X为其牌数-其体力值）。",
 	trigger: {
@@ -803,8 +799,7 @@ const xjb_xiaojian = SkillCreater(
 		await trigger.player.loseToDiscardpile(event.cost_data.cards, player);
 	}
 })
-const xjb_guizhan = SkillCreater(
-	"xjb_guizhan", {
+SkillCreater("xjb_guizhan", {
 	translate: "诡战",
 	description: "出牌阶段限X次，你可以选择任意张牌和等量名角色并声明一张基本牌或普通锦囊牌，视为对这些角色使用之，若这些牌颜色相同，此牌不可被响应。(X为本回合进入过濒死状态的角色数+1)。",
 	enable: "phaseUse",
@@ -876,8 +871,7 @@ const xjb_guizhan = SkillCreater(
 })
 
 //伍子胥
-const xjb_wanxin = SkillCreater(
-	"xjb_wanxin", {
+SkillCreater("xjb_wanxin", {
 	translate: "剜心",
 	description: "锁定技，每轮开始时，你失去“恨”标记数量点体力并摸等量张牌。",
 	trigger: {
@@ -894,8 +888,7 @@ const xjb_wanxin = SkillCreater(
 		await player.draw(x)
 	},
 });
-const xjb_gangli = SkillCreater(
-	"xjb_gangli", {
+SkillCreater("xjb_gangli", {
 	translate: "刚戾",
 	description: "锁定技，你不能成为【乐不思蜀】的目标；你不能被翻面。",
 	mod: {
@@ -918,8 +911,7 @@ const xjb_gangli = SkillCreater(
 		noTurnover: true,
 	}
 })
-const xjb_duhen = SkillCreater(
-	"xjb_duhen", {
+SkillCreater("xjb_duhen", {
 	translate: "渡恨",
 	description: "当你造成伤害时，你可以获得一枚“恨”，令此伤害+1。</br>当你使用伤害牌时，你可以获得一枚“恨”，令此牌无法被响应。</br>当你受到伤害时，你可以获得一枚“恨”，对伤害来源造成等量点伤害。</br>出牌阶段开始前，你可以获得一枚“恨”，令本回合你使用牌无距离限制。</br>出牌阶段/濒死阶段，你可以移除〖渡恨〗的一个分项并移去X枚“恨”，然后你回复一点体力。(X为本项你发动的次数)。",
 	marktext: "恨",
@@ -1066,8 +1058,7 @@ const xjb_duhen = SkillCreater(
 })
 
 //嬴政
-const xjb_zulong = SkillCreater(
-	"xjb_zulong", {
+SkillCreater("xjb_zulong", {
 	translate: "祖龙",
 	description: "每回合每种类别限一次，一名角色减少一点体力后，可以你选择获得指定种类的一个技能。若此技能为觉醒技，则无视发动条件。",
 	$audio: [
@@ -1105,8 +1096,7 @@ const xjb_zulong = SkillCreater(
 		threaten: 0.8
 	}
 });
-const xjb_longwei = SkillCreater(
-	"xjb_longwei", {
+SkillCreater("xjb_longwei", {
 	translate: "龙威",
 	description: "锁定技，你失去体力上限改为增加等量点体力上限,",
 	trigger: {

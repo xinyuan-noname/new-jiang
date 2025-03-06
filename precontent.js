@@ -10,6 +10,7 @@ import "./js/feature/hpCard.js";
 import loadCharacterPack_EasternZhou from "./character/EasternZhou/index.mjs";
 import loadCharacterPack_XJB from "./character/XJB/index.mjs";
 import loadCharacterPack_Soul from "./character/Soul/index.mjs";
+import loadModule_NonameEditor from "./module/editor/index.mjs";
 function provideFunction() {
 	get.xjb_randomNDInt = (mu, sigma) => {
 		return Math.floor(XJB_Math.NDRandom(mu, sigma));
@@ -618,10 +619,15 @@ const loadCharacterPack = () => {
 	loadCharacterPack_XJB();
 	loadCharacterPack_Soul();
 }
+
+const loadModule=()=>{
+	game.xjb_nonameEditor = loadModule_NonameEditor();
+}
 export function XJB_PRECONTENT() {
 	provideFunction();
 	initialize();
 	importFile();
 	loadCharacterPack();
+	loadModule();
 	window.xjb_library = xjb_library;
 }
