@@ -72,7 +72,6 @@ export function XJB_CONTENT(config, pack) {
             changeBranch: "切换分支",
             putout: '输出目录',
             download: '完整更新',
-            downloadSimply: '简易更新',
         },
         visualMenu: function (node) {
             node.className = 'button controlbutton';
@@ -86,14 +85,10 @@ export function XJB_CONTENT(config, pack) {
                             const ZipUpdater = module.ZipUpdater;
                             game.xjb_updaterList = {
                                 master: {
-                                    raw: new RawUpdater("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/master")
-                                        .setData(lib, game, ui, get, ai, _status),
                                     zip: new ZipUpdater("新将包", "https://ghproxy.net/github.com/xinyuan-noname/new-jiang/archive/master.zip")
                                         .setData(lib, game, ui, get, ai, _status)
                                 },
                                 PR: {
-                                    raw: new RawUpdater("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/PR-branch")
-                                        .setData(lib, game, ui, get, ai, _status),
                                     zip: new ZipUpdater("新将包", "https://ghproxy.net/github.com/xinyuan-noname/new-jiang/archive/PR-branch.zip")
                                         .setData(lib, game, ui, get, ai, _status)
                                 }
@@ -144,17 +139,6 @@ export function XJB_CONTENT(config, pack) {
                     })
                     manager.on("end", () => {
                         alert("更新成功！")
-                    })
-                }; break;
-                case 'downloadSimply': {
-                    if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
-                    const myUpdater = game.xjb_updater;
-                    const manager = myUpdater.updateLine({
-                        timeoutMinutes: 1,
-                        reCalHash: true
-                    });
-                    manager.on("fileException", (files) => {
-                        alert('请选择完整更新！（这可能比较花费时间吧）');
                     })
                 }; break;
             }

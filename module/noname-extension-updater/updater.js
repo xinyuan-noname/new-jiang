@@ -526,17 +526,10 @@ export class RawUpdater extends Updater {
     resUrlList = {};
     resDirList = {};
     constructor(extensionName, mainURL, mainResName = "main", dirPath = "Directory.js") {
-        if (typeof mainURL !== "string" && typeof mainURL !== "object") {
+        if (typeof mainURL !== "string") {
             throw new Error("传入参数不全！缺少mainURL")
         }
         super(extensionName);
-        if (typeof mainURL === "object") {
-            if ("host" in mainURL && "owner" in mainURL && "repo" in mainURL && "branch" in mainURL) {
-                mainURL = `https://${host}/${owner}/${repo}/raw/${branch}`;
-            } else {
-                throw Error("mainURL缺少参数，无法生成对应url");
-            }
-        }
         this.mainResName = mainResName;
         this.mainURL = mainURL;
         this.resUrlList[mainResName] = mainURL;

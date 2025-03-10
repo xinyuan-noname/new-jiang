@@ -2,10 +2,36 @@
     display: none;
 }
 
-.xy-ED-high-z-index{
+.xy-ED-high-z-index {
     z-index: 100;
 }
 
-[class^=".xy-ED"][class *="hidden"] {
+.xy-ED-shown-flex {
+    display: flex;
+}
+
+.xy-ED-show-scrollbar::-webkit-scrollbar {
+    display: block;
+}
+
+[class^="xy-ED-expandable"]::before {
+    content: "";
+    background-image: url(../image/icon/angle.png);
+    background-size: cover;
+    transition: 0.1s;
+    cursor: pointer;
+    display: block;
+}
+
+.xy-ED-expandable-expanded::before {
+    transform: rotate(90deg);
+}
+
+.xy-ED-expandable-collapsed::before {
+    transform: rotateZ(0deg);
+}
+
+
+[class^="xy-ED"][class *="hidden"] {
     display: none;
 }
