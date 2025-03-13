@@ -1,5 +1,17 @@
 import { _status, lib, game, ui, get, ai } from "../../../../noname.js"
 import { extPath } from "./url.mjs"
+//设置养成角色
+if (!lib.config.xjb_newcharacter) {
+    lib.config.xjb_newcharacter = {}
+}
+if (!lib.config.xjb_newcharacter.name2) lib.config.xjb_newcharacter.name2 = '李华';
+if (!lib.config.xjb_newcharacter.sex) lib.config.xjb_newcharacter.sex = 'male';
+if (!lib.config.xjb_newcharacter.group) lib.config.xjb_newcharacter.group = 'qun';
+if (!lib.config.xjb_newcharacter.hp || typeof lib.config.xjb_newcharacter.hp != 'number') lib.config.xjb_newcharacter.hp = 1;
+if (!lib.config.xjb_newcharacter.skill) lib.config.xjb_newcharacter.skill = [];
+if (!lib.config.xjb_newcharacter.intro) lib.config.xjb_newcharacter.intro = '';
+if (!lib.config.xjb_newcharacter.skin) lib.config.xjb_newcharacter.skin = [];
+if (!lib.config.xjb_newcharacter.selectedSkin) lib.config.xjb_newcharacter.selectedSkin = "ext:新将包/xin_newCharacter.jpg"
 const character = {
     xjb_Fuaipaiyi: {
         sex: "female",
@@ -39,7 +51,7 @@ const character = {
         sex: lib.config.xjb_newcharacter.sex,
         group: lib.config.xjb_newcharacter.group,
         hp: lib.config.xjb_newcharacter.hp,
-        skills: lib.config?.xjb_newcharacter?.skill?.filter?.(Boolean) || [],
+        skills: lib.config.xjb_newcharacter.skill.filter(Boolean),
         isZhugong: lib.config.xjb_newCharacter_isZhu == 1,
         hasHiddenSkill: lib.config.xjb_newCharacter_hide == 1,
         trashBin: [lib.config.xjb_newcharacter.selectedSkin]
