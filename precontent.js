@@ -371,20 +371,6 @@ function initialize() {
 		lib.config.xjb_title = [];
 	}
 	if (!lib.config.xjb_count) lib.config.xjb_count = {}
-
-	//设置养成角色
-	if (!lib.config.xjb_newcharacter) {
-		lib.config.xjb_newcharacter = {}
-	}
-	if (!lib.config.xjb_newcharacter.name2) lib.config.xjb_newcharacter.name2 = '李华';
-	if (!lib.config.xjb_newcharacter.sex) lib.config.xjb_newcharacter.sex = 'male';
-	if (!lib.config.xjb_newcharacter.group) lib.config.xjb_newcharacter.group = 'qun';
-	if (!lib.config.xjb_newcharacter.hp || typeof lib.config.xjb_newcharacter.hp != 'number') lib.config.xjb_newcharacter.hp = 1;
-	if (lib.config.xjb_newcharacter.hp > 8) lib.config.xjb_newcharacter.hp = 8
-	if (!lib.config.xjb_newcharacter.skill) lib.config.xjb_newcharacter.skill = [];
-	if (!lib.config.xjb_newcharacter.intro) lib.config.xjb_newcharacter.intro = '';
-	if (!lib.config.xjb_newcharacter.skin) lib.config.xjb_newcharacter.skin = [];
-	if (!lib.config.xjb_newcharacter.selectedSkin) lib.config.xjb_newcharacter.selectedSkin = "ext:新将包/xin_newCharacter.jpg"
 	//设置存档
 	if (!lib.config.xjb_myStorage) {
 		lib.config.xjb_myStorage = {
