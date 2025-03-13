@@ -1,5 +1,52 @@
 "use script"
 import { _status, lib, ui, game, ai, get } from "../../../../noname.js"
+lib.xjb_chanterList = {
+    filter: [
+        '你已受伤',
+        '你未受伤',
+        '你体力不小于3',
+        '你有空置的武器栏',
+        '你有空置的防具栏',
+        '你有空置的宝物栏',
+        '场上有男性角色',
+        '场上有女性角色',
+        '你已横置',
+        '你已翻面',
+        "你性别相同于触发事件的角色",
+        "你性别不同于触发事件的角色",
+    ],
+    effect: [
+        '你翻面并摸四张牌',
+        '你可以摸三张牌或回复一点体力值',
+        '你可以摸两张牌', '你回复一点体力', '你获得一点护甲',
+        '你移动场上一张牌', '你失去一点体力', '你随机弃置两张牌',
+        '所有角色回复一点体力', '所有角色摸一张牌',
+        '所有角色随机弃置两张牌',
+        '你摸一张牌\n如果\n游戏轮数小于3\n那么\n你再摸一张牌',
+        '你令一名其他角色摸两张牌', '你令一名其他角色回复一点体力',
+        '继承kurou\n', '继承chengxiang\n',
+        "继承luoshen\n", "继承decadezhenjun\n",
+        "继承nzry_jianxiang\n",
+    ],
+    trigger: [
+        "每轮开始时",
+        '你受到一点伤害后', '你受到伤害后',
+        "一名角色受到由你造成的一点伤害后", "一名角色受到由你造成伤害后",
+        '你回复一点体力后', '你回复体力后',
+        '你失去一点体力后', '你失去体力后',
+        '回合结束时', '摸牌阶段开始时', '摸牌阶段结束时', '弃牌阶段开始时', '弃牌阶段结束时',
+        '你判定牌生效后',
+        '你失去一张装备牌后', '你失去装备区的一张牌后',
+        "失去最后一张手牌后", "你于弃牌阶段弃置牌后",
+        "攻击范围包含你的其他角色失去梅花牌后", "攻击范围包含你的其他角色失去黑桃牌后",
+        "攻击范围包含你的其他角色失去红桃牌后", "攻击范围包含你的其他角色失去方片牌后",
+        '你于回合外失去手牌后', '你于回合外失去牌后',
+        '你使用杀指定目标时', '你使用杀指定目标后', '你成为杀的目标后', '你使用杀后', '你打出杀后', '你使用或打出杀后',
+        '你使用闪后', '你打出闪后', '你使用或打出闪后',
+        '你成为决斗的目标后',
+        '你使用决斗后', '你使用桃后'
+    ],
+}
 /**
  * 
  * @param {string} name 
@@ -25,9 +72,6 @@ const setEvent = (name, { player, content }) => {
     lib.element.Player.prototype[name] = get.copy(player)
     lib.element.content[name] = get.copy(content)
 };
-const setEventLike = (name, method) => {
-    lib.element.Player.prototype[name] = get.copy(method)
-}
 const addPlayerMethod = (name, method) => {
     lib.element.Player.prototype[name] = get.copy(method)
 };
@@ -210,7 +254,7 @@ setEvent("xjb_chant", {
 
             // 处理过滤器
             await new Promise(res => {
-                let list = XJB_EDITOR_LIST['filter'].randomGet(), a = 0;
+                let list = lib.xjb_chanterList['filter'].randomGet(), a = 0;
                 lib.translate[skill + "_info"] = `${list}整理`;
                 let timer = setInterval(() => {
                     if (a === list.length) {
@@ -230,7 +274,7 @@ setEvent("xjb_chant", {
 
             // 处理效果
             await new Promise(res => {
-                let list = XJB_EDITOR_LIST['effect'].randomGet(), a = 0;
+                let list = lib.xjb_chanterList['effect'].randomGet(), a = 0;
                 lib.translate[skill + "_info"] += `${list}整理`;
                 let timer = setInterval(() => {
                     if (a === list.length) {
@@ -251,7 +295,7 @@ setEvent("xjb_chant", {
 
             // 处理触发器
             await new Promise(res => {
-                let list = XJB_EDITOR_LIST['trigger'].randomGet(), a = 0;
+                let list = lib.xjb_chanterList['trigger'].randomGet(), a = 0;
                 lib.translate[skill + "_info"] += `${list}整理`;
                 let timer = setInterval(() => {
                     if (a === list.length) {

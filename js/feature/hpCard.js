@@ -1,3 +1,4 @@
+"use script"
 import { _status, lib, game, ui, get, ai } from "../../../../noname.js";
 const setEvent = (name, { player, content }) => {
     lib.element.Player.prototype[name] = get.copy(player)
@@ -6,22 +7,17 @@ const setEvent = (name, { player, content }) => {
 const addPlayerMethod = (name, method) => {
     lib.element.Player.prototype[name] = get.copy(method)
 };
-
-; (() => {
-    const map = new Map();
-    map.set(1, { obv: 1, rev: 2 });
-    map.set(3, { obv: 3, rev: 4 });
-    map.set(5, { obv: 5, rev: 4 });
-    lib.xjb_cacheHpCardData = map;
-})();
-; (() => {
-    const map = new Map()
-    map.set(2, [[1, 1]])
-    map.set(3, [[1, 1, 1], [1, 2]])
-    map.set(4, [[1, 1, 1, 1], [1, 1, 2], [1, 3], [2, 2]])
-    map.set(5, [[1, 1, 1, 1, 1], [1, 1, 1, 2], [1, 2, 2], [1, 1, 3], [2, 3], [1, 4]])
-    lib.xjb_splitHpCardMap = map;
-})();
+lib.xjb_cacheHpCardData = new Map([
+    [1, { obv: 1, rev: 2 }],
+    [3, { obv: 3, rev: 4 }],
+    [5, { obv: 5, rev: 4 }]
+])
+lib.xjb_splitHpCardMap = new Map([
+    [2, [[1, 1]]],
+    [3, [[1, 1, 1], [1, 2]]],
+    [4, [[1, 1, 1, 1], [1, 1, 2], [1, 3], [2, 2]]],
+    [5, [[1, 1, 1, 1, 1], [1, 1, 1, 2], [1, 2, 2], [1, 1, 3], [2, 3], [1, 4]]]
+])
 lib.skill._xjb_UseHpCard = {
     trigger: {
         global: "gameStart"
@@ -84,7 +80,7 @@ game.xjb_createHpCard = function (num, num2 = 100) {
     if (Array.isArray(num)) {
         let list = []
         for (let i = 0; i < num.length; i++) {
-            list.push(game.createHpCard(num[i]))
+            list.push(game.xjb_createHpCard(num[i]))
         }
         return list
     }
@@ -495,14 +491,3 @@ setEvent("xjb_splitHpCard", {
         event.result = result;
     }
 })
-
-//防止一些未修改到的地方
-if (game.createHpCard) console.warn('已有game.createHpCard函数!将被新将包的同名函数替换!')
-game.createHpCard = game.xjb_createHpCard;
-if (game.countHpCard) console.warn('已有game.countHpCard函数!将被新将包的同名函数替换!')
-game.countHpCard = game.xjb_countHpCard;
-setEvent('giveHpCard', {
-    player: lib.element.player['xjb_giveHpCard'],
-    content: lib.element.content['xjb_giveHpCard']
-})
-addPlayerMethod("$giveHpCard", lib.element.player["$xjb_giveHpCard"])

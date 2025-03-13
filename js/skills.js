@@ -1,3 +1,4 @@
+"use script"
 import { _status, lib, game, ui, get, ai } from "../../../noname.js"
 import { XJB_Math } from './tool/math.js';
 import './skill/raiseSkill.mjs';

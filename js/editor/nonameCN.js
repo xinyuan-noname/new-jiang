@@ -1023,6 +1023,7 @@ export class NonameCN {
             "无伤害标签": `tag:"damage":intoFunctionWait:denyPrefix`,
             "带伤害标签": `tag:"damage":intoFunctionWait`,
             "不带伤害标签": `tag:"damage":intoFunctionWait:denyPrefix`,
+            //
             "有多角色标签": `tag:"multitarget":intoFunctionWait`,
             "无多角色标签": `tag:"multitarget":intoFunctionWait:denyPrefix`,
             "带多角色标签": `tag:"damage":intoFunctionWait`,
@@ -1808,6 +1809,8 @@ export class NonameCN {
             "失去判定区牌后": "j:loseAfter",
 
             //
+            "于弃牌阶段弃牌后": "loseFor=discardInDiscardPhase:loseAfter",
+            "于弃牌阶段弃置牌后": "loseFor=discardInDiscardPhase:loseAfter",
             "牌不因使用而进入弃牌堆后": "loseFor=noUseToDiscardPile:loseAfter",
             "牌不因使用进入弃牌堆后": "loseFor=noUseToDiscardPile:loseAfter",
             "牌因弃置而进入弃牌堆后": "loseFor=discardToDiscardPile:loseAfter",
@@ -2831,8 +2834,8 @@ export class NonameCN {
             '此牌为-1马牌': "此牌为-1马牌(副类别)",
             '此牌为宝物牌': "此牌为宝物牌(副类别)",
             '此牌有伤害标签': '此牌有伤害标签(标签)',
-            '此牌不是单体牌': '此牌有多角色标签(标签)',
-            '此牌是单体牌': '此牌不带多角色标签(标签)',
+            '此牌有多角色标签': '此牌不是单体牌(标签)',
+            '此牌不带多角色标签': '此牌是单体牌(标签)',
             "此牌是实体牌": "此牌是实体牌",
             '你在你的攻击范围内': '你在你的攻击范围内(攻击范围)',
 
@@ -3647,8 +3650,13 @@ export class NonameCN {
                     const id = this.container.dataset.xjb_id;
                     back.cachePrimarySkill();
                     back.readSubskillCache(id);
-                    element().setTarget(back)
-                        .anotherClickTouch(this.yesButton, 'touchend')
+                    this.yesButton.click();
+                    this.yesButton.dispatchEvent(new TouchEvent(
+                        "touchend", {
+                        bubbles: true,
+                        cancelable: true,
+                        composed: true
+                    }));
                     back.ele.groupsContainer.groupsPageNum = 0;
                     back.skill.subSkillEditing = true;
                     back.organize()

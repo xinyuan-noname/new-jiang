@@ -25,7 +25,7 @@ lib.skill.xjb_11 = {
                 switch (event.triggername) {
                     case 'phaseBegin': {
                         ui.xjb_giveStyle(ui.background, {
-                            'background-image': "url('" + lib.xjb_src + "image/position/redSpace.jpg')"
+                            'background-image': "url('./extension/新将包/image/position/redSpace.jpg')"
                         })
                         player.addTempSkill("xin_guimeng_1")
                     }; break;
@@ -358,7 +358,7 @@ lib.skill.xjb_11 = {
             i.setAttribute("size", size + "px")
             i.style.height = size + "px";
             i.style.width = size + "px";
-            i.style.backgroundImage = `url(${lib.xjb_src + str})`;
+            i.style.backgroundImage = `url(./extension/新将包/${str})`;
             i.style.backgroundSize = "contain"
             div.appendChild(i)
             return div.innerHTML

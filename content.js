@@ -71,8 +71,7 @@ export function XJB_CONTENT(config, pack) {
             getAPI: '获取工具',
             changeBranch: "切换分支",
             putout: '输出目录',
-            download: '下载更新',
-            downloadSimply: '简易更新',
+            download: '完整更新',
         },
         visualMenu: function (node) {
             node.className = 'button controlbutton';
@@ -86,14 +85,10 @@ export function XJB_CONTENT(config, pack) {
                             const ZipUpdater = module.ZipUpdater;
                             game.xjb_updaterList = {
                                 master: {
-                                    raw: new RawUpdater("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/master")
-                                        .setData(lib, game, ui, get, ai, _status),
                                     zip: new ZipUpdater("新将包", "https://ghproxy.net/github.com/xinyuan-noname/new-jiang/archive/master.zip")
                                         .setData(lib, game, ui, get, ai, _status)
                                 },
                                 PR: {
-                                    raw: new RawUpdater("新将包", "https://gitee.com/xinyuanwm/new-jiang/raw/PR-branch")
-                                        .setData(lib, game, ui, get, ai, _status),
                                     zip: new ZipUpdater("新将包", "https://ghproxy.net/github.com/xinyuan-noname/new-jiang/archive/PR-branch.zip")
                                         .setData(lib, game, ui, get, ai, _status)
                                 }
@@ -103,7 +98,7 @@ export function XJB_CONTENT(config, pack) {
                             alert("updater获取成功！");
                         })
                         .catch(err => {
-                            alert(`updater获取失败\n${err}`);
+                            alert(`updater获取失败\n${err.message}`);
                         })
                 }; break;
                 case "changeBranch": {
@@ -129,7 +124,7 @@ export function XJB_CONTENT(config, pack) {
                         alert("目录生成成功");
                     });
                     manager.on("error", (err) => {
-                        console.error(err)
+                        console.error(err);
                     })
                 }; break;
                 case 'download': {
@@ -137,51 +132,14 @@ export function XJB_CONTENT(config, pack) {
                     const manager = game.xjb_updater_zip.updateLine();
                     manager.on("error", err => {
                         console.error(err);
+                        alert("更新出错" + err);
                     })
                     manager.on("phaseEnd", data => {
                         console.log(data);
                     })
-                }; break;
-                case 'downloadSimply': {
-                    if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
-                    const myUpdater = game.xjb_updater;
-                    const manager = myUpdater.updateLine({
-                        timeoutMinutes: 1,
-                        reCalHash: true
-                    });
-                    manager.on("getCache", data => {
-                        console.log(data);
-                    });
-                    manager.on("filterHash", data => {
-                        console.log(data);
-                    });
-                    manager.on("makeSureDirSuc", data => {
-                        console.log(data.processingDir, "文件夹创建成功")
-                    })
-                    manager.on("update", data => {
-                        console.log(data.updateInfo);
-                    });
-                    manager.on("updateSuc", data => {
-                        console.log(data.processingFile, "下载成功");
-                    });
-                    manager.on("fixFileSuc", data => {
-                        console.log(data.fixingFileInfo);
-                    })
-                    manager.on("fileAllOk", () => {
+                    manager.on("end", () => {
                         alert("更新成功！")
                     })
-                    manager.on("fileException", (files) => {
-                        alert("存在更新失败的文件" + files);
-                    })
-                    manager.on("recoverSuc", file => {
-                        console.log("成功修复文件", file)
-                    });
-                    manager.on("error", err => {
-                        console.error(err);
-                    });
-                }; break;
-                case 'downloadSimply': {
-                    if (!game.xjb_updater) return alert("updater未引入,请点击获取工具引入!");
                 }; break;
             }
         }

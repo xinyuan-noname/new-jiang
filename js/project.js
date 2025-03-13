@@ -73,7 +73,7 @@ lib.skill.xjb_6 = {
             let list = new Array(num).fill(value)
             lib.config.xjb_count[player].HpCard.push(...list)
             game.saveConfig('xjb_count', lib.config.xjb_count);
-            var dialog = ui.create.dialog(get.translation(player) + '获得了体力卡', game.createHpCard(value))
+            var dialog = ui.create.dialog(get.translation(player) + '获得了体力卡', game.xjb_createHpCard(value))
             dialog.add('(计' + num + '个)')
             dialog.style['z-index'] = '15'
             setTimeout(function () {
@@ -133,7 +133,7 @@ lib.skill.xjb_6 = {
                     i.style.display = "block";
                     i.style.height = h + "px";
                     i.style.width = w + "px";
-                    i.style.backgroundImage = `url(${lib.xjb_src + str})`;
+                    i.style.backgroundImage = `url(./extension/新将包/${str})`;
                     i.style.backgroundSize = "100% 100%"
                     i.style.position = "relative"
                     return i
@@ -142,7 +142,7 @@ lib.skill.xjb_6 = {
                 {
                     game.xjb_checkCharacterCount(player, "HpCard")
                     let dataSource = lib.config.xjb_count[player].HpCard;
-                    let dataList = game.countHpCard(dataSource)
+                    let dataList = game.xjb_countHpCard(dataSource)
                     new Array(1, 2, 3, 4, 5).forEach(function (item) {
                         if (dataList["" + item]) result.push(new Means(
                             item + "点体力牌",
@@ -290,7 +290,6 @@ lib.skill.xjb_9 = {
                 paddingLeft: "0px",
                 width: "100%",
                 height: "300px",
-                backgroundColor: "#3c4151"
             })
             Object.keys(lib.config.xjb_count).forEach(function (item) {
                 if (!lib.character[item]) return;
@@ -340,9 +339,9 @@ lib.skill.xjb_9 = {
             })
             intro.right.appendChild(div)
             let player = ui.create.player()
-            player.init("xin_fellow")
+            player.init("xjb_rider")
             intro.right.player = player
-            intro.right.character_id = playerName || "xin_fellow"
+            intro.right.character_id = playerName || "xjb_rider"
             //调整样式
             ui.xjb_giveStyle(player, {
                 marginTop: "-48px",
@@ -411,7 +410,8 @@ lib.skill.xjb_9 = {
                 })
                 intro.right.appendChild(xjb_count_data)
                 intro.left.I = xjb_count_data
-                let count = lib.config.xjb_count[intro.right.character_id]
+                game.xjb_checkCharCountAll(intro.right.character_id)
+                let count = lib.config.xjb_count[intro.right.character_id];
                 //排序
                 let arr1 = Object.keys(count).filter(item => {
                     if (["selectedTitle", "HpCard", "uniqueSkill", "titles", "skill", "xjb_storage", "dialog", "book", "daomo", "lingtan", "lingfa"].includes(item))
@@ -529,7 +529,7 @@ lib.skill.xjb_9 = {
                 })
             }
             game.xjb_Introduction.style.display = "block"
-            game.xjb_Introduction.right.character_id = playerName || "xin_fellow"
+            game.xjb_Introduction.right.character_id = playerName || "xjb_rider"
             game.xjb_Introduction.right.clear()
             return game.xjb_Introduction
         }

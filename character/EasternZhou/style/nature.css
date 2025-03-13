@@ -1,0 +1,15 @@
+.player .identity[data-color='black'],
+div[data-nature='black'],
+span[data-nature='black'] {
+    text-shadow: black 0 0 1px, #040404 0 0 2px, #1a1919 0 0 5px, #121212 0 0 10px, #0c0b0b 0 0 10px
+}
+
+div[data-nature='blackm'],
+span[data-nature='blackm'] {
+    text-shadow: black 0 0 1px, #040404 0 0 2px, #040404 0 0 5px, #262323 0 0 5px, #121212 0 0 5px, black 0 0 1px;
+}
+
+div[data-nature='blackmm'],
+span[data-nature='blackmm'] {
+    text-shadow: black 0 0 1px, #040404 0 0 2px, #040404 0 0 2px, #040404 0 0 2px, #040404 0 0 2px, black 0 0 1px;
+}

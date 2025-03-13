@@ -136,101 +136,6 @@ lib.skill.xjb_theLevel = {
                 Type: "normal"
             }
         }),
-        //灵力教程
-        Lingli0001: new Play({
-            information: {
-                name: "灵力教程",
-                number: "Lingli0001",
-                Type: "Play",
-            },
-            cards: 7,
-            playersLength: 5,
-            playerIdentityList: ['fan', 'fan', 'fan', 'fan'],
-            playerNameList: ['xin_fellow', "xin_fellow", 'xin_fellow', 'xin_fellow'],
-            skillFree: true,
-            showIdentity: true,
-            leadDialog: [
-                "欢迎来到灵力教程关卡！",
-                "在本关卡中，你将学会如何使用灵力。",
-                "事不宜迟，让我们开始吧！",
-                // "首先要提出的就是灵力和魔力的关系",
-                // "每个单位的灵力中含有创造一张卡牌的能量",
-                // "请注意，这里指的卡牌范围很广，包括：",
-                // "武将牌、身份牌、体力牌,当然也包括通常讲的牌",
-                // "与之相反的是，有一种魔力每个单位中含有销毁一张牌的能量",
-                // '为什么说"有一种"？因为还有一种魔力不带能量。',
-                // '带有能量的魔力也被称为"动魔子",而不带有能量的魔力也被称为"静魔子"',
-                // "灵力和魔力的单位都是Ch，它们之间可以相互转化。",
-                // "不难想到，当1Ch灵力→1Ch静魔子时，会创造一张牌。",
-                // "而当1Ch动魔子→1Ch灵力时，会销毁两张牌。",
-                // "销毁两张卡牌等效于一点体力(上限)减少,创造两张卡牌等效于一点体力(上限)增加",
-                // "现在，就获得灵力看看吧！"
-            ],
-            leadFn() {
-                // "step 0"
-                // player.chooseControl("获得灵力").set("prompt", "请点击获得灵力")
-                // "step 1"
-                // player.addMark("_xjb_lingli", 10)
-                // player.update()
-                // "step 2"
-                // player.chooseControl("获得静魔子").set("prompt", "很棒！现在来试试获取魔力吧！")
-                // "step 3"
-                // player.addMark("_xjb_moli", 10)
-                // player.update()
-                // "step 4"
-                // player.chooseControl("转化").set("prompt", "还记得1Ch灵力→1Ch静魔子总收益等于创造一张卡牌吗，点击试一下吧！")
-                // "step 5"
-                // player.xjb_molizeLingli()
-                // "step 6"
-                // player.chooseControl("继续").set("prompt", "记得1Ch动魔子→1Ch灵力负收益等于销毁两张牌吗，这就是通过导魔介质实现的！")
-                // "step 7"
-                // player.chooseControl("继续").set("prompt", "一对导魔介质可以在你和另一名角色间进行1Ch魔力的传导。")
-                // "step 8"
-                // player.chooseControl("继续").set("prompt", "灵力高的那一方的魔力会传导至灵力低的那一方，转化成灵力。")
-                // "step 9"
-                // player.chooseControl("导魔").set("prompt", "你现在拥有10点灵力，是灵力最多的角色！魔力无论如何都会打在对方身上，来试试吧！")
-                // "step 10"
-                // player.chooseTarget(true, [1, 1], "选择你要导魔的角色").set("filterTarget", lib.filter.notMe)
-                // "step 11"
-                // game.xjb_getDaomo(player, "blood", 5)
-                // player.xjb_chooseToBuildBridge(result.targets[0])
-                // event.target = result.targets[0]
-                // "step 12"
-                // if (event.target.isAlive()) event.goto(11)
-                // "step 13"
-                // player.chooseControl("继续").set("prompt", "做的漂亮！")
-                // "step 14"
-                // player.chooseControl("继续").set("prompt", "相信你已经注意到了，一名角色死亡后，其灵力和魔力会被当前回合角色获得。")
-                // game.players.filter(current => current != player).forEach(current => {
-                //     current.addSkill("xjb_P_gathering")
-                //     current.xjb_addZhenFa(get.cards(1))
-                // })
-                // "step 15"
-                // player.chooseControl("聚灵区是什么？", "阵法是什么？", "我已知道这两者了。").set("prompt", "哦，不妙！他们进入了聚灵区，而且阵法中多出了一张牌！")
-                // "step 16"
-                // if (result.control === "聚灵区是什么？") {
-                //     player.chooseControl("我知道了").set("prompt", "在一个环境中，能够容纳的灵力是有限的，超过了这个限度，灵力便一定会转化为魔力。<br>在一般的环境中，最多可以容纳10点灵力，而在聚灵区中，最多可容纳100点灵力！")
-                //     event.goto(15)
-                // } else if (result.control === "阵法是什么？") {
-                //     player.chooseControl("我知道了").set("prompt", "阵法是一个特殊的区域，你可以利用启灵等方法把卡牌置于阵法区，就会获得灵力，获得的灵力是不确定的。")
-                //     event.goto(15)
-                // } else {
-                //     player.chooseControl("继续").set("prompt", "很好！")
-                // }
-                // "step 17"
-                // player.chooseControl("启灵").set("prompt", "刚刚提到过启灵，现在就来试试吧！")
-                // "step 18"
-                // player.chooseCard("he", true)
-                // "step 19"
-                // player.xjb_addZhenFa(result.cards)
-                // "step 20"
-                // player.chooseControl("继续").set("prompt", "好了，灵力基本教程就结束了，现在开始战斗吧！")
-                // "step 21"
-                // player.clearSkills()
-                player.storage.xjb_tempAllowUseLingli = true
-            },
-        }),
-        //guessNumber
         guessNumber: new Play({
             information: {
                 name: "猜数字",
@@ -366,7 +271,7 @@ lib.skill.xjb_8 = {
                     "equips": [],
                     "judges": []
                 }, {
-                    name: "xin_fellow",
+                    name: "xjb_rider",
                     "name2": "none",
                     "identity": "fan",
                     "position": 2,

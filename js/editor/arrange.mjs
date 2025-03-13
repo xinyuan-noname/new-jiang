@@ -77,10 +77,6 @@ export class EditorArrange {
             .replace(/(.+?)是此牌的目标/g, "此牌的目标包含 $1")
             .replace(/(.+?)在(.+?)的?攻击范围内$/mg, "$2 攻击范围内有 $1")
             .replace(/(没有)(.+?)标签/mg, "无$2标签")
-            .replace(/(.+?)(有|无|带|不带)(伤害|多角色|多目标)标签/g, function (match, ...p) {
-                if (p[0].includes("获取")) return match
-                return `获取 ${p[1]}${p[2]}标签 ${p[0]}`
-            })
             .replace(/(选择使用)一张(手?牌)/g, '$1$2')
             .replace(/[上拥]?有父事件[ ]*["']?(.+?)["']?$/mg, '获取名为$1的父事件的名字  不为 undefined')
             .replace(/^(.+?)本回合未对(.+?)造成过?伤害$/mg, '$1 本回合对角色造成伤害的次数 $2\n等于\n0')

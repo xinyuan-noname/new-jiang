@@ -40,48 +40,8 @@ import { ImplicitTextTool } from "./editor/implicitText.mjs";
 import { EditorOrganize } from "./editor/organize.mjs";
 import { choiceMode } from "./editor/choiceMode.mjs";
 import { EditorDataAnalyze } from "./editor/dataAnalyze.mjs"
-if (!lib.config.xjb_editorConfig) lib.config.xjb_editorConfig = {}
-window.XJB_EDITOR_LIST = {
-	filter: [
-		'你已受伤',
-		'你未受伤',
-		'你体力不小于3',
-		'你有空置的武器栏',
-		'你有空置的防具栏',
-		'你有空置的宝物栏',
-		'场上有男性角色',
-		'场上有女性角色',
-		'你已横置',
-		'你已翻面',
-		"你性别相同于触发事件的角色",
-		"你性别不同于触发事件的角色",
-	],
-	effect: [
-		'你翻面并摸四张牌',
-		'你可以摸三张牌或回复一点体力值',
-		'你可以摸两张牌', '你回复一点体力', '你获得一点护甲',
-		'你移动场上一张牌', '你失去一点体力', '你随机弃置两张牌',
-		'所有角色回复一点体力', '所有角色摸一张牌',
-		'所有角色随机弃置两张牌',
-		'你摸一张牌\n如果\n游戏轮数小于3\n那么\n你再摸一张牌',
-		'你令一名其他角色摸两张牌', '你令一名其他角色回复一点体力',
-		'继承kurou\n', '继承chengxiang\n',
-		"继承luoshen\n"
-	],
-	trigger: [
-		'你受到一点伤害后', '你失去一点体力后',
-		'你受到伤害后', '你回复体力后',
-		'回合结束时', '摸牌阶段开始时', '摸牌阶段结束时', '弃牌阶段开始时', '弃牌阶段结束时',
-		'你判定牌生效后',
-		'你失去一张手牌后', '你失去一张装备牌后', '你失去装备区的一张牌后',
-		"攻击范围包含你的其他角色失去梅花牌后", "攻击范围包含你的其他角色失去黑桃牌后",
-		"攻击范围包含你的其他角色失去红桃牌后", "攻击范围包含你的其他角色失去方片牌后",
-		//'你于回合外失去手牌后', '你于回合外失去牌后',
-		'你使用杀指定目标时', '你使用杀指定目标后',
-		'你成为杀的目标后', '你成为决斗的目标后',
-		'你使用杀后', '你使用决斗后', '你使用桃后'
-	],
-};
+const DEFAULT_EVENT = lib.config.touchscreen ? 'touchend' : 'click';
+if (!lib.config.xjb_editorConfig) lib.config.xjb_editorConfig = {};
 lib.xjb_class = {
 	player: ['_status.currentPhase', 'target', 'game.me',
 		'player', 'trigger.player', 'trigger.source', 'trigger.target',
@@ -110,7 +70,6 @@ lib.xjb_class = {
 get.xjb_en = (str) => NonameCN.getEn(str);
 lib.xjb_translate = { ...NonameCN.AllList }
 lib.xjb_editorUniqueFunc = NonameCN.uniqueFunc;
-
 //判定类型
 game.xjb_judgeType = function (word) {
 	if (!word || !word.length) return;
@@ -120,7 +79,6 @@ game.xjb_judgeType = function (word) {
 	}
 }
 game.xjb_skillEditor = function (readCache = true) {
-	const DEFAULT_EVENT = lib.config.touchscreen ? 'touchend' : 'click';
 	const playerCN = NonameCN.playerCN;
 	const JOINED_PLAYAERCN = playerCN.join("|");
 	const [back, close] = ui.create.xjb_back()
@@ -840,7 +798,7 @@ game.xjb_skillEditor = function (readCache = true) {
 			position: 'relative'
 		})
 		.exit()
-	let h1 = newElement('h1', '', back).setStyle({
+	const h1 = newElement('h1', '', back).setStyle({
 		width: '90%'
 	});
 	const h1Title = element("span")
@@ -1838,7 +1796,7 @@ game.xjb_skillEditor = function (readCache = true) {
 		if (getIndexMap) back.skill.getIndex = getIndexMap;
 		if (gainEvts.length && triLength > 1) {
 			await game.xjb_create.promise.alert("涉及到获得牌事件作为触发时机，请仅保留此触发时机为唯一触发时机，否则可能导致编辑器无法正常生成技能！");
-		}else if (loseEvts.length && triLength > 1) {
+		} else if (loseEvts.length && triLength > 1) {
 			await game.xjb_create.promise.alert("涉及到失去牌事件作为触发时机，请仅保留此触发时机为唯一触发时机，否则可能导致编辑器无法正常生成技能！");
 		} else if (gameStartEvts.length && triLength > 1) {
 			await game.xjb_create.promise.alert("涉及到游戏开始时作为触发时机，请仅保留此触发时机为唯一触发时机，否则可能导致编辑器无法正常生成技能！");

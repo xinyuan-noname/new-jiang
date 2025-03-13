@@ -23,12 +23,6 @@ game.import("extension", function () {
             diskURL: "",
             forumURL: "",
             version: "1.2.2",
-        },
-        files: {
-            "character": [],
-            "card": [],
-            "skill": [],
-            "audio": []
         }
     }
 });

@@ -22,6 +22,10 @@ export class ImplicitTextTool {
             .replace(/^(.*?牌|card)[ ]*(不?[为是])[ ]*([冰火雷])杀$/mg, (_, ...p) => {
                 return `获取 属性 ${p[0]}\n ${p[1]} \n ${p[2]}属性 \n ${p[1].includes("不") ? "或者" : "并且"} \n 获取 牌名 ${p[0]} \n ${p[1]} \n 杀`
             })
+            .replace(/^(.*?牌|card)(有|无|带|不带)(伤害|多角色|多目标)标签/g, function (match, ...p) {
+                if (p[0].includes("获取")) return match;
+                return `获取 ${p[1]}${p[2]}标签 ${p[0]}`;
+            })
         result = result
             .replace(/^(.+?)于回合外$/mg, "$1 不是当前回合角色")
         result = result
@@ -37,6 +41,7 @@ export class ImplicitTextTool {
         result = result
             .replace(/^场上有(其他)?(男性|女性)(性别)?(角色)?$/mg, '游戏 统计场上$1$2数量\n大于\n0')
             .replace(/^场上有(其他)?(魏|蜀|吴|群|晋|西|键|神)势力角色$/mg, '游戏 统计场上$1$2势力角色数量\n大于\n0')
+            
         return result;
     }
     static content(text) {

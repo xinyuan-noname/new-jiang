@@ -336,8 +336,7 @@ ui.create.xjb_double = function (str) {
         position: "relative",
         "border-radius": "0.5em",
         margin: "10px",
-        backgroundColor: "#3c4151",
-        opacity: "0.7",
+        backgroundColor: "var(--xjb-coverBGC)",
         padding: "3px"
     }
     let div1 = document.createElement("div")

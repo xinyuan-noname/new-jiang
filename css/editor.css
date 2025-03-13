@@ -1,3 +1,100 @@
+.xjb-ED {
+    width: 800px;
+    height: 400px;
+    z-index: 8;
+    border-radius: 3em;
+    background-image: linear-gradient(to bottom right, #f0acf7, #7093DB, #f7f0ac);
+    border: 3px solid black;
+    position: absolute;
+    margin: auto;
+    right: 0px;
+    top: 0px;
+    left: 0px;
+    bottom: 0px;
+}
+
+.xjb-ED-close {
+    float: left;
+    top: 0;
+    left: 0;
+    width: 40px;
+}
+
+.xjb-ED-title {
+    width: 680px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.xjb-ED-title div {
+    position: relative;
+}
+
+.xjb-ED-icon {
+    font-size: 0.7em;
+}
+
+.xjb-ED-icon:hover {
+    cursor: pointer;
+}
+
+.xjb-ED-pageContainer {
+    width: calc(95% - 50px);
+    height: calc(65% + 50px);
+    margin: auto;
+    font-size: 1.5em;
+    font-family: xingkai;
+    display: block;
+    position: relative;
+    bottom: 25px;
+}
+
+.xjb-ED-pageContainer>[class^="xjb-ED-page"]:not(:first-child) {
+    display: none;
+}
+
+.xjb-ED-pageContainer>[class^="xjb-ED-page"] {
+    height: 100%;
+    width: 100%;
+    display: flex;
+}
+
+.xjb-ED-pageContainer>[class^="xjb-ED-page"][class*="hasBack"] {
+    background-color: rgba(60, 65, 81, 0.7);
+}
+
+.xjb-ED-pageContainer>[class^="xjb-ED-page"][class*="flexColumn"] {
+    flex-direction: column;
+}
+
+.xjb-ED-pageContainer>[class^="xjb-ED-page"] * {
+    position: relative;
+}
+
+[class^="xjb-ED-subUnit"][class*="flexColumn"] {
+    display: flex;
+    flex-direction: column;
+}
+
+.xjb-ED-subTitle {
+    height: 1.5em
+}
+
+.xjb-ED-ButtonContainer {
+    height: 1.5em;
+    position: relative;
+}
+
+.xjb-ED-ButtonContainer>* {
+    color: #041322;
+    text-align: center;
+    font-size: 36px;
+    background-color: #e4d5b7;
+    border-radius: 0.5em;
+    position: relative;
+}
+
+
 .xjb-Ed-longInput {
     height: 5em;
 }
@@ -96,3 +193,95 @@
     z-index: 4;
 }
 
+/*以下是mindmap节点的内容*/
+@font-face {
+    font-family: "smily-sans";
+    src: url(../font/SmileySans-Oblique.otf.woff2);
+}
+
+.xjb-mindmap-back {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    margin: auto;
+    position: absolute;
+    z-index: 20;
+    background-color: rgba(60, 65, 81, 0.7);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+}
+
+.xjb-mindmap-back * {
+    font-family: "smily-sans";
+    position: relative;
+}
+
+.xjb-mindmap-contentArea {
+    flex: auto;
+}
+
+.xjb-mindmap-canvas {
+    height: 500px;
+    width: 1000px;
+    background-color: #000;
+    border-radius: 1%;
+    margin: auto 0;
+}
+
+.xjb-mindmap-back-scale {
+    height: 10px;
+}
+
+.xjb-mindmap-footer {
+    height: 96px;
+    width: 100%;
+    background-color: rgba(42, 44, 52, 0.9);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.xjb-mindmap-footer>div {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.xjb-mindmap-footer>div:nth-child(1) {
+    border-right: rgb(57 56 81 / 90%) solid 2px;
+    justify-content: space-evenly;
+    flex: auto;
+}
+
+.xjb-mindmap-footer>div>button {
+    font-size: 32px;
+    font-weight: 900;
+    display: block;
+    border-radius: 10px;
+    cursor: pointer;
+    transform: rotateZ(-45deg);
+    transition: 0.2s;
+    box-shadow: -15px -15px 15px #0000;
+}
+
+.xjb-mindmap-footer>div>button:not(.xjb-mindmap-chosen):hover {
+    box-shadow: 0px 0px 4px 2px #d5d1d1;
+    transform: rotateZ(6deg);
+}
+
+.xjb-mindmap-footer>div:nth-child(1)>button.xjb-mindmap-chosen {
+    transform-style: preserve-3d;
+    transform: rotateZ(6deg) rotateX(30deg);
+    perspective: 50px;
+}
+
+.xjb-mindmap-footer>div:nth-child(2)>button {
+    color: rgba(195, 67, 67, 0.9);
+    background-color: aquamarine;
+    margin: 0 15px;
+}
