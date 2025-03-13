@@ -9,6 +9,6 @@ const loadCss = (name) => {
     document.head.appendChild(style);
 }
 export default () => {
-    loadCss("index"); loadCss("dynamic"); loadCss("component");
+    loadCss("index"); loadCss("dynamic");
     return new NonameEditor();
 }

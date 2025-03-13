@@ -10,9 +10,13 @@ export class NonameEditor {
         const data = new NonameEditorData();
         this.view = view;
         this.data = data;
+        view.serveFor = this;
+        data.serveFor = this;
     }
     init(parentNode) {
         this.view.init(parentNode);
-        this.data.link(this.view);
+    }
+    getData(){
+        this.data.getData();
     }
 }

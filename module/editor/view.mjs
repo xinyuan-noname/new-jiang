@@ -1,5 +1,4 @@
 "use script";
-import url from "./url.mjs";
 import "./component.mjs";
 class UniqueChoiceManager {
     /**
@@ -206,12 +205,19 @@ class DragManager {
         this.draggableTargets.push(...draggableTargets);
     }
 }
-
+/**
+ * @typedef {import("./nonameEditor.mjs").NonameEditor NonameEditor}
+ */
 export class NonameEditorView {
     /**
      * @type {HTMLDivElement}
      */
     mainPage;
+
+    /**
+     * @type {NonameEditor}
+     */
+    serveFor;
     /**
      * @type {HTMLDivElement}
      */
@@ -252,7 +258,7 @@ export class NonameEditorView {
      * @type {HTMLDivElement}
     */
     get mainArea() {
-        return this.mainPage.querySelector(".xy-ED-viewArea");
+        return this.mainPage.querySelector(".xy-ED-mainArea");
     }
     /**
      * @type {HTMLHRElement}
@@ -322,12 +328,10 @@ export class NonameEditorView {
     /**
      * @param {HTMLElement} parentNode 
      */
-    async init(parentNode) {
+    init(parentNode) {
         const mainPage = this.mainPage;
-        const response = await fetch(`./${url}/html/index.html`);
-        if (!response.ok) throw new Error(response.statusText);
         //$: mainPage , html/index.html//
-        mainPage.innerHTML = `
+mainPage.innerHTML=`
 <div class="xy-ED-minimizeControl" draggable>魂</div>
 <div class="xy-ED-operationPage">
     <header>
@@ -341,13 +345,21 @@ export class NonameEditorView {
     </header>
     <div class="xy-ED-viewArea">
         <div class="xy-ED-mainArea">
-            <div></div>
         </div>
         <div class="xy-ED-sideBar">
             <hr>
             <div class="xy-ED-sideBar-content">
                 <div class="xy-ED-sideBar-setting" data-by="setting"></div>
-                <div class="xy-ED-sideBar-charcter" data-by="character"></div>
+                <div class="xy-ED-sideBar-character" data-by="character">
+                    <div class="xy-ED-nocharacterCard">
+                        <div>暂未创建过武将!</div>
+                        <button>点击创建</button>
+                    </div>
+                    <div class="xy-ED-characte-show">
+                        <header></header>
+                        <ul></ul>
+                    </div>
+                </div>
                 <div class="xy-ED-sideBar-card" data-by="card"></div>
                 <div class="xy-ED-sideBar-search" data-by="search">
                     <div class="xy-ED-input-container">
@@ -374,12 +386,16 @@ export class NonameEditorView {
         </div>
     </div>
 </div>`
-        //#: mainPage , html/index.html//
+//#: mainPage , html/index.html//
         parentNode.appendChild(mainPage);
         this.listenPageClose();
         this.listenPageMinize();
         //
         this.listenSideBarResize();
+        //
+        this.listenMainAreaChange()
+        //
+        this.listenSideBarCharacter();
         //
         this.listenNavsReOrder();
         this.listenNavChoose();
@@ -404,6 +420,37 @@ export class NonameEditorView {
             .forClassByNodeMap(nodeMap, "xy-ED-hidden")
             .listenAllNodes("pointerup", () => !dragManager.dragStatus.isDragging)
             .choose(minimizeControl);
+    }
+    //
+    listenMainAreaChange() {
+        const observer = new MutationObserver((mutationsList) => {
+            for (const mutation of mutationsList) {
+                if (mutation.type === 'childList') {
+                    if (mutation.addedNodes.length > 0) {
+                        console.log('添加了子元素');
+                    }
+                    if (mutation.removedNodes.length > 0) {
+                        console.log('移除了子元素');
+                    }
+                    this.mainArea.className = this.mainArea.className.replace(/xy-ED-grid-(one|two|three|four)item/, "");
+                    switch (this.mainArea.children.length) {
+                        case 1:
+                            this.mainArea.classList.add('xy-ED-grid-oneitem');
+                            break;
+                        case 2:
+                            this.mainArea.classList.add('xy-ED-grid-twoitem');
+                            break;
+                        case 3:
+                            this.mainArea.classList.add('xy-ED-grid-threeitem');
+                            break;
+                        default:
+                            this.mainArea.classList.add('xy-ED-grid-fouritem');
+                            break;
+                    }
+                }
+            }
+        });
+        observer.observe(this.mainArea, { attributes: false, childList: true, subtree: false });
     }
     //
     listenSideBarResize() {
@@ -431,7 +478,22 @@ export class NonameEditorView {
         });
     }
     //
-    listenSideBarCharacter() { }
+    createCharacterCard(data) {
+        const characterCard = document.createElement("xy-character-card");
+        characterCard.setData(data);
+        this.mainArea.appendChild(characterCard);
+    }
+    loadSideBarCharacter() {
+        this.serveFor.getData("character", "all", 100);
+    }
+    listenSideBarCharacter() {
+        const { sideBarCharacter } = this;
+        const noneCharacterCardButton = sideBarCharacter.querySelector("button");
+        noneCharacterCardButton.addEventListener("pointerdown", () => {
+            this.createCharacterCard();
+        });
+    }
+    //
     listenSideBarSearch() {
         const { sideBarSearch } = this;
         const input = sideBarSearch.querySelector("input");

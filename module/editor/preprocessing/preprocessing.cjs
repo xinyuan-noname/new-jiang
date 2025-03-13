@@ -2,6 +2,7 @@
  * @example
  * usecode:
  * node ./module/editor/preprocessing/preprocessing.cjs 1
+ * nodemon --ext mjs,html --exec "node ./module/editor/preprocessing/preprocessing.cjs 1"
  */
 //
 const fs = require("fs");

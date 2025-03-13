@@ -126,6 +126,12 @@
     box-shadow: inset 0 1px 1px #2b2b2b36;
 }
 
+.xy-ED-mainArea {
+    display: grid;
+    gap: 10px;
+}
+
+/* 侧边栏控制 */
 .xy-ED-sideBar-content {
     flex: 1;
     min-width: 180px;
@@ -184,8 +190,42 @@
     opacity: 1;
 }
 
+/* 武将卡片 */
+/* 无历史记录时显示效果 */
+.xy-ED-nocharacterCard:not(+.xy-ED-character-show>ul:not(:empty)) {
+    display: none;
+}
 
-/* 搜索图片控制 */
+.xy-ED-nocharacterCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    justify-content: center;
+    font-size: 24px;
+    text-shadow: 1px 1px #000, 2px 2px #000;
+}
+
+.xy-ED-nocharacterCard>button {
+    padding: 0;
+    border-radius: 10px;
+    width: 80%;
+    height: 48px;
+    display: block;
+    margin-top: 10px;
+    box-shadow:
+        inset 0px 0px 5px #00000050,
+        1px 1px 5px #00000094;
+}
+
+.xy-ED-nocharacterCard>button:hover {
+    cursor: pointer;
+    box-shadow:
+        0px 0px 5px #fff,
+        1px 1px 5px #00000094;
+}
+
+/* 搜索控制 */
 .xy-ED-sideBar-content>.xy-ED-sideBar-search .xy-ED-input-container {
     width: 80%;
     border-radius: 5px;
