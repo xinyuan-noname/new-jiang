@@ -730,7 +730,7 @@ export class EditorOrganize {
         if (triReason === "discardToDiscardPile") parts.push(`event.type !== "discard"`);
         else if (triReason === "discardInDiscardPhase") {
             parts.push(`event.type !== "discard"`)
-            parts.push(`event.getParent("discardPhase", true)?.player !== ${who}`);
+            parts.push(`event.getParent("phaseDiscard", true)?.player !== ${who}`);
         }
         const map = EditorDataAnalyze.triLimitUrl(global ? triggerFilter.global.loseAfter : triggerFilter.player.loseAfter);
         if (map.unknown) {

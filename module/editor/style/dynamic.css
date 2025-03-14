@@ -65,7 +65,7 @@
     grid-area: area4;
 }
 
-.xy-ED-grid-fouritem>*:nth-child(n+4) {
+.xy-ED-grid-fouritem>*:nth-child(n+5) {
     display: none;
 }
 
