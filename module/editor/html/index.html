@@ -29,17 +29,32 @@
                 <div class="xy-ED-sideBar-card" data-by="card"></div>
                 <div class="xy-ED-sideBar-search" data-by="search">
                     <div class="xy-ED-input-container">
-                        <input spellcheck="false" placeholder="这里输入搜索的资源">
-                        <span class="xy-ED-input-clear"></span>
-                        <span class="xy-ED-input-search"></span>
+                        <div>
+                            <input spellcheck="false" placeholder="这里输入搜索的资源">
+                            <span class="xy-ED-input-clear"></span>
+                            <span class="xy-ED-input-search"></span>
+                        </div>
+                        <div class="xy-ED-search-mode-controller">
+                            <span data-search-mode="character">武将</span>
+                            <span data-search-mode="skill">技能</span>
+                        </div>
                     </div>
                     <hr>
-                    <div class="xy-ED-searchResult">
-                        <header>
-                            <div class="xy-ED-expandable-expanded" data-for=search-result></div>
-                            <div>搜索结果</div>
-                        </header>
-                        <ul class="xy-ED-show-scrollbar" data-by=search-result></ul>
+                    <div class="xy-ED-search-concerning">
+                        <div class="xy-ED-searchResult">
+                            <header>
+                                <div class="xy-ED-expandable-expanded" data-for=search-result></div>
+                                <div>搜索结果</div>
+                            </header>
+                            <ul data-by=search-result></ul>
+                        </div>
+                        <div class="xy-ED-searchLiked">
+                            <header>
+                                <div class="xy-ED-expandable-expanded" data-for=search-like></div>
+                                <div>已收藏</div>
+                            </header>
+                            <ul data-by=search-like></ul>
+                        </div>
                     </div>
                 </div>
             </div>

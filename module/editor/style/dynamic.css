@@ -1,5 +1,5 @@
 .xy-ED-hidden {
-    display: none;
+    display: none !important;
 }
 
 .xy-ED-high-z-index {
@@ -70,9 +70,8 @@
 }
 
 [class^="xy-ED-expandable"]::before {
-    content: "";
-    background-image: url(../image/icon/angle.png);
-    background-size: cover;
+    content: ">";
+    color: #000;
     transition: 0.1s;
     cursor: pointer;
     display: block;

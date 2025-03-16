@@ -146,37 +146,56 @@ export class MultipleChoiceManager {
      */
     nodeList = [];
     /**
-     * @type {HTMLElement}
+     * @type {HTMLElement[]}
      */
-    chosenList = [];
+    chosenList = new Proxy([], {
+        set(target, p, val) {
+            if (Reflect.get(target, p) !== val) {
+                this.callback?.("add", val, this);
+                this.collect(val, target, this.collectFilter);
+            }
+            return Reflect.set(target, p, val);
+        },
+        deleteProperty(target, p) {
+            this.callback?.("delete", target[p], target);
+            this.destroy(Reflect.get(target, p), target, this.deleteFilter);
+            return Reflect.deleteProperty(target, p);
+        }
+    });
     /**
      * @type {}
      */
     collectedInfo = [];
     /**
-     * @type {function(HTMLElement,HTMLElement):void}
+     * @type {function(string,HTMLElement,HTMLElement[]):void}
      */
     callback;
-    proxy;
+    /**
+     * @type {function(HTMLElement,HTMLElement[]):void}
+     */
+    getInfoMethod;
+    /**
+     * @type {function(HTMLElement,HTMLElement[]):void}
+     */
+    collectFilter;
+    /**
+     * @type {function(HTMLElement,HTMLElement[]):void}
+     */
+    deleteFilter;
     /**
      * @param  {...HTMLElement} nodes 
      */
     constructor(...nodes) {
         this.nodeList.push(...nodes);
-        this.proxy = new Proxy(this.chosenList, {
-            set(target, p, val) {
-                if (Reflect.get(target, p) !== val) {
-                    target.callback?.("add", val, target);
-                    target.collect(val, target, target.collectFilter);
-                }
-                return Reflect.set(target, p, val);
-            },
-            deleteProperty(target, p) {
-                target.callback?.("delete", target[p], target);
-                target.destroy(Reflect.get(target, p), target, target.deleteFilter);
-                return Reflect.deleteProperty(target, p);
-            }
-        })
+    }
+    setGetInfoMethod(func) {
+        this.getInfoMethod = func;
+    }
+    setCollectFilter(func) {
+        this.collectFilter = func;
+    }
+    setDeleteFilter(func) {
+        this.deleteFilter = func;
     }
     collect(target, chosenList, filter) {
         if (this.getInfoMethod && (!filter || filter?.(node, chosenList))) {
@@ -237,9 +256,6 @@ export class MultipleChoiceManager {
             }
         })
         return this;
-    }
-    forDataset(attr) {
-
     }
     /**
      * @param {function(HTMLElement,HTMLElement,{forClass:function(...string),forClassByNodeMap:function(WeakMap<HTMLElement,HTMLElement>,...string),forClassByNodeClassMap:function(WeakMap<HTMLElement,Map<HTMLElement,string[]>>)})} callback 
@@ -309,13 +325,13 @@ export class MultipleChoiceManager {
      * @returns {this}
      */
     select(target) {
-        this.proxy.chosenList.push(target);
+        this.chosenList.push(target);
         return this;
     }
     unselect(target) {
         const i = this.chosenList.indexOf(target);
         if (i === -1) return this;
-        this.proxy.chosenList.splice(i, 1);
+        this.chosenList.splice(i, 1);
         return this;
     }
     append(...nodes) {
@@ -342,14 +358,14 @@ export class EditableElementManager {
     constructor(node) {
         this.node = node;
     }
-    inputNumber({ min, max, value, offset = 1, wheelCallback, blurCallback, EnterBlur, enterCallback, supportInfinity, commonCallback, isInteger } = {}) {
+    inputNumber({ min, max, value, offset = 1, wheelCallback, blurCallback, enterBlur, enterCallback, supportInfinity, commonCallback, isInteger } = {}) {
         const changeValue = (val) => {
-            if (val != undefined) {
-                if (isInteger) val = Math.round(val)
-                this.node.innerText = this.value = Number(val);
+            if (supportInfinity && (val === "无穷" || val === "∞" || val == Infinity)) {
+                this.value = Infinity; this.node.innerText = "∞";
+            } else {
+                const numericVal = isInteger ? Math.round(val) : Number(val);
+                this.node.innerText = this.value = isNaN(numericVal) ? this.min : numericVal;
             }
-            if (supportInfinity && (val === "无穷" || val === "∞")) this.value = Infinity;
-            else if (isNaN(this.value)) this.node.innerText = this.value = this.min;
             if (!this.node.innerText.length || this.value < this.min) {
                 this.node.innerText = this.value = this.min;
             }
@@ -372,17 +388,17 @@ export class EditableElementManager {
         }
         this.recordListener("wheel", wheelListener);
         this.recordListener("blur", blurListener);
-        this.node.addEventListener("wheel", wheelListener)
+        this.node.addEventListener("wheel", wheelListener, { passive: true })
         this.node.addEventListener("blur", blurListener)
         if (commonCallback || blurCallback) {
-            this.preventEnter(EnterBlur, (e) => {
+            this.preventEnter(enterBlur, (e) => {
                 const lastValue = this.value;
                 const value = changeValue(this.node.innerText);
                 commonCallback?.(e, value, lastValue);
                 enterCallback?.(e, value, lastValue);
             })
         } else {
-            this.preventEnter(EnterBlur);
+            this.preventEnter(enterBlur);
         };
         if (value != void 0) changeValue(value);
         if (min != void 0) this.min = min;
@@ -509,40 +525,6 @@ export class DragManager {
     constructor(parentNode, ...draggableTargets) {
         this.draggableTargetsParentNode = parentNode;
         this.draggableTargets.push(...draggableTargets);
-    }
-}
-export class SetOpenProxy {
-    proxy;
-    callbacks = [];
-    intercepetors = [];
-    constructor(target) {
-        this.proxy = new Proxy(target, {
-            set: (target, p, val) => {
-                if (this.intercepetors.some(p, val)) return;
-                this.callbacks.forEach(func => {
-                    func(p, val);
-                })
-                return Reflect.set(target, p, val);
-            }
-        });
-    }
-    setCallbacks(...funcs) {
-        this.callbacks.push(...funcs);
-    }
-    removeCallbacks(...funcs) {
-        for (let i, j = 0; i < this.callbacks.length; i++) {
-            let func = funcs.find(func => func === this.callbacks[i])
-            if (!func) funcs[j++] = this.callbacks[i];
-        }
-    }
-    setIntercepetors(...funcs) {
-        this.intercepetors.push(...funcs);
-    }
-    removeIntercepetors(...funcs) {
-        for (let i, j = 0; i < this.intercepetors.length; i++) {
-            let func = funcs.find(func => func === this.intercepetors[i])
-            if (!func) funcs[j++] = this.intercepetors[i];
-        }
     }
 }
 /**

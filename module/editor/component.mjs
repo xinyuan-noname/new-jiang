@@ -1,3 +1,4 @@
+import url from "./url.mjs";
 import { NonameEditorData } from "./data.mjs";
 import { EditableElementManager, preventEnter, toggleMultiClass, UniqueChoiceManager } from "./encapsulated.mjs";
 class HTMLCharacterCardElement extends HTMLElement {
@@ -6,484 +7,7 @@ class HTMLCharacterCardElement extends HTMLElement {
         const shadow = this.attachShadow({ mode: "open" });
         //$: shadow , html/character-card.html//
 shadow.innerHTML=`
-<style>
-    :host {
-        display: flex;
-        box-sizing: border-box;
-        border-radius: 10px;
-        border: 5px solid black;
-        color: black;
-        font-size: 24px;
-    }
-
-    :host>div {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 10px;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-
-    .hidden {
-        display: none !important;
-    }
-
-    .transparent {
-        opacity: 0 !important;
-    }
-
-    .weak-transparent {
-        opacity: 0;
-    }
-
-    /* 错误提示 */
-    .wrong::before {
-        content: "!";
-        color: red
-    }
-
-    /* 可折叠按钮 */
-    [class^="expandable"] {
-        font-size: 14px;
-        transition: 0.1s;
-        cursor: pointer;
-    }
-
-    [class^="expandable"]::after {
-        content: ">";
-        height: 100%;
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        transition: 0.1s;
-    }
-
-    .expandable-expanded::after {
-        transform: rotate(90deg);
-    }
-
-    .expandable-collapsed::after {
-        transform: rotateZ(0deg);
-    }
-
-    /* 可编辑文本框 */
-    [contenteditable='true'] {
-        cursor: text;
-    }
-
-    span[contenteditable='true'] {
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        text-shadow: none;
-        min-width: 1em;
-    }
-
-    div[contenteditable="true"] {
-        background-color: floralwhite;
-        padding: 0 10px;
-        height: 24px;
-        min-width: 100px;
-        text-align: center;
-        overflow: hidden;
-    }
-
-    /* 皮肤 */
-    [data-setting="avatar"] {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    [data-setting="avatar"]>input[type="file"] {
-        display: none;
-    }
-
-    [data-setting="avatar"]>div {
-        height: 13em;
-        width: 10em;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        border: dashed black;
-        border-radius: 3px;
-        background-size: cover;
-    }
-
-    :host>div>div:nth-child(2) {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        justify-content: flex-start;
-        flex: 1;
-    }
-
-    :host>div>div:nth-child(2) div[data-setting] {
-        display: flex;
-        flex-direction: column;
-        margin-bottom: 10px;
-    }
-
-    /* 武将名 */
-    [data-name] rt:empty {
-        display: none;
-    }
-
-    /* 性别-势力 */
-    [data-group] li,
-    [data-sex] li {
-        background-size: contain;
-        background-repeat: no-repeat;
-        height: 40px;
-        width: 40px;
-        cursor: pointer;
-        opacity: 0.4;
-        transition: 0.1s;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-    }
-
-    [data-group] li.chosen,
-    [data-sex] li.chosen {
-        opacity: 1;
-    }
-
-    [data-group] li:hover,
-    [data-sex] li:hover {
-        opacity: 1;
-    }
-
-    [data-group] li:after,
-    [data-sex] li:after {
-        position: absolute;
-        top: 40px;
-        font-size: 16px;
-    }
-
-    /* 性别 */
-    [data-sex]>ul {
-        padding: 0;
-        margin: 0;
-        list-style-type: none;
-        box-sizing: border-box;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 20px;
-    }
-
-    [data-sex] li[data-sex-option="male"] {
-        background-image: url(image/card/sex_male.png);
-    }
-
-    [data-sex] li[data-sex-option="male"]::after {
-        content: "男性"
-    }
-
-    [data-sex] li[data-sex-option="female"] {
-        background-image: url(image/card/sex_female.png);
-    }
-
-    [data-sex] li[data-sex-option="female"]::after {
-        content: "女性"
-    }
-
-    [data-sex] li[data-sex-option="double"] {
-        background-image: url(image/card/sex_double.png);
-    }
-
-    [data-sex] li[data-sex-option="double"]::after {
-        content: "双性"
-    }
-
-    [data-sex] li[data-sex-option="none"] {
-        background-image: url(image/card/sex_none.png);
-    }
-
-    [data-sex] li[data-sex-option="none"]::after {
-        content: "无性";
-    }
-
-    [data-sex] li[data-sex-option="male-castrated"] {
-        background-image: url(image/card/sex_male_castrated.png);
-    }
-
-    [data-sex] li[data-sex-option="male-castrated"]::after {
-        content: "太监"
-    }
-
-    /* 势力选项 */
-    [data-group] ul {
-        padding: 0;
-        margin: 0;
-        list-style-type: none;
-        box-sizing: border-box;
-        display: flex;
-    }
-
-    [data-group]>ul {
-        flex-direction: column;
-    }
-
-    [data-group]>ul>ul {
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    [data-group] li[data-group-option="wei"] {
-        background-image: url(image/card/group_wei.png);
-    }
-
-    [data-group] li[data-group-option="wei"]::after {
-        content: "魏"
-    }
-
-    [data-group] li[data-group-option="shu"] {
-        background-image: url(image/card/group_shu.png);
-    }
-
-    [data-group] li[data-group-option="shu"]::after {
-        content: "蜀"
-    }
-
-    [data-group] li[data-group-option="wu"] {
-        background-image: url(image/card/group_wu.png);
-    }
-
-    [data-group] li[data-group-option="wu"]::after {
-        content: "吴"
-    }
-
-    [data-group] li[data-group-option="qun"] {
-        background-image: url(image/card/group_qun.png);
-    }
-
-    [data-group] li[data-group-option="qun"]::after {
-        content: "群";
-    }
-
-    [data-group] li[data-group-option="jin"] {
-        background-image: url(image/card/group_jin.png);
-    }
-
-    [data-group] li[data-group-option="jin"]::after {
-        content: "晋"
-    }
-
-    [data-group] li[data-group-option="shen"] {
-        background-image: url(image/card/group_shen.png);
-    }
-
-    [data-group] li[data-group-option="shen"]::after {
-        content: "神"
-    }
-
-    [data-group] li[data-group-option="western"] {
-        background-image: url(image/card/group_western.png);
-    }
-
-    [data-group] li[data-group-option="western"]::after {
-        content: "西"
-    }
-
-    [data-group] li[data-group-option="key"] {
-        background-image: url(image/card/group_key.png);
-    }
-
-    [data-group] li[data-group-option="key"]::after {
-        content: "键"
-    }
-
-    /* 体力相关 */
-    /* 体力 */
-    [data-hp] div.hp-operation {
-        display: flex;
-        align-items: center;
-        font-size: 20px;
-        position: relative;
-        padding-left: 1em;
-        box-sizing: border-box;
-        justify-content: space-between;
-    }
-
-    .hp-more-show:not(.hidden)~.hp-show {
-        display: none;
-    }
-
-    .hp-more-show:is(.hidden)~.hp-adjust span[contenteditable] {
-        display: none;
-    }
-
-
-    .hp-more-show {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-left: auto;
-        text-shadow: none;
-    }
-
-    .hp-more-show>div {
-        display: flex;
-        flex-direction: column;
-        text-shadow: none;
-    }
-
-    .hp-more-show span[contenteditable] {
-        margin: 0 10px;
-    }
-
-    .hp-show {
-        display: flex;
-        margin-left: auto;
-    }
-
-    .hp-adjust {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-left: 10px;
-    }
-
-    .hp-adjust>div {
-        display: flex;
-        align-items: center;
-        flex-direction: column;
-        text-shadow: none;
-        margin: 0;
-        margin-left: 3px;
-    }
-
-    .hp-adjust>div>div {
-        cursor: pointer;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .hp-adjust>div>div:hover {
-        cursor: pointer;
-        outline: dashed 1px;
-    }
-
-    .hp-adjust>span {
-        margin: 10px;
-    }
-
-    .hp-adjust hr {
-        width: 100%;
-        margin: 0;
-    }
-
-    .hpContainer {
-        display: flex;
-        flex-direction: row-reverse;
-        align-items: center;
-        justify-content: flex-end;
-        margin: 10px 0;
-    }
-
-    .hpContainer .hp {
-        height: 20px;
-        width: 20px;
-        margin: 0 3px;
-        background-size: cover;
-        cursor: pointer;
-    }
-
-    .hpContainer.healthy .hp {
-        background-image: url(theme/style/hp/image/glass1.png);
-    }
-
-    .hpContainer.damaged .hp {
-        background-image: url(theme/style/hp/image/glass2.png);
-    }
-
-    .hpContainer.dangerous .hp {
-        background-image: url(theme/style/hp/image/glass3.png);
-    }
-
-    .hp.lost {
-        background-image: url(theme/style/hp/image/glass4.png);
-        filter: grayscale(100%);
-        opacity: 0.5;
-    }
-
-    .hp.lost.chosen,
-    .hp.lost.chosen~.hp.lost,
-    .hp.lost:hover,
-    .hp.lost:hover~.hp.lost {
-        filter: grayscale(0%);
-        opacity: 1;
-    }
-
-    /* 护甲 */
-    [data-hujia] div.hujia-operation {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 20px;
-        padding-left: 1em;
-        box-sizing: border-box;
-    }
-
-    .hujiaContainer {
-        display: flex;
-        flex-direction: row-reverse;
-        align-items: center;
-        justify-content: flex-end;
-        margin: 10px 0;
-        box-shadow: none;
-    }
-
-    .hujia {
-        height: 20px;
-        width: 20px;
-        transform: scale(1.4);
-        margin: 0 3px;
-        background-image: url(image/card/shield.png);
-        background-size: cover;
-        cursor: pointer;
-    }
-
-    .hujia.reset {
-        margin: 0 10px;
-    }
-
-    .hujia.reset::before {
-        content: "🗘";
-        font-size: 12px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        top: 1px;
-        right: 1px;
-    }
-
-    .hujia.lost {
-        filter: grayscale(100%);
-        opacity: 0.5;
-    }
-
-    .hujia.lost.chosen,
-    .hujia.lost.chosen~.hujia.lost,
-    .hujia.lost:hover,
-    .hujia.lost:hover~.hujia.lost {
-        filter: grayscale(0%);
-        opacity: 1;
-    }
-</style>
-
-<header></header>
+<link rel="stylesheet" href="./${url}/style/character-card.css">
 <div>
     <div data-setting="avatar" data-avatar="" data-required="true">
         <input type="file" accept="image/*"></input>
@@ -493,8 +17,10 @@ shadow.innerHTML=`
         <div data-setting="name pinyin" data-name="" data-pinyin="" data-required="true">
             <span>
                 <span>姓名</span>
+                <span class="expandable-expanded" data-for="name"></span>
+                <span></span>
             </span>
-            <ruby>
+            <ruby data-by="name">
                 <div contenteditable="true" spellcheck="false"></div>
                 <rp>(</rp>
                 <rt contenteditable="true" spellcheck="false"></rt>
@@ -504,8 +30,10 @@ shadow.innerHTML=`
         <div data-setting="id" data-id="">
             <span>
                 <span>武将标识符(id)</span>
+                <span class="expandable-expanded" data-for="id"></span>
+                <span></span>
             </span>
-            <ruby>
+            <ruby data-by="id">
                 <div contenteditable="true" spellcheck="false"></div>
             </ruby>
         </div>
@@ -513,6 +41,7 @@ shadow.innerHTML=`
             <span>
                 <span>性别</span>
                 <span class="expandable-expanded" data-for="sex"></span>
+                <span></span>
             </span>
             <ul data-by="sex">
                 <li data-sex-option="male"></li>
@@ -526,6 +55,7 @@ shadow.innerHTML=`
             <span>
                 <span>势力</span>
                 <span class="expandable-expanded" data-for="group"></span>
+                <span></span>
             </span>
             <ul data-by="group">
                 <ul>
@@ -550,6 +80,7 @@ shadow.innerHTML=`
             <span>
                 <span>体力&护甲</span>
                 <span class="expandable-expanded" data-for="hp"></span>
+                <span></span>
             </span>
             <div data-by="hp">
                 <div class="hp-operation">
@@ -561,8 +92,8 @@ shadow.innerHTML=`
                     </div>
                     <div class="hp-more-show hidden">
                         <div>
-                            <span>体力值</span>
-                            <span>体力上限</span>
+                            <span data-hp-adjust-mode="hp">体力值</span>
+                            <span data-hp-adjust-mode="maxHp">体力上限</span>
                         </div>
                     </div>
                     <div class="hp-show">
@@ -601,7 +132,19 @@ shadow.innerHTML=`
         <div data-setting="skills" data-skill="">
             <span>
                 <span>技能</span>
+                <span class="expandable-expanded" data-for="skills"></span>
+                <span></span>
             </span>
+            <div data-by="skills">
+                <ul></ul>
+                <div>
+                    <div class="xy-ED-input-container">
+                        <input spellcheck="false" placeholder="点击搜索资源">
+                        <span class="xy-ED-input-clear"></span>
+                        <span class="xy-ED-input-search"></span>
+                    </div>
+                </div>
+            </div>
         </div>
         <div data-setting="isZhugong" data-zhu="false"></div>
         <div data-setting="dieAudios" data-intro=""></div>
@@ -612,8 +155,6 @@ shadow.innerHTML=`
 </div>
 <footer></footer>`
 //#: shadow , html/character-card.html//
-        const stylesheet = document.createElement("link");
-        stylesheet.rel = ""
         this.init();
     }
     init() {
@@ -656,9 +197,10 @@ shadow.innerHTML=`
         const pinyin = this.getDataAreaDom("pinyin").querySelector('rt');
         preventEnter(name, pinyin);
         name.addEventListener("keyup", () => {
-            const pinyinText = NonameEditorData.getPinyin(name.innerText)
+            this.changeData("name", name.innerText);
+            const pinyinText = NonameEditorData.getPinyin(name.innerText);
             pinyin.innerHTML = pinyinText;
-            this.changeData("name", pinyinText);
+            this.changeData("pinyin", pinyinText);
         });
     }
     listenId() {
@@ -701,25 +243,44 @@ shadow.innerHTML=`
             .choose(groupOptions[0]);
     }
     listenHp() {
-        const hpContainer = this.getDataAreaDom("hp").querySelector(".hpContainer");
-        const moreShowContainer = this.getDataAreaDom("hp").querySelector(".hp-more-show");
-        const [hpInput, maxHpInput] = this.getDataAreaDom("hp").querySelectorAll(".hp-operation [contenteditable]");
-        const [hpPlus, hpMinus] = this.getDataAreaDom("hp").querySelectorAll(".hp-adjust>div>div");
-        const hpManager = new UniqueChoiceManager(...this.getDataAreaDom("hp").querySelectorAll(".hp"));
+        let hpAdjustMode, hpAdjustUnitOffset = 1;
+        const hpDataArea = this.getDataAreaDom("hp");
+        const hpContainer = hpDataArea.querySelector(".hpContainer");
+        const moreShowContainer = hpDataArea.querySelector(".hp-more-show");
+        const unitOffsetInput = hpDataArea.querySelector(".hp-adjust [contenteditable]")
+        const [hpInput, maxHpInput] = hpDataArea.querySelectorAll(".hp-operation [contenteditable]");
+        const [hpPlus, hpMinus] = hpDataArea.querySelectorAll(".hp-adjust>div>div");
+        const hpManager = new UniqueChoiceManager(...hpDataArea.querySelectorAll(".hp"));
+        const adjustOptionManager = new UniqueChoiceManager(...hpDataArea.querySelectorAll(".hp-more-show span"));
+        const unitOffsetInputManager = new EditableElementManager(unitOffsetInput)
         const hpInputManager = new EditableElementManager(hpInput);
         const maxHpInputManager = new EditableElementManager(maxHpInput);
-        const prependHp = (num = 1, onlyMaxHp = false) => {
-            if (num < 0) return;
-            const nowHp = this.getData("hp"), nowMaxHp = this.getData("maxHp");
-            maxHpInputManager.changeValue(nowMaxHp + num);
-            this.changeData("maxHp", nowMaxHp + num);
-            if (nowMaxHp + num <= 6) {
-                for (let i = 0; i < num; i++) {
+        const adjustHpDivsTo = (num) => {
+            if (num < 1 || num > 6) return;
+            const hps = Array.from(hpDataArea.querySelectorAll(`.hp`));
+            const d = num - hps.length;
+            if (d > 0) {
+                for (let i = 0; i < d; i++) {
                     const hp = document.createElement("div");
                     hp.className = "hp lost";
                     hpContainer.prepend(hp);
                     hpManager.append(hp);
                 }
+            } else if (d < 0) {
+                hps.slice(0, Math.abs(d)).forEach(node => {
+                    node.remove();
+                    hpManager.remove(node);
+                })
+            }
+        }
+        const prependMaxHp = (num = 1, onlyMaxHp = false) => {
+            if (num < 0) return;
+            const nowHp = this.getData("hp"), nowMaxHp = this.getData("maxHp");
+            const changedMaxHp = nowMaxHp + num
+            maxHpInputManager.changeValue(changedMaxHp);
+            this.changeData("maxHp", changedMaxHp);
+            if (changedMaxHp <= 6) {
+                adjustHpDivsTo(changedMaxHp);
                 if (onlyMaxHp === false) {
                     hpManager.choose(this.getDataAreaDom("hp").querySelector(`.hp:nth-last-child(${nowHp + num})`));
                 }
@@ -733,48 +294,68 @@ shadow.innerHTML=`
                 }
             }
         }
-        const removeHp = (num = 1) => {
+        const removeMaxHp = (num = 1) => {
             if (num < 0) return;
-            const nowHp = this.getData("hp"), nowMaxHp = this.getData("maxHp");
-            num = Math.min(num, nowMaxHp - 1);
-            this.changeData("maxHp", nowMaxHp - num);
-            maxHpInputManager.changeValue(nowMaxHp - num);
-            if (nowMaxHp - num <= 6) {
-                if (!moreShowContainer.classList.contains("hidden")) {
-                    moreShowContainer.classList.add("hidden");
+            const nowHp = this.getData("hp"), nowMaxHp = this.getData("maxHp"); num = Math.min(num, nowMaxHp - 1);
+            const changedMaxHp = num === Infinity ? 1 : nowMaxHp - num;
+            this.changeData("maxHp", changedMaxHp);
+            maxHpInputManager.changeValue(changedMaxHp);
+            if (changedMaxHp <= 6) {
+                adjustHpDivsTo(changedMaxHp);
+                if (!moreShowContainer.classList.contains("hidden")) moreShowContainer.classList.add("hidden");
+                if (changedMaxHp < nowHp) {
+                    hpManager.choose(hpDataArea.querySelector(".hp"));
+                } else {
+                    hpManager.choose(hpDataArea.querySelector(`.hp:nth-last-child(${nowHp})`));
                 }
-                const toRemoves = Array.from(this.getDataAreaDom("hp").querySelectorAll(`.hp`)).slice(0, nowMaxHp <= 6 ? num : num - nowMaxHp + 6);
-                toRemoves.forEach(remove => {
-                    remove.remove();
-                })
-                hpManager.remove(...toRemoves);
-                if (nowMaxHp - num < nowHp) {
-                    hpManager.choose(this.getDataAreaDom("hp").querySelector(".hp"));
-                }
-            } else if (nowMaxHp - num < nowHp) {
+            } else if (changedMaxHp < nowHp) {
                 hpInputManager.changeValue(nowHp - num);
                 this.changeData("hp", nowHp - num);
             }
+        }
+        const addHp = (num = 1) => {
+            if (num < 0) return;
+            const nowHp = this.getData("hp"), nowMaxHp = this.getData("maxHp");
+            const d = nowHp + num - nowMaxHp;
+            hpInputManager.changeValue(nowHp + num);
+            this.changeData("hp", nowHp + num);
+            if (d > 0) {
+                prependMaxHp(d, true);
+            }
+            if (d < 0 && nowMaxHp <= 6 || d > 0 && nowMaxHp + d <= 6) {
+                hpManager.choose(this.getDataAreaDom("hp").querySelector(`.hp:nth-last-child(${nowHp + num})`));
+            }
+        }
+        const removeHp = (num = 1) => {
+            if (num < 0) return;
+            const nowHp = this.getData("hp"), nowMaxHp = this.getData("maxHp"); num = Math.min(num, nowHp - 1);
+            const changedHp = num === Infinity ? 1 : nowHp - num;
+            hpInputManager.changeValue(changedHp);
+            this.changeData("hp", changedHp);
+            if (nowMaxHp < 6) hpManager.choose(this.getDataAreaDom("hp").querySelector(`.hp:nth-child(${changedHp})`));
         }
         maxHpInputManager.inputNumber({
             min: 1, max: Infinity, value: 4, supportInfinity: true, isInteger: true,
             commonCallback: (e, val, last) => {
                 const d = val - last;
-                if (d < 0) removeHp(Math.abs(d));
-                else if (d > 0) prependHp(d, true);
+                if (d < 0) removeMaxHp(Math.abs(d));
+                else if (d > 0) prependMaxHp(d, true);
             }
         });
         hpInputManager.inputNumber({
             min: 1, max: Infinity, value: 4, supportInfinity: true, isInteger: true,
-            commonCallback: (e, i) => {
-                const d = i - this.getData("maxHp");
-                if (d > 0) {
-                    prependHp(d);
-                } else {
-                    hpManager.choose(this.getDataAreaDom("hp").querySelector(`.hp:nth-last-child(${i})`));
-                }
+            commonCallback: (e, val, last) => {
+                const d = val - last;
+                if (d > 0) addHp(d)
+                else if (d < 0) removeHp(Math.abs(d))
             }
         });
+        unitOffsetInputManager.inputNumber({
+            min: 1, max: Infinity, value: 1, supportInfinity: true, isInteger: true,
+            commonCallback: (e, i) => {
+                hpAdjustUnitOffset = i;
+            }
+        })
         hpManager.listenSiblings("pointerdown").setCallback((pre, now, funcMap) => {
             funcMap.forClass("chosen");
             const hps = Array.from(this.getDataAreaDom("hp").querySelectorAll(".hp"));
@@ -783,8 +364,27 @@ shadow.innerHTML=`
             this.changeData("hp", hpValue);
             hpInputManager.changeValue(hpValue);
         }).chooseFirst()
-        hpPlus.addEventListener("pointerdown", () => prependHp());
-        hpMinus.addEventListener("pointerdown", () => removeHp());
+        adjustOptionManager.listenSiblings("pointerdown").setCallback((pre, now, funcMap) => {
+            funcMap.forClass("chosen");
+            hpAdjustMode = now.dataset.hpAdjustMode;
+        }).chooseFirst()
+        hpPlus.addEventListener("pointerdown", () => {
+            const maxHp = this.getData("maxHp"), hp = this.getData("hp");
+            if (maxHp > 6) {
+                if (hpAdjustMode === "maxHp") prependMaxHp(hpAdjustUnitOffset, true);
+                else addHp(hpAdjustUnitOffset);
+            } else if (hp === maxHp) {
+                prependMaxHp(1, false);
+            } else {
+                prependMaxHp(1, true);
+            }
+        });
+        hpMinus.addEventListener("pointerdown", () => {
+            if (this.getData("maxHp") > 6) {
+                if (hpAdjustMode === "maxHp") removeMaxHp(hpAdjustUnitOffset);
+                else removeHp(hpAdjustUnitOffset);
+            } else removeMaxHp();
+        });
         //
         const hujias = Array.from(this.getDataAreaDom("hujia").querySelectorAll(".hujia"));
         const hujiaManager = new UniqueChoiceManager(...hujias);
@@ -804,7 +404,6 @@ shadow.innerHTML=`
                 hujiaInputManager.changeValue(hujiaValue);
             })
         new MutationObserver(() => {
-            console.log()
             toggleMultiClass(hpContainer, "healthy", "damaged", "dangerous")
                 .single(NonameEditorData.getHpStatus(this.getData("hp"), this.getData("maxHp")))
         }).observe(hpContainer, {
@@ -852,15 +451,38 @@ shadow.innerHTML=`
         switch (type) {
             case "id": {
                 this.getDataAreaDom(type).dataset[type] = val;
+                if (document.contains(this)) this.style.setProperty("--data-id", `'${val}'`);
                 return NonameEditorData.checkId("character", val);
+            }
+            case "pinyin": {
+                this.getDataAreaDom(type).dataset[type] = val;
+                if (document.contains(this)) {
+                    this.style.setProperty("--data-pinyin", val == "" ? "" : `'(${val})'`);
+                }
+                return true;
+            }
+            case "group": {
+                this.getDataAreaDom(type).dataset[type] = val;
+                if (document.contains(this)) {
+                    this.style.setProperty("--data-group", `'${NonameEditorData.getTranslation("character", type, val)}'`);
+                    this.style.setProperty("--data-group-textShadow", NonameEditorData.getTranslation("character", "textShadow", val))
+                }
+                return true;
+            }
+            case "sex": {
+                this.getDataAreaDom(type).dataset[type] = val;
+                if (document.contains(this)) this.style.setProperty("--data-" + type, `'${NonameEditorData.getTranslation("character", type, val)}'`);
+                return true;
             }
             case "hp": case "maxHp": case "hujia": {
                 if (typeof val !== "number") return false;
                 this.getDataAreaDom(type).dataset[type] = val;
+                if (document.contains(this)) this.style.setProperty("--data-" + type, val == Infinity ? "'∞'" : `'${val}'`);
                 return true;
             }
             default: {
                 this.getDataAreaDom(type).dataset[type] = val;
+                if (document.contains(this)) this.style.setProperty("--data-" + type, `'${val}'`);
                 return true;
             }
         }

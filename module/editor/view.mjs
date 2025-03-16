@@ -1,6 +1,6 @@
 "use script";
 import "./component.mjs";
-import { UniqueChoiceManager, DragManager } from "./encapsulated.mjs";
+import { UniqueChoiceManager, DragManager, toggleMultiClass } from "./encapsulated.mjs";
 /**
  * @typedef {import("./nonameEditor.mjs").NonameEditor NonameEditor}
  */
@@ -14,6 +14,10 @@ export class NonameEditorView {
      * @type {NonameEditor}
      */
     serveFor;
+    /**
+     * @type {UniqueChoiceManager}
+     */
+    navsController;
     /**
      * @type {HTMLDivElement}
      */
@@ -159,17 +163,32 @@ mainPage.innerHTML=`
                 <div class="xy-ED-sideBar-card" data-by="card"></div>
                 <div class="xy-ED-sideBar-search" data-by="search">
                     <div class="xy-ED-input-container">
-                        <input spellcheck="false" placeholder="这里输入搜索的资源">
-                        <span class="xy-ED-input-clear"></span>
-                        <span class="xy-ED-input-search"></span>
+                        <div>
+                            <input spellcheck="false" placeholder="这里输入搜索的资源">
+                            <span class="xy-ED-input-clear"></span>
+                            <span class="xy-ED-input-search"></span>
+                        </div>
+                        <div class="xy-ED-search-mode-controller">
+                            <span data-search-mode="character">武将</span>
+                            <span data-search-mode="skill">技能</span>
+                        </div>
                     </div>
                     <hr>
-                    <div class="xy-ED-searchResult">
-                        <header>
-                            <div class="xy-ED-expandable-expanded" data-for=search-result></div>
-                            <div>搜索结果</div>
-                        </header>
-                        <ul class="xy-ED-show-scrollbar" data-by=search-result></ul>
+                    <div class="xy-ED-search-concerning">
+                        <div class="xy-ED-searchResult">
+                            <header>
+                                <div class="xy-ED-expandable-expanded" data-for=search-result></div>
+                                <div>搜索结果</div>
+                            </header>
+                            <ul data-by=search-result></ul>
+                        </div>
+                        <div class="xy-ED-searchLiked">
+                            <header>
+                                <div class="xy-ED-expandable-expanded" data-for=search-like></div>
+                                <div>已收藏</div>
+                            </header>
+                            <ul data-by=search-like></ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -192,6 +211,7 @@ mainPage.innerHTML=`
         this.listenMainAreaChange()
         //
         this.listenSideBarCharacter();
+        this.listenSideBarSearch();
         //
         this.listenNavsReOrder();
         this.listenNavChoose();
@@ -284,21 +304,87 @@ mainPage.innerHTML=`
         });
     }
     //
+    /**
+     * 
+     * @param {{audios:string[],id:string,name:string,description:string}} searchResult 
+     * @param {{notLike:boolean,highlight:string[]}} config
+     * @returns 
+     */
+    createSearchSkillListItem(searchResult, config) {
+        let mainContent = searchResult.info;
+        if (config.highlight) mainContent.replace(new RegExp(`${config.highlight.map(word => word.replace(/[.^$*+?{}\[\]\\|()]/g, "\\$&")).join("|")}`, "g"), "<mark>$&</mark>")
+
+        const li = document.createElement("li");
+        li.dataset.skillInfo = JSON.stringify(searchResult);
+        li.dataset.skill = searchResult.id;
+        li.innerHTML =
+            `<div draggable="true">
+                <div>${mainContent}</div>
+                <ul>${searchResult.audios.map(audio => `<li data-audio-list-item>${audio}</li>`).join("")}</ul>
+            </div>
+            <div>
+                <span class="xy-ED-use">⬅️</span>
+                ${config.notLike === true ? '' : '<span class="xy-ED-like">❤️</span>'}
+                <span class="xy-ED-remove">🗑️</span>
+            </div>`
+        return li.outerHTML;
+    }
     listenSideBarSearch() {
         const { sideBarSearch } = this;
         const input = sideBarSearch.querySelector("input");
-        const ul = sideBarSearch.querySelector("ul");
         const clearIcon = sideBarSearch.querySelector(".xy-ED-input-clear");
         const searchIcon = sideBarSearch.querySelector(".xy-ED-input-search");
-        const search = () => { };
+        const searchConcerning = sideBarSearch.querySelector(".xy-ED-search-concerning");
+        const searchConcerningUls = Array.from(searchConcerning.querySelectorAll(":scope>div>ul"));
+        const [resultUl, likedUl] = searchConcerningUls;
+        let type = "skill";
         input.addEventListener("keydown", async e => {
             if (e.key !== "Enter") return;
-            search();
+            this.search(input.value.split(/[ +]/g), type);
         });
         searchIcon.addEventListener("pointerdown", async e => {
-            search();
+            this.search(input.value.split(/[ +]/g), type);
         });
-        clearIcon.addEventListener("click", () => (input.value = ""));
+        clearIcon.addEventListener("pointerdown", () => (input.value = ""));
+        resultUl.addEventListener("pointerdown", e => {
+            /**
+             * @type {HTMLElement}
+             */
+            const node = e.target;
+            if (node.classList.contains("xy-ED-remove")) node.parentElement.parentElement.remove();
+            if (node.classList.contains("xy-ED-like")) {
+                if (node.classList.contains("xy-ED-liked")) {
+                    node.classList.remove("xy-ED-liked");
+                    likedUl.querySelector(`[data-skill="${node.parentElement.parentElement.dataset.skill}"]`)?.remove?.();
+                } else if (!node.classList.contains("xy-ED-liked")) {
+                    node.classList.add("xy-ED-liked");
+                    likedUl.innerHTML += this.createSearchSkillListItem(JSON.parse(node.parentElement.parentElement.dataset.skillInfo), { notLike: true });
+                }
+            }
+        })
+        likedUl.addEventListener("pointerdown", e => {
+            const node = e.target;
+            if (node.classList.contains("xy-ED-remove")) {
+                node.parentElement.parentElement.remove();
+                resultUl.querySelector(`[data-skill="${node.parentElement.parentElement.dataset.skill}"] .xy-ED-liked`)?.classList?.remove("xy-ED-liked");
+            }
+        })
+        const config = {
+            childList: true,
+            attributes: true,
+            subtree: true,
+            attributeFilter: ['class']
+        }
+        const observer = new MutationObserver((mutationList) => {
+            mutationList.forEach(() => {
+                searchConcerningUls.forEach(ul => {
+                    ul.parentElement.style.setProperty("--xy-ED-flex-index", getComputedStyle(ul).display === "none" ? "none" : 1)
+                })
+            });
+        })
+        searchConcerningUls.forEach(ul => {
+            observer.observe(ul, config);
+        })
     }
     //
     listenNavsReOrder() {
@@ -320,27 +406,68 @@ mainPage.innerHTML=`
             [node, ["xy-ED-nav-chosen"]],
             [this.sideBarContent.querySelector(`[data-by=${node.dataset.for}]`), ["xy-ED-shown-flex"]]
         ])]);
-        new UniqueChoiceManager(...this.navs)
+        this.navsController = new UniqueChoiceManager(...this.navs)
             .listenSiblings("pointerup")
             .forClassByNodeClassMap(new WeakMap(navsArray))
     }
     //
     listenExpanable() {
         this.expanables.forEach(node => {
-            const linkedNodes = this.operationPage.querySelectorAll(`[data-by=${node.dataset.for}]`)
+            const linkedNodes = this.operationPage.querySelectorAll(`[data-by= ${node.dataset.for}]`)
+            const manager = toggleMultiClass(node, "xy-ED-expandable-expanded", "xy-ED-expandable-collapsed");
             node.addEventListener("pointerdown", (e) => {
                 linkedNodes.forEach(linkedNode => {
                     linkedNode.classList.toggle("xy-ED-hidden");
                 })
                 if (node.classList.contains("xy-ED-expandable-expanded")) {
-                    node.classList.remove("xy-ED-expandable-expanded");
-                    node.classList.add("xy-ED-expandable-collapsed");
+                    manager.single("xy-ED-expandable-collapsed");
                 } else if (node.classList.contains("xy-ED-expandable-collapsed")) {
-                    node.classList.remove("xy-ED-expandable-collapsed");
-                    node.classList.add("xy-ED-expandable-expanded");
+                    manager.single("xy-ED-expandable-expanded");
                 }
             })
         })
+    }
+    /**
+     * @param {"search"|"card"|"setting"|"character"} navName 
+     * @returns 
+     */
+    toggleNav(navName) {
+        switch (navName) {
+            case "search": this.navsController.choose(this.sideBarSearch); break;
+            case "card": this.navsController.choose(this.sideBarCard); break;
+            case "setting": this.navsController.choose(this.sideBarSetting); break;
+            case "character": this.navsController.choose(this.sideBarCharacter); break;
+        }
+        return this;
+    }
+    search(keyWords, type = "skill", { limit = 10 } = {}) {
+        const ul = this.sideBarSearch.querySelector("ul");
+        ul.scrollTo({ top: 0 });
+        ul.innerHTML = "";
+        let intersectionObserver;
+        switch (type) {
+            case "skill": {
+                const appendItem = (searchResults) => {
+                    ul.innerHTML += searchResults.map(result => {
+                        return this.createSearchSkillListItem(result, { highlight: keyWords });
+                    }).join("");
+                    intersectionObserver?.disconnect?.()
+                    intersectionObserver = new IntersectionObserver((entries) => {
+                        if (entries[0].intersectionRatio <= 0) return;
+                        const newSearchResults = this.serveFor.data.continueSearch("skill", limit);
+                        if (newSearchResults.length) {
+                            appendItem(newSearchResults);
+                        } else {
+                            intersectionObserver.disconnect();
+                        }
+                    }, { root: ul });
+                    if (ul.lastElementChild) intersectionObserver.observe(ul.lastElementChild);
+                    else intersectionObserver.disconnect();
+                }
+                appendItem(this.serveFor.data.search(keyWords, "skill", limit));
+                return;
+            }
+        }
     }
     //
     send() {
