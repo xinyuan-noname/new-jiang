@@ -1,10 +1,11 @@
 :host {
     display: flex;
-    box-sizing: border-box;
     border-radius: 10px;
     border: 5px solid black;
     color: black;
     font-size: 24px;
+    overflow: hidden;
+    max-height: calc(100% - 10px);
     --data-name: "";
     --data-pinyin: "";
     --data-id: "";
@@ -27,7 +28,8 @@
     align-items: center;
     padding: 10px;
     width: 100%;
-    box-sizing: border-box;
+    max-height: calc(100% - 20px);
+    overflow: auto;
 }
 
 .hidden {
@@ -72,13 +74,18 @@
 /* 可编辑文本框 */
 [contenteditable='true'] {
     cursor: text;
+    text-shadow: none;
+}
+
+ul {
+    padding: 0;
+    margin: 0;
 }
 
 span[contenteditable='true'] {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    text-shadow: none;
     min-width: 1em;
 }
 
@@ -89,30 +96,6 @@ div[contenteditable="true"] {
     min-width: 100px;
     text-align: center;
     overflow: hidden;
-}
-
-/* 皮肤 */
-[data-avatar] {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-[data-avatar]>input[type="file"] {
-    display: none;
-}
-
-[data-avatar]>div {
-    height: 13em;
-    width: 10em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border: dashed black;
-    border-radius: 3px;
-    background-size: cover;
 }
 
 :host>div>div:nth-child(2) {
@@ -147,29 +130,58 @@ div[contenteditable="true"] {
     text-shadow: var(--data-group-textShadow);
 }
 
-:host>div>div:nth-child(2) div[data-setting] .expandable-collapsed[data-for="name"]+span::after {
+.expandable-collapsed[data-for="name"]+span::after {
     content: var(--data-name, "") var(--data-pinyin);
 }
 
-:host>div>div:nth-child(2) div[data-setting] .expandable-collapsed[data-for="id"]+span::after {
+.expandable-collapsed[data-for="id"]+span::after {
     content: var(--data-id)
 }
 
-:host>div>div:nth-child(2) div[data-setting] .expandable-collapsed[data-for="group"]+span::after {
+.expandable-collapsed[data-for="group"]+span::after {
     content: var(--data-group);
 }
 
-:host>div>div:nth-child(2) div[data-setting] .expandable-collapsed[data-for="sex"]+span::after {
+.expandable-collapsed[data-for="sex"]+span::after {
     content: var(--data-sex)
 }
 
-:host>div>div:nth-child(2) div[data-setting] .expandable-collapsed[data-for="hp"]+span::after {
+.expandable-collapsed[data-for="hp"]+span::after {
     content: "体：" var(--data-hp) "/" var(--data-maxHp) "，甲：" var(--data-hujia);
+}
+
+/* 皮肤 */
+[data-avatar] {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+[data-avatar]>input[type="file"] {
+    display: none;
+}
+
+[data-avatar]>div {
+    height: 13em;
+    width: 10em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: dashed black;
+    border-radius: 3px;
+    background-size: cover;
 }
 
 /* 武将名 */
 [data-name] rt:empty {
     display: none;
+}
+
+[data-id] ruby {
+    display: flex;
+    justify-content: space-between;
 }
 
 /* 性别-势力 */
@@ -207,8 +219,6 @@ div[contenteditable="true"] {
 
 /* 性别 */
 [data-sex]>ul {
-    padding: 0;
-    margin: 0;
     list-style-type: none;
     box-sizing: border-box;
     display: flex;
@@ -259,8 +269,6 @@ div[contenteditable="true"] {
 
 /* 势力选项 */
 [data-group] ul {
-    padding: 0;
-    margin: 0;
     list-style-type: none;
     box-sizing: border-box;
     display: flex;
@@ -523,4 +531,37 @@ div[contenteditable="true"] {
 .hujia.lost:hover~.hujia.lost {
     filter: grayscale(0%);
     opacity: 1;
+}
+
+[data-skills]>div {
+    display: flex;
+    flex-direction: column;
+}
+
+[data-skills]>div>ruby {
+    display: flex;
+    align-items: center;
+}
+
+[data-skills] div[contenteditable] {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+[data-skills] div[contenteditable]+span {
+    background-image: url("../image/icon/search.png");
+    background-size: cover;
+    display: flex;
+    background-color: rgba(0, 0, 255, 0.557);
+    border-radius: 60% 40% 100% 0% / 0% 100% 0% 100%;
+    width: 1em;
+    height: 100%;
+    cursor: pointer;
+}
+
+[data-skills] p {
+    font-size: 12px;
+    font-family: fangsong;
 }

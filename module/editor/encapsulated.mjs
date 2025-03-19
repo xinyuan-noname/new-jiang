@@ -1,4 +1,7 @@
 export class UniqueChoiceManager {
+    get chosenIndex() {
+        return this.indexOf(this.chosen);
+    }
     /**
      * @type {HTMLElement[]}
      */
@@ -20,7 +23,7 @@ export class UniqueChoiceManager {
         this.proxy = new Proxy(this, {
             set(target, p, val) {
                 if (p === "chosen") {
-                    target.callback?.(target.chosen, val);
+                    if (target.chosen !== val) target.callback?.(target.chosen, val);
                 }
                 return Reflect.set(target, p, val);
             }
@@ -87,7 +90,7 @@ export class UniqueChoiceManager {
                         node?.classList?.add(...classNames);
                     })
                 }
-            })
+            }, this)
         };
         return this;
     }
@@ -112,11 +115,20 @@ export class UniqueChoiceManager {
     listenSiblings(type, filter) {
         const commonParentNode = this.nodeList[0].parentNode
         if (this.nodeList.some(node => node.parentNode != commonParentNode)) throw new Error("The nodes must be siblings");
+        this.commonParentNode = commonParentNode;
         commonParentNode.addEventListener(type, (e) => {
             if (!this.nodeList.includes(e.target)) return;
             if (!filter || filter?.(e, e.target)) this.choose(e.target);
         })
         return this;
+    }
+    indexOf(node) {
+        if (this.commonParentNode) {
+            const childNodes = this.commonParentNode.childNodes;
+            return Array.from(childNodes).indexOf(node);
+        } else {
+            return this.nodeList.indexOf(node);
+        }
     }
     /**
      * @param {HTMLElement} target 
@@ -360,17 +372,19 @@ export class EditableElementManager {
     }
     inputNumber({ min, max, value, offset = 1, wheelCallback, blurCallback, enterBlur, enterCallback, supportInfinity, commonCallback, isInteger } = {}) {
         const changeValue = (val) => {
-            if (supportInfinity && (val === "无穷" || val === "∞" || val == Infinity)) {
-                this.value = Infinity; this.node.innerText = "∞";
-            } else {
-                const numericVal = isInteger ? Math.round(val) : Number(val);
-                this.node.innerText = this.value = isNaN(numericVal) ? this.min : numericVal;
-            }
-            if (!this.node.innerText.length || this.value < this.min) {
-                this.node.innerText = this.value = this.min;
-            }
-            if (this.value > this.max) {
-                this.node.innerText = this.value = this.max;
+            if (this.node.innerText !== val || this.value !== val) {
+                if (supportInfinity && (val === "无穷" || val === "∞" || val == Infinity)) {
+                    this.value = Infinity; this.node.innerText = "∞";
+                } else {
+                    const numericVal = isInteger ? Math.round(val) : Number(val);
+                    this.node.innerText = this.value = isNaN(numericVal) ? this.min : numericVal;
+                }
+                if (!this.node.innerText.length || this.value < this.min) {
+                    this.node.innerText = this.value = this.min;
+                }
+                if (this.value > this.max) {
+                    this.node.innerText = this.value = this.max;
+                }
             }
             return Number(this.value);
         }

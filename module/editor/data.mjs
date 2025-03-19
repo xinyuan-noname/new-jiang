@@ -1,6 +1,10 @@
-import { get, lib } from "../../../../noname.js";
+import { game, get, lib } from "../../../../noname.js";
 const chineseRegex = /[\u4e00-\u9fff]+/;
 class Searcher {
+    static cache = {
+        skill: {},
+        character: {}
+    }
     /**
      * @type {Iterator}
      */
@@ -25,65 +29,53 @@ class Searcher {
         }
         return collected;
     }
-    static *searchCharacter(keyWords, config) {
+    static parseSkill(skillId, characterId) {
+        const skillName = lib.translate[skillId] || "";
+        const description = lib.translate[skillId + "_info"] || "";
+        const audios = get.Audio.skill({ skill: skillId, player: characterId }).audioList.filter(audio => audio.text);
+        return { id: skillId, name: skillName, description, audios };
+    }
+    static *searchCharacterGenerator(keyWords, config) {
         for (const packageId in lib.characterPack) {
-            const packageName = lib.translate[packageId];
+            const packageName = lib.translate[packageId + "_character_config"];
             const characterPack = lib.characterPack[packageId];
+            const characterSort = lib.characterSort[packageId];
             for (const id in characterPack) {
-                const character = lib.character[id];
+                const characterSortId = (() => {
+                    for (const sortId in characterSort) {
+                        if (characterSort[sortId].includes(id)) return sortId;
+                    }
+                })()
+                const characterSortName = lib.translate[characterSortId] ?? "未分包";
+                const character = characterPack[id];
                 const name = get.translation(id);
                 const group = character.doubleGroup.length ? character.doubleGroup.map(group => lib.translate[group]).join("/") : lib.translate[character.group];
                 const sex = character.trashBin.includes("sex:male_castrated") ? "男（太监）" : lib.translate[character.sex];
-                const clans = character.clans.length ? clans : "无"
-                const introduction = lib.characterIntro[id];
-                const dieAudios = lib.translate["#" + id];
-                const skills = character.skills.map(skillId => {
-                    const skillName = lib.translate[skillId] || "";
-                    const description = lib.translate[skillId + "_info"] || "";
-                    const audio = lib.translate["#" + skillId] || "";
-                    const info = `${name}(${skillId})：${description}`;
-                    return { skillId, skillName, description, audio, info };
-                })
-                const info = `${name}(${id})：\n来自：${packageName}，\n势力：${group}，\n性别：${sex}，\n技能：${skills.map(skill => `${skill.name}(${skill.id})`)}，宗族：${clans})`
-                let searchText = get.plainText(info);
-                if (keyWords.every(word => searchText.includes(word))) yield { info: searchText, id, character, introduction, dieAudios, skills };
+                const clans = character.clans.length ? character.clans : "无"
+                const dieAudios = get.Audio.die({ player: id }).audioList.filter(audio => audio.text);
+                const skills = character.skills.map(skillId => this.parseSkill(skillId, id));
+                const skillList = skills.map(skill => `${skill.name}(${skill.id})`);
+                let searchText = get.plainText(`${name}(${id})${packageName}${characterSortName}${group}${sex}${clans}${skillList.join("")}`);
+                if (keyWords.every(word => searchText.includes(word))) {
+                    yield { id, name, packageName, characterSortName, sex, group, clans, hp: character.hp, maxHp: character.maxHp, hujia: character.hujia, characterSortId, characterSortName, dieAudios, skillList, skills };
+                }
             }
         }
     }
     static *searchSkillGenerator(keyWords, config) {
         for (const id in lib.skill) {
             const skill = lib.skill[id];
-            if (skill.sub === true) continue;
-            const name = lib.translate[id] || "";
-            const description = lib.translate[id + "_info"] || "无描述";
-            const audios = get.Audio.skill({ skill: id }).textList;
-            const info = `${name}(${id})：${description}`;
-            let searchText = get.plainText(info);
-            if (keyWords.every(word => searchText.includes(word))) yield { info, id, name, audios, description };
+            if (skill.sub === true || skill.sourceSkill) continue;
+            const { name, description, audios } = this.parseSkill(id);
+            let searchText = `${name}${id}${description}`;
+            if (keyWords.every(word => searchText.includes(word))) {
+                yield { id, name, audios, description };
+            }
         }
     }
 }
-export class NonameEditorData {
-    view;
-    /**
-     * @type {Object<string,(null|Searcher)>}
-     */
-    searchManager = {
-        "character": null,
-        "skill": null
-    };
-    constructor() {
-    }
-    search(keyWords, type, require) {
-        this.searchManager[type] = new Searcher(keyWords, type);
-        return this.searchManager[type].search(require);
-    }
-    continueSearch(type, require) {
-        if (!this.searchManager[type]) return [];
-        return this.searchManager[type].search(require);
-    }
-    getData() { }
-    static async readFile(file, type = "text", encoding) {
+export class NonameData {
+    readFile(file, type = "text", encoding) {
         if (!(file instanceof File)) throw new Error(file + "is not a file.");
         return new Promise((resolve) => {
             const fileReader = new FileReader();
@@ -97,28 +89,31 @@ export class NonameEditorData {
             }
         })
     }
-    static getPinyin(text, withTone) {
-        if (!chineseRegex.test(text)) return "";
-        if (withTone === "both") {
-            return {
-                with: get.pinyin(text),
-                without: get.pinyin(text, false)
-            }
-        }
-        return get.pinyin(text, withTone);
-    }
-    static checkId(type, val) {
+    checkId(val, type) {
         switch (type) {
             case "character": return !(val in lib.character);
             case "skill": return !(val in lib.skill);
+            default: return false;
         }
+    }
+    parsePath(path, type) {
+        let parsedPath = path;
+        if (path.startsWith("ext:")) parsedPath = path.replace(/^ext:/, "extension/");
+        /**既然是解析路径就先不考虑从数据库读取的事情吧 */
+        // else if (path.startsWith("db:")) parsedPath = path
+        switch (type) {
+            case "audio": {
+                parsedPath = "audio" + parsedPath;
+            }; break;
+        }
+        return parsedPath;
     }
     /**
      * @param {number} hp 
      * @param {number} maxHp 
      * @returns {"healthy"|"damaged"|"dangerous"}
      */
-    static getHpStatus(hp, maxHp) {
+    getHpStatus(hp, maxHp) {
         if (hp > Math.round(maxHp / 2) || hp === maxHp) {
             return "healthy";
         } else if (hp > Math.floor(maxHp / 3)) {
@@ -127,40 +122,97 @@ export class NonameEditorData {
             return "dangerous";
         }
     }
-    static getTranslation(type, attr, text) {
+    /**
+     * @param {"character"} type 
+     * @param {"sex"|"group"} attr 
+     * @param {string} text 
+     */
+    getTranslation(type, attr, text) {
         if (type === "character") {
             switch (attr) {
                 case "sex": {
                     if (text === "none") return "无性";
                     if (text === "male-castrated") return "太监";
-                    return get.translation(text) + "性";
+                    return lib.translate[text] + "性";
                 }
                 case "group": {
-                    return get.translation(text) + "势力";
-                }
-                case "textShadow": {
-                    switch (text) {
-                        case "wei": return "rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, black 0 0 1px";
-                        case "shu": return "rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, black 0 0 1px";
-                        case "wu": return "rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, black 0 0 1px";
-                        case "qun": return "rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, black 0 0 1px";
-                        case "jin": case "western": return "rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, black 0 0 1px";
-                        case "shen": return "rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, black 0 0 1px";
-                        case "key": return "rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, black 0 0 1px";
-                    }
+                    let group = lib.translate[text];
+                    return group + "势力";
                 }
             }
         }
+        return ""
+    }
+    /**
+     * @param {"wei"|"shu"|"wu"|"qun"|"jin"|"shen"|"western"|"key"|string} group 
+     * @returns 
+     */
+    getTextShadowStyle(nature) {
+        switch (nature) {
+            case "wei": return "rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, black 0 0 1px";
+            case "shu": return "rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, black 0 0 1px";
+            case "wu": return "rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, black 0 0 1px";
+            case "qun": return "rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, black 0 0 1px";
+            case "jin": case "western": return "rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, black 0 0 1px";
+            case "shen": return "rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, black 0 0 1px";
+            case "key": return "rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, black 0 0 1px";
+        }
+    }
+    /**
+     * @param {string} text 
+     * @param {boolean} withTone 
+     * @returns 
+     */
+    getPinyin(text, withTone) {
+        if (!chineseRegex.test(text)) return [];
+        return get.pinyin(text, withTone);
     }
     /**
      * @param {string} string 
      * @param {"camel"|"kebab"} to 
      * @returns 
      */
-    static camelKebabSwitch(string, to) {
+    camelKebabSwitch(string, to) {
         switch (to) {
             case "kebab": return string.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
             case "camel": return string.replace(/-([a-z])/g, (_match, letter) => letter.toUpperCase());
         }
     }
+    requestMultiMedia(query, type, config = {}) {
+        switch (type) {
+            case "audio": {
+                return new Promise((resolve, reject) => {
+                    const audio = game.playAudio({
+                        path: query,
+                        addVideo: false,
+                        onended: resolve,
+                        onerror: reject,
+                    });
+                    if (config.volume) audio.volume = config.volume;
+                })
+            }
+        }
+    }
+}
+export class NonameEditorData extends NonameData {
+    view;
+    /**
+     * @type {Object<string,(null|Searcher)>}
+     */
+    searchManager = {
+        "character": null,
+        "skill": null
+    };
+    constructor() {
+        super();
+    }
+    search(keyWords, type, require) {
+        this.searchManager[type] = new Searcher(keyWords, type);
+        return this.searchManager[type].search(require);
+    }
+    continueSearch(type, require) {
+        if (!this.searchManager[type]) return [];
+        return this.searchManager[type].search(require);
+    }
+    getData() { }
 }

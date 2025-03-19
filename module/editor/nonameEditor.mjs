@@ -16,7 +16,7 @@ export class NonameEditor {
     init(parentNode) {
         this.view.init(parentNode);
     }
-    getData(){
+    getData() {
         this.data.getData();
     }
 }
