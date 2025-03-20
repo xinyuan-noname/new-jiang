@@ -347,8 +347,8 @@
     filter: grayscale(0%);
 }
 
-skill-card,
-character-card {
+skill-info-card,
+character-info-card {
     margin: 4px;
 }
 

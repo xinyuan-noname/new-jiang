@@ -20,6 +20,7 @@
     --data-hp: '4';
     --data-maxHp: '4';
     --data-hujia: '0';
+    --data-skills: '';
 }
 
 :host>div {
@@ -114,6 +115,7 @@ div[contenteditable="true"] {
 
 :host>div>div:nth-child(2) div[data-setting]>span {
     display: flex;
+    align-items: center;
 }
 
 :host>div>div:nth-child(2) div[data-setting] .expandable-expanded+span {
@@ -127,7 +129,18 @@ div[contenteditable="true"] {
     margin-left: auto;
     color: #fff;
     font-size: 20px;
+    max-width: 80%;
+    height: 20px;
     text-shadow: var(--data-group-textShadow);
+    overflow: hidden;
+}
+
+:host>div>div:nth-child(2) div[data-setting] .expandable-collapsed+span::after {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .expandable-collapsed[data-for="name"]+span::after {
@@ -148,6 +161,10 @@ div[contenteditable="true"] {
 
 .expandable-collapsed[data-for="hp"]+span::after {
     content: "体：" var(--data-hp) "/" var(--data-maxHp) "，甲：" var(--data-hujia);
+}
+
+.expandable-collapsed[data-for="skills"]+span::after {
+    content: var(--data-skills);
 }
 
 /* 皮肤 */
@@ -564,4 +581,9 @@ div[contenteditable="true"] {
 [data-skills] p {
     font-size: 12px;
     font-family: fangsong;
+}
+
+[data-skills] skill-info-card {
+    font-size: 15px;
+    margin-top: 2px;
 }

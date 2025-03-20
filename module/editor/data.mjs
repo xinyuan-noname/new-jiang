@@ -9,11 +9,11 @@ class Searcher {
      * @type {Iterator}
      */
     searcher;
-    constructor(keyWords, type) {
+    constructor(keyWords, type, config) {
         switch (type) {
-            case "skill": this.searcher = Searcher.searchSkillGenerator(keyWords); break;
-            case "character": this.searcher = Searcher.searchCharacterGenerator(keyWords); break;
-            default: this.searcher = Searcher.searchCharacter(keyWords); break;
+            case "skill": this.searcher = Searcher.searchSkillGenerator(keyWords, config); break;
+            case "character": this.searcher = Searcher.searchCharacterGenerator(keyWords, config); break;
+            default: this.searcher = Searcher.searchCharacter(keyWords, config); break;
         }
     }
     /**
@@ -56,6 +56,9 @@ class Searcher {
                 const skills = character.skills.map(skillId => this.parseSkill(skillId, id));
                 const skillList = skills.map(skill => `${skill.name}(${skill.id})`);
                 let searchText = get.plainText(`${name}(${id})${packageName}${characterSortName}${group}${sex}${clans}${skillList.join("")}`);
+                if (Array.isArray(config?.filter) && config.filter.some(word => searchText.includes(word))) {
+                    continue;
+                }
                 if (keyWords.every(word => searchText.includes(word))) {
                     yield { id, name, packageName, characterSortName, sex, group, clans, hp: character.hp, maxHp: character.maxHp, hujia: character.hujia, characterSortId, characterSortName, dieAudios, skillList, skills };
                 }
@@ -68,6 +71,9 @@ class Searcher {
             if (skill.sub === true || skill.sourceSkill) continue;
             const { name, description, audios } = this.parseSkill(id);
             let searchText = `${name}${id}${description}`;
+            if (Array.isArray(config?.filter) && config.filter.some(word => searchText.includes(word))) {
+                continue;
+            }
             if (keyWords.every(word => searchText.includes(word))) {
                 yield { id, name, audios, description };
             }
@@ -141,6 +147,16 @@ export class NonameData {
                 }
             }
         }
+        else if (type === "skill") {
+            switch (attr) {
+                case "name": {
+                    return lib.translate[text] || text;
+                };
+                case "description": case "info": {
+                    return lib.translate[text + "_info"] || ""
+                }
+            }
+        }
         return ""
     }
     /**
@@ -206,8 +222,9 @@ export class NonameEditorData extends NonameData {
     constructor() {
         super();
     }
-    search(keyWords, type, require) {
-        this.searchManager[type] = new Searcher(keyWords, type);
+    search(type, config = {}) {
+        const { require, keyWords, filter } = config;
+        this.searchManager[type] = new Searcher(keyWords, type, { filter });
         return this.searchManager[type].search(require);
     }
     continueSearch(type, require) {

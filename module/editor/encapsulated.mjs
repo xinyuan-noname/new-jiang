@@ -363,7 +363,6 @@ export class EditableElementManager {
     node;
     min;
     max;
-    int;
     value;
     changeValueRewrite;
     listenerMap = new Map();
@@ -372,18 +371,18 @@ export class EditableElementManager {
     }
     inputNumber({ min, max, value, offset = 1, wheelCallback, blurCallback, enterBlur, enterCallback, supportInfinity, commonCallback, isInteger } = {}) {
         const changeValue = (val) => {
-            if (this.node.innerText !== val || this.value !== val) {
+            if (this.node.textContent !== val || this.value !== val) {
                 if (supportInfinity && (val === "无穷" || val === "∞" || val == Infinity)) {
-                    this.value = Infinity; this.node.innerText = "∞";
+                    this.value = Infinity; this.node.textContent = "∞";
                 } else {
                     const numericVal = isInteger ? Math.round(val) : Number(val);
-                    this.node.innerText = this.value = isNaN(numericVal) ? this.min : numericVal;
+                    this.node.textContent = this.value = isNaN(numericVal) ? this.min : numericVal;
                 }
-                if (!this.node.innerText.length || this.value < this.min) {
-                    this.node.innerText = this.value = this.min;
+                if (!this.node.textContent.length || this.value < this.min) {
+                    this.node.textContent = this.value = this.min;
                 }
                 if (this.value > this.max) {
-                    this.node.innerText = this.value = this.max;
+                    this.node.textContent = this.value = this.max;
                 }
             }
             return Number(this.value);
@@ -396,7 +395,7 @@ export class EditableElementManager {
         }
         const blurListener = (e) => {
             const lastValue = this.value;
-            const value = changeValue(this.node.innerText);
+            const value = changeValue(this.node.textContent);
             commonCallback?.(e, value, lastValue);
             blurCallback?.(e, value, lastValue);
         }
@@ -407,7 +406,7 @@ export class EditableElementManager {
         if (commonCallback || blurCallback) {
             this.preventEnter(enterBlur, (e) => {
                 const lastValue = this.value;
-                const value = changeValue(this.node.innerText);
+                const value = changeValue(this.node.textContent);
                 commonCallback?.(e, value, lastValue);
                 enterCallback?.(e, value, lastValue);
             })
@@ -419,6 +418,62 @@ export class EditableElementManager {
         if (max != void 0) this.max = max;
         this.rewriteChangeValue(changeValue);
         return this;
+    }
+    /**
+     * @param {{
+     *      commonCallback:function(Event):void
+     *      blurCallback:function(Event):void
+     *      enterCallback:function(Event):void
+     *      searchCallback:function(Event,{keyWords:string[],filter:string[]}):void
+     *      associated:{
+     *          element:HTMLElement
+     *          listenerType:keyof HTMLElementEventMap
+     *          callback:function(Event,function):void
+     *          useCommonCallback:boolean     
+     *      }
+     * }} param0 
+     */
+    inputSearch({ commonCallback, blurCallback, enterCallback, enterBlur, searchCallback, associated }) {
+        const getSearchRequest = () => {
+            const request = { keyWords: [], filter: [] };
+            if (!this.node.textContent.length) return request;
+            this.node.textContent.split(" ").forEach((word, index) => {
+                if (!word.length) return;
+                else if (index >= 1 && word.startsWith("-") && word.length > 1) {
+                    const slicedWord = word.slice(1);
+                    if (!request.filter.includes(slicedWord)) request.filter.push(slicedWord);
+                } else {
+                    if (!request.keyWords.includes(word)) request.keyWords.push(word);
+                }
+            })
+            return request;
+        }
+        const blurListener = (e) => {
+            commonCallback?.(e);
+            searchCallback?.(e, getSearchRequest());
+            blurCallback?.(e);
+        }
+        this.recordListener("blur", blurListener);
+        this.node.addEventListener("blur", blurListener);
+        if (typeof associated === "object") {
+            const { element, listenerType, callback, useCommonCallback } = associated;
+            if (element, listenerType) {
+                const listener = e => {
+                    if (useCommonCallback) commonCallback?.(e);
+                    searchCallback?.(e, getSearchRequest());
+                    callback?.(e, listener);
+                }
+                element.addEventListener(listenerType, listener);
+            }
+        }
+        if (commonCallback || blurCallback) {
+            this.preventEnter(enterBlur, (e) => {
+                commonCallback?.(e);
+                enterCallback?.(e);
+            })
+        } else {
+            this.preventEnter(enterBlur);
+        };
     }
     rewriteChangeValue(func) {
         this.changeValueRewrite = func

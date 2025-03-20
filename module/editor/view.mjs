@@ -1,6 +1,6 @@
 "use script";
 import "./component.mjs";
-import { UniqueChoiceManager, DragManager, toggleMultiClass } from "./encapsulated.mjs";
+import { UniqueChoiceManager, DragManager, toggleMultiClass, EditableElementManager } from "./encapsulated.mjs";
 /**
  * @typedef {import("./nonameEditor.mjs").NonameEditor NonameEditor}
  */
@@ -302,7 +302,7 @@ mainPage.innerHTML=`
         });
     }
     //
-    createCharacterEditor(data) {
+    createCharacterEditor() {
         const characterEditor = document.createElement("character-editor");
         this.mainArea.appendChild(characterEditor);
     }
@@ -331,14 +331,14 @@ mainPage.innerHTML=`
      * @returns 
      */
     createSearchSkillListItem(searchResult, config = {}) {
-        const skillCard = document.createElement("skill-card");
+        const skillCard = document.createElement("skill-info-card");
         const { noLike, noDelete, highlight, useFor } = config;
         skillCard.setAttribute("skill-id", searchResult.id);
         skillCard.setAttribute("skill-info", JSON.stringify(searchResult));
         if (!noLike) skillCard.setAttribute("likable", true);
         if (!noDelete) skillCard.setAttribute("removable", true);
         skillCard.setAttribute("usable", true);
-        skillCard.markTextNode(".main-content", highlight, { root: "shadowRoot" });
+        skillCard.setAttribute("markwords", highlight.join(" "));
         if (useFor) {
             skillCard.useForNode = useFor;
             skillCard.setAttribute("useFor", useFor.id);
@@ -351,7 +351,7 @@ mainPage.innerHTML=`
      * @returns 
      */
     createSearchCharacterListItem(searchResult, config = {}) {
-        const characterCard = document.createElement("character-card");
+        const characterCard = document.createElement("character-info-card");
         const { noLike, noDelete, highlight, useFor } = config;
         characterCard.setAttribute("character-id", searchResult.id);
         characterCard.setAttribute("character-info", JSON.stringify(searchResult));
@@ -360,7 +360,7 @@ mainPage.innerHTML=`
         characterCard.setAttribute("skill-likable", true);
         characterCard.setAttribute("skill-usable", true);
         characterCard.setAttribute("usable", true);
-        characterCard.markTextNode(".main-content", highlight, { root: "shadowRoot" });
+        characterCard.setAttribute("markwords", highlight.join(" "));
         if (useFor) {
             skillCard.useForNode = useFor;
             skillCard.setAttribute("useFor", useFor.id);
@@ -377,12 +377,28 @@ mainPage.innerHTML=`
         const searchConcerningUls = Array.from(searchConcerning.querySelectorAll(":scope>div>ul"));
         const [resultUl, likedUl] = searchConcerningUls;
         let type = "skill";
+        const getSearchRequest = () => {
+            const request = { keyWords: [], filter: [] };
+            if (!input.value.length) return request;
+            input.value.split(" ").forEach((word, index) => {
+                if (!word.length) return;
+                else if (index >= 1 && word.startsWith("-") && word.length > 1) {
+                    const slicedWord = word.slice(1);
+                    if (!request.filter.includes(slicedWord)) request.filter.push(slicedWord);
+                } else {
+                    if (!request.keyWords.includes(word)) request.keyWords.push(word);
+                }
+            })
+            return request;
+        }
         input.addEventListener("keydown", async e => {
             if (e.key !== "Enter") return;
-            this.search(input.value.split(/[ +]/g), type);
+            const { keyWords, filter } = getSearchRequest();
+            this.search(keyWords, type, { filter });
         });
         searchIcon.addEventListener("pointerdown", async e => {
-            this.search(input.value.split(/[ +]/g), type);
+            const { keyWords, filter } = getSearchRequest();
+            this.search(keyWords, type, { filter });
         });
         clearIcon.addEventListener("pointerdown", () => (input.value = ""));
         new UniqueChoiceManager(...searchModeControllerButtons)
@@ -395,26 +411,25 @@ mainPage.innerHTML=`
         //
         resultUl.addEventListener("like", e => {
             const node = e.detail?.from;
-            if (node?.tagName === "SKILL-CARD") {
+            if (node?.tagName === "SKILL-INFO-CARD") {
                 const appendNode = node.cloneNode();
                 appendNode.setAttribute("likable", false);
                 appendNode.setAttribute("removable", true);
                 likedUl.prepend(appendNode);
             } else if (node.tagName === "") {
-
             }
         });
         resultUl.addEventListener("likeCancel", e => {
             const node = e.detail?.from;
-            if (node?.tagName === "SKILL-CARD") {
+            if (node?.tagName === "SKILL-INFO-CARD") {
                 likedUl.querySelector(`[skill-id="${node.getAttribute("skill-id")}"]`)?.remove();
             } else if (node.tagName === "") {
 
             }
         });
-        likedUl.addEventListener("remove", e => {
+        likedUl.addEventListener("removeCard", e => {
             const node = e.detail?.from;
-            if (node?.tagName === "SKILL-CARD") {
+            if (node?.tagName === "SKILL-INFO-CARD") {
                 resultUl.querySelector(`[skill-id="${node.getAttribute("skill-id")}"]`)?.triggerInteractEvent("like");
             }
         });
@@ -463,10 +478,10 @@ mainPage.innerHTML=`
     listenSearchEvent() {
         const viewArea = this.viewArea;
         viewArea.addEventListener("searchSkill", (e) => {
-            const { from, keyWords, toggleNav } = e.detail;
+            const { from, keyWords, filter, toggleNav } = e.detail;
             if (toggleNav === true) {
                 this.toggleNav("search");
-                this.search(keyWords, "skill", { requestFrom: from });
+                this.search(keyWords, "skill", { requestFrom: from, filter });
             }
         })
     }
@@ -506,7 +521,7 @@ mainPage.innerHTML=`
      * @param {"skill"|"character"} type 
      * @returns 
      */
-    search(keyWords, type = "skill", { limit = 10, requestFrom } = {}) {
+    search(keyWords, type = "skill", { limit = 10, requestFrom, filter } = {}) {
         const ul = this.sideBarSearch.querySelector("ul");
         ul.scrollTo({ top: 0 });
         ul.innerHTML = "";
@@ -542,7 +557,7 @@ mainPage.innerHTML=`
             if (ul.lastElementChild) intersectionObserver.observe(ul.lastElementChild);
             else intersectionObserver.disconnect();
         }
-        appendItem(this.serveFor.data.search(keyWords, type, limit));
+        appendItem(this.serveFor.data.search(type, { keyWords, require: limit, filter }));
         return;
     }
 }

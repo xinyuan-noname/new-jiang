@@ -1,179 +1,14 @@
 import url from "./url.mjs";
-import { NonameData } from "./data.mjs";
-import { EditableElementManager, preventEnter, toggleMultiClass, UniqueChoiceManager } from "./encapsulated.mjs";
-class HTMLNonameFocusUIElement extends HTMLElement {
-    #server;
-    #uniqueChoiceManagerMap = new Map();
-    #editableElementManagerMap = new Map();
-    constructor() {
-        super();
-        this.#server = new NonameData();
-    }
-    fileQuery(mode, query) {
-        switch (mode) {
-            case "read": {
-                const { format, encoding, file } = query;
-                return this.#server.readFile(file, format, encoding);
-            }
-        }
-    }
-    /**
-     * @param {'pinyin'| 'characterTranslation'|'formatTransfer'} mode 
-     * @param {{
-     *      withTone: boolean
-     *      text: string
-     *      attr: "sex"|"group"
-     * }} query
-     * @returns {any}
-     */
-    textQuery(mode, query) {
-        switch (mode) {
-            case "pinyin": {
-                const { text, withTone } = query;
-                return this.#server.getPinyin(text, withTone);
-            }
-            case "characterTranslation": {
-                const { text, attr } = query;
-                return this.#server.getTranslation("character", attr, text);
-            }
-            case "formatTransfer": {
-                const { text, to } = query;
-                if (to === "kebab") return this.#server.camelKebabSwitch(text, "kebab");
-                if (to === "camel") return this.#server.camelKebabSwitch(text, "camel");
-                return text;
-            }
-        }
-    }
-    playerQuery(mode, query) {
-        if (mode === "hpStatus") {
-            const { hp, maxHp } = query;
-            return this.#server.getHpStatus(hp, maxHp)
-        }
-    }
-    /**
-     * @param {"characterId"} mode 
-     * @param {id} query 
-     * @returns 
-     */
-    checkQuery(mode, query) {
-        switch (mode) {
-            case "characterId": {
-                const { id } = query
-                return this.#server.checkId(id, "character");
-            }
-        }
-    }
-    /**
-     * 
-     * @param {"textShadow"} mode 
-     * @param {{
-     *      nature:string
-     * }} query 
-     * @returns 
-     */
-    styleQuery(mode, query) {
-        switch (mode) {
-            case "textShadow": {
-                const { nature } = query;
-                return this.#server.getTextShadowStyle(nature);
-            }
-        }
-    }
-    multiMediaQuery(mode, query) {
-        switch (mode) {
-            case "audio": {
-                const { src, volume } = query;
-                this.#server.requestMultiMedia(src, "audio", { volume });
-            }
-        }
-    }
-    createUniqueChoiceManager(label, ...nodes) {
-        const manager = new UniqueChoiceManager(...nodes);
-        this.#uniqueChoiceManagerMap.set(label, manager);
-        return manager;
-    }
-    /**
-     * @param {string} label 
-     * @returns {UniqueChoiceManager}
-     */
-    getUniqueChoiceManager(label) {
-        return this.#uniqueChoiceManagerMap.get(label);
-    }
-    createEditableElementManager(label, ...nodes) {
-        const manager = new EditableElementManager(...nodes);
-        if (label != null) this.#editableElementManagerMap.set(label, manager);
-        return manager;
-    }
-    /**
-     * @param {string} label 
-     * @returns {EditableElementManager}
-     */
-    getEditableElementManager(label) {
-        return this.#editableElementManagerMap.get(label);
-    }
-    markTextNode(selector, keyWords, config) {
-        const nodes = (config.root === "shadowRoot" ? this.shadowRoot : this).querySelectorAll(selector);
-        const patternMainbody = keyWords.map(word => word.replace(/[.^$*+?{}\[\]\\|()]/g, "\\$&")).join("|")
-        const pattern = new RegExp(`${patternMainbody}`, "ig");
-        const replaceMap = new Map();
-        for (const node of nodes) {
-            const treeWalker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
-            while (treeWalker.nextNode()) {
-                pattern.lastIndex = 0;
-                const currentNode = treeWalker.currentNode;
-                const text = currentNode.nodeValue;
-                const fragment = document.createDocumentFragment();
-                let match, index = 0, flag;
-                while (match = pattern.exec(text)) {
-                    if (!flag) { flag = true; replaceMap.set(currentNode, fragment); }
-                    fragment.append(text.slice(index, match.index));
-                    const mark = document.createElement("mark")
-                    mark.textContent = text.slice(match.index, index = pattern.lastIndex)
-                    fragment.append(mark);
-                }
-                if (flag && index !== text.length) {
-                    fragment.append(text.slice(index));
-                }
-            }
-        }
-        replaceMap.forEach((fragment, initilaNode) => {
-            initilaNode.replaceWith(fragment);
-        })
-    }
-    triggerEvent(name, load, config = {}) {
-        const defaultConfig = {
-            detail: {
-                from: this,
-                ...load
-            },
-            bubbles: true,
-            composed: true
-        };
-        const eventConfig = { ...defaultConfig, ...config };
-        const customEvent = new CustomEvent(name, eventConfig);
-        this.dispatchEvent(customEvent);
-    }
-    sendEvent(name, target, load, config = {}) {
-        const defaultConfig = {
-            detail: {
-                from: this,
-                ...load
-            },
-            bubbles: true,
-            composed: true
-        };
-        const eventConfig = { ...defaultConfig, ...config };
-        const customEvent = new CustomEvent(name, eventConfig);
-        target.dispatchEvent(customEvent);
-    }
-}
+import { preventEnter, toggleMultiClass } from "./encapsulated.mjs";
+import { HTMLNonameFocusUIElement } from "./component-base.mjs";
+import "./component-infoCard.mjs";
 class HTMLNonameCharacterEditorElement extends HTMLNonameFocusUIElement {
     constructor() {
         super();
         const shadow = this.attachShadow({ mode: "open" });
-        //$: shadow , html/character-card.html//
+        //$: shadow , html/character-editor.html//
 shadow.innerHTML=`
-<link rel="stylesheet" href="./${url}/style/character-card.css">
+<link rel="stylesheet" href="./${url}/style/character-editor.css">
 <div>
     <div data-setting="avatar" data-avatar="" data-required="true">
         <input type="file" accept="image/*"></input>
@@ -319,20 +154,20 @@ shadow.innerHTML=`
     </div>
 </div>
 <footer></footer>`
-//#: shadow , html/character-card.html//
+//#: shadow , html/character-editor.html//
     }
     connectedCallback() {
-        this.listenAvatar();
-        this.listenName();
-        this.listenId();
-        this.listenSex();
-        this.listenGroup();
-        this.listenHp();
-        this.listenSkills();
+        this.#listenAvatar();
+        this.#listenName();
+        this.#listenId();
+        this.#listenSex();
+        this.#listenGroup();
+        this.#listenHp();
+        this.#listenSkills();
         //
-        this.listenExpanable();
+        this.#listenExpanable();
     }
-    listenAvatar() {
+    #listenAvatar() {
         /**
          * @type {HTMLDivElement}
          */
@@ -357,7 +192,7 @@ shadow.innerHTML=`
             if (input.files[0] instanceof File) loadFile(input.files[0]);
         })
     }
-    listenName() {
+    #listenName() {
         const nameDataArea = this.getDataAreaDom("name")
         const nameInput = nameDataArea.querySelector('div');
         const pinyinInput = nameDataArea.querySelector('rt');
@@ -370,7 +205,7 @@ shadow.innerHTML=`
             this.changeData("pinyin", pinyinInput.innerText);
         }).observe(pinyinInput, { characterData: true, subtree: true, childList: true });
     }
-    listenId() {
+    #listenId() {
         const idDataArea = this.getDataAreaDom("id");
         const idInput = idDataArea.querySelector("div");
         const button = idDataArea.querySelector("button");
@@ -389,7 +224,7 @@ shadow.innerHTML=`
             }
         }).observe(idInput, { characterData: true, subtree: true, childList: true });
     }
-    listenSex() {
+    #listenSex() {
         const sexOptions = this.getDataAreaDom("sex").querySelectorAll("[data-sex-option]");
         this.createUniqueChoiceManager("sex", ...sexOptions)
             .listenSiblings("pointerdown")
@@ -399,7 +234,7 @@ shadow.innerHTML=`
             })
             .choose(sexOptions[0]);
     }
-    listenGroup() {
+    #listenGroup() {
         const groupOptions = this.getDataAreaDom("group").querySelectorAll("[data-group-option]");
         this.createUniqueChoiceManager("group", ...groupOptions)
             .listenAllNodes("pointerdown")
@@ -409,7 +244,7 @@ shadow.innerHTML=`
             })
             .choose(groupOptions[0]);
     }
-    listenHp() {
+    #listenHp() {
         let hpAdjustMode, hpAdjustUnitOffset = 1;
         const hpDataArea = this.getDataAreaDom("hp");
         const hpContainer = hpDataArea.querySelector(".hpContainer");
@@ -459,6 +294,7 @@ shadow.innerHTML=`
                     hpInputManager.changeValue(nowHp + num);
                     this.changeData("hp", nowHp + num);
                 }
+                hpManager.choose(null);
             }
         }
         const removeMaxHp = (num = 1) => {
@@ -499,7 +335,9 @@ shadow.innerHTML=`
             const changedHp = num === Infinity ? 1 : nowHp - num;
             hpInputManager.changeValue(changedHp);
             this.changeData("hp", changedHp);
-            if (nowMaxHp < 6) hpManager.choose(this.getDataAreaDom("hp").querySelector(`.hp:nth-child(${changedHp})`));
+            if (nowMaxHp <= 6) {
+                hpManager.choose(this.getDataAreaDom("hp").querySelector(`.hp:nth-last-child(${changedHp})`));
+            }
         }
         maxHpInputManager.inputNumber({
             min: 1, max: Infinity, value: 4, supportInfinity: true, isInteger: true,
@@ -580,16 +418,55 @@ shadow.innerHTML=`
             attributeFilter: ['class']
         });
     }
-    listenSkills() {
+    #listenSkills() {
         const skillsDataArea = this.getDataAreaDom("skills");
         const searchInput = skillsDataArea.querySelector("ruby>[contenteditable]");
+        const searchInputManager = this.createEditableElementManager("skillsSearch", searchInput);
         const search = skillsDataArea.querySelector("ruby>span");
-        const ul = skillsDataArea.querySelector("ul")
-        search.addEventListener("pointerdown", () => {
-            this.triggerEvent("searchSkill", { from: skillsDataArea, toggleNav: true, keyWords: searchInput.textContent.split(/[ \+]/g) });
+        const ul = skillsDataArea.querySelector("ul");
+        searchInputManager.inputSearch({
+            searchCallback: (e, { filter, keyWords }) => {
+                this.triggerEvent("searchSkill", { from: skillsDataArea, toggleNav: true, keyWords, filter });
+            },
+            associated: {
+                element: search,
+                listenerType: "pointerdown"
+            }
         });
+        skillsDataArea.addEventListener("requestUseSkill", (e) => {
+            const { from: node } = e.detail;
+            node.removeAttribute("usable");
+            node.removeAttribute("likable");
+            node.removeAttribute("markWords");
+            ul.append(node);
+            this.changeData("skills", node.getAttribute("skill-id"), { mode: "append" });
+        });
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => {
+            skillsDataArea.addEventListener(event, e => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+        skillsDataArea.addEventListener("drop", e => {
+            const id = e.dataTransfer.getData("text");
+            /**
+             * @type {HTMLNonameFocusUIElement}
+             */
+            const node = document.getElementById(id);
+            if (!node) return;
+            node.removeAttribute("usable");
+            node.removeAttribute("likable");
+            node.removeAttribute("id");
+            node.removeAttribute("markWords");
+            ul.append(node);
+            this.changeData("skills", node.getAttribute("skill-id"), { mode: "append" });
+        });
+        skillsDataArea.addEventListener("removeCard", (e) => {
+            const { from: node } = e.detail;
+            this.changeData("skills", node.getAttribute("skill-id"), { mode: "remove" });
+        })
     }
-    listenExpanable() {
+    #listenExpanable() {
         this.shadowRoot.querySelectorAll("[class^=expandable]").forEach(node => {
             const linkedNodes = this.shadowRoot.querySelectorAll(`[data-by=${node.dataset.for}]`)
             node.addEventListener("pointerdown", () => {
@@ -623,29 +500,55 @@ shadow.innerHTML=`
      * @param {dataType} type 
      * @param {any} val 
      */
-    changeData(type, val) {
+    changeData(type, val, config) {
+        if (!type || !val) return;
         switch (type) {
             case "id": {
-                this.getDataAreaDom(type).dataset[type] = val;
+                this.getDataAreaDom("id").dataset["id"] = val;
                 this.style.setProperty("--data-id", `'${val}'`);
             }; break;
             case "pinyin": {
-                this.getDataAreaDom(type).dataset[type] = val;
+                this.getDataAreaDom("pinyin").dataset["pinyin"] = val;
                 this.style.setProperty("--data-pinyin", val == "" ? "" : `'(${val})'`);
             }; break;
             case "group": {
-                this.getDataAreaDom(type).dataset[type] = val;
+                this.getDataAreaDom("group").dataset["group"] = val;
                 this.style.setProperty("--data-group", `'${this.textQuery("characterTranslation", { attr: type, text: val })}'`);
                 this.style.setProperty("--data-group-textShadow", this.styleQuery("textShadow", { nature: val }));
             }; break;
             case "sex": {
-                this.getDataAreaDom(type).dataset[type] = val;
-                this.style.setProperty("--data-" + type, `'${this.textQuery("characterTranslation", { attr: type, text: val })}'`);
+                this.getDataAreaDom("sex").dataset["sex"] = val;
+                this.style.setProperty("--data-sex", `'${this.textQuery("characterTranslation", { attr: type, text: val })}'`);
             }; break;
             case "hp": case "maxHp": case "hujia": {
                 if (typeof val !== "number") return false;
                 this.getDataAreaDom(type).dataset[type] = val;
                 this.style.setProperty("--data-" + type, val == Infinity ? "'∞'" : `'${val}'`);
+            }; break;
+            case "skills": {
+                const skillsDataArea = this.getDataAreaDom("skills");
+                let skills;
+                if (config.mode === "append") {
+                    skills = skillsDataArea.dataset[type].split(" ").filter(Boolean).concat(val);
+                    skillsDataArea.dataset[type] = skills.join(" ");
+                } else if (config.mode === "remove") {
+                    skills = skillsDataArea.dataset[type].split(" ").filter(skill => skill && skill !== val);
+                    skillsDataArea.dataset[type] = skills.join(" ");
+                } else if (config.mode === "rewrite") {
+                    if (Array.isArray(val)) {
+                        skillsDataArea.dataset[type] = val.join(" ");
+                        skills = val;
+                    } else {
+                        skillsDataArea.dataset[type] = val;
+                        skills = skillsDataArea.dataset[type].split("");
+                    }
+                }
+                if (Array.isArray(skills)) {
+                    this.style.setProperty(
+                        "--data-skills",
+                        `"${skills.map(skill => this.textQuery("skillTranslation", { text: skill, attr: "name" })).join("，")}"`
+                    );
+                }
             }; break;
             default: {
                 this.getDataAreaDom(type).dataset[type] = val;
@@ -662,299 +565,9 @@ shadow.innerHTML=`
         let result = this.getDataAreaDom(type).dataset[camelizedType];
         switch (camelizedType) {
             case "hp": case "maxHp": case "hujia": return Number(result);
-            case "skills": return result.split(",");
+            case "skills": return result.split(" ");
             default: return result;
         }
     }
 }
-const nonameCardFragment = (() => {
-    const fragment = document.createDocumentFragment();
-    const style = document.createElement("style");
-    style.textContent = `:host {
-        width: 100%;
-        color: wheat;
-        display: flex;
-        flex-direction: column;
-        background-color: #000;
-    }
-
-    :host>*{
-        width: 100%;
-    }
-
-    ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .main-content[draggable] {
-        cursor: grab;
-    }
-
-    [data-audio-list-item] {
-        color: gold;
-        margin: 1px 0;
-        filter: contrast(1.2);
-    }
-
-    .interact-bar {
-        display: flex;
-        justify-content: flex-end;
-        background-color: #1e1e1e;
-    }
-
-    .interact-bar>* {
-        font-size: 20px;
-        cursor: pointer;
-    }
-
-    .interact-bar>.use {
-        cursor: not-allowed;
-    }
-
-    .interact-bar>.use.allowed{
-        cursor: pointer;
-    }
-
-    .interact-bar>.use,
-    .interact-bar>.like {
-        filter: grayscale(80%);
-    }
-
-    .interact-bar>.like.liked {
-        filter: grayscale(0%);
-    }
-
-    [data-audio-src]::after{
-        content: "🔈";
-    }`
-    const showInfo = document.createElement("div");
-    showInfo.className = "show-info";
-    const interactBar = document.createElement("div");
-    interactBar.className = "interact-bar"
-    fragment.append(style, showInfo, interactBar);
-    return fragment;
-})();
-class HTMLNonameCardElement extends HTMLNonameFocusUIElement {
-    constructor() {
-        super();
-        const shadow = this.attachShadow({ mode: "open" });
-        shadow.append(nonameCardFragment.cloneNode(true));
-    }
-    static observedAttributes = ["likable", "removable", "usable", "usefor"];
-    connectedCallback() {
-        this.shadowRoot.addEventListener("pointerdown", (e) => {
-            const node = e.target;
-            if (!node.dataset.audioSrc) return;
-            this.multiMediaQuery("audio", { src: node.dataset.audioSrc, volume: 1 })
-        });
-    }
-    attributeChangedCallback(name, oldValue, newValue) {
-        const interactBar = this.shadowRoot.querySelector(".interact-bar");
-        switch (name) {
-            case "usable": {
-                if (newValue === "true") {
-                    const useSpan = document.createElement("span");
-                    useSpan.className = "use";
-                    useSpan.textContent = "⬅️";
-                    useSpan.addEventListener("pointerdown", () => {
-                        this.triggerEvent("useCardData");
-                    });
-                    interactBar.prepend(useSpan);
-                } else {
-                    interactBar.querySelector(":scope>.use")?.remove?.();
-                }
-            }; break;
-            case "likable": {
-                if (newValue === "true") {
-                    const likeSpan = document.createElement("span");
-                    likeSpan.className = "like";
-                    likeSpan.textContent = "❤️"
-                    likeSpan.addEventListener("pointerdown", () => {
-                        if (!likeSpan.classList.contains("liked")) {
-                            likeSpan.classList.add("liked");
-                            this.triggerEvent("like");
-                        } else if (likeSpan.classList.contains("like")) {
-                            likeSpan.classList.remove("liked")
-                            this.triggerEvent("likeCancel");
-                        }
-                    })
-                    interactBar.insertBefore(likeSpan, interactBar.children[2]);
-                } else {
-                    interactBar.querySelector(":scope>.like")?.remove?.();
-                }
-            }; break;
-            case "removable": {
-                if (newValue === "true") {
-                    const removeSpan = document.createElement("span");
-                    removeSpan.className = "remove";
-                    removeSpan.textContent = "🗑️"
-                    removeSpan.addEventListener("pointerdown", () => {
-                        this.triggerEvent("remove");
-                        this.remove();
-                    })
-                    interactBar.insertBefore(removeSpan, interactBar.children[1]);
-                } else {
-                    interactBar.querySelector(":scope>.remove")?.remove?.();
-                }
-            }; break;
-            case "usefor": {
-                const mainContentDiv = this.shadowRoot.querySelector(".main-content");
-                const use = interactBar.querySelector(":scope>.use");
-                if (this.useForNode && this.useForNode.id == newValue || (this.useForNode = document.getElementById(newValue))) {
-                    mainContentDiv.setAttribute("draggable", "true");
-                    use?.classList?.add?.("allowed");
-                    use.onpointerdown = (e) => {
-                        this.sendEvent("requestUseSkill", this.useForNode);
-                    };
-                } else {
-                    mainContentDiv.removeAttribute("draggable");
-                    use?.classList?.remove?.("allowed");
-                    use.onpointerdown = null;
-                    this.useForNode = null;
-                }
-            }
-        }
-    }
-    /**
-     * @param {"like"|"use"|"remove"} type 
-     */
-    triggerInteractEvent(type) {
-        const event = new Event("pointerdown")
-        switch (type) {
-            case "like": {
-                this.shadowRoot.querySelector(".interact-bar>.like")?.dispatchEvent?.(event);
-            }; break;
-            case "use": {
-                this.shadowRoot.querySelector(".interact-bar>.use")?.dispatchEvent?.(event);
-            }; break;
-            case "remove": {
-                this.shadowRoot.querySelector(".interact-bar>.remove")?.dispatchEvent?.(event);
-            }; break;
-        }
-    }
-}
-class HTMLNonameSkillCardElement extends HTMLNonameCardElement {
-    static observedAttributes = super.observedAttributes.concat("skill-info")
-    constructor() {
-        super();
-    }
-    connectedCallback() {
-        super.connectedCallback();
-    }
-    attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue === newValue) return;
-        if (name === "skill-info") {
-            const showInfo = this.shadowRoot.querySelector(".show-info");
-            showInfo.replaceChildren();
-            const skillInfo = JSON.parse(this.getAttribute("skill-info"));
-            const fragment = document.createDocumentFragment();
-            if (skillInfo) {
-                const mainContentDiv = document.createElement('div');
-                mainContentDiv.className = 'main-content';
-                mainContentDiv.innerHTML =
-                    `${skillInfo.name}(${skillInfo.id})</br>
-                    ${skillInfo.description}`
-                fragment.appendChild(mainContentDiv);
-                if (skillInfo.audios?.length) {
-                    const audioUl = document.createElement('ul');
-                    skillInfo.audios.forEach(audio => {
-                        const li = document.createElement('li');
-                        li.dataset.audioListItem = true;
-                        const span = document.createElement('span');
-                        span.dataset.audioSrc = audio.file
-                        li.append(audio.text, span);
-                        audioUl.appendChild(li);
-                    });
-                    mainContentDiv.appendChild(audioUl);
-                }
-                showInfo.replaceChildren(fragment);
-            }
-        }
-        else super.attributeChangedCallback(name, oldValue, newValue);
-    }
-}
-class HTMLNonameCharacterCardElement extends HTMLNonameCardElement {
-    static observedAttributes = super.observedAttributes.concat("character-info", "skill-likable", "skill-usable")
-    constructor() {
-        super();
-    }
-    connectedCallback() {
-        super.connectedCallback();
-    }
-    attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue === newValue) return;
-        if (name === "character-info") {
-            const showInfo = this.shadowRoot.querySelector(".show-info");
-            showInfo.replaceChildren();
-            const characterInfo = JSON.parse(this.getAttribute("character-info"));
-            if (characterInfo) {
-                const fragment = document.createDocumentFragment();
-                const mainContentDiv = document.createElement('div');
-                mainContentDiv.className = 'main-content';
-                mainContentDiv.innerHTML =
-                    `${characterInfo.name}(${characterInfo.id})</br>
-                    武将包：${characterInfo.packageName}</br>
-                    分包：${characterInfo.characterSortName}</br>
-                    性别：${characterInfo.sex}</br>
-                    势力：${characterInfo.group}</br>
-                    体力：${characterInfo.hp}/${characterInfo.maxHp}</br>
-                    护甲：${characterInfo.hujia}</br>
-                    宗族：${characterInfo.clans}</br>
-                    技能：</br>${characterInfo.skillList.join("</br>")}`
-                mainContentDiv.setBackground(characterInfo.id, "character");
-                if (characterInfo.dieAudios?.length) {
-                    const audioUl = document.createElement('ul');
-                    characterInfo.dieAudios.forEach(audio => {
-                        const li = document.createElement('li');
-                        li.dataset.audioListItem = true;
-                        const span = document.createElement('span');
-                        span.dataset.audioSrc = audio.file
-                        li.append(audio.text, span);
-                        audioUl.appendChild(li);
-                    });
-                    mainContentDiv.appendChild(audioUl);
-                }
-                fragment.appendChild(mainContentDiv);
-                if (characterInfo.skills) {
-                    const skillsUl = document.createElement('ul');
-                    characterInfo.skills.forEach(skillInfoItem => {
-                        const skillCard = document.createElement('skill-card');
-                        skillCard.setAttribute('skill-info', JSON.stringify(skillInfoItem));
-                        skillCard.setAttribute('skill-id', skillInfoItem.id);
-                        skillsUl.appendChild(skillCard);
-                    });
-                    fragment.appendChild(skillsUl);
-                }
-                showInfo.appendChild(fragment);
-            }
-        } else if (name === "skill-likable") {
-            if (newValue === "true") {
-                this.shadowRoot.querySelectorAll("skill-card").forEach(skillCard => {
-                    skillCard.setAttribute("likable", "true");
-                })
-            } else {
-                this.shadowRoot.querySelectorAll("skill-card").forEach(skillCard => {
-                    skillCard.setAttribute("likable", "false");
-                })
-            }
-        } else if (name === "skill-usable") {
-            if (newValue === "true") {
-                this.shadowRoot.querySelectorAll("skill-card").forEach(skillCard => {
-                    skillCard.setAttribute("usable", "true");
-                })
-            } else {
-                this.shadowRoot.querySelectorAll("skill-card").forEach(skillCard => {
-                    skillCard.setAttribute("usable", "false");
-                })
-            }
-        } else {
-            super.attributeChangedCallback(name, oldValue, newValue);
-        }
-
-    }
-}
-customElements.define("skill-card", HTMLNonameSkillCardElement);
-customElements.define("character-card", HTMLNonameCharacterCardElement);
 customElements.define("character-editor", HTMLNonameCharacterEditorElement);
