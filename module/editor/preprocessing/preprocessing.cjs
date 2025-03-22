@@ -22,7 +22,7 @@ const configs = require("./config.json");
         fileList.forEach(file => {
             const filePath = path.resolve(dirPath, file)
             const raw = fs.readFileSync(filePath, { encoding: "utf-8" });
-            const processed = raw.replace(/(?<=\/\/ *\$: *(.+?) *\/\/)(?:.|\r?\n)*(?=\/\/ *#: *\1 *\/\/)/, (match, p) => {
+            const processed = raw.replace(/(?<=\/\/ *\$: *(.+?) *\/\/)(?:.|\r?\n)*(?=\/\/ *#: *\1 *\/\/)/g, (match, p) => {
                 const args = p.split(/[ ]*,[ ]*/);
                 let result = ""
                 result += warp ?? "\r\n";
@@ -30,7 +30,13 @@ const configs = require("./config.json");
                 for (let i = 0; i < args.length; i++) {
                     const arg = args[i];
                     if (argUseMap.get(i + 1) === "file") {
-                        result += fs.readFileSync(path.resolve(dirPath, arg), { encoding: "utf-8" })
+                        const matchResult = /:(\d+)-(\d+)$/.exec(arg);
+                        if (matchResult) {
+                            const [match, from, to] = matchResult;
+                            result += fs.readFileSync(path.resolve(dirPath, arg.replace(match, "")), { encoding: "utf-8" }).split(warp ?? "\r\n").slice(from - 1, to).join(warp ?? "\r\n");
+                        } else {
+                            result += fs.readFileSync(path.resolve(dirPath, arg), { encoding: "utf-8" })
+                        }
                     } else {
                         result += arg;
                     }

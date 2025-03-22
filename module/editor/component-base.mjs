@@ -26,6 +26,8 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
             }
         }
     }
+    datebaseQuery(mode, query) {
+    }
     /**
      * @template {'pinyin'| 'characterTranslation'|'formatTransfer'|'skillTranslation'} T
      * @param {T} mode 
@@ -64,6 +66,12 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
             return this.#server.getHpStatus(hp, maxHp)
         }
     }
+    cardQuery(mode, query) {
+        switch (mode) {
+            case "": {
+            }
+        }
+    }
     /**
      * @param {"characterId"} mode 
      * @param {id} query 
@@ -95,6 +103,57 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
             case "audio": {
                 const { src, volume } = query;
                 this.#server.requestMultiMedia(src, "audio", { volume });
+            }; break;
+        }
+    }
+    /**
+     * @template {"exportAsStaticImage"|""} T
+     * @param {T} mode 
+     * @param {{
+     *      canvas: HTMLCanvasElement
+     *      height: number
+     *      width: number
+     *      quality: number
+     *      dataForm: T extends "exportAsStaticImage"?("url"|"blob") : undefined
+     *      type: T extends "exportAsStaticImage"?("jpeg"|"webp"|"png"|"jpeg") : undefined
+     * }} query 
+     * @returns 
+     */
+    canvasQuery(mode, query) {
+        const { canvas } = query;
+        if (!(canvas instanceof HTMLCanvasElement)) throw Error("query.canvas必须是HTMLCanvasELement对象!")
+        switch (mode) {
+            case "exportAsStaticImage": {
+                const { dataForm = "url" } = query;
+                let { type, height, width, quality } = query;
+                if (!height && !width) {
+                    height = canvas.height;
+                    width = canvas.width;
+                } else if (!height && width) {
+                    height = canvas.height * width / canvas.width;
+                } else if (height && !width) {
+                    width = canvas.width * height / canvas.height;
+                }
+                if (["jpg", "jpeg", "webp", "png"].includes(type)) {
+                    type = "image/" + type;
+                }
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext("2d");
+                tempCanvas.height = height;
+                tempCanvas.width = width;
+                tempCtx.drawImage(canvas,
+                    0, 0, canvas.width, canvas.height,
+                    0, 0, width, height
+                );
+                return new Promise((resolve) => {
+                    tempCanvas.toBlob(resolve, type, quality);
+                }).then((data) => {
+                    if (dataForm.toLowerCase() === "blob") return data;
+                    return URL.createObjectURL(data);
+                })
+            };
+            case "": {
+
             }
         }
     }
@@ -176,6 +235,11 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
             })
         });
     }
+    /**
+     * @param {string} name 
+     * @param {HTMLElement} load 
+     * @param {CustomEventInit} config 
+     */
     triggerEvent(name, load, config = {}) {
         const defaultConfig = {
             detail: {
@@ -189,6 +253,12 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         const customEvent = new CustomEvent(name, eventConfig);
         this.dispatchEvent(customEvent);
     }
+    /**
+     * @param {string} name 
+     * @param {HTMLElement} target 
+     * @param {Object<string,any>} load 
+     * @param {CustomEventInit} config 
+     */
     sendEvent(name, target, load, config = {}) {
         const defaultConfig = {
             detail: {
@@ -201,5 +271,15 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         const eventConfig = { ...defaultConfig, ...config };
         const customEvent = new CustomEvent(name, eventConfig);
         target.dispatchEvent(customEvent);
+    }
+    appendChildViaSlot(node, label) {
+        node.setAttribute("slot", label)
+        this.appendChild(node);
+        let slot = this.shadowRoot.querySelector(`slot[name="${label}"]`)
+        if (slot === null) {
+            slot = document.createElement("slot");
+            slot.setAttribute("name", label);
+        }
+        this.shadowRoot.appendChild(slot);
     }
 }

@@ -1,0 +1,18 @@
+/* 得意黑 */
+@font-face {
+    font-family: 'SmileySans';
+    src: url('../font/SmileySans-Oblique.otf.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'stflt';
+    src: url(../font/stflt.woff2) format('woff2');
+}
+
+/* 金梅毛草 */
+@font-face {
+    font-family: 'jmmcsgsfix';
+    src: url(../font/jmmcsgsfix.woff2);
+}

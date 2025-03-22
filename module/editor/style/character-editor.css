@@ -3,24 +3,26 @@
     border-radius: 10px;
     border: 5px solid black;
     color: black;
-    font-size: 24px;
+    font-size: var(--font-size);
     overflow: hidden;
     max-height: calc(100% - 10px);
-    --data-name: "";
-    --data-pinyin: "";
-    --data-id: "";
-    --data-sex: "男性";
-    --data-group: "魏势力";
-    --data-group-textShadow:
+    --data-group-text-shadow:
         rgb(78 117 140) 0 0 2px,
         rgb(78 117 140) 0 0 2px,
         rgb(78 117 140) 0 0 2px,
         rgb(78 117 140) 0 0 2px,
         black 0 0 1px;
+    --font-size: 22px;
+    --data-name: "";
+    --data-pinyin: "";
+    --data-id: "";
+    --data-sex: "男性";
+    --data-group: "魏势力";
     --data-hp: '4';
     --data-maxHp: '4';
     --data-hujia: '0';
     --data-skills: '';
+    --data-clans: "";
 }
 
 :host>div {
@@ -30,7 +32,7 @@
     padding: 10px;
     width: 100%;
     max-height: calc(100% - 20px);
-    overflow: auto;
+    overflow: hidden;
 }
 
 .hidden {
@@ -93,7 +95,7 @@ span[contenteditable='true'] {
 div[contenteditable="true"] {
     background-color: floralwhite;
     padding: 0 10px;
-    height: 24px;
+    height: var(--font-size);
     min-width: 100px;
     text-align: center;
     overflow: hidden;
@@ -105,6 +107,8 @@ div[contenteditable="true"] {
     height: 100%;
     justify-content: flex-start;
     flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 :host>div>div:nth-child(2) div[data-setting] {
@@ -129,9 +133,9 @@ div[contenteditable="true"] {
     margin-left: auto;
     color: #fff;
     font-size: 20px;
-    max-width: 80%;
+    max-width: 200px;
     height: 20px;
-    text-shadow: var(--data-group-textShadow);
+    text-shadow: var(--data-group-text-shadow);
     overflow: hidden;
 }
 
@@ -157,6 +161,10 @@ div[contenteditable="true"] {
 
 .expandable-collapsed[data-for="sex"]+span::after {
     content: var(--data-sex)
+}
+
+.expandable-collapsed[data-for="clans"]+span::after {
+    content: var(--data-clans)
 }
 
 .expandable-collapsed[data-for="hp"]+span::after {
@@ -201,13 +209,19 @@ div[contenteditable="true"] {
     justify-content: space-between;
 }
 
-/* 性别-势力 */
-[data-group] li,
-[data-sex] li {
+/* 性别-势力-宗族 */
+:is([data-sex], [data-group], [data-clans]) ul {
+    list-style-type: none;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+:is([data-group], [data-sex], [data-clans]) li{
     background-size: contain;
     background-repeat: no-repeat;
-    height: 40px;
-    width: 40px;
     cursor: pointer;
     opacity: 0.4;
     transition: 0.1s;
@@ -215,154 +229,42 @@ div[contenteditable="true"] {
     justify-content: center;
     align-items: center;
     position: relative;
+    flex-direction: column;
+    font-size: 14px;
 }
 
-[data-group] li.chosen,
-[data-sex] li.chosen {
+:is([data-group], [data-sex], [data-clans]) li.chosen{
     opacity: 1;
 }
 
-[data-group] li:hover,
-[data-sex] li:hover {
+:is([data-group], [data-sex]) li:hover {
     opacity: 1;
 }
 
-[data-group] li:after,
-[data-sex] li:after {
-    position: absolute;
-    top: 40px;
-    font-size: 16px;
+:is([data-sex], [data-group], [data-clans]) li::before {
+    content: attr(value);
+    background-size: contain;
+    background-repeat: no-repeat;
+    height: 40px;
+    width: 40px;
+    background-image: var(--url);
 }
 
-/* 性别 */
-[data-sex]>ul {
-    list-style-type: none;
-    box-sizing: border-box;
+/* 势力-宗族 */
+:is([data-group], [data-clans])>section {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-}
-
-[data-sex] li[data-sex-option="male"] {
-    background-image: url(/image/card/sex_male.png);
-}
-
-[data-sex] li[data-sex-option="male"]::after {
-    content: "男性"
-}
-
-[data-sex] li[data-sex-option="female"] {
-    background-image: url(/image/card/sex_female.png);
-}
-
-[data-sex] li[data-sex-option="female"]::after {
-    content: "女性"
-}
-
-[data-sex] li[data-sex-option="double"] {
-    background-image: url(/image/card/sex_double.png);
-}
-
-[data-sex] li[data-sex-option="double"]::after {
-    content: "双性"
-}
-
-[data-sex] li[data-sex-option="none"] {
-    background-image: url(/image/card/sex_none.png);
-}
-
-[data-sex] li[data-sex-option="none"]::after {
-    content: "无性";
-}
-
-[data-sex] li[data-sex-option="male-castrated"] {
-    background-image: url(/image/card/sex_male_castrated.png);
-}
-
-[data-sex] li[data-sex-option="male-castrated"]::after {
-    content: "太监"
-}
-
-/* 势力选项 */
-[data-group] ul {
-    list-style-type: none;
-    box-sizing: border-box;
-    display: flex;
-}
-
-[data-group]>ul {
     flex-direction: column;
 }
 
-[data-group]>ul>ul {
-    justify-content: space-between;
+:is([data-group], [data-clans]) li[data-diy]::before {
+    content: "➕";
+    border-radius: 50%;
+    box-sizing: border-box;
+    border: 1px dashed black;
+    display: flex;
     align-items: center;
-    margin-bottom: 20px;
-}
-
-[data-group] li[data-group-option="wei"] {
-    background-image: url(/image/card/group_wei.png);
-}
-
-[data-group] li[data-group-option="wei"]::after {
-    content: "魏"
-}
-
-[data-group] li[data-group-option="shu"] {
-    background-image: url(/image/card/group_shu.png);
-}
-
-[data-group] li[data-group-option="shu"]::after {
-    content: "蜀"
-}
-
-[data-group] li[data-group-option="wu"] {
-    background-image: url(/image/card/group_wu.png);
-}
-
-[data-group] li[data-group-option="wu"]::after {
-    content: "吴"
-}
-
-[data-group] li[data-group-option="qun"] {
-    background-image: url(/image/card/group_qun.png);
-}
-
-[data-group] li[data-group-option="qun"]::after {
-    content: "群";
-}
-
-[data-group] li[data-group-option="jin"] {
-    background-image: url(/image/card/group_jin.png);
-}
-
-[data-group] li[data-group-option="jin"]::after {
-    content: "晋"
-}
-
-[data-group] li[data-group-option="shen"] {
-    background-image: url(/image/card/group_shen.png);
-}
-
-[data-group] li[data-group-option="shen"]::after {
-    content: "神"
-}
-
-[data-group] li[data-group-option="western"] {
-    background-image: url(/image/card/group_western.png);
-}
-
-[data-group] li[data-group-option="western"]::after {
-    content: "西"
-}
-
-[data-group] li[data-group-option="key"] {
-    background-image: url(/image/card/group_key.png);
-}
-
-[data-group] li[data-group-option="key"]::after {
-    content: "键"
+    justify-content: center;
+    font-size: 24px;
 }
 
 /* 体力相关 */
@@ -581,6 +483,11 @@ div[contenteditable="true"] {
 [data-skills] p {
     font-size: 12px;
     font-family: fangsong;
+    margin-top: 0;
+}
+
+[data-skills] section>header {
+    font-size: 16px;
 }
 
 [data-skills] skill-info-card {

@@ -3,7 +3,7 @@
         "dir": "../",
         "targets": [
             "view.mjs",
-            "component.mjs"
+            "component*.mjs"
         ],
         "ignore": [],
         "wrap": "\r\n",

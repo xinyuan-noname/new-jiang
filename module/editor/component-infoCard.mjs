@@ -1,6 +1,5 @@
 import { HTMLNonameFocusUIElement } from "./component-base.mjs";
-const nonameCardFragment = (() => {
-    const fragment = document.createDocumentFragment();
+const nonameCardStyle = (() => {
     const style = document.createElement("style");
     style.textContent = `:host {
         width: 100%;
@@ -62,7 +61,12 @@ const nonameCardFragment = (() => {
     [data-audio-src]::after{
         content: "🔈";
     }`
+    return style
+})()
+const nonameCardFragment = (() => {
+    const fragment = document.createDocumentFragment();
     const showInfo = document.createElement("div");
+    const style = nonameCardStyle.cloneNode();
     showInfo.className = "show-info";
     const interactBar = document.createElement("div");
     interactBar.className = "interact-bar"

@@ -2,6 +2,7 @@ import url from "./url.mjs";
 import { preventEnter, toggleMultiClass } from "./encapsulated.mjs";
 import { HTMLNonameFocusUIElement } from "./component-base.mjs";
 import "./component-infoCard.mjs";
+import "./component-dialog.mjs";
 class HTMLNonameCharacterEditorElement extends HTMLNonameFocusUIElement {
     constructor() {
         super();
@@ -12,7 +13,7 @@ shadow.innerHTML=`
 <div>
     <div data-setting="avatar" data-avatar="" data-required="true">
         <input type="file" accept="image/*"></input>
-        <div>请选择或拖入文件</div>
+        <div>请选择文件或拖入文件</div>
     </div>
     <div>
         <div data-setting="name pinyin" data-name="" data-pinyin="" data-required="true">
@@ -46,11 +47,11 @@ shadow.innerHTML=`
                 <span></span>
             </span>
             <ul data-by="sex">
-                <li data-sex-option="male"></li>
-                <li data-sex-option="female"></li>
-                <li data-sex-option="double"></li>
-                <li data-sex-option="none"></li>
-                <li data-sex-option="male-castrated"></li>
+                <li data-sex-option="male" style="--url:url(/image/card/sex_male.png);">男性</li>
+                <li data-sex-option="female" style="--url:url(/image/card/sex_female.png)">女性</li>
+                <li data-sex-option="double" style="--url:url(/image/card/sex_double.png)">双性</li>
+                <li data-sex-option="none" style="--url:url(/image/card/sex_none.png)">无性</li>
+                <li data-sex-option="male-castrated" style="--url:url(/image/card/sex_male_castrated.png)">太监</li>
             </ul>
         </div>
         <div data-setting="group" data-group="">
@@ -59,24 +60,46 @@ shadow.innerHTML=`
                 <span class="expandable-expanded" data-for="group"></span>
                 <span></span>
             </span>
-            <ul data-by="group">
+            <section data-by="group">
                 <ul>
-                    <li data-group-option="wei"></li>
-                    <li data-group-option="shu"></li>
-                    <li data-group-option="wu"></li>
-                    <li data-group-option="qun"></li>
-                    <li data-group-option="jin"></li>
-                    <li data-group-option="shen"></li>
+                    <li data-group-option="wei" style="--url:url(/image/card/group_wei.png);--group-text-shadow:rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, black 0 0 1px">魏</li>
+                    <li data-group-option="shu" style="--url:url(/image/card/group_shu.png);--group-text-shadow:rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, black 0 0 1px">蜀</li>
+                    <li data-group-option="wu" style="--url:url(/image/card/group_wu.png);--group-text-shadow:rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, black 0 0 1px">吴</li>
+                    <li data-group-option="qun" style="--url:url(/image/card/group_qun.png);--group-text-shadow:rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, black 0 0 1px">群</li>
+                    <li data-group-option="jin" style="--url:url(/image/card/group_jin.png);--group-text-shadow:rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, black 0 0 1px">晋</li>
+                    <li data-group-option="shen" style="--url:url(/image/card/group_shen.png);--group-text-shadow:rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, black 0 0 1px">神</li>
                 </ul>
                 <span>
                     <span class="expandable-collapsed" data-for="more-group">更多势力</span>
                 </span>
                 <ul class="hidden" data-by="more-group">
-                    <li data-group-option="western"></li>
-                    <li data-group-option="key"></li>
-                    <li></li>
+                    <li data-group-option="western" style="--url:url(/image/card/group_western.png);--group-text-shadow:rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, black 0 0 1px">西</li>
+                    <li data-group-option="key" style="--url:url(/image/card/group_key.png);--group-text-shadow:rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, black 0 0 1px">键</li>
+                    <li data-diy>新增</li>
                 </ul>
-            </ul>
+            </section>
+        </div>
+        <div data-setting="clans" data-clans="">
+            <span>
+                <span>宗族</span>
+                <span class="expandable-collapsed" data-for="clans"></span>
+                <span></span>
+            </span>
+            <section data-by="clans" class="hidden">
+                <ul>
+                    <li data-clan-option="陈留吴氏" style="--url:url(../image/clan/陈留吴氏.png)">陈留吴氏</li>
+                    <li data-clan-option="颍川荀氏" style="--url:url(../image/clan/颍川荀氏.png)">颍川荀氏</li>
+                    <li data-clan-option="颍川韩氏" style="--url:url(../image/clan/颍川韩氏.png)">颍川韩氏</li>
+                    <li data-clan-option="太原王氏" style="--url:url(../image/clan/太原王氏.png)">太原王氏</li>
+                    <li data-clan-option="颍川钟氏" style="--url:url(../image/clan/颍川钟氏.png)">颍川钟氏</li>
+                </ul>
+                <span>
+                    <span class="expandable-collapsed" data-for="more-clans">更多宗族</span>
+                </span>
+                <ul class="hidden" data-by="more-clans">
+                    <li data-diy>添加宗族</li>
+                </ul>
+            </section>
         </div>
         <div data-setting="hp maxHp hujia" data-hp="4" data-max-hp="4" data-hujia="0">
             <span>
@@ -143,7 +166,13 @@ shadow.innerHTML=`
                     <span></span>
                 </ruby>
                 <p>搜索技能，将侧边栏技能拖入该区域，或选择技能卡片中的⬅️以添加技能</p>
-                <ul></ul>
+                <section>
+                    <header>
+                        <span>技能列表：</span>
+                        <span class="expandable-expanded" data-for="skill-list"></span>
+                    </header>
+                    <ul data-by="skill-list"></ul>
+                </section>
             </div>
         </div>
         <div data-setting="isZhugong" data-zhu="false"></div>
@@ -162,6 +191,7 @@ shadow.innerHTML=`
         this.#listenId();
         this.#listenSex();
         this.#listenGroup();
+        this.#listenClans();
         this.#listenHp();
         this.#listenSkills();
         //
@@ -234,15 +264,53 @@ shadow.innerHTML=`
             })
             .choose(sexOptions[0]);
     }
+    createGroupOption({ id, name, textShadow, imageData } = {}) {
+        const li = document.createElement("li");
+        li.dataset.groupOption = id;
+        li.textContent = name;
+        li.style.setProperty("--url", `url(${imageData})`);
+        li.style.setProperty("--group-text-shadow", textShadow);
+        return li;
+    }
     #listenGroup() {
-        const groupOptions = this.getDataAreaDom("group").querySelectorAll("[data-group-option]");
-        this.createUniqueChoiceManager("group", ...groupOptions)
+        const groupDataArea = this.getDataAreaDom("group")
+        const groupOptions = groupDataArea.querySelectorAll("[data-group-option]");
+        const manager = this.createUniqueChoiceManager("group", ...groupOptions)
             .listenAllNodes("pointerdown")
             .setCallback((pre, now, funcMap) => {
                 funcMap.forClass("chosen")
                 this.changeData("group", now.dataset.groupOption);
+                const textShadow = now.style.getPropertyValue("--group-text-shadow");
+                this.style.setProperty("--data-group", `'${now.textContent}势力'`);
+                if (textShadow) {
+                    this.style.setProperty("--data-group-text-shadow", textShadow);
+                }
             })
             .choose(groupOptions[0]);
+        const groupDiy = groupDataArea.querySelector("[data-diy]");
+        groupDiy.addEventListener("pointerdown", async () => {
+            const dialog = document.createElement("noname-dialog");
+            dialog.setAttribute("type", "diygroup");
+            this.shadowRoot.append(dialog);
+            const newGroupOption = this.createGroupOption(await dialog.wait());
+            groupDiy.parentElement.insertBefore(newGroupOption, groupDiy);
+            manager.append(newGroupOption);
+        })
+    }
+    #listenClans() {
+        const clansDataArea = this.getDataAreaDom("clans")
+        const clanOptions = clansDataArea.querySelectorAll("[data-clan-option]");
+        this.createUniqueChoiceManager("clans", ...clanOptions)
+            .listenAllNodes("pointerdown")
+            .setCallback((pre, now, funcMap) => {
+                funcMap.forClass("chosen")
+                this.changeData("clans", now == null ? "" : now.dataset.clanOption);
+            })
+            .setRevocable(true);
+        const clanDiy = clansDataArea.querySelector("[data-diy]");
+        clanDiy.addEventListener("pointerdown", () => {
+
+        })
     }
     #listenHp() {
         let hpAdjustMode, hpAdjustUnitOffset = 1;
@@ -501,7 +569,7 @@ shadow.innerHTML=`
      * @param {any} val 
      */
     changeData(type, val, config) {
-        if (!type || !val) return;
+        if (!type) return;
         switch (type) {
             case "id": {
                 this.getDataAreaDom("id").dataset["id"] = val;
@@ -513,12 +581,14 @@ shadow.innerHTML=`
             }; break;
             case "group": {
                 this.getDataAreaDom("group").dataset["group"] = val;
-                this.style.setProperty("--data-group", `'${this.textQuery("characterTranslation", { attr: type, text: val })}'`);
-                this.style.setProperty("--data-group-textShadow", this.styleQuery("textShadow", { nature: val }));
             }; break;
             case "sex": {
                 this.getDataAreaDom("sex").dataset["sex"] = val;
                 this.style.setProperty("--data-sex", `'${this.textQuery("characterTranslation", { attr: type, text: val })}'`);
+            }; break;
+            case "clans": case "clan": {
+                this.getDataAreaDom("clans").dataset["clans"] = val;
+                this.style.setProperty("--data-clans", `'${val}'`);
             }; break;
             case "hp": case "maxHp": case "hujia": {
                 if (typeof val !== "number") return false;

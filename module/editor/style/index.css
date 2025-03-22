@@ -1,3 +1,8 @@
+dialog::backdrop {
+    height: 100px !important;
+    width: 100px; 
+}
+
 .xy-ED-nonameEditor {
     position: absolute;
     top: 0;

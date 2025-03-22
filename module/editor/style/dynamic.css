@@ -3,7 +3,7 @@
 }
 
 .xy-ED-nonameEditor .xy-ED-high-z-index {
-    z-index: 100;
+    z-index: 1024 !important;
 }
 
 .xy-ED-nonameEditor .xy-ED-shown-flex {
