@@ -219,7 +219,7 @@ div[contenteditable="true"] {
     flex-wrap: wrap;
 }
 
-:is([data-group], [data-sex], [data-clans]) li{
+:is([data-group], [data-sex], [data-clans]) li {
     background-size: contain;
     background-repeat: no-repeat;
     cursor: pointer;
@@ -233,11 +233,11 @@ div[contenteditable="true"] {
     font-size: 14px;
 }
 
-:is([data-group], [data-sex], [data-clans]) li.chosen{
+:is([data-group], [data-sex], [data-clans]) li.chosen {
     opacity: 1;
 }
 
-:is([data-group], [data-sex]) li:hover {
+:is([data-group], [data-sex], [data-diy]) li:hover {
     opacity: 1;
 }
 
@@ -265,6 +265,11 @@ div[contenteditable="true"] {
     align-items: center;
     justify-content: center;
     font-size: 24px;
+}
+
+/* 宗族 */
+[data-clans] ul li:not([data-diy]){
+    --url: url("../image/clan/门阀士族.png")
 }
 
 /* 体力相关 */

@@ -6,13 +6,14 @@
     font-style: normal;
 }
 
+/* 迷你繁篆书 */
 @font-face {
-    font-family: 'stflt';
-    src: url(../font/stflt.woff2) format('woff2');
+    font-family: "minifanzhuanshu";
+    src: url('../font/minifanzhuanshu.woff2') format('woff2');
 }
 
-/* 金梅毛草 */
+/* 华康新篆体 */
 @font-face {
-    font-family: 'jmmcsgsfix';
-    src: url(../font/jmmcsgsfix.woff2);
+    font-family: "huakangxinzhuanti";
+    src: url('../font/huakangxinzhuanti.woff2') format('woff2');
 }

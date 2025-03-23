@@ -66,7 +66,7 @@ const nonameCardStyle = (() => {
 const nonameCardFragment = (() => {
     const fragment = document.createDocumentFragment();
     const showInfo = document.createElement("div");
-    const style = nonameCardStyle.cloneNode();
+    const style = nonameCardStyle.cloneNode(true);
     showInfo.className = "show-info";
     const interactBar = document.createElement("div");
     interactBar.className = "interact-bar"

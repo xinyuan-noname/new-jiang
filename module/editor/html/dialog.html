@@ -4,8 +4,8 @@
         width: 100%;
         z-index: 1024;
         position: absolute;
-        --dialog-height: 270px;
-        --dialog-width: 480px;
+        --dialog-height: 315px;
+        --dialog-width: 560px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -22,8 +22,8 @@
     }
 
     .remove {
-        position: absolute;
         cursor: pointer;
+        width: 1em;
     }
 
     .dialog {
@@ -37,6 +37,12 @@
         flex-direction: column;
         color: #000;
         text-shadow: 1px 1px #fff;
+    }
+
+    .dialog form>div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
     .actions {

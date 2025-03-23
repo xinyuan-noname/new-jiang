@@ -57,13 +57,24 @@ const groupDiyFragment = (() => {
 
     const fontListDiv = document.createElement('div');
     fontListDiv.className = 'font-list';
-    ['stflt', 'jmmcsgsfix', 'xiaozhuan', 'shousha', 'yuanli', 'huangcao', 'xingkai', 'SmileySans'].forEach(function (fontName, index) {
+    [
+        ["minifanzhuanshu", "迷你繁篆书"],
+        ["huakangxinzhuanti", "华康新篆体"],
+        ['xiaozhuan', "方正小篆体"],
+        ["xinwei", "华文新魏_GBK"],
+        ['huangcao', "方正黄草_GBK"],
+        ['yuanli', "方正北魏楷书_GBK"],
+        ['xingkai', "方正行楷_GBK"],
+        ['shousha', "方正隶变_GBK"],
+        ['SmileySans', "得意黑"]
+    ].forEach(function ([fontName, fontCnName], index) {
         const fontItemDiv = document.createElement('div');
         fontListDiv.appendChild(fontItemDiv);
         const label = document.createElement('label');
         label.setAttribute('for', fontName);
         label.style.fontFamily = fontName;
-        label.textContent = `字体${index + 1}`;
+        label.textContent = fontCnName;
+        label.title = fontCnName;
         fontItemDiv.appendChild(label);
         const radio = document.createElement('input');
         radio.type = 'radio';
@@ -90,6 +101,7 @@ const groupDiyStyle = (() => {
             align-item: center;
             justify-content: center;
         }
+
         p{
             display:flex;
             align-item: center;
@@ -98,25 +110,23 @@ const groupDiyStyle = (() => {
             font-size: 16px;
             color: #fff;
         }
+
         canvas{
             margin: auto;
         }
-        form>div:not(.font-list){
-            display: flex;
-            justify-content: space-between;
-            align-item: center;
-        }
+
         .font-list{
             margin-top: 10px;
-            display: flex;
             flex-wrap: wrap;
-            justify-content: space-between;
+            font-size: 16px;
         }
+
         .font-list>div{
             display: flex;
             align-item: center;
             flex-direction: column;
-            line-height:24px;
+            line-height:16px;
+            margin: 0 5px;
         }
         `
     return style
@@ -134,8 +144,8 @@ shadow.innerHTML=`
         width: 100%;
         z-index: 1024;
         position: absolute;
-        --dialog-height: 270px;
-        --dialog-width: 480px;
+        --dialog-height: 315px;
+        --dialog-width: 560px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -152,8 +162,8 @@ shadow.innerHTML=`
     }
 
     .remove {
-        position: absolute;
         cursor: pointer;
+        width: 1em;
     }
 
     .dialog {
@@ -167,6 +177,12 @@ shadow.innerHTML=`
         flex-direction: column;
         color: #000;
         text-shadow: 1px 1px #fff;
+    }
+
+    .dialog form>div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
     .actions {
@@ -202,7 +218,7 @@ shadow.innerHTML=`
     }
     dialogendListener = [];
     dialogcancelListener = [];
-    static observedAttributes = ["type", "title"];
+    static observedAttributes = ["type", "headline", "message", "placeholder"];
     connectedCallback() {
         const remove = this.shadowRoot.querySelector(".remove");
         remove.addEventListener("pointerdown", () => {
@@ -264,8 +280,42 @@ shadow.innerHTML=`
                         dialog.removeEventListener("dialogcancel", listener);
                     })
                 }
+                this.querySelectorAll(":scope>*").forEach((node) => {
+                    node.remove();
+                })
                 switch (newValue) {
                     case "alert": {
+                        const content = this.shadowRoot.querySelector(".content");
+                        if (this.hasAttribute("message")) {
+                            content.textContent = this.getAttribute("message");
+                        }
+                        const cancel = this.shadowRoot.querySelector(".cancel");
+                        cancel.setAttribute("hidden", true);
+                    }; break;
+                    case "confirm": {
+                        this.whenEnd(() => this.#finishReslove(true));
+                        this.whenCancel(() => this.#finishReslove(false));
+                    }; break;
+                    case "prompt": {
+                        const content = this.shadowRoot.querySelector(".content");
+                        const form = document.createElement("form");
+                        const div = document.createElement('div');
+                        const label = document.createElement("label");
+                        if (this.hasAttribute("message")) {
+                            label.textContent = this.getAttribute("message")
+                        }
+                        const input = document.createElement("input");
+                        if (this.hasAttribute("placeholder")) {
+                            label.textContent = this.getAttribute("placeholder")
+                        }
+                        div.append(label, input);
+                        form.append(div);
+                        content.append(form);
+                        this.whenEnd(() => {
+                            this.#finishReslove(input.value);
+                        });
+                        form.addEventListener("submit", e => e.preventDefault());
+                        this.whenCancel(() => this.#finishReslove(false));
                     }; break;
                     case "diygroup": {
                         const style = groupDiyStyle.cloneNode(true);
@@ -273,13 +323,12 @@ shadow.innerHTML=`
                         this.shadowRoot.prepend(style);
                         const content = this.shadowRoot.querySelector(".content");
                         content.append(groupDiyFragment.cloneNode(true));
-                        const dialog = this.shadowRoot.querySelector(".dialog")
                         const form = content.querySelector("form");
                         const group = content.querySelector("input#group");
                         const groupId = content.querySelector("input#group-id");
                         const canvas = content.querySelector("canvas");
                         const text = content.querySelector("p");
-                        const ctx = canvas.getContext('2d');
+                        const context = canvas.getContext('2d');
                         group.addEventListener("change", () => {
                             groupId.value = this.textQuery("pinyin", { text: group.value, withTone: false }).join("");
                         })
@@ -290,28 +339,16 @@ shadow.innerHTML=`
                             const fontFamily = map.get("font-family")
                             const blur = map.get("blur");
                             if (!groupText.length) return;
-                            ctx.clearRect(0, 0, canvas.width, canvas.height);
-                            ctx.save();
-                            ctx.textAlign = "center";
-                            ctx.textBaseline = "middle";
-                            ctx.shadowColor = color;
-                            ctx.shadowOffsetX = 0;
-                            ctx.shadowOffsetY = 0;
-                            ctx.shadowBlur = blur;
-                            ctx.fillStyle = "#fff";
                             if (groupText.length === 1) {
-                                ctx.font = "48px " + fontFamily;
-                                ctx.fillText(groupText, canvas.width / 2, canvas.height / 2);
+                                this.canvasQuery("drawLineText", { context, text: groupText, canvas, shadowBlur: blur, fontFamily, shadowColor: color });
                             } else if (groupText.length === 2) {
-                                ctx.font = "36px " + fontFamily;
-                                ctx.fillText(groupText[0], canvas.width / 2 - 9, canvas.height / 2 - 9);
-                                ctx.fillText(groupText[1], canvas.width / 2 + 9, canvas.height / 2 + 9);
+                                this.canvasQuery("drawLineText", { context, text: groupText[0], canvas, offsetX: -9, offsetY: -9, fontSize: "36px", shadowBlur: blur, fontFamily, shadowColor: color });
+                                this.canvasQuery("drawLineText", { context, text: groupText[1], clear: false, canvas, offsetX: 9, offsetY: 9, fontSize: "36px", shadowBlur: blur, fontFamily, shadowColor: color });
                             }
-                            ctx.restore();
                             text.textContent = groupText;
                             text.style.cssText = `text-shadow: ${color} 0 0 2px, ${color} 0 0 2px, ${color} 0 0 2px, #000 0 0 1px;`
                         });
-                        dialog.addEventListener("dialogend", async (e) => {
+                        this.whenEnd(async (e) => {
                             e.preventDefault();
                             const map = new Map(new FormData(form));
                             const color = map.get("color")
@@ -326,10 +363,29 @@ shadow.innerHTML=`
                         })
                     }; break;
                 }
+                if (this.type !== newValue) this.type = newValue;
             }; break;
-            case "title": {
+            case "headline": {
                 const p = this.shadowRoot.querySelector("header p");
                 p.textContent = newValue;
+                if (this.headline !== newValue) this.headline = newValue;
+            }; break;
+            case "message": {
+                if (["alert", "confirm"].includes(this.getAttribute("type"))) {
+                    const content = this.shadowRoot.querySelector(".content");
+                    content.textContent = newValue;
+                } else if (this.getAttribute("type") === "prompt") {
+                    const label = this.shadowRoot.querySelector("label");
+                    label.textContent = newValue;
+                }
+                if (this.message !== newValue) this.message = newValue;
+            }; break;
+            case "placeholder": {
+                if (this.getAttribute("type") === "prompt") {
+                    const input = this.shadowRoot.querySelector("input");
+                    input.placeholder = newValue;
+                }
+                if (this.placeholder !== newValue) this.placeholder = newValue;
             }; break;
         }
     }
@@ -348,6 +404,40 @@ shadow.innerHTML=`
             this.tempResolve(data);
             this.tempResolve = null;
         }
+    }
+    whenEnd(listener, options) {
+        const dialog = this.shadowRoot.querySelector(".dialog");
+        dialog.addEventListener("dialogend", listener, options);
+        this.dialogendListener.push(listener);
+    }
+    whenCancel(listener, options) {
+        const dialog = this.shadowRoot.querySelector(".dialog");
+        dialog.addEventListener("dialogcancel", listener, options);
+        this.dialogcancelListener.push(listener);
+    }
+    /**
+     * @param {string} value
+     */
+    set message(value) {
+        this.setAttribute("message", value);
+    }
+    /**
+     * @param {string} value
+     */
+    set headline(value) {
+        this.setAttribute('headline', value);
+    }
+    /**
+     * @param {string} value
+     */
+    set placeholder(value) {
+        this.setAttribute("placeholder", value);
+    }
+    /**
+     * @param {string} value 
+     */
+    set type(value) {
+        this.setAttribute("type", value);
     }
 }
 customElements.define("noname-dialog", HTMLNonameDialogHTML);

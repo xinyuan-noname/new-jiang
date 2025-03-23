@@ -297,10 +297,16 @@ shadow.innerHTML=`
             manager.append(newGroupOption);
         })
     }
+    createClanOption(name) {
+        const li = document.createElement("li");
+        li.dataset.clanOption = name;
+        li.textContent = name;
+        return li;
+    }
     #listenClans() {
         const clansDataArea = this.getDataAreaDom("clans")
         const clanOptions = clansDataArea.querySelectorAll("[data-clan-option]");
-        this.createUniqueChoiceManager("clans", ...clanOptions)
+        const manager = this.createUniqueChoiceManager("clans", ...clanOptions)
             .listenAllNodes("pointerdown")
             .setCallback((pre, now, funcMap) => {
                 funcMap.forClass("chosen")
@@ -308,8 +314,14 @@ shadow.innerHTML=`
             })
             .setRevocable(true);
         const clanDiy = clansDataArea.querySelector("[data-diy]");
-        clanDiy.addEventListener("pointerdown", () => {
-
+        clanDiy.addEventListener("pointerdown", async () => {
+            const dialog = document.createElement("noname-dialog");
+            dialog.setAttribute("type", "prompt");
+            this.shadowRoot.append(dialog);
+            dialog.setAttribute("message", "请输入宗族");
+            const newClanOption = this.createClanOption(await dialog.wait());
+            clanDiy.parentElement.insertBefore(newClanOption, clanDiy);
+            manager.append(newClanOption);
         })
     }
     #listenHp() {

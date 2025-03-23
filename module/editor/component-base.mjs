@@ -107,21 +107,44 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         }
     }
     /**
-     * @template {"exportAsStaticImage"|""} T
-     * @param {T} mode 
-     * @param {{
+     * @typedef {{
      *      canvas: HTMLCanvasElement
-     *      height: number
-     *      width: number
-     *      quality: number
-     *      dataForm: T extends "exportAsStaticImage"?("url"|"blob") : undefined
-     *      type: T extends "exportAsStaticImage"?("jpeg"|"webp"|"png"|"jpeg") : undefined
-     * }} query 
+     * }} canvasBaseQuery
+     */
+    /**
+     * @typedef {canvasBaseQuery&{
+     *     height: number
+     *     width: number
+     *     quality: number
+     *     dataForm:("url"|"blob")
+     *     type:("jpeg"|"webp"|"png"|"jpeg")
+     * }} exportAsStaticImageQuery
+     */
+    /**
+     * @typedef {canvasBaseQuery&{
+     *     text:string
+     *     fontFamily: string
+    *      fontSize: string
+    *      fontColor: string
+    *      shadowColor: string
+    *      shadowBlur: number
+    *      offsetX?: number
+    *      offsetY?: number
+    *      clear?: boolean
+     * }} drawLineTextQuery
+     */
+    /**
+     * @template {"exportAsStaticImage"|"drawLineText"} T
+     * @param {T} mode 
+     * @param { T extends "exportAsStaticImage"?exportAsStaticImageQuery:
+     *          T extends "drawLineText"?drawLineTextQuery:
+     *          Object<string,any>
+     * } query 
      * @returns 
      */
     canvasQuery(mode, query) {
         const { canvas } = query;
-        if (!(canvas instanceof HTMLCanvasElement)) throw Error("query.canvas必须是HTMLCanvasELement对象!")
+        if (!(canvas instanceof HTMLCanvasElement)) throw Error("query.canvas必须是HTMLCanvasELement对象!");
         switch (mode) {
             case "exportAsStaticImage": {
                 const { dataForm = "url" } = query;
@@ -152,8 +175,38 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
                     return URL.createObjectURL(data);
                 })
             };
-            case "": {
-
+            case "drawLineText": {
+                const { context: ctx } = query;
+                if (!(ctx instanceof CanvasRenderingContext2D)) throw new Error("query.ctx必须为CanvasRenderingContext2D对象!")
+                const {
+                    text = '',
+                    fontFamily = 'Arial',
+                    fontSize = '48px',
+                    shadowColor = '#000',
+                    shadowBlur = 10,
+                    shadowOffsetX = 0,
+                    shadowOffsetY = 0,
+                    fontColor = "#fff",
+                    clear = true,
+                    offsetX = 0,
+                    offsetY = 0,
+                    mode = "center"
+                } = query;
+                if (clear) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+                ctx.save();
+                ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                ctx.shadowColor = shadowColor; ctx.shadowOffsetX = shadowOffsetX; ctx.shadowOffsetY = shadowOffsetY;
+                ctx.shadowBlur = shadowBlur;
+                ctx.fillStyle = fontColor;
+                ctx.font = fontSize + " " + fontFamily;
+                if (mode === "center") {
+                    ctx.fillText(text, canvas.width / 2 + offsetX, canvas.height / 2 + offsetY);
+                } else {
+                    ctx.fillText(text, offsetX, offsetY);
+                }
+                ctx.restore();
             }
         }
     }
@@ -272,14 +325,15 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         const customEvent = new CustomEvent(name, eventConfig);
         target.dispatchEvent(customEvent);
     }
-    appendChildViaSlot(node, label) {
-        node.setAttribute("slot", label)
+    appendChildViaSlot(node, label, parentNode = this.shadowRoot) {
+        if(!this.shadowRoot.contains(parentNode)) throw new Error(`${parentNode}必须是阴影根节点或其子节点!`)
+        node.setAttribute("slot", label);
         this.appendChild(node);
-        let slot = this.shadowRoot.querySelector(`slot[name="${label}"]`)
+        let slot = this.shadowRoot.querySelector(`slot[name="${label}"]`);
         if (slot === null) {
             slot = document.createElement("slot");
             slot.setAttribute("name", label);
         }
-        this.shadowRoot.appendChild(slot);
+        parentNode.appendChild(slot);
     }
 }
