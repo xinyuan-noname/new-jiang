@@ -19,6 +19,22 @@ const nonameCardStyle = (() => {
         margin: 0;
     }
 
+    img{
+        max-width: 100%;
+    }
+
+    img:not([src]){
+        display: none;
+    }
+
+    .font-songti{
+        font-family:songti;
+    }
+    
+    .font-small{
+        font-size:small;
+    }
+
     .main-content[draggable] {
         cursor: grab;
     }
@@ -59,10 +75,11 @@ const nonameCardStyle = (() => {
     }
 
     [data-audio-src]::after{
-        content: "🔈";
+        content : "🔈";
+        cursor : pointer;
     }`
     return style
-})()
+})();
 const nonameCardFragment = (() => {
     const fragment = document.createDocumentFragment();
     const showInfo = document.createElement("div");
@@ -84,7 +101,7 @@ class HTMLNonameInfoCardElement extends HTMLNonameFocusUIElement {
         this.shadowRoot.addEventListener("pointerdown", (e) => {
             const node = e.target;
             if (!node.dataset.audioSrc) return;
-            this.multiMediaQuery("audio", { src: node.dataset.audioSrc, volume: 1 })
+            this.multiMediaQuery("audioPlay", { src: node.dataset.audioSrc, volume: 1 })
         });
     }
     attributeChangedCallback(name, oldValue, newValue) {
@@ -206,7 +223,7 @@ class HTMLNonameSkillInfoCardElement extends HTMLNonameInfoCardElement {
         if (name === "skill-info") {
             const showInfo = this.shadowRoot.querySelector(".show-info");
             showInfo.replaceChildren();
-            const skillInfo = JSON.parse(this.getAttribute("skill-info"));
+            const skillInfo = JSON.parse(newValue);
             const fragment = document.createDocumentFragment();
             if (skillInfo) {
                 const mainContentDiv = document.createElement('div');
@@ -246,21 +263,22 @@ class HTMLNonameCharacterInfoCardElement extends HTMLNonameInfoCardElement {
         if (name === "character-info") {
             const showInfo = this.shadowRoot.querySelector(".show-info");
             showInfo.replaceChildren();
-            const characterInfo = JSON.parse(this.getAttribute("character-info"));
+            const characterInfo = JSON.parse(newValue);
             if (characterInfo) {
                 const fragment = document.createDocumentFragment();
                 const mainContentDiv = document.createElement('div');
                 mainContentDiv.className = 'main-content';
-                mainContentDiv.innerHTML =
-                    `${characterInfo.name}(${characterInfo.id})</br>
-                    武将包：${characterInfo.packageName}</br>
-                    分包：${characterInfo.characterSortName}</br>
-                    性别：${characterInfo.sex}</br>
-                    势力：${characterInfo.group}</br>
-                    体力：${characterInfo.hp}/${characterInfo.maxHp}</br>
-                    护甲：${characterInfo.hujia}</br>
-                    宗族：${characterInfo.clans}</br>
-                    技能：</br>${characterInfo.skillList.join("</br>")}`
+                let innerHTML = "";
+                innerHTML += `${characterInfo.name || "未命名武将"}(${characterInfo.id || ""})</br>`;
+                innerHTML += `武将包：${characterInfo.packageName || "无所属包"}</br>`;
+                innerHTML += `分包：${characterInfo.characterSortName || "未分包"}</br>`;;
+                if (characterInfo.sex) innerHTML += `性别：${characterInfo.sex}</br>`;
+                if (characterInfo.group) innerHTML += `势力：${characterInfo.group}</br>`;
+                if (characterInfo.hp) innerHTML += `体力：${characterInfo.hp}/${characterInfo.maxHp || characterInfo.hp}</br>`;
+                if (characterInfo.hujia) innerHTML += `护甲：${characterInfo.hujia}</br>`;
+                if (characterInfo.clans) innerHTML += `宗族：${characterInfo.clans}</br>`;
+                innerHTML += `技能：</br>${characterInfo?.skillList?.join?.("</br>") || "无"}`;
+                mainContentDiv.innerHTML = innerHTML;
                 mainContentDiv.setBackground(characterInfo.id, "character");
                 if (characterInfo.dieAudios?.length) {
                     const audioUl = document.createElement('ul');
@@ -313,5 +331,46 @@ class HTMLNonameCharacterInfoCardElement extends HTMLNonameInfoCardElement {
 
     }
 }
+class HTMLNonameSkinInfoCardElement extends HTMLNonameInfoCardElement {
+    static observedAttributes = super.observedAttributes.concat("src", "skin-info")
+    constructor() {
+        super();
+    }
+    connectedCallback() {
+        super.connectedCallback();
+    }
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue === newValue) return;
+        switch (name) {
+            case "skin-info": {
+                const showInfo = this.shadowRoot.querySelector(".show-info");
+                const skinInfo = JSON.parse(newValue);
+                const fragment = document.createDocumentFragment();
+                const mainContentDiv = document.createElement('div');
+                mainContentDiv.className = "main-content";
+                const img = document.createElement("img");
+                if (this.hasAttribute("src")) {
+                    img.setAttribute("src", this.getAttribute("src"));
+                }
+                const footer = document.createElement("footer");
+                footer.className = "font-songti font-small";
+                footer.innerHTML += `<span>${skinInfo.quality}</span>
+                <span>${skinInfo.artist}</span>
+                <span>${skinInfo.skinName}</span>`
+                mainContentDiv.append(img);
+                fragment.append(mainContentDiv, footer);
+                showInfo.replaceChildren(fragment);
+            }; break;
+            case "src": {
+                const img = this.shadowRoot.querySelector("img");
+                img?.setAttribute?.("src", newValue);
+            }; break;
+            default: {
+                super.attributeChangedCallback(name, oldValue, newValue);
+            }; break;
+        }
+    }
+}
+customElements.define("skin-info-card", HTMLNonameSkinInfoCardElement);
 customElements.define("skill-info-card", HTMLNonameSkillInfoCardElement);
 customElements.define("character-info-card", HTMLNonameCharacterInfoCardElement);

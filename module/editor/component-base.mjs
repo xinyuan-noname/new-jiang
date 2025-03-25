@@ -1,4 +1,4 @@
-import { NonameData } from "./data.mjs";
+import { NonameData, Stack } from "./data.mjs";
 import { EditableElementManager, UniqueChoiceManager } from "./encapsulated.mjs";
 export class HTMLNonameFocusUIElement extends HTMLElement {
     #server;
@@ -11,18 +11,35 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         this.#server = new NonameData();
     }
     /**
-     * @param {"read"} mode 
-     * @param {{
-     *      fromat:string,
-     *      encoding:string,
-     *      file:Blob
-     * }} query 
+ * @typedef {{
+ *      format: ("url"|"arrayBuffer"|"text"),
+    *      encoding: string,
+    *      file: Blob
+    * }} readQuery
+    */
+    /**
+     * @typedef {{
+     *      format: (string|string[])
+     * }} submitQuery
+     */
+    /**
+     * @template {"read"|"submit"} T
+     * @param {T} mode 
+     * @param { T extends "read"?readQuery:
+     *          T extends "submit"?submitQuery:
+     *          Object<string,any>
+     * } query 
+     * @returns {Promise<any>}
      */
     fileQuery(mode, query) {
         switch (mode) {
             case "read": {
                 const { format, encoding, file } = query;
                 return this.#server.readFile(file, format, encoding);
+            }
+            case "submit": {
+                const { format } = query;
+                return this.#server.submitFile(format);
             }
         }
     }
@@ -60,10 +77,37 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
             }
         }
     }
+    /**
+     * @typedef {{
+    *      hp:number
+    *      maxHp:number
+    *      hujia:number
+    *      name:string
+    *      id:string
+    *      group:string
+    *      sex:string
+    *      skills:string[]
+    *      clans:string[]
+    *      avatar:string|URL
+    * }} tempCharacterQuery
+    */
+    /**
+     * @template {"hpStatus"|"tempCharacter"} T
+     * @param {T} mode
+     * @param { T extends "hpStatus"?{hp:number,maxHp:number}
+     *          T extends "tempCharacter"?tempCharacterQuery:
+    *          Object<string,any>
+    * } query 
+    */
     playerQuery(mode, query) {
-        if (mode === "hpStatus") {
-            const { hp, maxHp } = query;
-            return this.#server.getHpStatus(hp, maxHp)
+        switch (mode) {
+            case "hpStatus": {
+                const { hp, maxHp } = query;
+                return this.#server.getHpStatus(hp, maxHp)
+            };
+            case "tempCharacter": {
+                return this.#server.createTempCharacter(query);
+            };
         }
     }
     cardQuery(mode, query) {
@@ -98,12 +142,24 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
             }
         }
     }
+    /**
+     * @template {"audioPlay"|"imgClip"} T
+     * @param {T} mode
+     *@param { T extends "audioPlay"?{src:string|URL,volume:number}
+     *         T extends "imgClip"?{img:HTMLImageElement,x:number,y:number,width:number,height:number,quality:number,dataForm:"blob"|"url",type:string}:
+     *         Object<string,any>
+     * } query 
+     */
     multiMediaQuery(mode, query) {
         switch (mode) {
-            case "audio": {
+            case "audioPlay": {
                 const { src, volume } = query;
-                this.#server.requestMultiMedia(src, "audio", { volume });
-            }; break;
+                return this.#server.playAudio(src, { volume });
+            }
+            case "imgClip": {
+                const { img, ...config } = query;
+                return this.#server.clipImg(img, config);
+            }
         }
     }
     /**
@@ -207,6 +263,13 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
                     ctx.fillText(text, offsetX, offsetY);
                 }
                 ctx.restore();
+            }
+        }
+    }
+    dataStructureQuery(mode){
+        switch(mode){
+            case "stack":{
+                return new Stack();
             }
         }
     }
@@ -326,7 +389,7 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         target.dispatchEvent(customEvent);
     }
     appendChildViaSlot(node, label, parentNode = this.shadowRoot) {
-        if(!this.shadowRoot.contains(parentNode)) throw new Error(`${parentNode}必须是阴影根节点或其子节点!`)
+        if (!this.shadowRoot.contains(parentNode)) throw new Error(`${parentNode}必须是阴影根节点或其子节点!`)
         node.setAttribute("slot", label);
         this.appendChild(node);
         let slot = this.shadowRoot.querySelector(`slot[name="${label}"]`);

@@ -1,10 +1,27 @@
 <link rel="stylesheet" href="./${url}/style/character-editor.css">
 <div>
-    <div data-setting="avatar" data-avatar="" data-required="true">
-        <input type="file" accept="image/*"></input>
-        <div>请选择文件或拖入文件</div>
+    <div class="left">
+        <div data-setting="avatar" data-avatar="">
+            <div class="avatar-view high">
+                <div class="img-container">
+                    <img draggable="false">
+                    <section class="cutter">
+                        <div class="cutter-view"></div>
+                        <span class="control-point lt"></span>
+                        <span class="control-point lb"></span>
+                        <span class="control-point rt"></span>
+                        <span class="control-point rb"></span>
+                    </section>
+                </div>
+            </div>
+            <div class="tool-bar">
+                <span class="reset" title="重置">⟲</span>
+                <span class="cut" title="裁剪">✂</span>
+                <span class="toggle-height" title="切换高度"></span>
+            </div>
+        </div>
     </div>
-    <div>
+    <div class="right">
         <div data-setting="name pinyin" data-name="" data-pinyin="" data-required="true">
             <span>
                 <span>姓名</span>
@@ -51,19 +68,35 @@
             </span>
             <section data-by="group">
                 <ul>
-                    <li data-group-option="wei" style="--url:url(/image/card/group_wei.png);--group-text-shadow:rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, black 0 0 1px">魏</li>
-                    <li data-group-option="shu" style="--url:url(/image/card/group_shu.png);--group-text-shadow:rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, black 0 0 1px">蜀</li>
-                    <li data-group-option="wu" style="--url:url(/image/card/group_wu.png);--group-text-shadow:rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, black 0 0 1px">吴</li>
-                    <li data-group-option="qun" style="--url:url(/image/card/group_qun.png);--group-text-shadow:rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, black 0 0 1px">群</li>
-                    <li data-group-option="jin" style="--url:url(/image/card/group_jin.png);--group-text-shadow:rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, black 0 0 1px">晋</li>
-                    <li data-group-option="shen" style="--url:url(/image/card/group_shen.png);--group-text-shadow:rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, black 0 0 1px">神</li>
+                    <li data-group-option="wei"
+                        style="--url:url(/image/card/group_wei.png);--group-text-shadow:rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, black 0 0 1px">
+                        魏</li>
+                    <li data-group-option="shu"
+                        style="--url:url(/image/card/group_shu.png);--group-text-shadow:rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, black 0 0 1px">
+                        蜀</li>
+                    <li data-group-option="wu"
+                        style="--url:url(/image/card/group_wu.png);--group-text-shadow:rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, black 0 0 1px">
+                        吴</li>
+                    <li data-group-option="qun"
+                        style="--url:url(/image/card/group_qun.png);--group-text-shadow:rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, black 0 0 1px">
+                        群</li>
+                    <li data-group-option="jin"
+                        style="--url:url(/image/card/group_jin.png);--group-text-shadow:rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, black 0 0 1px">
+                        晋</li>
+                    <li data-group-option="shen"
+                        style="--url:url(/image/card/group_shen.png);--group-text-shadow:rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, black 0 0 1px">
+                        神</li>
                 </ul>
                 <span>
                     <span class="expandable-collapsed" data-for="more-group">更多势力</span>
                 </span>
                 <ul class="hidden" data-by="more-group">
-                    <li data-group-option="western" style="--url:url(/image/card/group_western.png);--group-text-shadow:rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, black 0 0 1px">西</li>
-                    <li data-group-option="key" style="--url:url(/image/card/group_key.png);--group-text-shadow:rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, black 0 0 1px">键</li>
+                    <li data-group-option="western"
+                        style="--url:url(/image/card/group_western.png);--group-text-shadow:rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, black 0 0 1px">
+                        西</li>
+                    <li data-group-option="key"
+                        style="--url:url(/image/card/group_key.png);--group-text-shadow:rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, black 0 0 1px">
+                        键</li>
                     <li data-diy>新增</li>
                 </ul>
             </section>
@@ -171,4 +204,3 @@
         </div>
     </div>
 </div>
-<footer></footer>

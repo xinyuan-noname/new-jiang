@@ -176,13 +176,14 @@ mainPage.innerHTML=`
                 <div class="xy-ED-sideBar-search" data-by="search">
                     <div class="xy-ED-input-container">
                         <div>
-                            <input spellcheck="false" placeholder="这里输入搜索的资源">
+                            <input spellcheck="false">
                             <span class="xy-ED-input-clear"></span>
                             <span class="xy-ED-input-search"></span>
                         </div>
                         <div class="xy-ED-search-mode-controller">
-                            <span data-search-mode="skill">技能</span>
-                            <span data-search-mode="character">武将</span>
+                            <span data-search-mode="skill" data-placeholder="这里输入以搜索技能">技能</span>
+                            <span data-search-mode="character" data-placeholder="输入武将的姓名、分包、技能名以搜索">武将</span>
+                            <span data-search-mode="bwikiSkin" data-placeholder="请输入武将名以搜索" tilte="来自bwiki">bwiki皮肤</span>
                         </div>
                     </div>
                     <hr>
@@ -192,14 +193,14 @@ mainPage.innerHTML=`
                                 <div class="xy-ED-expandable-expanded" data-for=search-result></div>
                                 <div>搜索结果</div>
                             </header>
-                            <ul data-by=search-result></ul>
+                            <section data-by=search-result></section>
                         </div>
                         <div class="xy-ED-searchLiked">
                             <header>
                                 <div class="xy-ED-expandable-expanded" data-for=search-like></div>
                                 <div>已收藏</div>
                             </header>
-                            <ul data-by=search-like></ul>
+                            <section data-by=search-like></section>
                         </div>
                     </div>
                 </div>
@@ -331,6 +332,7 @@ mainPage.innerHTML=`
      * @returns 
      */
     createSearchSkillListItem(searchResult, config = {}) {
+        if (typeof searchResult !== "object") throw new Error("SearchResult must be a object");
         const skillCard = document.createElement("skill-info-card");
         const { noLike, noDelete, highlight, useFor } = config;
         skillCard.setAttribute("skill-id", searchResult.id);
@@ -351,6 +353,7 @@ mainPage.innerHTML=`
      * @returns 
      */
     createSearchCharacterListItem(searchResult, config = {}) {
+        if (typeof searchResult !== "object") throw new Error("SearchResult must be a object");
         const characterCard = document.createElement("character-info-card");
         const { noLike, noDelete, highlight, useFor } = config;
         characterCard.setAttribute("character-id", searchResult.id);
@@ -362,10 +365,24 @@ mainPage.innerHTML=`
         characterCard.setAttribute("usable", true);
         characterCard.setAttribute("markwords", highlight.join(" "));
         if (useFor) {
-            skillCard.useForNode = useFor;
-            skillCard.setAttribute("useFor", useFor.id);
+            characterCard.useForNode = useFor;
+            characterCard.setAttribute("useFor", useFor.id);
         }
         return characterCard;
+    }
+    createSearchBwikiSinkListItem(searchResult, config) {
+        if (typeof searchResult !== "object") throw new Error("SearchResult must be a object");
+        const skinCard = document.createElement("skin-info-card");
+        const { noDelete, useFor } = config;
+        const { link, ...skinInfo } = searchResult;
+        skinCard.setAttribute("src", link);
+        skinCard.setAttribute("skin-info", JSON.stringify(skinInfo));
+        if (!noDelete) skinCard.setAttribute("removable", true);
+        if (useFor) {
+            skinCard.useForNode = useFor;
+            skinCard.setAttribute("useFor", useFor.id);
+        }
+        return skinCard;
     }
     listenSideBarSearch() {
         const { sideBarSearch } = this;
@@ -374,8 +391,8 @@ mainPage.innerHTML=`
         const searchIcon = sideBarSearch.querySelector(".xy-ED-input-search");
         const searchModeControllerButtons = sideBarSearch.querySelectorAll("[data-search-mode]");
         const searchConcerning = sideBarSearch.querySelector(".xy-ED-search-concerning");
-        const searchConcerningUls = Array.from(searchConcerning.querySelectorAll(":scope>div>ul"));
-        const [resultUl, likedUl] = searchConcerningUls;
+        const searchConcerningSections = Array.from(searchConcerning.querySelectorAll(":scope>div>section"));
+        const [resultSection, likedSection] = searchConcerningSections;
         let type = "skill";
         const getSearchRequest = () => {
             const request = { keyWords: [], filter: [] };
@@ -391,8 +408,7 @@ mainPage.innerHTML=`
             })
             return request;
         }
-        input.addEventListener("keydown", async e => {
-            if (e.key !== "Enter") return;
+        input.addEventListener("change", async e => {
             const { keyWords, filter } = getSearchRequest();
             this.search(keyWords, type, { filter });
         });
@@ -409,28 +425,28 @@ mainPage.innerHTML=`
             .listenSiblings("pointerdown")
             .choose(searchModeControllerButtons[0])
         //
-        resultUl.addEventListener("like", e => {
+        resultSection.addEventListener("like", e => {
             const node = e.detail?.from;
             if (node?.tagName === "SKILL-INFO-CARD") {
                 const appendNode = node.cloneNode();
                 appendNode.setAttribute("likable", false);
                 appendNode.setAttribute("removable", true);
-                likedUl.prepend(appendNode);
+                likedSection.prepend(appendNode);
             } else if (node.tagName === "") {
             }
         });
-        resultUl.addEventListener("likeCancel", e => {
+        resultSection.addEventListener("likeCancel", e => {
             const node = e.detail?.from;
             if (node?.tagName === "SKILL-INFO-CARD") {
-                likedUl.querySelector(`[skill-id="${node.getAttribute("skill-id")}"]`)?.remove();
+                likedSection.querySelector(`[skill-id="${node.getAttribute("skill-id")}"]`)?.remove();
             } else if (node.tagName === "") {
 
             }
         });
-        likedUl.addEventListener("removeCard", e => {
+        likedSection.addEventListener("removeCard", e => {
             const node = e.detail?.from;
             if (node?.tagName === "SKILL-INFO-CARD") {
-                resultUl.querySelector(`[skill-id="${node.getAttribute("skill-id")}"]`)?.triggerInteractEvent("like");
+                resultSection.querySelector(`[skill-id="${node.getAttribute("skill-id")}"]`)?.triggerInteractEvent("like");
             }
         });
         const config = {
@@ -441,12 +457,12 @@ mainPage.innerHTML=`
         }
         const observer = new MutationObserver(() => {
             requestAnimationFrame(() => {
-                searchConcerningUls.forEach(ul => {
+                searchConcerningSections.forEach(ul => {
                     ul.parentElement.style.setProperty("--xy-ED-flex-index", getComputedStyle(ul).display === "none" ? 0 : 1);
                 })
             })
         })
-        searchConcerningUls.forEach(ul => {
+        searchConcerningSections.forEach(ul => {
             observer.observe(ul, config);
         })
     }
@@ -521,10 +537,10 @@ mainPage.innerHTML=`
      * @param {"skill"|"character"} type 
      * @returns 
      */
-    search(keyWords, type = "skill", { limit = 10, requestFrom, filter } = {}) {
-        const ul = this.sideBarSearch.querySelector("ul");
-        ul.scrollTo({ top: 0 });
-        ul.innerHTML = "";
+    search(keyWords, type = "skill", { limit = 5, requestFrom, filter } = {}) {
+        const resultSection = this.sideBarSearch.querySelector("[data-by=search-result]");
+        resultSection.scrollTo({ top: 0 });
+        resultSection.innerHTML = "";
         if (keyWords.every(word => word == "")) return;
         let intersectionObserver;
         const appendChildrenMethod = (() => {
@@ -540,24 +556,38 @@ mainPage.innerHTML=`
                         return searchResults.map(result => this.createSearchCharacterListItem(result, config));
                     }
                 }
+                case "bwikiSkin": {
+                    return (searchResult) => {
+                        return searchResult.map(result => this.createSearchBwikiSinkListItem(result, config))
+                    }
+                }
+                default: return () => [];
             }
         })()
-        const appendItem = (searchResults) => {
-            ul.append(...appendChildrenMethod(searchResults));
-            intersectionObserver?.disconnect?.()
-            intersectionObserver = new IntersectionObserver((entries) => {
-                if (entries[0].intersectionRatio <= 0) return;
-                const newSearchResults = this.serveFor.data.continueSearch(type, limit);
-                if (newSearchResults.length) {
-                    appendItem(newSearchResults);
-                } else {
-                    intersectionObserver.disconnect();
-                }
-            }, { root: ul });
-            if (ul.lastElementChild) intersectionObserver.observe(ul.lastElementChild);
-            else intersectionObserver.disconnect();
+        const appendItem = async (searchResults) => {
+            new Promise((resolve) => {
+                resolve(appendChildrenMethod(searchResults));
+            }).then((children) => {
+                resultSection.append(...children);
+                intersectionObserver?.disconnect?.()
+                intersectionObserver = new IntersectionObserver((entries) => {
+                    if (entries[0].intersectionRatio <= 0) return;
+                    const newSearchResults = this.serveFor.data.continueSearch(type, limit);
+                    if (newSearchResults.length) {
+                        appendItem(newSearchResults);
+                    } else {
+                        intersectionObserver.disconnect();
+                    }
+                }, { root: resultSection });
+                if (resultSection.lastElementChild) intersectionObserver.observe(resultSection.lastElementChild);
+                else intersectionObserver.disconnect();
+            })
         }
-        appendItem(this.serveFor.data.search(type, { keyWords, require: limit, filter }));
+        new Promise(async (reslove) => {
+            reslove(await this.serveFor.data.search(type, { keyWords, require: limit, filter }))
+        }).then((searchResult) => {
+            appendItem(searchResult);
+        })
         return;
     }
 }

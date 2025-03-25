@@ -1,8 +1,3 @@
-dialog::backdrop {
-    height: 100px !important;
-    width: 100px; 
-}
-
 .xy-ED-nonameEditor {
     position: absolute;
     top: 0;
@@ -27,10 +22,6 @@ dialog::backdrop {
     list-style: none;
     padding: 0;
     margin: 0;
-}
-
-.xy-ED-sideBar-search ul:empty {
-    display: none;
 }
 
 .xy-ED-nonameEditor * {
@@ -168,7 +159,6 @@ dialog::backdrop {
     align-items: center;
     border: 1px solid white;
     background-color: rgb(194 194 194);
-    height: calc(var(--xy-ED-input-fontSize) + 6px);
 }
 
 .xy-ED-sideBar-content .xy-ED-input-container input {
@@ -208,7 +198,7 @@ dialog::backdrop {
 
 /* 武将卡片 */
 /* 无历史记录时显示效果 */
-.xy-ED-nocharacterCard:not(+.xy-ED-character-show>ul:not(:empty)) {
+.xy-ED-nocharacterCard:not(+.xy-ED-character-show>section:not(:empty)) {
     display: none;
 }
 
@@ -264,6 +254,7 @@ dialog::backdrop {
 .xy-ED-sideBar-search .xy-ED-search-mode-controller {
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
 }
 
 .xy-ED-sideBar-search .xy-ED-search-mode-controller>* {
@@ -300,58 +291,17 @@ dialog::backdrop {
     --xy-ED-flex-index: 0;
 }
 
-.xy-ED-sideBar-search .xy-ED-search-concerning>div>ul {
+.xy-ED-sideBar-search section:empty {
+    display: none;
+}
+
+.xy-ED-sideBar-search .xy-ED-search-concerning>div>section {
     overflow: auto;
     box-sizing: border-box;
     margin-top: 10px;
 }
 
-.xy-ED-sideBar-search .xy-ED-search-concerning>div>ul>li {
-    margin: 4px;
-    width: 100%;
-    background-color: #000;
-    color: wheat;
-}
-
-.xy-ED-sideBar-search .xy-ED-search-concerning>div>ul>li>* {
-    width: 100%;
-}
-
-.xy-ED-sideBar-search .xy-ED-search-concerning>div>ul>li [data-main-content] {
-    cursor: grab;
-}
-
-.xy-ED-sideBar-search .xy-ED-search-concerning>div [data-audio-list-item] {
-    color: gold;
-    margin: 1px 0;
-    filter: contrast(1.2);
-}
-
-.xy-ED-sideBar-search .xy-ED-search-concerning [data-character-info] div:nth-child(3),
-.xy-ED-sideBar-search .xy-ED-search-concerning [data-skill-info] div:nth-child(2) {
-    display: flex;
-    justify-content: flex-end;
-    background-color: #1e1e1e;
-}
-
-.xy-ED-sideBar-search .xy-ED-interact-bar>* {
-    font-size: 20px;
-    cursor: pointer;
-}
-
-.xy-ED-sideBar-search .xy-ED-interact-bar .xy-ED-use {
-    cursor: not-allowed;
-}
-
-.xy-ED-sideBar-search .xy-ED-interact-bar .xy-ED-use,
-.xy-ED-sideBar-search .xy-ED-interact-bar .xy-ED-like {
-    filter: grayscale(80%);
-}
-
-.xy-ED-sideBar-search .xy-ED-interact-bar .xy-ED-liked {
-    filter: grayscale(0%);
-}
-
+skin-info-card,
 skill-info-card,
 character-info-card {
     margin: 4px;

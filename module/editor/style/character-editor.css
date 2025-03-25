@@ -23,6 +23,7 @@
     --data-hujia: '0';
     --data-skills: '';
     --data-clans: "";
+    --data-avatar: url();
 }
 
 :host>div {
@@ -33,6 +34,15 @@
     width: 100%;
     max-height: calc(100% - 20px);
     overflow: hidden;
+}
+
+
+.full-height {
+    height: 100%;
+}
+
+.full-width {
+    width: 100%;
 }
 
 .hidden {
@@ -74,6 +84,13 @@
     transform: rotateZ(0deg);
 }
 
+/* 控制 */
+.control-point {
+    padding: 10px;
+    background-color: rgb(0, 76, 255);
+    position: absolute;
+}
+
 /* 可编辑文本框 */
 [contenteditable='true'] {
     cursor: text;
@@ -101,32 +118,42 @@ div[contenteditable="true"] {
     overflow: hidden;
 }
 
-:host>div>div:nth-child(2) {
+
+.left,
+.right {
     display: flex;
     flex-direction: column;
     height: 100%;
-    justify-content: flex-start;
     flex: 1;
+}
+
+.left {
+    justify-content: center;
+    align-items: center;
+}
+
+.right {
+    justify-content: flex-start;
     overflow-y: auto;
     overflow-x: hidden;
 }
 
-:host>div>div:nth-child(2) div[data-setting] {
+.right div[data-setting] {
     display: flex;
     flex-direction: column;
     margin-bottom: 10px;
 }
 
-:host>div>div:nth-child(2) div[data-setting]>span {
+.right div[data-setting]>span {
     display: flex;
     align-items: center;
 }
 
-:host>div>div:nth-child(2) div[data-setting] .expandable-expanded+span {
+.right div[data-setting] .expandable-expanded+span {
     display: none;
 }
 
-:host>div>div:nth-child(2) div[data-setting] .expandable-collapsed+span {
+.right div[data-setting] .expandable-collapsed+span {
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -139,7 +166,7 @@ div[contenteditable="true"] {
     overflow: hidden;
 }
 
-:host>div>div:nth-child(2) div[data-setting] .expandable-collapsed+span::after {
+.right div[data-setting] .expandable-collapsed+span::after {
     width: 100%;
     height: 100%;
     overflow: hidden;
@@ -177,26 +204,176 @@ div[contenteditable="true"] {
 
 /* 皮肤 */
 [data-avatar] {
-    flex: 1;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-[data-avatar]>input[type="file"] {
-    display: none;
+[data-avatar]>.avatar-view {
+    width: var(--view-width);
+    height: var(--view-height);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    background-image: var(--data-avatar);
+    background-position: 50%;
+    --view-width: 12em;
 }
 
-[data-avatar]>div {
-    height: 13em;
-    width: 10em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+[data-avatar]>.avatar-view.high {
+    --view-height: 22em
+}
+
+[data-avatar]>.avatar-view.mid {
+    --view-height: 20em;
+}
+
+[data-avatar]>.avatar-view.short {
+    --view-height: 18em;
+}
+
+[data-avatar]>.avatar-view:not(.done) {
     cursor: pointer;
     border: dashed black;
     border-radius: 3px;
+}
+
+[data-avatar]>.avatar-view.done {
     background-size: cover;
+}
+
+[data-avatar]>.avatar-view:not(.done)::before {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    content: "请选择文件或拖入文件";
+    position: absolute;
+}
+
+/* 图片编辑栏 */
+[data-avatar]>.avatar-view:not(.done)+.tool-bar {
+    display: none;
+}
+
+[data-avatar]>.avatar-view+.tool-bar {
+    margin-top: 3px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    z-index: 2;
+}
+
+[data-avatar]>.tool-bar>span {
+    line-height: 1em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 2px;
+}
+
+/* 编辑图片相关*/
+/* 编辑时，样式隐藏 */
+[data-avatar]>.avatar-view.editing+.tool-bar>span {
+    display: none;
+}
+
+[data-avatar]>.avatar-view:not(.editing) .img-container {
+    display: none;
+}
+
+[data-avatar] .img-container {
+    position: relative;
+}
+
+[data-avatar]>.avatar-view img {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+    user-select: none;
+}
+
+/* 裁剪 */
+[data-avatar]>.avatar-view.cutting::after {
+    content: "";
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(255, 255, 255, 0.4);
+    z-index: 1;
+}
+
+[data-avatar]>.avatar-view.cutting {
+    overflow: visible;
+}
+
+[data-avatar]>.avatar-view:not(.cutting) .cutter {
+    display: none;
+}
+
+[data-avatar]>.avatar-view .cutter {
+    width: 100%;
+    height: 100%;
+    outline: gold 5px solid;
+    position: absolute;
+    top: 0;
+    z-index: 2;
+}
+
+[data-avatar] .cutter .cutter-view {
+    width: calc(var(--view-width) * var(--scale, 1));
+    height: 100%;
+    outline: 5px dashed black;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    pointer-events: none;
+    position: absolute;
+}
+
+[data-avatar] .cutter .control-point.lt {
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -50%);
+    cursor: nwse-resize;
+}
+
+[data-avatar]>.avatar-view .cutter .control-point.lb {
+    bottom: 0;
+    left: 0;
+    transform: translate(-50%, 50%);
+    cursor: nesw-resize;
+}
+
+[data-avatar]>.avatar-view .cutter .control-point.rt {
+    top: 0;
+    right: 0;
+    transform: translate(50%, -50%);
+    cursor: nesw-resize;
+}
+
+[data-avatar]>.avatar-view .cutter .control-point.rb {
+    bottom: 0;
+    right: 0;
+    transform: translate(50%, 50%);
+    cursor: nwse-resize;
+}
+
+[data-avatar]>.avatar-view.cutting+.tool-bar::after {
+    content: "点击图片外任意位置完成裁剪";
+    font-family: songti;
+    font-size: 14px;
+    text-shadow: none;
+    position: relative;
 }
 
 /* 武将名 */
@@ -268,7 +445,7 @@ div[contenteditable="true"] {
 }
 
 /* 宗族 */
-[data-clans] ul li:not([data-diy]){
+[data-clans] ul li:not([data-diy]) {
     --url: url("../image/clan/门阀士族.png")
 }
 

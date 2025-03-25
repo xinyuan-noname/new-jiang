@@ -11,11 +11,28 @@ class HTMLNonameCharacterEditorElement extends HTMLNonameFocusUIElement {
 shadow.innerHTML=`
 <link rel="stylesheet" href="./${url}/style/character-editor.css">
 <div>
-    <div data-setting="avatar" data-avatar="" data-required="true">
-        <input type="file" accept="image/*"></input>
-        <div>请选择文件或拖入文件</div>
+    <div class="left">
+        <div data-setting="avatar" data-avatar="">
+            <div class="avatar-view high">
+                <div class="img-container">
+                    <img draggable="false">
+                    <section class="cutter">
+                        <div class="cutter-view"></div>
+                        <span class="control-point lt"></span>
+                        <span class="control-point lb"></span>
+                        <span class="control-point rt"></span>
+                        <span class="control-point rb"></span>
+                    </section>
+                </div>
+            </div>
+            <div class="tool-bar">
+                <span class="reset" title="重置">⟲</span>
+                <span class="cut" title="裁剪">✂</span>
+                <span class="toggle-height" title="切换高度"></span>
+            </div>
+        </div>
     </div>
-    <div>
+    <div class="right">
         <div data-setting="name pinyin" data-name="" data-pinyin="" data-required="true">
             <span>
                 <span>姓名</span>
@@ -62,19 +79,35 @@ shadow.innerHTML=`
             </span>
             <section data-by="group">
                 <ul>
-                    <li data-group-option="wei" style="--url:url(/image/card/group_wei.png);--group-text-shadow:rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, black 0 0 1px">魏</li>
-                    <li data-group-option="shu" style="--url:url(/image/card/group_shu.png);--group-text-shadow:rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, black 0 0 1px">蜀</li>
-                    <li data-group-option="wu" style="--url:url(/image/card/group_wu.png);--group-text-shadow:rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, black 0 0 1px">吴</li>
-                    <li data-group-option="qun" style="--url:url(/image/card/group_qun.png);--group-text-shadow:rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, black 0 0 1px">群</li>
-                    <li data-group-option="jin" style="--url:url(/image/card/group_jin.png);--group-text-shadow:rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, black 0 0 1px">晋</li>
-                    <li data-group-option="shen" style="--url:url(/image/card/group_shen.png);--group-text-shadow:rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, black 0 0 1px">神</li>
+                    <li data-group-option="wei"
+                        style="--url:url(/image/card/group_wei.png);--group-text-shadow:rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, black 0 0 1px">
+                        魏</li>
+                    <li data-group-option="shu"
+                        style="--url:url(/image/card/group_shu.png);--group-text-shadow:rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, black 0 0 1px">
+                        蜀</li>
+                    <li data-group-option="wu"
+                        style="--url:url(/image/card/group_wu.png);--group-text-shadow:rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, black 0 0 1px">
+                        吴</li>
+                    <li data-group-option="qun"
+                        style="--url:url(/image/card/group_qun.png);--group-text-shadow:rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, black 0 0 1px">
+                        群</li>
+                    <li data-group-option="jin"
+                        style="--url:url(/image/card/group_jin.png);--group-text-shadow:rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, black 0 0 1px">
+                        晋</li>
+                    <li data-group-option="shen"
+                        style="--url:url(/image/card/group_shen.png);--group-text-shadow:rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, black 0 0 1px">
+                        神</li>
                 </ul>
                 <span>
                     <span class="expandable-collapsed" data-for="more-group">更多势力</span>
                 </span>
                 <ul class="hidden" data-by="more-group">
-                    <li data-group-option="western" style="--url:url(/image/card/group_western.png);--group-text-shadow:rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, black 0 0 1px">西</li>
-                    <li data-group-option="key" style="--url:url(/image/card/group_key.png);--group-text-shadow:rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, black 0 0 1px">键</li>
+                    <li data-group-option="western"
+                        style="--url:url(/image/card/group_western.png);--group-text-shadow:rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, black 0 0 1px">
+                        西</li>
+                    <li data-group-option="key"
+                        style="--url:url(/image/card/group_key.png);--group-text-shadow:rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, black 0 0 1px">
+                        键</li>
                     <li data-diy>新增</li>
                 </ul>
             </section>
@@ -181,8 +214,7 @@ shadow.innerHTML=`
             <div data-setting="intro" data-intro=""></div>
         </div>
     </div>
-</div>
-<footer></footer>`
+</div>`
 //#: shadow , html/character-editor.html//
     }
     connectedCallback() {
@@ -198,28 +230,178 @@ shadow.innerHTML=`
         this.#listenExpanable();
     }
     #listenAvatar() {
+        let imgType = "";
+        const URLStack = this.dataStructureQuery("stack");
+        const avatarDataArea = this.getDataAreaDom("avatar");
+        const avatar = avatarDataArea.querySelector('.avatar-view');
+        const imgContainer = avatarDataArea.querySelector(".avatar-view .img-container");
+        const img = avatarDataArea.querySelector(".avatar-view img");
+        const cutter = avatarDataArea.querySelector(".cutter")
+        const resetButton = avatarDataArea.querySelector(".reset");
+        const cutButton = avatarDataArea.querySelector(".cut");
         /**
-         * @type {HTMLDivElement}
+         * 
+         * @param {File} file 
          */
-        const avatar = this.getDataAreaDom("avatar").querySelector('div');
-        /**
-         * @type {HTMLInputElement}
-         */
-        const input = this.getDataAreaDom("avatar").querySelector('input');
         const loadFile = async (file) => {
-            const imgData = await this.fileQuery("read", { file, format: "url" });
-            avatar.style.backgroundImage = `url(${imgData})`;
-            this.changeData("avatar", imgData);
+            for (const url of URLStack) {
+                URL.revokeObjectURL(url);
+            }
+            imgType = file.type;
+            URLStack.push(URL.createObjectURL(file));
+            img.src = URLStack.peek();
+            avatar.classList.add("done");
+            this.changeData("avatar", URLStack.peek());
         }
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => avatar.addEventListener(event, e => (e.preventDefault(), e.stopPropagation()), false));
-        avatar.addEventListener("pointerdown", () => input.click());
+        const reloadImage = (url) => {
+            URLStack.push(url);
+            img.src = url;
+            avatar.classList.add("done");
+            this.changeData("avatar", url);
+        }
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => {
+            avatar.addEventListener(event, e => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+            img.addEventListener(event, e => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false)
+        });
+        avatar.addEventListener("pointerup", async () => {
+            if (avatar.classList.contains("done")) return;
+            const fileList = await this.fileQuery("submit", { format: "image/*" });
+            if (fileList !== null) loadFile(fileList[0]);
+        });
         avatar.addEventListener("drop", e => {
-            if (e?.dataTransfer?.files?.[0]) {
+            if (e?.dataTransfer?.files?.item(0)?.type?.startsWith?.("image")) {
                 loadFile(e.dataTransfer.files[0]);
             }
         });
-        input.addEventListener("change", () => {
-            if (input.files[0] instanceof File) loadFile(input.files[0]);
+        resetButton.addEventListener("pointerup", () => {
+            if (avatar.classList.contains("editing")) return;
+            avatar.classList.remove("done");
+            img.removeAttribute("src");
+            img.style.cssText = "";
+            this.changeData("avatar", "");
+        });
+        cutButton.addEventListener("pointerup", () => {
+            avatar.classList.add("cutting", "editing");
+            const initialHeight = img.offsetHeight,
+                initialWidth = img.offsetWidth;
+            cutter.querySelectorAll('.control-point').forEach((handle) => {
+                handle.addEventListener('mousedown', (event) => {
+                    const startX = event.clientX,
+                        startY = event.clientY;
+                    const startLeft = parseFloat(cutter.style.left) || 0,
+                        startTop = parseFloat(cutter.style.top) || 0;
+                    const startWidth = cutter.offsetWidth,
+                        startHeight = cutter.offsetHeight;
+                    const updateRate = () => {
+                        const scale = cutter.offsetHeight / initialHeight;
+                        cutter.style.setProperty("--scale", scale);
+                    }
+                    const mouseMove =
+                        event.target.classList.contains("rb") ? (e) => {
+                            let width = startWidth + e.clientX - startX,
+                                height = startHeight + e.clientY - startY,
+                                left = parseFloat(cutter.style.left) || 0,
+                                top = parseFloat(cutter.style.top) || 0;
+                            const maxWidth = Math.min(initialWidth - left, initialWidth),
+                                maxHeight = Math.min(initialHeight - top, initialHeight);
+                            if (width > maxWidth) width = maxWidth;
+                            if (height > maxHeight) height = maxHeight;
+                            cutter.style.width = `${width}px`;
+                            cutter.style.height = `${height}px`;
+                            updateRate()
+                        } : event.target.classList.contains("lb") ? (e) => {
+                            let width = startWidth + startX - e.clientX,
+                                height = startHeight + e.clientY - startY,
+                                left = startLeft + e.clientX - startX,
+                                top = parseFloat(cutter.style.top) || 0
+                            const maxWidth = Math.min(initialWidth - left, initialWidth),
+                                maxHeight = Math.min(initialHeight - top, initialHeight);
+                            if (width > maxWidth) width = maxWidth;
+                            if (height > maxHeight) height = maxHeight;
+                            if (left < 0) left = 0;
+                            if (left > initialWidth) left = initialWidth;
+                            cutter.style.width = `${width}px`;
+                            cutter.style.height = `${height}px`;
+                            cutter.style.left = `${left}px`;
+                            updateRate()
+                        } : event.target.classList.contains("rt") ? (e) => {
+                            let width = startWidth + e.clientX - startX,
+                                height = startHeight + startY - e.clientY,
+                                left = parseFloat(cutter.style.left) || 0,
+                                top = startTop + e.clientY - startY
+                            const maxWidth = Math.min(initialWidth - left, initialWidth),
+                                maxHeight = Math.min(initialHeight - top, initialHeight);
+                            if (width > maxWidth) width = maxWidth;
+                            if (height > maxHeight) height = maxHeight;
+                            if (top < 0) top = 0;
+                            if (top > initialHeight) top = initialHeight;
+                            cutter.style.width = `${width}px`;
+                            cutter.style.height = `${height}px`;
+                            cutter.style.top = `${top}px`;
+                            updateRate()
+                        } : event.target.classList.contains("lt") ? (e) => {
+                            let width = startWidth + startX - e.clientX,
+                                height = startHeight + startY - e.clientY,
+                                left = startLeft + e.clientX - startX,
+                                top = startTop + e.clientY - startY
+                            const maxWidth = Math.min(initialWidth - left, initialWidth),
+                                maxHeight = Math.min(initialHeight - top, initialHeight);
+                            if (width > maxWidth) width = maxWidth;
+                            if (height > maxHeight) height = maxHeight;
+                            if (left < 0) left = 0;
+                            if (left > initialWidth) left = initialWidth;
+                            if (top < 0) top = 0;
+                            if (top > initialHeight) top = initialHeight;
+                            cutter.style.width = `${width}px`;
+                            cutter.style.height = `${height}px`;
+                            cutter.style.left = `${left}px`;
+                            cutter.style.top = `${top}px`;
+                            updateRate()
+                        } : null;
+                    const mouseUp = () => {
+                        document.removeEventListener('mousemove', mouseMove);
+                        document.removeEventListener('mouseup', mouseUp);
+                    }
+                    document.addEventListener('mousemove', mouseMove);
+                    document.addEventListener('mouseup', mouseUp);
+                });
+            });
+            const listener = async (e) => {
+                if (!imgContainer.contains(e.composedPath()[0])) {
+                    document.removeEventListener("pointerdown", listener);
+                    avatar.classList.remove("cutting", "editing");
+                    const style = cutter.style;
+                    if (style.cssText.length > 0) {
+                        const url = await this.multiMediaQuery("imgClip", {
+                            img,
+                            x: parseFloat(style.left),
+                            y: parseFloat(style.top),
+                            width: parseFloat(style.width),
+                            height: parseFloat(style.height),
+                            dataForm: "url",
+                            quality: 1,
+                            type: imgType
+                        })
+                    }
+                    reloadImage(url);
+                    cutter.style.cssText = "";
+                }
+            }
+            document.addEventListener("pointerdown", listener);
+        });
+        img.addEventListener("load", (e) => {
+            //模拟cover效果
+            const scaleH = img.naturalHeight / avatar.clientHeight,
+                scaleW = img.naturalWidth / avatar.clientWidth;
+            if (scaleH > 1 && scaleW > 1) {
+                img.classList.add(scaleH < scaleW ? "full-height" : "full-width");
+            }
         })
     }
     #listenName() {
@@ -241,7 +423,7 @@ shadow.innerHTML=`
         const button = idDataArea.querySelector("button");
         const title = idDataArea.querySelector("span>span");
         preventEnter(idInput);
-        button.addEventListener("pointerdown", () => {
+        button.addEventListener("pointerup", () => {
             const pinyin = this.textQuery("pinyin", { text: this.getData("name"), withTone: false }).join("");
             idInput.innerText = pinyin;
         });
@@ -257,7 +439,7 @@ shadow.innerHTML=`
     #listenSex() {
         const sexOptions = this.getDataAreaDom("sex").querySelectorAll("[data-sex-option]");
         this.createUniqueChoiceManager("sex", ...sexOptions)
-            .listenSiblings("pointerdown")
+            .listenSiblings("pointerup")
             .setCallback((pre, now, funcMap) => {
                 funcMap.forClass("chosen");
                 this.changeData("sex", now.dataset.sexOption);
@@ -276,7 +458,7 @@ shadow.innerHTML=`
         const groupDataArea = this.getDataAreaDom("group")
         const groupOptions = groupDataArea.querySelectorAll("[data-group-option]");
         const manager = this.createUniqueChoiceManager("group", ...groupOptions)
-            .listenAllNodes("pointerdown")
+            .listenAllNodes("pointerup")
             .setCallback((pre, now, funcMap) => {
                 funcMap.forClass("chosen")
                 this.changeData("group", now.dataset.groupOption);
@@ -288,7 +470,7 @@ shadow.innerHTML=`
             })
             .choose(groupOptions[0]);
         const groupDiy = groupDataArea.querySelector("[data-diy]");
-        groupDiy.addEventListener("pointerdown", async () => {
+        groupDiy.addEventListener("pointerup", async () => {
             const dialog = document.createElement("noname-dialog");
             dialog.setAttribute("type", "diygroup");
             this.shadowRoot.append(dialog);
@@ -307,14 +489,14 @@ shadow.innerHTML=`
         const clansDataArea = this.getDataAreaDom("clans")
         const clanOptions = clansDataArea.querySelectorAll("[data-clan-option]");
         const manager = this.createUniqueChoiceManager("clans", ...clanOptions)
-            .listenAllNodes("pointerdown")
+            .listenAllNodes("pointerup")
             .setCallback((pre, now, funcMap) => {
                 funcMap.forClass("chosen")
                 this.changeData("clans", now == null ? "" : now.dataset.clanOption);
             })
             .setRevocable(true);
         const clanDiy = clansDataArea.querySelector("[data-diy]");
-        clanDiy.addEventListener("pointerdown", async () => {
+        clanDiy.addEventListener("pointerup", async () => {
             const dialog = document.createElement("noname-dialog");
             dialog.setAttribute("type", "prompt");
             this.shadowRoot.append(dialog);
@@ -441,7 +623,7 @@ shadow.innerHTML=`
                 hpAdjustUnitOffset = i;
             }
         })
-        hpManager.listenSiblings("pointerdown").setCallback((pre, now, funcMap) => {
+        hpManager.listenSiblings("pointerup").setCallback((pre, now, funcMap) => {
             funcMap.forClass("chosen");
             const hps = Array.from(this.getDataAreaDom("hp").querySelectorAll(".hp"));
             const i = hps.indexOf(now);
@@ -449,11 +631,11 @@ shadow.innerHTML=`
             this.changeData("hp", hpValue);
             hpInputManager.changeValue(hpValue);
         }).chooseFirst()
-        adjustOptionManager.listenSiblings("pointerdown").setCallback((pre, now, funcMap) => {
+        adjustOptionManager.listenSiblings("pointerup").setCallback((pre, now, funcMap) => {
             funcMap.forClass("chosen");
             hpAdjustMode = now.dataset.hpAdjustMode;
         }).chooseFirst()
-        hpPlus.addEventListener("pointerdown", () => {
+        hpPlus.addEventListener("pointerup", () => {
             const maxHp = this.getData("maxHp"), hp = this.getData("hp");
             if (maxHp > 6) {
                 if (hpAdjustMode === "maxHp") prependMaxHp(hpAdjustUnitOffset, true);
@@ -464,7 +646,7 @@ shadow.innerHTML=`
                 prependMaxHp(1, true);
             }
         });
-        hpMinus.addEventListener("pointerdown", () => {
+        hpMinus.addEventListener("pointerup", () => {
             if (this.getData("maxHp") > 6) {
                 if (hpAdjustMode === "maxHp") removeMaxHp(hpAdjustUnitOffset);
                 else removeHp(hpAdjustUnitOffset);
@@ -480,7 +662,7 @@ shadow.innerHTML=`
                 hujiaManager.choose(hujias[5 - i])
             }
         })
-        hujiaManager.listenSiblings("pointerdown")
+        hujiaManager.listenSiblings("pointerup")
             .setCallback((last, now, funcMap) => {
                 funcMap.forClass("chosen");
                 const i = hujias.indexOf(now);
@@ -510,7 +692,7 @@ shadow.innerHTML=`
             },
             associated: {
                 element: search,
-                listenerType: "pointerdown"
+                listenerType: "pointerup"
             }
         });
         skillsDataArea.addEventListener("requestUseSkill", (e) => {
@@ -549,7 +731,7 @@ shadow.innerHTML=`
     #listenExpanable() {
         this.shadowRoot.querySelectorAll("[class^=expandable]").forEach(node => {
             const linkedNodes = this.shadowRoot.querySelectorAll(`[data-by=${node.dataset.for}]`)
-            node.addEventListener("pointerdown", () => {
+            node.addEventListener("pointerup", () => {
                 if (node.classList.contains("expandable-expanded")) {
                     node.classList.remove("expandable-expanded");
                     node.classList.add("expandable-collapsed");
@@ -567,7 +749,7 @@ shadow.innerHTML=`
         })
     }
     /**
-     * @typedef {"avatar"|"hp"|"maxHp"|"hujia"|"pinyin"|"name"|"sex"|"group"|"id"|"skills"} dataType
+     * @typedef {"avatar"|"hp"|"maxHp"|"hujia"|"pinyin"|"name"|"sex"|"group"|"id"|"clans"|"skills"} dataType
      */
     /**
      * @param {dataType} type 
@@ -632,6 +814,10 @@ shadow.innerHTML=`
                     );
                 }
             }; break;
+            case "avatar": {
+                this.getDataAreaDom(type).dataset[type] = val;
+                this.style.setProperty("--data-" + type, `url(${val})`);
+            }; break;
             default: {
                 this.getDataAreaDom(type).dataset[type] = val;
                 this.style.setProperty("--data-" + type, `'${val}'`);
@@ -650,6 +836,30 @@ shadow.innerHTML=`
             case "skills": return result.split(" ");
             default: return result;
         }
+    }
+    preview() {
+        const tempCharacterManager = this.playerQuery("tempCharacter", {
+            id: this.getData("id"),
+            name: this.getData("name"),
+            sex: this.getData("sex"),
+            group: this.getData("group"),
+            hp: this.getData("hp"),
+            maxHp: this.getData("maxHp"),
+            hujia: this.getData("hujia"),
+            skills: this.getData("skills"),
+            clans: this.getData("clans"),
+            avatar: this.getData("avatar")
+        });
+        const playerElement = tempCharacterManager.use();
+        playerElement.style.position = "absolute";
+        playerElement.style.top = 0;
+        playerElement.style.bottom = 0;
+        playerElement.style.left = 0;
+        playerElement.style.right = 0;
+        playerElement.style.margin = "auto";
+        const nonameDialog = document.createElement("noname-dialog");
+        nonameDialog.append(playerElement);
+        this.shadowRoot.append(nonameDialog);
     }
 }
 customElements.define("character-editor", HTMLNonameCharacterEditorElement);

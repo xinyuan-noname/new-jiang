@@ -1,19 +1,47 @@
-import { game, get, lib } from "../../../../noname.js";
+import { game, get, lib, ui } from "../../../../noname.js";
 const chineseRegex = /[\u4e00-\u9fff]+/;
 class Searcher {
     static cache = {
         skill: {},
-        character: {}
+        character: {},
+        bwikiSkin: {}
     }
+    /**
+     * @type {function|null}
+     */
+    onSearcherLoad = null
     /**
      * @type {Iterator}
      */
     searcher;
     constructor(keyWords, type, config) {
         switch (type) {
-            case "skill": this.searcher = Searcher.searchSkillGenerator(keyWords, config); break;
-            case "character": this.searcher = Searcher.searchCharacterGenerator(keyWords, config); break;
-            default: this.searcher = Searcher.searchCharacter(keyWords, config); break;
+            case "skill": {
+                new Promise((reslove) => {
+                    setTimeout(() => {
+                        this.searcher = Searcher.searchSkillGenerator(keyWords, config);
+                        this.onSearcherLoad?.();
+                        reslove();
+                    }, 0)
+                });
+            }; break;
+            case "character": {
+                new Promise((reslove) => {
+                    setTimeout(() => {
+                        this.searcher = Searcher.searchCharacterGenerator(keyWords, config);
+                        this.onSearcherLoad?.();
+                        reslove();
+                    }, 0)
+                });
+            }; break;
+            case "bwikiSkin": {
+                new Promise((resolve) => {
+                    resolve(Searcher.searchBwikiSkinGenerator(keyWords, config));
+                }).then(generator => {
+                    this.searcher = generator;
+                    this.onSearcherLoad?.();
+                });
+            }; break;
         }
     }
     /**
@@ -35,7 +63,7 @@ class Searcher {
         const audios = get.Audio.skill({ skill: skillId, player: characterId }).audioList.filter(audio => audio.text);
         return { id: skillId, name: skillName, description, audios };
     }
-    static *searchCharacterGenerator(keyWords, config) {
+    static * searchCharacterGenerator(keyWords, config) {
         for (const packageId in lib.characterPack) {
             const packageName = lib.translate[packageId + "_character_config"];
             const characterPack = lib.characterPack[packageId];
@@ -65,7 +93,7 @@ class Searcher {
             }
         }
     }
-    static *searchSkillGenerator(keyWords, config) {
+    static * searchSkillGenerator(keyWords, config) {
         for (const id in lib.skill) {
             const skill = lib.skill[id];
             if (skill.sub === true || skill.sourceSkill) continue;
@@ -79,8 +107,108 @@ class Searcher {
             }
         }
     }
+    static async searchBwikiSkinGenerator(keyWords, config) {
+        const urls = [
+            "https://wiki.biligame.com/sgs/api.php",
+            "https://wiki.biligame.com/sgsol/api.php",
+            "https://wiki.biligame.com/msgs/api.php"
+        ];
+        const skins = [];
+        await Promise.all(urls.map(async url => {
+            const URLObject = new URL(url);
+            URLObject.searchParams.append("action", "parse");
+            URLObject.searchParams.append("format", "json");
+            URLObject.searchParams.append("disablelimitreport", "true");
+            URLObject.searchParams.append("prop", "text");
+            URLObject.searchParams.append("contentmodel", "wikitext");
+            URLObject.searchParams.append("smaxage", "3600");
+            URLObject.searchParams.append("maxage", "3600");
+            URLObject.searchParams.append("origin", "*");
+            URLObject.searchParams.append("text", `{{#ask:[[分类:皮肤]][[所属武将::~*${keyWords}]]|?所属武将|?皮肤名|?品质|?画师|?下载链接|sort=品质等级,所属武将,皮肤名|order=desc,asc,asc|offset=0|limit=1000|mainlabel=-|headers=hide|format=list|link=none|searchlabel=|sep=、}}`);
+            const response = await fetch(URLObject.toString());
+            if (!response.ok) throw new Error(response.statusText);
+            const json = await response.json();
+            const html = json?.parse?.text?.["*"];
+            if (!html) return;
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
+            const rows = doc.querySelectorAll(".smw-row");
+            rows.forEach((row) => {
+                const fields = row.querySelectorAll(".smw-field");
+                if (fields.length < 4) return;
+                const name = fields[0].querySelector(".smw-value")?.textContent.trim();
+                const skinName = fields[1].querySelector(".smw-value")?.textContent.trim();
+                const quality = fields[2].querySelector(".smw-value")?.textContent.trim();
+                const artist = fields[3].querySelector(".smw-value")?.textContent.trim();
+                const downloadLinks = Array.from(fields[4]?.querySelectorAll("a") || []).map((link) => (link.href));
+                skins.push({
+                    skinName,
+                    quality,
+                    artist,
+                    downloadLinks,
+                });
+            });
+        }))
+        return (function* () {
+            for (const skin of skins) {
+                for (const link of skin.downloadLinks) {
+                    yield {
+                        skinName: skin.skinName,
+                        quality: skin.quality,
+                        artist: skin.artist,
+                        link
+                    };
+                }
+            }
+        })();
+    }
 }
+
 export class NonameData {
+    createTempCharacter(characterData) {
+        const tempCharacterManager = {
+            id: null,
+            playerElement: null,
+            load() {
+                const { id, name, sex, avatar, ...characterNeedData } = characterData;
+                console.log(characterData)
+                this.id = id;
+                lib.translate[id] = name;
+                if (sex === "male-castrated") {
+                    characterNeedData.sex = "male";
+                    if (!Array.isArray(characterNeedData.trashBin)) {
+                        characterNeedData.trashBin = [];
+                    }
+                    characterNeedData.trashBin.push("sex:male_castrated")
+                } else {
+                    characterNeedData.sex = sex;
+                }
+                lib.character[id] = new lib.element.character.constructor(characterNeedData);
+                this.load = null;
+            },
+            /**
+             * @param {HTMLElement} parentNode 
+             * @returns {import("../../../../noname/library/index.js").Player}
+             */
+            use(parentNode) {
+                const playerElement = ui.create.player();
+                if (parentNode instanceof HTMLElement) parentNode.appendChild(playerElement);
+                playerElement.init(this.id);
+                playerElement.setBackgroundImage(characterData.avatar);
+                this.use = null;
+                return playerElement;
+            },
+            unload() {
+                if (this.playerElement instanceof HTMLElement) this.playerElement.remove();
+                delete lib.character[this.character];
+                delete lib.translate[this.id];
+                this.id = null;
+                this.playerElement = null;
+            }
+        };
+        tempCharacterManager.load();
+        return tempCharacterManager;
+    }
     readFile(file, type = "text", encoding) {
         if (!(file instanceof File)) throw new Error(file + "is not a file.");
         return new Promise((resolve) => {
@@ -88,12 +216,30 @@ export class NonameData {
             fileReader.addEventListener("loadend", e => {
                 resolve(e.target.result);
             })
-            switch (type) {
+            switch (String(type).toLocaleLowerCase()) {
                 case "text": fileReader.readAsText(file, encoding); break;
                 case "arrayBuffer": fileReader.readAsArrayBuffer(file); break;
                 case "URL": case "url": fileReader.readAsDataURL(file); break;
             }
         })
+    }
+    submitFile(format) {
+        const input = document.createElement("input");
+        input.setAttribute("type", "file");
+        if (Array.isArray(format)) {
+            input.accept = format.join(",");
+        } else if (format) {
+            input.accept = format;
+        }
+        let resolveFile;
+        const promise = new Promise((resolve) => {
+            resolveFile = resolve;
+        })
+        input.onchange = (e) => {
+            resolveFile(input.files);
+        }
+        input.click();
+        return promise;
     }
     checkId(val, type) {
         switch (type) {
@@ -194,20 +340,55 @@ export class NonameData {
             case "camel": return string.replace(/-([a-z])/g, (_match, letter) => letter.toUpperCase());
         }
     }
-    requestMultiMedia(query, type, config = {}) {
-        switch (type) {
-            case "audio": {
-                return new Promise((resolve, reject) => {
-                    const audio = game.playAudio({
-                        path: query,
-                        addVideo: false,
-                        onended: resolve,
-                        onerror: reject,
-                    });
-                    if (config.volume) audio.volume = config.volume;
-                })
-            }
-        }
+    /**
+     * @param {string} src 
+     * @param {{volume:number}} config 
+     * @returns 
+     */
+    playAudio(src, config = {}) {
+        return new Promise((resolve, reject) => {
+            const audio = game.playAudio({
+                path: src,
+                addVideo: false,
+                onended: resolve,
+                onerror: reject,
+            });
+            if (config.volume) audio.volume = config.volume;
+        })
+    }
+    /**
+     * 
+     * @param {HTMLImageElement} img 
+     * @param {{
+     *      
+     * }} config 
+     * @returns 
+     */
+    clipImg(img, config) {
+        if (!(img instanceof HTMLImageElement)) throw new Error(`${img}必须为HTMLImageElement对象！`)
+        const {
+            x = 0,
+            y = 0,
+            height = img.naturalHeight,
+            width = img.naturalWidth,
+            quality = 1,
+            type = "image/png",
+            dataForm = "blob"
+        } = config;
+        return new Promise((resolve) => {
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext("2d");
+            tempCanvas.height = height;
+            tempCanvas.width = width;
+            tempCtx.drawImage(img,
+                x, y, width, height,
+                0, 0, width, height
+            );
+            tempCanvas.toBlob(resolve, type, quality);
+        }).then((data) => {
+            if (dataForm.toLowerCase() === "blob") return data;
+            return URL.createObjectURL(data);
+        })
     }
 }
 export class NonameEditorData extends NonameData {
@@ -217,19 +398,57 @@ export class NonameEditorData extends NonameData {
      */
     searchManager = {
         "character": null,
-        "skill": null
+        "skill": null,
+        "skin": null,
     };
     constructor() {
         super();
     }
-    search(type, config = {}) {
+    async search(type, config = {}) {
         const { require, keyWords, filter } = config;
-        this.searchManager[type] = new Searcher(keyWords, type, { filter });
-        return this.searchManager[type].search(require);
+        return new Promise((reslove) => {
+            const searcher = new Searcher(keyWords, type, { filter });
+            searcher.onSearcherLoad = () => {
+                reslove(searcher.search(require));
+            }
+            this.searchManager[type] = searcher;
+        })
     }
     continueSearch(type, require) {
         if (!this.searchManager[type]) return [];
         return this.searchManager[type].search(require);
     }
     getData() { }
+}
+
+export class Stack {
+    #items = []
+    constructor() {
+        this.#items = [];
+    }
+    push(element) {
+        this.#items.push(element);
+    }
+    pop() {
+        if (this.isEmpty()) return null;
+        return this.#items.pop();
+    }
+    peek() {
+        if (this.isEmpty()) return null;
+        return this.#items[this.#items.length - 1];
+    }
+    isEmpty() {
+        return this.#items.length === 0;
+    }
+    size() {
+        return this.#items.length;
+    }
+    clear() {
+        this.#items.length = 0;
+    }
+    *[Symbol.iterator]() {
+        for (let i = this.#items.length - 1; i > 0; i--) {
+            yield this.#items[i];
+        }
+    }
 }
