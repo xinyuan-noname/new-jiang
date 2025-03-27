@@ -1,4 +1,5 @@
 import { game, get, lib, ui } from "../../../../noname.js";
+import url from "./url.mjs";
 const chineseRegex = /[\u4e00-\u9fff]+/;
 class Searcher {
     static cache = {
@@ -163,7 +164,17 @@ class Searcher {
         })();
     }
 }
-
+class EventManager {
+    #eventMap = {}
+    on(type, callback) {
+        this.#eventMap[type] = callback;
+    }
+    async emit(type, ...data) {
+        if (type in this.#eventMap && typeof this.#eventMap[type] === "function") {
+            await this.#eventMap[type](...data);
+        }
+    }
+}
 export class NonameData {
     createTempCharacter(characterData) {
         const tempCharacterManager = {
@@ -171,7 +182,6 @@ export class NonameData {
             playerElement: null,
             load() {
                 const { id, name, sex, avatar, ...characterNeedData } = characterData;
-                console.log(characterData)
                 this.id = id;
                 lib.translate[id] = name;
                 if (sex === "male-castrated") {
@@ -356,38 +366,166 @@ export class NonameData {
             if (config.volume) audio.volume = config.volume;
         })
     }
+    getFrame(data, type, config) {
+        const manager = new EventManager();
+        ; (async () => {
+            const decoder = new ImageDecoder({ data, type, ...config });
+            await decoder.tracks.ready;
+            const count = decoder.tracks.selectedTrack?.frameCount;
+            for (let index = 0; index < count; index++) {
+                const result = await decoder.decode({ frameIndex: index });
+                await manager.emit("data", result);
+            }
+            manager.emit("finished");
+        })()
+        return manager;
+    }
     /**
-     * 
-     * @param {HTMLImageElement} img 
-     * @param {{
-     *      
-     * }} config 
+     * @param {*} img 
+     * @param {*} config 
      * @returns 
      */
-    clipImg(img, config) {
+    clipGif(img, config) {
+        if (!(img instanceof HTMLImageElement)) throw new Error(`${img}必须为HTMLImageElement对象！`)
+        if (!("ImageDecoder" in window)) throw new Error("当前浏览器暂不支持该功能！请切换至chorme94浏览器或更改版本！");
+        const clipManager = new EventManager();
+        const {
+            useClientData = true,
+            quality = 1,
+            dataForm = "url",
+            minDelay
+        } = config;
+        let { x, y, height, width } = config;
+        if (!x) x = 0;
+        if (!y) y = 0;
+        if (!width) width = img.naturalWidth;
+        if (!height) height = img.naturalHeight;
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext("2d", { willReadFrequently: true });
+        const drawFrame = useClientData === true ? (() => {
+            const rateX = img.clientWidth / img.naturalWidth,
+                rateY = img.clientHeight / img.naturalHeight;
+            width /= rateX;
+            height /= rateY;
+            return (result) => {
+                tempCanvas.height = height;
+                tempCanvas.width = width;
+                tempCtx.drawImage(result,
+                    x / rateX, y / rateY, width, height,
+                    0, 0, width, height
+                );
+            }
+        })() : (() => {
+            return (result) => {
+                tempCanvas.height = height;
+                tempCanvas.width = width;
+                tempCtx.drawImage(result,
+                    x, y, img.naturalWidth, img.naturalHeight,
+                    0, 0, width, height
+                )
+            }
+        })();
+        (async () => {
+            if (!("gif" in window)) await import("./module/gif/gif.js");
+            const gif = new GIF({
+                worker: 20,
+                quality,
+                workerScript: `./${url}/module/gif/gif.worker.js`,
+                // debug: true
+            })
+            const response = await fetch(img.src);
+            const frameManager = this.getFrame(await response.arrayBuffer(), "image/gif");
+            const frameResults = []
+            frameManager.on("data", async (result) => {
+                frameResults.push(result);
+                drawFrame(result.image);
+                const frame = new Image(width, height);
+                frame.src = tempCanvas.toDataURL();
+                await new Promise(r => {
+                    frame.onload = () => {
+                        let delay = result.image.duration / 1e6;
+                        if (!isNaN(minDelay) && delay < minDelay) delay = minDelay;
+                        gif.addFrame(frame, { delay });
+                        r()
+                    }
+                });
+                clipManager.emit("data", result);
+            })
+            frameManager.on("finished", () => {
+                clipManager.emit("dataend", frameResults)
+                gif.on("finished", (blob) => {
+                    if (dataForm.toLocaleLowerCase() === "blob") {
+                        clipManager.emit("finished", blob);
+                    } else if (dataForm === "blobURL") {
+                        clipManager.emit("finished", URL.createObjectURL(blob));
+                    } else if (dataForm.toLocaleLowerCase() === "url") {
+                        this.readFile(blob, "url").then(data => {
+                            clipManager.emit("finished", data);
+                        });
+                    } else {
+                        clipManager.emit("finished", null);
+                    }
+                });
+                gif.render();
+            })
+        })()
+        return clipManager;
+    }
+    /**
+     * @param {HTMLImageElement} img 
+     * @param {Object} config 
+     * @returns 
+     */
+    clipStaticImg(img, config) {
         if (!(img instanceof HTMLImageElement)) throw new Error(`${img}必须为HTMLImageElement对象！`)
         const {
-            x = 0,
-            y = 0,
-            height = img.naturalHeight,
-            width = img.naturalWidth,
+            useClientData = true,
             quality = 1,
             type = "image/png",
-            dataForm = "blob"
+            dataForm = "url",
         } = config;
+        let { x, y, height, width } = config
+        if (!x) x = 0;
+        if (!y) y = 0;
+        if (!width) width = img.naturalWidth;
+        if (!height) height = img.naturalHeight;
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext("2d", { willReadFrequently: true });
+        const drawFrame = useClientData === true ? (() => {
+            const rateX = img.clientWidth / img.naturalWidth,
+                rateY = img.clientHeight / img.naturalHeight;
+            width /= rateX;
+            height /= rateY;
+            return (result) => {
+                tempCanvas.height = height;
+                tempCanvas.width = width;
+                tempCtx.drawImage(result,
+                    x / rateX, y / rateY, width, height,
+                    0, 0, width, height
+                );
+            }
+        })() : (() => {
+            return (result) => {
+                tempCanvas.height = height;
+                tempCanvas.width = width;
+                tempCtx.drawImage(result,
+                    x, y, img.naturalWidth, img.naturalHeight,
+                    0, 0, width, height
+                )
+            }
+        })();
         return new Promise((resolve) => {
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext("2d");
-            tempCanvas.height = height;
-            tempCanvas.width = width;
-            tempCtx.drawImage(img,
-                x, y, width, height,
-                0, 0, width, height
-            );
-            tempCanvas.toBlob(resolve, type, quality);
+            drawFrame(img);
+            if (dataForm.toLocaleLowerCase() === "url") {
+                tempCanvas.toDataURL(resolve, type, quality);
+            } else if (dataForm.toLocaleLowerCase() === "blob" || dataForm === "blobURL") {
+                tempCanvas.toBlob(resolve, type, quality);
+            } else {
+                resolve(null);
+            }
         }).then((data) => {
-            if (dataForm.toLowerCase() === "blob") return data;
-            return URL.createObjectURL(data);
+            if (dataForm === "blobURL") return URL.createObjectURL(data);
+            return data;
         })
     }
 }
@@ -422,7 +560,10 @@ export class NonameEditorData extends NonameData {
 }
 
 export class Stack {
-    #items = []
+    #items = [];
+    get length(){
+        this.#items.length;
+    }
     constructor() {
         this.#items = [];
     }

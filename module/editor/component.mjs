@@ -23,7 +23,9 @@ shadow.innerHTML=`
                         <span class="control-point rt"></span>
                         <span class="control-point rb"></span>
                     </section>
+                    <section class="curtain"></section>
                 </div>
+                <div class="img-loading"></div>
             </div>
             <div class="tool-bar">
                 <span class="reset" title="重置">⟲</span>
@@ -230,11 +232,12 @@ shadow.innerHTML=`
         this.#listenExpanable();
     }
     #listenAvatar() {
-        let imgType = "";
+        let imgType = "", minDelay = 0.05;
         const URLStack = this.dataStructureQuery("stack");
         const avatarDataArea = this.getDataAreaDom("avatar");
         const avatar = avatarDataArea.querySelector('.avatar-view');
         const imgContainer = avatarDataArea.querySelector(".avatar-view .img-container");
+        const curtain = avatarDataArea.querySelector(".avatar-view .img-container .curtain");
         const img = avatarDataArea.querySelector(".avatar-view img");
         const cutter = avatarDataArea.querySelector(".cutter")
         const resetButton = avatarDataArea.querySelector(".reset");
@@ -261,13 +264,10 @@ shadow.innerHTML=`
         }
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => {
             avatar.addEventListener(event, e => {
+                if (avatar.classList.contains("done")) return;
                 e.preventDefault();
                 e.stopPropagation();
             }, false);
-            img.addEventListener(event, e => {
-                e.preventDefault();
-                e.stopPropagation();
-            }, false)
         });
         avatar.addEventListener("pointerup", async () => {
             if (avatar.classList.contains("done")) return;
@@ -275,12 +275,14 @@ shadow.innerHTML=`
             if (fileList !== null) loadFile(fileList[0]);
         });
         avatar.addEventListener("drop", e => {
+            if (img.hasAttribute("src")) {
+                img.style.cssText = "";
+            }
             if (e?.dataTransfer?.files?.item(0)?.type?.startsWith?.("image")) {
                 loadFile(e.dataTransfer.files[0]);
             }
         });
         resetButton.addEventListener("pointerup", () => {
-            if (avatar.classList.contains("editing")) return;
             avatar.classList.remove("done");
             img.removeAttribute("src");
             img.style.cssText = "";
@@ -291,7 +293,7 @@ shadow.innerHTML=`
             const initialHeight = img.offsetHeight,
                 initialWidth = img.offsetWidth;
             cutter.querySelectorAll('.control-point').forEach((handle) => {
-                handle.addEventListener('mousedown', (event) => {
+                handle.addEventListener('pointerdown', (event) => {
                     const startX = event.clientX,
                         startY = event.clientY;
                     const startLeft = parseFloat(cutter.style.left) || 0,
@@ -302,7 +304,7 @@ shadow.innerHTML=`
                         const scale = cutter.offsetHeight / initialHeight;
                         cutter.style.setProperty("--scale", scale);
                     }
-                    const mouseMove =
+                    const pointerMove =
                         event.target.classList.contains("rb") ? (e) => {
                             let width = startWidth + e.clientX - startX,
                                 height = startHeight + e.clientY - startY,
@@ -364,32 +366,57 @@ shadow.innerHTML=`
                             cutter.style.top = `${top}px`;
                             updateRate()
                         } : null;
-                    const mouseUp = () => {
-                        document.removeEventListener('mousemove', mouseMove);
-                        document.removeEventListener('mouseup', mouseUp);
+                    const pointerUp = () => {
+                        document.removeEventListener('pointermove', pointerMove);
+                        document.removeEventListener('pointerup', pointerUp);
                     }
-                    document.addEventListener('mousemove', mouseMove);
-                    document.addEventListener('mouseup', mouseUp);
+                    document.addEventListener('pointermove', pointerMove);
+                    document.addEventListener('pointerup', pointerUp);
                 });
             });
             const listener = async (e) => {
-                if (!imgContainer.contains(e.composedPath()[0])) {
+                if (e.composedPath()[0] === curtain || !imgContainer.contains(e.composedPath()[0])) {
                     document.removeEventListener("pointerdown", listener);
-                    avatar.classList.remove("cutting", "editing");
-                    const style = cutter.style;
-                    if (style.cssText.length > 0) {
-                        const url = await this.multiMediaQuery("imgClip", {
-                            img,
-                            x: parseFloat(style.left),
-                            y: parseFloat(style.top),
-                            width: parseFloat(style.width),
-                            height: parseFloat(style.height),
-                            dataForm: "url",
-                            quality: 1,
-                            type: imgType
-                        })
+                    if (cutter.style.cssText.length > 0) {
+                        avatar.classList.add("loading");
+                        if (imgType === "image/gif") {
+                            const clipManager = this.multiMediaQuery("gifClip", {
+                                img,
+                                x: parseFloat(cutter.style.left) || 0,
+                                y: parseFloat(cutter.style.top) || 0,
+                                width: cutter.clientWidth,
+                                height: cutter.clientHeight,
+                                dataForm: "blobURL",
+                                quality: 1,
+                                minDelay,
+                                useClientData: true
+                            })
+                            clipManager.on("dataend", URLStack.length === 1 ? (result) => {
+                                minDelay = result.image.duration / 1e6;
+                                avatar.classList.remove("cutting");
+                            } : () => {
+                                avatar.classList.remove("cutting");
+                            });
+                            clipManager.on("finished", (data) => {
+                                reloadImage(data);
+                                avatar.classList.remove("editing", "loading");
+                            })
+                        } else {
+                            reloadImage(await this.multiMediaQuery("staticImgClip", {
+                                img,
+                                x: parseFloat(cutter.style.left) || 0,
+                                y: parseFloat(cutter.style.top) || 0,
+                                width: cutter.clientWidth,
+                                height: cutter.clientHeight,
+                                dataForm: "blobURL",
+                                type: imgType,
+                                useClientData: true
+                            }));
+                            avatar.classList.remove("cutting", "editing", "loading");
+                        }
+                    } else {
+                        avatar.classList.remove("cutting", "editing");
                     }
-                    reloadImage(url);
                     cutter.style.cssText = "";
                 }
             }
@@ -399,9 +426,7 @@ shadow.innerHTML=`
             //模拟cover效果
             const scaleH = img.naturalHeight / avatar.clientHeight,
                 scaleW = img.naturalWidth / avatar.clientWidth;
-            if (scaleH > 1 && scaleW > 1) {
-                img.classList.add(scaleH < scaleW ? "full-height" : "full-width");
-            }
+            img.classList.add(scaleH < scaleW ? "full-height" : "full-width");
         })
     }
     #listenName() {

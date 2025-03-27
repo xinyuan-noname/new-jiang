@@ -277,6 +277,43 @@ div[contenteditable="true"] {
     margin: 0 2px;
 }
 
+/* 图片加载时相关 */
+[data-avatar]>.avatar-view:not(.loading) .img-loading {
+    display: none;
+}
+
+[data-avatar]>.avatar-view.loading .img-loading {
+    display: flex;
+    position: absolute;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    background-color: rgba(255, 255, 255, 0.4);
+    z-index: 3;
+}
+
+[data-avatar]>.avatar-view.loading .img-loading::after {
+    content: "";
+    border: 16px solid #f3f3f3;
+    border-top: 16px solid #3498db;
+    border-radius: 50%;
+    width: var(--view-width);
+    height: var(--view-width);
+    box-sizing: border-box;
+    animation: spin 2s linear infinite;
+}
+
+[data-avatar]>.avatar-view.loading .img-container {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+[data-avatar]>.avatar-view.loading+.tool-bar {
+    display: none;
+}
+
 /* 编辑图片相关*/
 /* 编辑时，样式隐藏 */
 [data-avatar]>.avatar-view.editing+.tool-bar>span {
@@ -301,7 +338,7 @@ div[contenteditable="true"] {
 }
 
 /* 裁剪 */
-[data-avatar]>.avatar-view.cutting::after {
+[data-avatar]>.avatar-view.cutting .img-container .curtain {
     content: "";
     width: 100vw;
     height: 100vh;
@@ -675,4 +712,14 @@ div[contenteditable="true"] {
 [data-skills] skill-info-card {
     font-size: 15px;
     margin-top: 2px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }

@@ -143,11 +143,27 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         }
     }
     /**
-     * @template {"audioPlay"|"imgClip"} T
+     * @template {"audioPlay"|"staticImgClip"|"gifClip"} T
      * @param {T} mode
-     *@param { T extends "audioPlay"?{src:string|URL,volume:number}
-     *         T extends "imgClip"?{img:HTMLImageElement,x:number,y:number,width:number,height:number,quality:number,dataForm:"blob"|"url",type:string}:
-     *         Object<string,any>
+     * @param { T extends "audioPlay"?{src:string|URL,volume:number}
+     *          T extends "staticImgClip"?{
+     *          img:HTMLImageElement,
+     *          x:number,y:number,
+     *          width:number,
+     *          height:number,
+     *          quality:number,
+     *          dataForm:"blob"|"url"|"blobURL",
+     *          type:string
+     *          useClientData:boolean}:
+     *          T extends "gifClip"?{
+     *          img:HTMLImageElement,
+     *          x:number,y:number,
+     *          width:number,
+     *          height:number,
+     *          quality:number,
+     *          dataForm:"blob"|"url"|"blobURL",
+     *          minDelay:number
+     *          }:Object<string,any>
      * } query 
      */
     multiMediaQuery(mode, query) {
@@ -156,9 +172,13 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
                 const { src, volume } = query;
                 return this.#server.playAudio(src, { volume });
             }
-            case "imgClip": {
+            case "staticImgClip": {
                 const { img, ...config } = query;
-                return this.#server.clipImg(img, config);
+                return this.#server.clipStaticImg(img, config);
+            }
+            case "gifClip":{
+                const { img, ...config } = query;
+                return this.#server.clipGif(img, config);
             }
         }
     }
@@ -172,7 +192,7 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
      *     height: number
      *     width: number
      *     quality: number
-     *     dataForm:("url"|"blob")
+     *     dataForm:("url"|"blob"|"blobURL")
      *     type:("jpeg"|"webp"|"png"|"jpeg")
      * }} exportAsStaticImageQuery
      */
@@ -187,6 +207,7 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
     *      offsetX?: number
     *      offsetY?: number
     *      clear?: boolean
+    *      
      * }} drawLineTextQuery
      */
     /**
@@ -225,10 +246,16 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
                     0, 0, width, height
                 );
                 return new Promise((resolve) => {
-                    tempCanvas.toBlob(resolve, type, quality);
+                    if (dataForm.toLocaleLowerCase() === "url") {
+                        tempCanvas.toDataURL(resolve, type, quality);
+                    } else if (dataForm.toLocaleLowerCase() === "blob" || dataForm === "blobURL") {
+                        tempCanvas.toBlob(resolve, type, quality);
+                    } else {
+                        resolve(null)
+                    }
                 }).then((data) => {
-                    if (dataForm.toLowerCase() === "blob") return data;
-                    return URL.createObjectURL(data);
+                    if (dataForm === "blobURL") return URL.createObjectURL(data);
+                    return data;
                 })
             };
             case "drawLineText": {

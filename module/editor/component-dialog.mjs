@@ -352,7 +352,7 @@ shadow.innerHTML=`
                             e.preventDefault();
                             const map = new Map(new FormData(form));
                             const color = map.get("color")
-                            const imageData = await this.canvasQuery("exportAsStaticImage", { canvas, height: 41 });
+                            const imageData = await this.canvasQuery("exportAsStaticImage", { canvas, height: 41, dataForm: "blobURL" });
                             this.#finishReslove({
                                 imageData,
                                 id: map.get("group-id"),
