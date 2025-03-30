@@ -1,3 +1,4 @@
+import url from "./url.mjs"
 export class UniqueChoiceManager {
     get chosenIndex() {
         return this.indexOf(this.chosen);
@@ -62,7 +63,8 @@ export class UniqueChoiceManager {
      * @returns {this}
      */
     forClass(...classNames) {
-        this.callback = ((last, now) => {
+        classNames = classNames.filter(Boolean);
+        if (classNames) this.callback = ((last, now) => {
             last?.classList?.remove?.(...classNames);
             now?.classList?.add?.(...classNames);
         })
@@ -166,7 +168,7 @@ export class UniqueChoiceManager {
      * @returns {this}
      */
     choose(target) {
-        if (this.nodeList.length > 0) this.proxy.chosen = target;
+        this.proxy.chosen = target;
         return this;
     }
     chooseFirst() {
@@ -223,6 +225,15 @@ export class UniqueChoiceManager {
     }
 }
 export class MultipleChoiceManager {
+    listenerList = [];
+    /**
+     * @type {string}
+     */
+    listenerType
+    /**
+     * @type {function(Event)}
+     */
+    listenerFilter
     /**
      * @type {HTMLElement[]}
      */
@@ -230,22 +241,9 @@ export class MultipleChoiceManager {
     /**
      * @type {HTMLElement[]}
      */
-    chosenList = new Proxy([], {
-        set(target, p, val) {
-            if (Reflect.get(target, p) !== val) {
-                this.callback?.("add", val, this);
-                this.collect(val, target, this.collectFilter);
-            }
-            return Reflect.set(target, p, val);
-        },
-        deleteProperty(target, p) {
-            this.callback?.("delete", target[p], target);
-            this.destroy(Reflect.get(target, p), target, this.deleteFilter);
-            return Reflect.deleteProperty(target, p);
-        }
-    });
+    #chosenList = [];
     /**
-     * @type {}
+     * @type {[]}
      */
     collectedInfo = [];
     /**
@@ -263,7 +261,7 @@ export class MultipleChoiceManager {
     /**
      * @type {function(HTMLElement,HTMLElement[]):void}
      */
-    deleteFilter;
+    destoryFilter;
     /**
      * @param  {...HTMLElement} nodes 
      */
@@ -272,32 +270,45 @@ export class MultipleChoiceManager {
     }
     setGetInfoMethod(func) {
         this.getInfoMethod = func;
+        return this;
     }
     setCollectFilter(func) {
         this.collectFilter = func;
+        return this;
     }
-    setDeleteFilter(func) {
-        this.deleteFilter = func;
+    setDestoryFilter(func) {
+        this.destoryFilter = func;
+        return this;
+    }
+    setCapicity(num) {
+        this.capacity = num;
+        return this;
     }
     collect(target, chosenList, filter) {
         if (this.getInfoMethod && (!filter || filter?.(node, chosenList))) {
             this.collectedInfo.push({ source: target, info: this.getInfoMethod(target, chosenList) })
         }
+        if (this.capacity != null && this.collectedInfo.length > this.capacity) {
+            this.unselect(this.collectedInfo[0].source);
+        }
     }
     destroy(node, chosenList, filter) {
-        for (let i = 0, j = 0; i < this.collectedInfo.length; i++) {
+        let i, j;
+        for (i = 0, j = 0; i < this.collectedInfo.length; i++) {
             const info = this.collectedInfo[i];
             if (info?.source !== node && (!filter || filter?.(node, chosenList))) {
                 this.collectedInfo[j++] = info;
             }
         }
+        this.collectedInfo.length = j;
     }
     /**
      * @param  {...string} classNames 
      * @returns {this}
      */
     forClass(...classNames) {
-        this.callback = ((type, item) => {
+        classNames = classNames.filter(Boolean)
+        if (classNames.length) this.callback = ((type, item) => {
             if (type === "add") {
                 item?.classList?.add?.(...classNames);
             } else if (type === "delete") {
@@ -340,12 +351,12 @@ export class MultipleChoiceManager {
         return this;
     }
     /**
-     * @param {function(HTMLElement,HTMLElement,{forClass:function(...string),forClassByNodeMap:function(WeakMap<HTMLElement,HTMLElement>,...string),forClassByNodeClassMap:function(WeakMap<HTMLElement,Map<HTMLElement,string[]>>)})} callback 
+     * @param {function("add"|"delete",HTMLElement,{forClass:function(...string),forClassByNodeMap:function(WeakMap<HTMLElement,HTMLElement>,...string),forClassByNodeClassMap:function(WeakMap<HTMLElement,Map<HTMLElement,string[]>>)})} callback 
      * @returns {this}
      */
     setCallback(callback) {
-        this.callback = (last, now) => {
-            callback(last, now, {
+        this.callback = (type, item) => {
+            callback(type, item, {
                 forClass: (...classNames) => {
                     if (type === "add") {
                         item?.classList?.add?.(...classNames);
@@ -380,11 +391,16 @@ export class MultipleChoiceManager {
      * @param {function(Event,HTMLElement):boolean} filter 
      * @returns {this}
      */
-    listenAllNodes(type, filter) {
+    listenAllNodes(type, filter, method = "toggle") {
+        if (!["select", "unselect", "toggle"].includes(method)) throw new Error(`${method}必须是"select","unselect","toggle"中的一个`)
+        this.listenerType = type;
+        this.listenerFilter = filter;
         this.nodeList.forEach(node => {
-            node.addEventListener(type, (e) => {
-                if (!filter || filter?.(e, node)) this.choose(node);
-            })
+            const listener = (e) => {
+                if (!filter || filter?.(e, node)) this[method](node);
+            }
+            node.addEventListener(type, listener)
+            this.listenerList.push([node, type, listener]);
         })
         return this;
     }
@@ -393,13 +409,19 @@ export class MultipleChoiceManager {
     * @param {function(Event,HTMLElement):boolean} filter 
     * @returns {this}
     */
-    listenSiblings(type, filter) {
+    listenSiblings(type, filter, method = "toggle") {
+        if (!["select", "unselect", "toggle"].includes(method)) throw new Error(`${method}必须是"select","unselect","toggle"中的一个`)
         const commonParentNode = this.nodeList[0].parentNode
         if (this.nodeList.some(node => node.parentNode != commonParentNode)) throw new Error("The nodes must be siblings");
-        commonParentNode.addEventListener(type, (e) => {
+        this.commonParentNode = commonParentNode;
+        this.listenerType = type;
+        this.listenerFilter = filter;
+        const listener = (e) => {
             if (!this.nodeList.includes(e.target)) return;
-            if (!filter || filter?.(e, e.target)) this.choose(e.target);
-        })
+            if (!filter || filter?.(e, e.target)) this[method](e.target);
+        }
+        commonParentNode.addEventListener(type, listener);
+        this.listenerList.push([commonParentNode, type, listener]);
         return this;
     }
     /**
@@ -407,23 +429,94 @@ export class MultipleChoiceManager {
      * @returns {this}
      */
     select(target) {
-        this.chosenList.push(target);
-        return this;
+        this.#chosenList.push(target);
+        this.collect(target, this.#chosenList, this.collectFilter);
+        this.callback?.("add", target, this.#chosenList);
     }
     unselect(target) {
-        const i = this.chosenList.indexOf(target);
+        const i = this.#chosenList.indexOf(target);
         if (i === -1) return this;
-        this.chosenList.splice(i, 1);
-        return this;
+        this.#chosenList.splice(i, 1);
+        this.destroy(target, this.#chosenList, this.destoryFilter);
+        this.callback?.("delete", target, this.#chosenList);
+    }
+    toggle(target) {
+        if (this.#chosenList.includes(target)) {
+            this.unselect(target);
+        } else {
+            this.select(target);
+        }
+    }
+    selectByFind(filter) {
+        this.select(this.nodeList.find(node => filter(node)))
+    }
+    unselectByFind(filter) {
+        this.unselect(this.nodeList.find(node => filter(node)))
+    }
+    toggleByFind(filter) {
+        this.toggle(this.nodeList.find(node => filter(node)))
+    }
+    reset() {
+        for (const target of this.#chosenList.slice()) {
+            this.unselect(target);
+        }
     }
     append(...nodes) {
         this.nodeList.push(...nodes);
+        if (!this.commonParentNode) {
+            if (this.listenerType) {
+                const type = this.listenerType
+                const filter = this.listenerFilter;
+                nodes.forEach((node) => {
+                    const listener = (e) => {
+                        if (!filter || filter?.(e, node)) this.select(node);
+                    }
+                    node.addEventListener(type, listener);
+                    this.listenerList.push([node, type, listener]);
+                })
+            }
+        } else if (this.commonParentNode) {
+            if (this.listenerType) {
+                const type = this.listenerType;
+                const filter = this.listenerFilter;
+                nodes.forEach((node) => {
+                    if (this.commonParentNode.contains(node)) {
+                        return;
+                    }
+                    const listener = (e) => {
+                        if (!filter || filter?.(e, node)) this.select(node);
+                    }
+                    node.addEventListener(type, listener);
+                    this.listenerList.push([node, type, listener]);
+                })
+            }
+        }
     }
     remove(...nodes) {
-        for (let i = 0, j = 0; i < this.nodeList.length; i++) {
+        let i, j
+        for (i = 0, j = 0; i < this.nodeList.length; i++) {
             const node = this.nodeList[i];
             if (!nodes.includes(node)) this.nodeList[j++] = node;
         }
+        this.nodeList.length = j;
+    }
+    /**
+     * @param {number|HTMLElement|"all"} query 
+     * @returns {any|any[]}
+     */
+    getInfo(query) {
+        if (typeof query === "number") {
+            return this.collectedInfo?.[query]?.info;
+        } else if (query instanceof HTMLElement) {
+            return this.collectedInfo.find(infoObject => {
+                if (infoObject?.source === query) return infoObject?.info;
+            })
+        } else if (query === "all") {
+            return this.collectedInfo.map(infoObject => infoObject?.info);
+        }
+    }
+    getLastestInfo() {
+        return this.collectedInfo?.[this.collectedInfo.length - 1]?.info;
     }
 }
 export class EditableElementManager {
@@ -702,4 +795,13 @@ export const preventEnter = (...nodes) => {
             }
         });
     })
+}
+export const loadCss = (name, { root = document.head, baseURL = `./${url}/style` } = {}) => {
+    if (baseURL.endsWith("/")) baseURL = baseURL.slice(0, -1);
+    const style = document.createElement("link");
+    style.rel = "stylesheet";
+    style.href = `${baseURL}/${name}.css`;
+    style.addEventListener("error", e => console.error(e.error));
+    root.appendChild(style);
+    return style;
 }

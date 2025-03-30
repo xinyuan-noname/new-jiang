@@ -30,9 +30,9 @@ shadow.innerHTML=`
             <div class="tool-bar">
                 <span class="reset" title="重置">⟲</span>
                 <span class="cut" title="裁剪">✂</span>
-                <span class="toggle-height" title="切换高度"></span>
             </div>
         </div>
+        <div data-setting="dieAudios"></div>
     </div>
     <div class="right">
         <div data-setting="name pinyin" data-name="" data-pinyin="" data-required="true">
@@ -73,13 +73,14 @@ shadow.innerHTML=`
                 <li data-sex-option="male-castrated" style="--url:url(/image/card/sex_male_castrated.png)">太监</li>
             </ul>
         </div>
-        <div data-setting="group" data-group="">
+        <div data-setting="group" data-group="" data-double-group="">
             <span>
                 <span>势力</span>
                 <span class="expandable-expanded" data-for="group"></span>
                 <span></span>
             </span>
             <section data-by="group">
+                <span class="checkbox" data-group-double value="double">选择多势力</span>
                 <ul>
                     <li data-group-option="wei"
                         style="--url:url(/image/card/group_wei.png);--group-text-shadow:rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, black 0 0 1px">
@@ -210,10 +211,47 @@ shadow.innerHTML=`
                 </section>
             </div>
         </div>
-        <div data-setting="isZhugong" data-zhu="false"></div>
-        <div data-setting="dieAudios" data-intro=""></div>
-        <div>
-            <div data-setting="intro" data-intro=""></div>
+        <div data-setting="isZhu hasHiddenSkill isAiForbidden" data-more data-is-zhu-gong="false" data-is-hidden="false">
+            <span>
+                <span>杂项</span>
+                <span class="expandable-expanded" data-for="more"></span>
+                <span></span>
+            </span>
+            <ul data-by="more">
+                <li class="checkbox" data-more-option="isZhuGong">
+                    <p>设为主公</p>
+                    <span></span>
+                </li>
+                <li class="checkbox" data-more-option="hasHiddenSkill">
+                    <p>登场隐匿</p>
+                    <span></span>
+                </li>
+                <li class="checkbox" data-more-option="isUnseen" title="该武将在武将包中不可见">
+                    <p>隐藏武将</p>
+                    <span></span>
+                </li>
+                <li class="checkbox" data-more-option="isAiForbidden">
+                    <p>人机禁用</p>
+                    <span></span>
+                </li>
+                <li class="checkbox" data-more-option="isBoss">
+                    <p>设为BOSS</p>
+                    <span></span>
+                </li>
+            </ul>
+        </div>
+        <div data-setting="intro" data-intro>
+            <span>
+                <span>武将介绍</span>
+                <span class="expandable-expanded" data-for="intro"></span>
+                <span></span>
+            </span>
+            <section data-by="intro">
+                <p></p>
+                <footer class="tool-bar">
+                    <button class="edit">编辑</button>
+                </footer>
+            </section>
         </div>
     </div>
 </div>`
@@ -228,6 +266,8 @@ shadow.innerHTML=`
         this.#listenClans();
         this.#listenHp();
         this.#listenSkills();
+        this.#listenMore();
+        this.#listenIntro();
         //
         this.#listenExpanable();
     }
@@ -250,8 +290,9 @@ shadow.innerHTML=`
             for (const url of URLStack) {
                 URL.revokeObjectURL(url);
             }
-            imgType = file.type;
             URLStack.push(URL.createObjectURL(file));
+            imgType = file.type;
+            img.style.cssText = "";
             img.src = URLStack.peek();
             avatar.classList.add("done");
             this.changeData("avatar", URLStack.peek());
@@ -275,9 +316,6 @@ shadow.innerHTML=`
             if (fileList !== null) loadFile(fileList[0]);
         });
         avatar.addEventListener("drop", e => {
-            if (img.hasAttribute("src")) {
-                img.style.cssText = "";
-            }
             if (e?.dataTransfer?.files?.item(0)?.type?.startsWith?.("image")) {
                 loadFile(e.dataTransfer.files[0]);
             }
@@ -481,27 +519,74 @@ shadow.innerHTML=`
     }
     #listenGroup() {
         const groupDataArea = this.getDataAreaDom("group")
+        const groupChosenSection = groupDataArea.querySelector("section");
         const groupOptions = groupDataArea.querySelectorAll("[data-group-option]");
-        const manager = this.createUniqueChoiceManager("group", ...groupOptions)
-            .listenAllNodes("pointerup")
+        const doubleGroupCheckBox = groupDataArea.querySelector(".checkbox");
+        const singleManager = this.createUniqueChoiceManager("group", ...groupOptions);
+        const doubleManager = this.createMultipleChoiceManager("doubleGroup", ...groupOptions);
+        const chosenModeManager = this.createMultipleChoiceManager("groupChosenMode", doubleGroupCheckBox);
+        const weakmap = new WeakMap([
+            [
+                doubleGroupCheckBox,
+                new Map([
+                    [doubleGroupCheckBox, ["chosen"]],
+                    [groupChosenSection, ["double-group-choosing"]]
+                ])
+            ]
+        ])
+        chosenModeManager.listenSiblings("pointerup")
+            .setCallback((type, target, eventMap) => {
+                eventMap.forClassByNodeClassMap(weakmap);
+                if (type === "delete" && target === doubleGroupCheckBox) {
+                    doubleManager.reset();
+                }
+            })
+            .setGetInfoMethod((target) => {
+                return target.getAttribute("value");
+            })
+        singleManager.listenAllNodes("pointerup", () => !chosenModeManager.getLastestInfo())
             .setCallback((pre, now, funcMap) => {
-                funcMap.forClass("chosen")
+                funcMap.forClass("chosen");
                 this.changeData("group", now.dataset.groupOption);
                 const textShadow = now.style.getPropertyValue("--group-text-shadow");
-                this.style.setProperty("--data-group", `'${now.textContent}势力'`);
+                this.style.setProperty("--data-group", `"${now.textContent.trim()}势力"`);
                 if (textShadow) {
                     this.style.setProperty("--data-group-text-shadow", textShadow);
                 }
             })
             .choose(groupOptions[0]);
+        doubleManager.listenAllNodes("pointerup", (_event, node) => chosenModeManager.getLastestInfo() === "double" && !node.classList.contains("chosen"))
+            .setCallback((type, target, funMap) => {
+                funMap.forClass("double-group-chosen");
+                const info = doubleManager.getInfo("all");
+                const groupList = info.map(info => info.groupName).filter(Boolean);
+                const groupTextShadowList = info.map(info => info.groupTextShadow.replace(", black 0 0 1px", "")).filter(Boolean);
+                groupList.unshift(singleManager.chosen?.textContent?.trim?.());
+                groupTextShadowList.unshift(singleManager.chosen?.style?.getPropertyValue?.("--group-text-shadow"));
+                this.style.setProperty(
+                    "--data-group",
+                    `"${groupList.join("/")}势力"`
+                );
+                this.style.setProperty(
+                    "--data-group-text-shadow",
+                    groupTextShadowList.join(",")
+                )
+            })
+            .setGetInfoMethod(target => {
+                return { groupName: target?.textContent?.trim(), groupTextShadow: target.style.getPropertyValue("--group-text-shadow") };
+            })
         const groupDiy = groupDataArea.querySelector("[data-diy]");
         groupDiy.addEventListener("pointerup", async () => {
             const dialog = document.createElement("noname-dialog");
             dialog.setAttribute("type", "diygroup");
             this.shadowRoot.append(dialog);
-            const newGroupOption = this.createGroupOption(await dialog.wait());
-            groupDiy.parentElement.insertBefore(newGroupOption, groupDiy);
-            manager.append(newGroupOption);
+            const result = await dialog.wait()
+            if (result !== false) {
+                const newGroupOption = this.createGroupOption(false);
+                groupDiy.parentElement.insertBefore(newGroupOption, groupDiy);
+                singleManager.append(newGroupOption);
+                doubleManager.append(newGroupOption);
+            }
         })
     }
     createClanOption(name) {
@@ -516,8 +601,17 @@ shadow.innerHTML=`
         const manager = this.createUniqueChoiceManager("clans", ...clanOptions)
             .listenAllNodes("pointerup")
             .setCallback((pre, now, funcMap) => {
-                funcMap.forClass("chosen")
-                this.changeData("clans", now == null ? "" : now.dataset.clanOption);
+                funcMap.forClass("chosen");
+                if (pre instanceof HTMLElement) {
+                    this.removeSkill(this.playerQuery("clanSkillId", { clan: pre.dataset.clanOption }));
+                }
+                if (now instanceof HTMLElement) {
+                    const clanSkillId = this.playerQuery("clanSkillId", { clan: now.dataset.clanOption });
+                    this.addSkill(clanSkillId);
+                    this.changeData("clans", now.dataset.clanOption);
+                } else {
+                    this.changeData("clans", "");
+                }
             })
             .setRevocable(true);
         const clanDiy = clansDataArea.querySelector("[data-diy]");
@@ -526,9 +620,12 @@ shadow.innerHTML=`
             dialog.setAttribute("type", "prompt");
             this.shadowRoot.append(dialog);
             dialog.setAttribute("message", "请输入宗族");
-            const newClanOption = this.createClanOption(await dialog.wait());
-            clanDiy.parentElement.insertBefore(newClanOption, clanDiy);
-            manager.append(newClanOption);
+            const result = await dialog.wait()
+            if (result !== false) {
+                const newClanOption = this.createClanOption(result);
+                clanDiy.parentElement.insertBefore(newClanOption, clanDiy);
+                manager.append(newClanOption);
+            }
         })
     }
     #listenHp() {
@@ -705,12 +802,54 @@ shadow.innerHTML=`
             attributeFilter: ['class']
         });
     }
+    addSkill(arg) {
+        const skillsDataArea = this.getDataAreaDom("skills");
+        const ul = skillsDataArea.querySelector("ul");
+        let id;
+        if (arg instanceof HTMLElement && arg.tagName === "SKILL-INFO-CARD") {
+            const node = arg;
+            id = node.getAttribute("skill-id")
+            node.removeAttribute("usable");
+            node.removeAttribute("likable");
+            node.removeAttribute("id");
+            node.removeAttribute("markWords");
+            ul.append(node);
+        } else if (typeof arg === "string" && arg.trim().length !== 0) {
+            id = arg;
+            const nowSkillInfo = this.infoQuery("skill", { skillId: id, characterId: this.getData("id") })
+            const skillCard = document.createElement("skill-info-card");
+            skillCard.setAttribute("skill-id", id);
+            skillCard.setAttribute("skill-info", JSON.stringify(nowSkillInfo));
+            skillCard.setAttribute("removable", true)
+            ul.append(skillCard);
+        } else return;
+        this.changeData("skills", id, { mode: "append" });
+        if (this.checkQuery("skillTags", { id, tags: ["hiddenSkill"] })) {
+            this.getMultipleChocieManager("more").selectByFind(node => node.dataset.moreOption === "hasHiddenSkill")
+        }
+        if (this.checkQuery("skillTags", { id, tags: ["zhuSkill"] })) {
+            this.getMultipleChocieManager("more").selectByFind(node => node.dataset.moreOption === "isZhuGong")
+        }
+    }
+    removeSkill(arg) {
+        const skillsDataArea = this.getDataAreaDom("skills");
+        const ul = skillsDataArea.querySelector("ul");
+        let id, node;
+        if (arg instanceof HTMLElement) {
+            node = arg;
+            id = node.getAttribute("skill-id");
+        } else if (typeof arg === "string" && arg.trim().length !== 0) {
+            id = arg;
+            node = ul.querySelector(`[skill-id=${id}]`);
+        } else return;
+        node.remove();
+        this.changeData("skills", id, { mode: "remove" });
+    }
     #listenSkills() {
         const skillsDataArea = this.getDataAreaDom("skills");
         const searchInput = skillsDataArea.querySelector("ruby>[contenteditable]");
         const searchInputManager = this.createEditableElementManager("skillsSearch", searchInput);
         const search = skillsDataArea.querySelector("ruby>span");
-        const ul = skillsDataArea.querySelector("ul");
         searchInputManager.inputSearch({
             searchCallback: (e, { filter, keyWords }) => {
                 this.triggerEvent("searchSkill", { from: skillsDataArea, toggleNav: true, keyWords, filter });
@@ -722,11 +861,7 @@ shadow.innerHTML=`
         });
         skillsDataArea.addEventListener("requestUseSkill", (e) => {
             const { from: node } = e.detail;
-            node.removeAttribute("usable");
-            node.removeAttribute("likable");
-            node.removeAttribute("markWords");
-            ul.append(node);
-            this.changeData("skills", node.getAttribute("skill-id"), { mode: "append" });
+            this.addSkill(node);
         });
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => {
             skillsDataArea.addEventListener(event, e => {
@@ -741,17 +876,41 @@ shadow.innerHTML=`
              */
             const node = document.getElementById(id);
             if (!node) return;
-            node.removeAttribute("usable");
-            node.removeAttribute("likable");
-            node.removeAttribute("id");
-            node.removeAttribute("markWords");
-            ul.append(node);
-            this.changeData("skills", node.getAttribute("skill-id"), { mode: "append" });
+            this.addSkill(node);
         });
         skillsDataArea.addEventListener("removeCard", (e) => {
             const { from: node } = e.detail;
-            this.changeData("skills", node.getAttribute("skill-id"), { mode: "remove" });
+            this.removeSkill(node)
         })
+    }
+    #listenMore() {
+        const moreDataArea = this.getDataAreaDom("isZhuGong");
+        const options = moreDataArea.querySelectorAll("ul li.checkbox");
+        const manager = this.createMultipleChoiceManager("more", ...options)
+            .listenAllNodes("pointerup")
+            .setCallback((type, target, funMap) => {
+                funMap.forClass("chosen");
+                this.changeData(this.dataset.moreOption, type === "add");
+            });
+    }
+    #listenIntro() {
+        const introDataArea = this.getDataAreaDom("intro");
+        const introParagraph = introDataArea.querySelector("p");
+        const editButton = introDataArea.querySelector(".edit");
+        let sourceHTML;
+        editButton.addEventListener("pointerup", async (e) => {
+            const dialog = document.createElement("noname-dialog");
+            dialog.setAttribute("type", "text");
+            if (sourceHTML) dialog.setAttribute("message", sourceHTML);
+            this.shadowRoot.append(dialog);
+            this.appendChildViaSlot(dialog, "dialogText");
+            const result = await dialog.wait();
+            if (result !== false) {
+                introParagraph.innerHTML = result.noPElementHTML;
+                sourceHTML = result.sourceHTML;
+                this.changeData("intro", result.noPElementHTML);
+            }
+        });
     }
     #listenExpanable() {
         this.shadowRoot.querySelectorAll("[class^=expandable]").forEach(node => {
@@ -774,7 +933,7 @@ shadow.innerHTML=`
         })
     }
     /**
-     * @typedef {"avatar"|"hp"|"maxHp"|"hujia"|"pinyin"|"name"|"sex"|"group"|"id"|"clans"|"skills"} dataType
+     * @typedef {"avatar"|"hp"|"maxHp"|"hujia"|"pinyin"|"name"|"sex"|"group"|"id"|"clans"|"skills"|"isZhuGong"|"intro"} dataType
      */
     /**
      * @param {dataType} type 

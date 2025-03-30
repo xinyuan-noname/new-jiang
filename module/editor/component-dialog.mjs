@@ -53,13 +53,10 @@ const groupDiyFragment = (() => {
     blurInput.value = 10;
     blurInput.max = 25;
     blurDiv.append(blurLabel, blurInput);
-
-
     const fontListDiv = document.createElement('div');
     fontListDiv.className = 'font-list';
     [
         ["minifanzhuanshu", "迷你繁篆书"],
-        ["huakangxinzhuanti", "华康新篆体"],
         ['xiaozhuan', "方正小篆体"],
         ["xinwei", "华文新魏_GBK"],
         ['huangcao', "方正黄草_GBK"],
@@ -112,7 +109,7 @@ const groupDiyStyle = (() => {
         }
 
         canvas{
-            margin: auto;
+            margin: 10px auto;
         }
 
         .font-list{
@@ -131,6 +128,19 @@ const groupDiyStyle = (() => {
         `
     return style
 })();
+const textFragment = (() => {
+    const fragment = new DocumentFragment();
+    const textEditorWrapper = document.createElement("div");
+    const textEditorToolBar = document.createElement("div");
+    const textEditorContainer = document.createElement("div");
+    textEditorToolBar.setAttribute("id", "text-editor-toolbar-container");
+    textEditorContainer.setAttribute("id", "text-editor-container");
+    textEditorWrapper.style.cssText = `display:flex;flex-direction:column;height:100%;width:100%;`
+    textEditorContainer.style.cssText = `margin-top:5px;flex:1;max-height:100%;width:100%;overflow:auto;`
+    textEditorWrapper.append(textEditorToolBar, textEditorContainer);
+    fragment.append(textEditorWrapper);
+    return fragment;
+})();
 class HTMLNonameDialogHTML extends HTMLNonameFocusUIElement {
     static dialogStack = [];
     constructor() {
@@ -143,13 +153,15 @@ shadow.innerHTML=`
         height: 100%;
         width: 100%;
         z-index: 1024;
-        position: absolute;
-        --dialog-height: 315px;
-        --dialog-width: 560px;
+        position: absolute !important;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-direction: column;
+    }
+
+    p {
+        margin: 0;
     }
 
     .curtain {
@@ -167,8 +179,8 @@ shadow.innerHTML=`
     }
 
     .dialog {
-        height: var(--dialog-height);
-        width: var(--dialog-width);
+        height: var(--dialog-height, 315px);
+        width: var(--dialog-width, 560px);
         border-radius: 13px;
         background: #e0e0e0;
         box-shadow: 20px 20px 20px #bebebe, -20px -20px 20px #ffffff, 0 0 10px black;
@@ -183,6 +195,10 @@ shadow.innerHTML=`
         display: flex;
         justify-content: space-between;
         align-items: center;
+    }
+
+    .content {
+        height: 95%;
     }
 
     .actions {
@@ -218,26 +234,26 @@ shadow.innerHTML=`
     }
     dialogendListener = [];
     dialogcancelListener = [];
-    static observedAttributes = ["type", "headline", "message", "placeholder"];
+    static observedAttributes = ["type", "headline", "message", "placeholder", "height", "width"];
     connectedCallback() {
         const remove = this.shadowRoot.querySelector(".remove");
-        remove.addEventListener("pointerdown", () => {
+        remove.addEventListener("pointerup", () => {
             this.remove();
         });
         const confirm = this.shadowRoot.querySelector(".confirm");
         const cancel = this.shadowRoot.querySelector(".cancel");
         const dialog = this.shadowRoot.querySelector(".dialog");
-        confirm.addEventListener("pointerdown", () => {
+        confirm.addEventListener("pointerup", () => {
             this.sendEvent("dialogend", dialog, void 0, { cancelable: true });
         })
-        cancel.addEventListener("pointerdown", () => {
+        cancel.addEventListener("pointerup", () => {
             this.sendEvent("dialogcancel", dialog, void 0, { cancelable: true });
         })
         dialog.addEventListener("dialogend", (e) => {
             setTimeout(() => {
                 if (!e.defaultPrevented) {
                     this.remove();
-                    this.#finishReslove();
+                    this.#finishReslove(true);
                 }
             }, 0)
         })
@@ -245,7 +261,7 @@ shadow.innerHTML=`
             setTimeout(() => {
                 if (!e.defaultPrevented) {
                     this.remove();
-                    this.#finishReslove();
+                    this.#finishReslove(false);
                 }
             }, 0)
         })
@@ -292,10 +308,7 @@ shadow.innerHTML=`
                         const cancel = this.shadowRoot.querySelector(".cancel");
                         cancel.setAttribute("hidden", true);
                     }; break;
-                    case "confirm": {
-                        this.whenEnd(() => this.#finishReslove(true));
-                        this.whenCancel(() => this.#finishReslove(false));
-                    }; break;
+                    case "confirm": break;
                     case "prompt": {
                         const content = this.shadowRoot.querySelector(".content");
                         const form = document.createElement("form");
@@ -331,7 +344,7 @@ shadow.innerHTML=`
                         const context = canvas.getContext('2d');
                         group.addEventListener("change", () => {
                             groupId.value = this.textQuery("pinyin", { text: group.value, withTone: false }).join("");
-                        })
+                        });
                         form.addEventListener("change", () => {
                             const map = new Map(new FormData(form));
                             const groupText = map.get("group");
@@ -360,7 +373,57 @@ shadow.innerHTML=`
                                 textShadow: `${color} 0 0 2px, ${color} 0 0 2px, ${color} 0 0 2px, #000 0 0 1px`
                             });
                             this.remove();
-                        })
+                        });
+                    }; break;
+                    //以下引用wangDditor
+                    case "text": {
+                        let editor
+                        const content = this.shadowRoot.querySelector(".content");
+                        const slot = this.appendChildViaSlot(textFragment.cloneNode(true), "text", content);
+                        const loadEditor = () => {
+                            const { createEditor, createToolbar } = window.wangEditor;
+                            const editorConfig = {}
+                            editor = createEditor({
+                                selector: '#text-editor-container',
+                                config: editorConfig,
+                                html: this.getAttribute("message") || void 0,
+                                mode: 'default'
+                            })
+                            const toolbarConfig = {
+                                excludeKeys: ["blockquote", "insertTable", 'group-image', 'group-video', 'group-justify', 'group-indent', "fontFamily"]
+                            }
+                            const toolbar = createToolbar({
+                                editor,
+                                selector: '#text-editor-toolbar-container',
+                                config: toolbarConfig,
+                                mode: 'default'
+                            })
+                            this.setAttribute("height", 475);
+                            console.log(toolbar.getConfig())
+                        }
+                        slot.addEventListener("slotchange", e => {
+                            "wangEditor" in window ? loadEditor() : (() => {
+                                this.loadCss(`../libs/wangeditor/style`, { root: document.head });
+                                import("./libs/wangeditor/index.js").then(loadEditor);
+                            })();
+                        });
+                        this.whenEnd(async (e) => {
+                            const sourceHTML = editor.getHtml();
+                            const parser = new DOMParser();
+                            const tempDoc = parser.parseFromString(sourceHTML, "text/html");
+                            const ps = tempDoc.body.querySelectorAll(":scope>p")
+                            ps.forEach((p, index) => {
+                                const nodes = [], flag = tempDoc.body.lastElementChild === p;
+                                nodes.push(this.createFragmentFromChildren(p));
+                                if (!flag) nodes.push(document.createElement("br"));
+                                p.replaceWith(...nodes);
+                            })
+                            const noPElementHTML = tempDoc.body.innerHTML;
+                            this.#finishReslove({
+                                sourceHTML,
+                                noPElementHTML
+                            });
+                        });
                     }; break;
                 }
                 if (this.type !== newValue) this.type = newValue;
@@ -377,6 +440,9 @@ shadow.innerHTML=`
                 } else if (this.getAttribute("type") === "prompt") {
                     const label = this.shadowRoot.querySelector("label");
                     label.textContent = newValue;
+                } else if (this.getAttribute("type") === "text") {
+                    const editor = this.querySelector("#text-editor-container");
+                    if (typeof editor.getHtml === "function" && editor.getHtml() !== newValue) editor.setHtml(newValue);
                 }
                 if (this.message !== newValue) this.message = newValue;
             }; break;
@@ -386,6 +452,12 @@ shadow.innerHTML=`
                     input.placeholder = newValue;
                 }
                 if (this.placeholder !== newValue) this.placeholder = newValue;
+            }; break;
+            case "height": {
+                this.style.setProperty("--dialog-height", parseFloat(newValue) + "px")
+            }; break;
+            case "width": {
+                this.style.setProperty("--dialog-width", parseFloat(newValue) + "px")
             }; break;
         }
     }

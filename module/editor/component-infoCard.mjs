@@ -75,8 +75,25 @@ const nonameCardStyle = (() => {
     }
 
     [data-audio-src]::after{
-        content : "🔈";
-        cursor : pointer;
+        content: "🔈";
+        cursor: pointer;
+    }
+
+    [data-audio-src].playing::after {
+        animation: play-audio 1s linear infinite;
+        cursor: not-allowed;
+    }
+
+    @keyframes play-audio {
+        0% {
+            content: "🔈";
+        }
+        50% {
+            content: "🔉";
+        }
+        100% {
+            content: "🔊";
+        }
     }`
     return style
 })();
@@ -100,8 +117,13 @@ class HTMLNonameInfoCardElement extends HTMLNonameFocusUIElement {
     connectedCallback() {
         this.shadowRoot.addEventListener("pointerdown", (e) => {
             const node = e.target;
-            if (!node.dataset.audioSrc) return;
-            this.multiMediaQuery("audioPlay", { src: node.dataset.audioSrc, volume: 1 })
+            if (node.dataset.audioSrc && !node.classList.contains("playing")) {
+                node.classList.add("playing");
+                this.multiMediaQuery("audioPlay", { src: node.dataset.audioSrc, volume: 1 })
+                    .then(()=>{
+                        node.classList.remove("playing");
+                    })
+            }
         });
     }
     attributeChangedCallback(name, oldValue, newValue) {

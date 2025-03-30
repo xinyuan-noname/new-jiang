@@ -19,9 +19,9 @@
             <div class="tool-bar">
                 <span class="reset" title="重置">⟲</span>
                 <span class="cut" title="裁剪">✂</span>
-                <span class="toggle-height" title="切换高度"></span>
             </div>
         </div>
+        <div data-setting="dieAudios"></div>
     </div>
     <div class="right">
         <div data-setting="name pinyin" data-name="" data-pinyin="" data-required="true">
@@ -62,13 +62,14 @@
                 <li data-sex-option="male-castrated" style="--url:url(/image/card/sex_male_castrated.png)">太监</li>
             </ul>
         </div>
-        <div data-setting="group" data-group="">
+        <div data-setting="group" data-group="" data-double-group="">
             <span>
                 <span>势力</span>
                 <span class="expandable-expanded" data-for="group"></span>
                 <span></span>
             </span>
             <section data-by="group">
+                <span class="checkbox" data-group-double value="double">选择多势力</span>
                 <ul>
                     <li data-group-option="wei"
                         style="--url:url(/image/card/group_wei.png);--group-text-shadow:rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, black 0 0 1px">
@@ -199,10 +200,47 @@
                 </section>
             </div>
         </div>
-        <div data-setting="isZhugong" data-zhu="false"></div>
-        <div data-setting="dieAudios" data-intro=""></div>
-        <div>
-            <div data-setting="intro" data-intro=""></div>
+        <div data-setting="isZhu hasHiddenSkill isAiForbidden" data-more data-is-zhu-gong="false" data-is-hidden="false">
+            <span>
+                <span>杂项</span>
+                <span class="expandable-expanded" data-for="more"></span>
+                <span></span>
+            </span>
+            <ul data-by="more">
+                <li class="checkbox" data-more-option="isZhuGong">
+                    <p>设为主公</p>
+                    <span></span>
+                </li>
+                <li class="checkbox" data-more-option="hasHiddenSkill">
+                    <p>登场隐匿</p>
+                    <span></span>
+                </li>
+                <li class="checkbox" data-more-option="isUnseen" title="该武将在武将包中不可见">
+                    <p>隐藏武将</p>
+                    <span></span>
+                </li>
+                <li class="checkbox" data-more-option="isAiForbidden">
+                    <p>人机禁用</p>
+                    <span></span>
+                </li>
+                <li class="checkbox" data-more-option="isBoss">
+                    <p>设为BOSS</p>
+                    <span></span>
+                </li>
+            </ul>
+        </div>
+        <div data-setting="intro" data-intro>
+            <span>
+                <span>武将介绍</span>
+                <span class="expandable-expanded" data-for="intro"></span>
+                <span></span>
+            </span>
+            <section data-by="intro">
+                <p></p>
+                <footer class="tool-bar">
+                    <button class="edit">编辑</button>
+                </footer>
+            </section>
         </div>
     </div>
 </div>

@@ -1,6 +1,13 @@
 import { game, get, lib, ui } from "../../../../noname.js";
 import url from "./url.mjs";
 const chineseRegex = /[\u4e00-\u9fff]+/;
+const parseSkill = (skillId, characterId) => {
+    if (!(skillId in lib.skill)) return null;
+    const skillName = lib.translate[skillId] || "";
+    const description = lib.translate[skillId + "_info"] || "";
+    const audios = get.Audio.skill({ skill: skillId, player: characterId }).audioList.filter(audio => audio.text);
+    return { id: skillId, name: skillName, description, audios };
+}
 class Searcher {
     static cache = {
         skill: {},
@@ -58,12 +65,6 @@ class Searcher {
         }
         return collected;
     }
-    static parseSkill(skillId, characterId) {
-        const skillName = lib.translate[skillId] || "";
-        const description = lib.translate[skillId + "_info"] || "";
-        const audios = get.Audio.skill({ skill: skillId, player: characterId }).audioList.filter(audio => audio.text);
-        return { id: skillId, name: skillName, description, audios };
-    }
     static * searchCharacterGenerator(keyWords, config) {
         for (const packageId in lib.characterPack) {
             const packageName = lib.translate[packageId + "_character_config"];
@@ -82,7 +83,7 @@ class Searcher {
                 const sex = character.trashBin.includes("sex:male_castrated") ? "男（太监）" : lib.translate[character.sex];
                 const clans = character.clans.length ? character.clans : "无"
                 const dieAudios = get.Audio.die({ player: id }).audioList.filter(audio => audio.text);
-                const skills = character.skills.map(skillId => this.parseSkill(skillId, id));
+                const skills = character.skills.map(skillId => parseSkill(skillId, id));
                 const skillList = skills.map(skill => `${skill.name}(${skill.id})`);
                 let searchText = get.plainText(`${name}(${id})${packageName}${characterSortName}${group}${sex}${clans}${skillList.join("")}`);
                 if (Array.isArray(config?.filter) && config.filter.some(word => searchText.includes(word))) {
@@ -98,7 +99,7 @@ class Searcher {
         for (const id in lib.skill) {
             const skill = lib.skill[id];
             if (skill.sub === true || skill.sourceSkill) continue;
-            const { name, description, audios } = this.parseSkill(id);
+            const { name, description, audios } = parseSkill(id);
             let searchText = `${name}${id}${description}`;
             if (Array.isArray(config?.filter) && config.filter.some(word => searchText.includes(word))) {
                 continue;
@@ -176,6 +177,54 @@ class EventManager {
     }
 }
 export class NonameData {
+    readFile(file, type = "text", encoding) {
+        if (!(file instanceof File)) throw new Error(file + "is not a file.");
+        return new Promise((resolve) => {
+            const fileReader = new FileReader();
+            fileReader.addEventListener("loadend", e => {
+                resolve(e.target.result);
+            })
+            switch (String(type).toLocaleLowerCase()) {
+                case "text": fileReader.readAsText(file, encoding); break;
+                case "arrayBuffer": fileReader.readAsArrayBuffer(file); break;
+                case "URL": case "url": fileReader.readAsDataURL(file); break;
+            }
+        })
+    }
+    submitFile(format) {
+        const input = document.createElement("input");
+        input.setAttribute("type", "file");
+        if (Array.isArray(format)) {
+            input.accept = format.join(",");
+        } else if (format) {
+            input.accept = format;
+        }
+        let resolveFile;
+        const promise = new Promise((resolve) => {
+            resolveFile = resolve;
+        })
+        input.onchange = (e) => {
+            resolveFile(input.files);
+        }
+        input.click();
+        return promise;
+    }
+    checkId(val, type) {
+        switch (type) {
+            case "character": return !(val in lib.character);
+            case "skill": return !(val in lib.skill);
+            default: return false;
+        }
+    }
+    checkSkillTags(id, tags) {
+        if (!(id in lib.skill)) return false;
+        const info = lib.skill[id];
+        if (!info) return false;
+        return tags.every(tag => info[tag]);
+    }
+    parseSkill(skillId, characterId) {
+        return parseSkill(skillId, characterId)
+    }
     createTempCharacter(characterData) {
         const tempCharacterManager = {
             id: null,
@@ -219,57 +268,6 @@ export class NonameData {
         tempCharacterManager.load();
         return tempCharacterManager;
     }
-    readFile(file, type = "text", encoding) {
-        if (!(file instanceof File)) throw new Error(file + "is not a file.");
-        return new Promise((resolve) => {
-            const fileReader = new FileReader();
-            fileReader.addEventListener("loadend", e => {
-                resolve(e.target.result);
-            })
-            switch (String(type).toLocaleLowerCase()) {
-                case "text": fileReader.readAsText(file, encoding); break;
-                case "arrayBuffer": fileReader.readAsArrayBuffer(file); break;
-                case "URL": case "url": fileReader.readAsDataURL(file); break;
-            }
-        })
-    }
-    submitFile(format) {
-        const input = document.createElement("input");
-        input.setAttribute("type", "file");
-        if (Array.isArray(format)) {
-            input.accept = format.join(",");
-        } else if (format) {
-            input.accept = format;
-        }
-        let resolveFile;
-        const promise = new Promise((resolve) => {
-            resolveFile = resolve;
-        })
-        input.onchange = (e) => {
-            resolveFile(input.files);
-        }
-        input.click();
-        return promise;
-    }
-    checkId(val, type) {
-        switch (type) {
-            case "character": return !(val in lib.character);
-            case "skill": return !(val in lib.skill);
-            default: return false;
-        }
-    }
-    parsePath(path, type) {
-        let parsedPath = path;
-        if (path.startsWith("ext:")) parsedPath = path.replace(/^ext:/, "extension/");
-        /**既然是解析路径就先不考虑从数据库读取的事情吧 */
-        // else if (path.startsWith("db:")) parsedPath = path
-        switch (type) {
-            case "audio": {
-                parsedPath = "audio" + parsedPath;
-            }; break;
-        }
-        return parsedPath;
-    }
     /**
      * @param {number} hp 
      * @param {number} maxHp 
@@ -282,6 +280,25 @@ export class NonameData {
             return "damaged";
         } else {
             return "dangerous";
+        }
+    }
+    getClanSkillId(clanName) {
+        switch (clanName) {
+            case "陈留吴氏": {
+                return 'clanmuyin';
+            };
+            case "颍川荀氏": {
+                return "clandaojie";
+            };
+            case "颍川韩氏": {
+                return "clanxumin"
+            };
+            case "太原王氏": {
+                return "clanzhongliu";
+            }
+            case "颍川钟氏": {
+                return "clanbaozu";
+            }
         }
     }
     /**
@@ -360,8 +377,8 @@ export class NonameData {
             const audio = game.playAudio({
                 path: src,
                 addVideo: false,
-                onended: resolve,
-                onerror: reject,
+                onEnded: resolve,
+                onError: reject,
             });
             if (config.volume) audio.volume = config.volume;
         })
@@ -426,12 +443,11 @@ export class NonameData {
             }
         })();
         (async () => {
-            if (!("gif" in window)) await import("./module/gif/gif.js");
+            if (!("gif" in window)) await import("./libs/gif.js/gif.js");
             const gif = new GIF({
                 worker: 20,
                 quality,
-                workerScript: `./${url}/module/gif/gif.worker.js`,
-                // debug: true
+                workerScript: `./${url}/libs/gif.js/gif.worker.js`
             })
             const response = await fetch(img.src);
             const frameManager = this.getFrame(await response.arrayBuffer(), "image/gif");
@@ -561,7 +577,7 @@ export class NonameEditorData extends NonameData {
 
 export class Stack {
     #items = [];
-    get length(){
+    get length() {
         this.#items.length;
     }
     constructor() {
@@ -571,11 +587,11 @@ export class Stack {
         this.#items.push(element);
     }
     pop() {
-        if (this.isEmpty()) return null;
+        if (this.isEmpty()) return void 0;
         return this.#items.pop();
     }
     peek() {
-        if (this.isEmpty()) return null;
+        if (this.isEmpty()) return void 0;
         return this.#items[this.#items.length - 1];
     }
     isEmpty() {
@@ -586,6 +602,9 @@ export class Stack {
     }
     clear() {
         this.#items.length = 0;
+    }
+    reverse() {
+        this.#items.reverse();
     }
     *[Symbol.iterator]() {
         for (let i = this.#items.length - 1; i > 0; i--) {

@@ -1,9 +1,11 @@
 import { NonameData, Stack } from "./data.mjs";
-import { EditableElementManager, UniqueChoiceManager } from "./encapsulated.mjs";
+import { EditableElementManager, loadCss, MultipleChoiceManager, UniqueChoiceManager } from "./encapsulated.mjs";
 export class HTMLNonameFocusUIElement extends HTMLElement {
     #server;
     #uniqueChoiceAnonymousManagerSymbol = Symbol(null);
     #uniqueChoiceManagerMap = new Map([[this.#uniqueChoiceAnonymousManagerSymbol, []]]);
+    #multipleChoiceAnonymousManagerSymbol = Symbol(null);
+    #multipleChoiceManagerMap = new Map([[this.#multipleChoiceAnonymousManagerSymbol, []]])
     #editableElementAnonymousManagerSymbol = Symbol(null);
     #editableElementManagerMap = new Map([[this.#editableElementAnonymousManagerSymbol, []]]);
     constructor() {
@@ -43,8 +45,6 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
             }
         }
     }
-    datebaseQuery(mode, query) {
-    }
     /**
      * @template {'pinyin'| 'characterTranslation'|'formatTransfer'|'skillTranslation'} T
      * @param {T} mode 
@@ -55,7 +55,7 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
      *      to: T extends 'formatTransfer' ? "kebab"|"camel" : undefined
      * }} query
      */
-    textQuery(mode, query) {
+    textQuery(mode, query = {}) {
         switch (mode) {
             case "pinyin": {
                 const { text, withTone } = query;
@@ -92,14 +92,15 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
     * }} tempCharacterQuery
     */
     /**
-     * @template {"hpStatus"|"tempCharacter"} T
+     * @template {"hpStatus"|"tempCharacter"|"clanSkillId"} T
      * @param {T} mode
-     * @param { T extends "hpStatus"?{hp:number,maxHp:number}
+     * @param { T extends "hpStatus"?{hp:number,maxHp:number}:
      *          T extends "tempCharacter"?tempCharacterQuery:
-    *          Object<string,any>
-    * } query 
+     *          T extends "clanSkillId"?{clan:string}
+     *          Object<string,any>
+     * } query 
     */
-    playerQuery(mode, query) {
+    playerQuery(mode, query = {}) {
         switch (mode) {
             case "hpStatus": {
                 const { hp, maxHp } = query;
@@ -108,6 +109,10 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
             case "tempCharacter": {
                 return this.#server.createTempCharacter(query);
             };
+            case "clanSkillId": {
+                const { clan } = query;
+                return this.#server.getClanSkillId(clan)
+            }
         }
     }
     cardQuery(mode, query) {
@@ -117,15 +122,38 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         }
     }
     /**
-     * @param {"characterId"} mode 
-     * @param {id} query 
+     * @template {"characterId"|"skillTags"} T
+     * @param {T} mode 
+     * @param {T extends "characterId"?{id:string}:
+     *         T extends "skillTags"?{id:string,tags:string[]}
+     * } query 
      */
-    checkQuery(mode, query) {
+    checkQuery(mode, query = {}) {
         switch (mode) {
             case "characterId": {
                 const { id } = query
                 return this.#server.checkId(id, "character");
             }
+            case "skillTags": {
+                const { id, tags } = query;
+                return this.#server.checkSkillTags(id, tags);
+            }
+        }
+    }
+    /**
+     * @template {"skill"} T
+     * @param {T} mode 
+     * @param {T extends "skill"?{skillId:string,characterId:string}    
+     *         T extends "clanSkill":{clan:string,characterId:string}
+     * } query 
+     * @returns 
+     */
+    infoQuery(mode, query = {}) {
+        switch (mode) {
+            case "skill": {
+                const { skillId, characterId } = query;
+                return this.#server.parseSkill(skillId, characterId);
+            };
         }
     }
     /**
@@ -176,7 +204,7 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
                 const { img, ...config } = query;
                 return this.#server.clipStaticImg(img, config);
             }
-            case "gifClip":{
+            case "gifClip": {
                 const { img, ...config } = query;
                 return this.#server.clipGif(img, config);
             }
@@ -293,9 +321,9 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
             }
         }
     }
-    dataStructureQuery(mode){
-        switch(mode){
-            case "stack":{
+    dataStructureQuery(mode) {
+        switch (mode) {
+            case "stack": {
                 return new Stack();
             }
         }
@@ -316,6 +344,23 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
      */
     getUniqueChoiceManager(label) {
         return this.#uniqueChoiceManagerMap.get(label);
+    }
+    createMultipleChoiceManager(label, ...nodes) {
+        const manager = new MultipleChoiceManager(...nodes);
+        if (label !== null && label !== void 0) {
+            this.#multipleChoiceManagerMap.set(label, manager);
+        }
+        else {
+            this.#multipleChoiceManagerMap.get(this.#multipleChoiceAnonymousManagerSymbol).push(manager);
+        }
+        return manager;
+    }
+    /**
+     * @param {string} label 
+     * @returns {MultipleChoiceManager|MultipleChoiceManager[]}
+     */
+    getMultipleChocieManager(label) {
+        return this.#multipleChoiceManagerMap.get(label);
     }
     createEditableElementManager(label, node) {
         const manager = new EditableElementManager(node);
@@ -415,9 +460,21 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         const customEvent = new CustomEvent(name, eventConfig);
         target.dispatchEvent(customEvent);
     }
+    /**
+     * @param {HTMLElement|DocumentFragment} node 
+     * @param {string} label 
+     * @param {HTMLElement} parentNode 
+     * @returns {HTMLSlotElement}
+     */
     appendChildViaSlot(node, label, parentNode = this.shadowRoot) {
-        if (!this.shadowRoot.contains(parentNode)) throw new Error(`${parentNode}必须是阴影根节点或其子节点!`)
-        node.setAttribute("slot", label);
+        if (!this.shadowRoot.contains(parentNode)) throw new Error(`${parentNode}必须是阴影根节点或其子节点!`);
+        if (node instanceof DocumentFragment) {
+            node.querySelectorAll("*").forEach(item => {
+                item.setAttribute("slot", label);
+            })
+        } else if (node instanceof HTMLElement) {
+            node.setAttribute("slot", label);
+        }
         this.appendChild(node);
         let slot = this.shadowRoot.querySelector(`slot[name="${label}"]`);
         if (slot === null) {
@@ -425,5 +482,51 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
             slot.setAttribute("name", label);
         }
         parentNode.appendChild(slot);
+        return slot;
+    }
+    /**
+     * @param {string} html 
+     * @returns {DocumentFragment}
+     */
+    createFragmentFromHTML(html) {
+        const fragment = document.createDocumentFragment();
+        if (typeof html === "string") {
+            const parser = new DOMParser();
+            fragment.append(parser.parseFromString(html, "text/html").body);
+        };
+        return fragment;
+    }
+    /**
+     * @param {Node} node 
+     * @returns {DocumentFragment}
+     */
+    createFragmentFromChildren(node) {
+        const fragment = document.createDocumentFragment();
+        if (node instanceof Node) {
+            fragment.append(...node.childNodes);
+        }
+        return fragment;
+    }
+    createElementFromSelector(selector) {
+        const tagMatch = selector.match(/^[a-zA-Z0-9]+/);
+        if (!tagMatch) {
+            throw new Error("无法解析标签名");
+        }
+        let tagName = tagMatch[0];
+        selector = selector.slice(tagMatch[0].length);
+        const element = document.createElement(tagName);
+        const idMatch = selector.match(/#([a-zA-Z0-9\-_]+)/);
+        if (idMatch) {
+            element.setAttribute(id, idMatch[1]);
+        }
+        selector = selector.slice(idMatch[0].length);
+        const classMatches = selector.match(/\.[a-zA-Z0-9\-_]+/g);
+        if (classMatches) {
+            element.classList.add(...classMatches.map(cls => cls.slice(1)));
+        }
+        return element;
+    }
+    loadCss(path, config = { root: this.shadowRoot || document.head }) {
+        return loadCss(path,config);
     }
 }

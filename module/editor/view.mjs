@@ -232,6 +232,7 @@ mainPage.innerHTML=`
         this.listenSearchEvent()
         //
         this.listenExpanable();
+        this.listenStopPropagation()
     }
     //
     listenPageClose() {
@@ -516,6 +517,13 @@ mainPage.innerHTML=`
                     manager.single("xy-ED-expandable-expanded");
                 }
             })
+        })
+    }
+    //
+    listenStopPropagation(){
+        //防止事件冒泡到window,触发各种稀奇古怪的事件
+        this.viewArea.addEventListener("keydown",(e)=>{
+            e.stopPropagation()
         })
     }
     /**

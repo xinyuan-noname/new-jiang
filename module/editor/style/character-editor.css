@@ -6,6 +6,7 @@
     font-size: var(--font-size);
     overflow: hidden;
     max-height: calc(100% - 10px);
+    position: relative;
     --data-group-text-shadow:
         rgb(78 117 140) 0 0 2px,
         rgb(78 117 140) 0 0 2px,
@@ -51,6 +52,30 @@
 
 .transparent {
     opacity: 0 !important;
+}
+
+.checkbox {
+    text-shadow: none;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.checkbox::before {
+    content: "";
+    background-color: white;
+    height: 0.8em;
+    width: 0.8em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 2px;
+}
+
+.checkbox.chosen::before {
+    content: "√";
+    color: yellow;
+    background-color: blue;
 }
 
 /* 错误提示 */
@@ -149,11 +174,11 @@ div[contenteditable="true"] {
     align-items: center;
 }
 
-.right div[data-setting] .expandable-expanded+span {
+.right .expandable-expanded+span {
     display: none;
 }
 
-.right div[data-setting] .expandable-collapsed+span {
+.right .expandable-collapsed+span {
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -166,7 +191,7 @@ div[contenteditable="true"] {
     overflow: hidden;
 }
 
-.right div[data-setting] .expandable-collapsed+span::after {
+.right .expandable-collapsed+span::after {
     width: 100%;
     height: 100%;
     overflow: hidden;
@@ -481,6 +506,23 @@ div[contenteditable="true"] {
     font-size: 24px;
 }
 
+/* 势力 */
+[data-group]>section li::after {
+    content: var(--group-type-note, none);
+    position: absolute;
+    border-radius: 50%;
+    text-shadow: var(--data-group-text-shadow);
+    background-color: rgb(198, 70, 66);
+    top: 0;
+    right: 0;
+    color: #FFF;
+}
+
+[data-group]>section.double-group-choosing li.double-group-chosen {
+    opacity: 1;
+    --group-type-note: "多";
+}
+
 /* 宗族 */
 [data-clans] ul li:not([data-diy]) {
     --url: url("../image/clan/门阀士族.png")
@@ -712,6 +754,58 @@ div[contenteditable="true"] {
 [data-skills] skill-info-card {
     font-size: 15px;
     margin-top: 2px;
+}
+
+[data-more] ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+[data-more] ul li p {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+[data-more] ul li[data-more-option] span {
+    display: inline-flex;
+    height: 1em;
+    width: 1em;
+    background-size: cover;
+}
+
+[data-more] ul li[data-more-option="isZhuGong"] span {
+    background-image: url(../image/icon/zhugong.png);
+}
+
+[data-more] ul li[data-more-option="hasHiddenSkill"] span {
+    background-image: url(/theme/style/hp/image/hidden_hp.png);
+}
+
+[data-more] ul li[data-more-option="isUnseen"] span {
+    background-image: url(../image/icon/unseen.png);
+}
+
+[data-more] ul li[data-more-option="isAiForbidden"] span {
+    background-image: url(../image/icon/ai-forbidden.png);
+}
+
+[data-more] ul li[data-more-option="isBoss"] span {
+    background-image: url(../image/icon/BOSS.png);
+}
+
+/* 介绍 */
+[data-intro] section>p {
+    text-shadow: none;
+    font-size: 0.95em;
+    margin: 10px 0;
+}
+
+[data-intro] section>p.use-default::before {
+    content: "以下为默认介绍：\n" attr(data-default-intro);
 }
 
 @keyframes spin {
