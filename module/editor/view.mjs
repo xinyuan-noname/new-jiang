@@ -337,7 +337,7 @@ mainPage.innerHTML=`
         const skillCard = document.createElement("skill-info-card");
         const { noLike, noDelete, highlight, useFor } = config;
         skillCard.setAttribute("skill-id", searchResult.id);
-        skillCard.setAttribute("skill-info", JSON.stringify(searchResult));
+        skillCard.skillInfo = searchResult;
         if (!noLike) skillCard.setAttribute("likable", true);
         if (!noDelete) skillCard.setAttribute("removable", true);
         skillCard.setAttribute("usable", true);
@@ -358,7 +358,7 @@ mainPage.innerHTML=`
         const characterCard = document.createElement("character-info-card");
         const { noLike, noDelete, highlight, useFor } = config;
         characterCard.setAttribute("character-id", searchResult.id);
-        characterCard.setAttribute("character-info", JSON.stringify(searchResult));
+        characterCard.characterInfo = searchResult;
         if (!noLike) characterCard.setAttribute("likable", true);
         if (!noDelete) characterCard.setAttribute("removable", true);
         characterCard.setAttribute("skill-likable", true);
@@ -376,8 +376,8 @@ mainPage.innerHTML=`
         const skinCard = document.createElement("skin-info-card");
         const { noDelete, useFor } = config;
         const { link, ...skinInfo } = searchResult;
+        skinCard.skinInfo = skinInfo;
         skinCard.setAttribute("src", link);
-        skinCard.setAttribute("skin-info", JSON.stringify(skinInfo));
         if (!noDelete) skinCard.setAttribute("removable", true);
         if (useFor) {
             skinCard.useForNode = useFor;
@@ -520,9 +520,9 @@ mainPage.innerHTML=`
         })
     }
     //
-    listenStopPropagation(){
+    listenStopPropagation() {
         //防止事件冒泡到window,触发各种稀奇古怪的事件
-        this.viewArea.addEventListener("keydown",(e)=>{
+        this.viewArea.addEventListener("keydown", (e) => {
             e.stopPropagation()
         })
     }

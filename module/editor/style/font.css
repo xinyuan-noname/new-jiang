@@ -1,19 +1,5 @@
-/* 得意黑 */
-@font-face {
-    font-family: 'SmileySans';
-    src: url('../font/SmileySans-Oblique.otf.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-}
-
 /* 迷你繁篆书 */
 @font-face {
     font-family: "minifanzhuanshu";
     src: url('../font/minifanzhuanshu.woff2') format('woff2');
-}
-
-/* 华康新篆体 */
-@font-face {
-    font-family: "huakangxinzhuanti";
-    src: url('../font/huakangxinzhuanti.woff2') format('woff2');
 }

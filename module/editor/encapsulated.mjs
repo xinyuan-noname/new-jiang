@@ -164,11 +164,19 @@ export class UniqueChoiceManager {
         return this.nodeList.indexOf(node);
     }
     /**
-     * @param {HTMLElement} target 
+     * @param {HTMLElement|null|number|selector} feature 
      * @returns {this}
      */
-    choose(target) {
-        this.proxy.chosen = target;
+    choose(feature) {
+        if (feature instanceof HTMLElement || feature == null) {
+            this.proxy.chosen = feature;
+        } else if (typeof feature === "number") {
+            const index = feature
+            this.proxy.chosen = this.nodeList[index];
+        } else if (typeof feature === "string") {
+            const selector = feature;
+            this.proxy.chosen = this.nodeList.find(node => node.matches(selector));
+        }
         return this;
     }
     chooseFirst() {
@@ -757,6 +765,56 @@ export class DragManager {
     constructor(parentNode, ...draggableTargets) {
         this.draggableTargetsParentNode = parentNode;
         this.draggableTargets.push(...draggableTargets);
+    }
+}
+export class ObjectURLManager {
+    /**
+     * @type {Map<any,string[]>}
+     */
+    urlLabelMap = new Map();
+    add(label, url) {
+        if (!URL.canParse(url)) throw new Error(url + "不能被解析为url");
+        if (!this.urlLabelMap.get(label)) this.urlLabelMap.set(label, []);
+        this.urlLabelMap.get(label).push(url);
+    }
+    addFromBlob(label, blob) {
+        if (!(blob instanceof Blob)) throw new Error(blob + "必须为一个Blob");
+        if (!this.urlLabelMap.get(label)) this.urlLabelMap.set(label, []);
+        const url = URL.createObjectURL(blob);
+        this.urlLabelMap.get(label).push(url);
+    }
+    remove(...args) {
+        if (args.length === 2) {
+            const [label, url] = args
+            const urlList = this.urlLabelMap.get(label);
+            const i = urlList.indexOf(url);
+            URL.revokeObjectURL(urlList[i])
+            if (i !== -1) urlList.splice(i, 1);
+        }
+        if (args.length === 1) {
+            this.urlLabelMap.forEach((urlList) => {
+                const [url] = args;
+                const i = urlList.indexOf(url);
+                URL.revokeObjectURL(urlList[i])
+                if (i !== -1) urlList.splice(i, 1);
+            })
+        }
+    }
+    clear(label) {
+        const urlList = this.urlLabelMap.get(label);
+        if (urlList) {
+            urlList.forEach(url => {
+                URL.revokeObjectURL(url);
+            })
+            urlList.length = 0;
+        }
+    }
+    getLastest(label) {
+        const urlList = this.urlLabelMap.get(label)
+        return urlList[urlList.length - 1]
+    }
+    getURLGroup(label) {
+        return this.urlLabelMap.get(label) || [];
     }
 }
 /**

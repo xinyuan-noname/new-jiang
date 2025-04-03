@@ -83,6 +83,19 @@ const nonameCardStyle = (() => {
         animation: play-audio 1s linear infinite;
         cursor: not-allowed;
     }
+    
+    [contenteditable]{
+        min-height: 1em;
+        width: 100%;
+    }
+    
+    [contenteditable]:empty::before{
+        content:"请输入语音对应的文本";
+    }
+
+    [contenteditable]:empty:focus::before{
+        content: none;
+    }
 
     @keyframes play-audio {
         0% {
@@ -115,18 +128,19 @@ class HTMLNonameInfoCardElement extends HTMLNonameFocusUIElement {
     }
     static observedAttributes = ["likable", "removable", "usable", "usefor", "markwords"];
     connectedCallback() {
-        this.shadowRoot.addEventListener("pointerdown", (e) => {
+        this.shadowRoot.addEventListener("pointerup", (e) => {
             const node = e.target;
             if (node.dataset.audioSrc && !node.classList.contains("playing")) {
                 node.classList.add("playing");
                 this.multiMediaQuery("audioPlay", { src: node.dataset.audioSrc, volume: 1 })
-                    .then(()=>{
+                    .then(() => {
                         node.classList.remove("playing");
                     })
             }
         });
     }
     attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue === newValue) return;
         const interactBar = this.shadowRoot.querySelector(".interact-bar");
         switch (name) {
             case "usable": {
@@ -178,6 +192,7 @@ class HTMLNonameInfoCardElement extends HTMLNonameFocusUIElement {
             }; break;
             case "usefor": {
                 const mainContentDiv = this.shadowRoot.querySelector(".main-content");
+                if (!mainContentDiv) break;
                 const use = interactBar.querySelector(":scope>.use");
                 if (this.useForNode && this.useForNode.id == newValue || (this.useForNode = document.getElementById(newValue))) {
                     mainContentDiv.setAttribute("draggable", "true");
@@ -233,7 +248,8 @@ class HTMLNonameInfoCardElement extends HTMLNonameFocusUIElement {
     }
 }
 class HTMLNonameSkillInfoCardElement extends HTMLNonameInfoCardElement {
-    static observedAttributes = super.observedAttributes.concat("skill-info")
+    static observedAttributes = super.observedAttributes.concat("skill-info");
+    #skillInfo;
     constructor() {
         super();
     }
@@ -241,13 +257,12 @@ class HTMLNonameSkillInfoCardElement extends HTMLNonameInfoCardElement {
         super.connectedCallback();
     }
     attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue === newValue) return;
         if (name === "skill-info") {
             const showInfo = this.shadowRoot.querySelector(".show-info");
             showInfo.replaceChildren();
-            const skillInfo = JSON.parse(newValue);
-            const fragment = document.createDocumentFragment();
+            const skillInfo = this.#skillInfo;
             if (skillInfo) {
+                const fragment = document.createDocumentFragment();
                 const mainContentDiv = document.createElement('div');
                 mainContentDiv.className = 'main-content';
                 mainContentDiv.innerHTML =
@@ -271,9 +286,17 @@ class HTMLNonameSkillInfoCardElement extends HTMLNonameInfoCardElement {
         }
         else super.attributeChangedCallback(name, oldValue, newValue);
     }
+    /**
+     * @param {any} val
+     */
+    set skillInfo(val) {
+        this.#skillInfo = val;
+        this.setAttribute("skill-info", Boolean(val));
+    }
 }
 class HTMLNonameCharacterInfoCardElement extends HTMLNonameInfoCardElement {
     static observedAttributes = super.observedAttributes.concat("character-info", "skill-likable", "skill-usable")
+    #characterInfo;
     constructor() {
         super();
     }
@@ -281,11 +304,10 @@ class HTMLNonameCharacterInfoCardElement extends HTMLNonameInfoCardElement {
         super.connectedCallback();
     }
     attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue === newValue) return;
         if (name === "character-info") {
             const showInfo = this.shadowRoot.querySelector(".show-info");
             showInfo.replaceChildren();
-            const characterInfo = JSON.parse(newValue);
+            const characterInfo = this.#characterInfo;
             if (characterInfo) {
                 const fragment = document.createDocumentFragment();
                 const mainContentDiv = document.createElement('div');
@@ -319,8 +341,8 @@ class HTMLNonameCharacterInfoCardElement extends HTMLNonameInfoCardElement {
                     const skillsUl = document.createElement('ul');
                     characterInfo.skills.forEach(skillInfoItem => {
                         const skillCard = document.createElement('skill-info-card');
-                        skillCard.setAttribute('skill-info', JSON.stringify(skillInfoItem));
                         skillCard.setAttribute('skill-id', skillInfoItem.id);
+                        skillCard.skillInfo = skillInfoItem;
                         skillsUl.appendChild(skillCard);
                     });
                     fragment.appendChild(skillsUl);
@@ -350,11 +372,18 @@ class HTMLNonameCharacterInfoCardElement extends HTMLNonameInfoCardElement {
         } else {
             super.attributeChangedCallback(name, oldValue, newValue);
         }
-
+    }
+    /**
+     * @param {any} val
+     */
+    set characterInfo(val) {
+        this.#characterInfo = val;
+        this.setAttribute("character-info", Boolean(val));
     }
 }
 class HTMLNonameSkinInfoCardElement extends HTMLNonameInfoCardElement {
     static observedAttributes = super.observedAttributes.concat("src", "skin-info")
+    #skinInfo
     constructor() {
         super();
     }
@@ -362,11 +391,10 @@ class HTMLNonameSkinInfoCardElement extends HTMLNonameInfoCardElement {
         super.connectedCallback();
     }
     attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue === newValue) return;
         switch (name) {
             case "skin-info": {
                 const showInfo = this.shadowRoot.querySelector(".show-info");
-                const skinInfo = JSON.parse(newValue);
+                const skinInfo = this.#skinInfo;
                 const fragment = document.createDocumentFragment();
                 const mainContentDiv = document.createElement('div');
                 mainContentDiv.className = "main-content";
@@ -384,6 +412,7 @@ class HTMLNonameSkinInfoCardElement extends HTMLNonameInfoCardElement {
                 showInfo.replaceChildren(fragment);
             }; break;
             case "src": {
+                if (oldValue === newValue) break;
                 const img = this.shadowRoot.querySelector("img");
                 img?.setAttribute?.("src", newValue);
             }; break;
@@ -392,7 +421,65 @@ class HTMLNonameSkinInfoCardElement extends HTMLNonameInfoCardElement {
             }; break;
         }
     }
+    /**
+     * @param {any} val
+     */
+    set skinInfo(val) {
+        this.#skinInfo = val;
+        this.setAttribute("skin-info", Boolean(val));
+    }
 }
+class HTMLNonameAudioInfoCardElement extends HTMLNonameInfoCardElement {
+    static observedAttributes = super.observedAttributes.concat("src", "value");
+    get audio() {
+        return this.shadowRoot.querySelector("audio");
+    }
+    get audioText() {
+        return this.shadowRoot.querySelector("[contenteditable]")
+    }
+    constructor() {
+        super();
+    }
+    connectedCallback() {
+        super.connectedCallback();
+        const showInfo = this.shadowRoot.querySelector(".show-info");
+        const fragment = document.createDocumentFragment();
+        const mainContentDiv = document.createElement('div');
+        mainContentDiv.className = "main-content";
+        const textContainer = document.createElement("div");
+        textContainer.textContent = "语音台词："
+        const audio = document.createElement("span");
+        audio.setAttribute("data-audio-src", this.getAttribute("src") || "");
+        const text = document.createElement("div");
+        text.contentEditable = true;
+        text.textContent = this.getAttribute("value") || "";
+        textContainer.append(audio, text);
+        mainContentDiv.append(textContainer);
+        fragment.append(mainContentDiv);
+        showInfo.replaceChildren(fragment);
+        new MutationObserver(() => {
+            if (text.textContent !== this.getAttribute("value")) this.setAttribute("value", text.textContent);
+        }).observe(text, { characterData: true, childList: true, subtree: true, });
+    }
+    attributeChangedCallback(name, oldValue, newValue) {
+        switch (name) {
+            case "src": {
+                if (oldValue === newValue) break;
+                const audio = this.shadowRoot.querySelector("[data-audio-src]");
+                audio?.setAttribute?.("data-audio-src", newValue);
+            }; break;
+            case "value": {
+                if (oldValue === newValue) break;
+                const text = this.shadowRoot.querySelector("[contenteditable]");
+                if (text.textContent !== newValue) text.textContent = newValue;
+            }; break;
+            default: {
+                super.attributeChangedCallback(name, oldValue, newValue);
+            }; break;
+        }
+    }
+}
+customElements.define("audio-info-card", HTMLNonameAudioInfoCardElement);
 customElements.define("skin-info-card", HTMLNonameSkinInfoCardElement);
 customElements.define("skill-info-card", HTMLNonameSkillInfoCardElement);
 customElements.define("character-info-card", HTMLNonameCharacterInfoCardElement);

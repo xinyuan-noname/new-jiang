@@ -63,7 +63,6 @@ const groupDiyFragment = (() => {
         ['yuanli', "方正北魏楷书_GBK"],
         ['xingkai', "方正行楷_GBK"],
         ['shousha', "方正隶变_GBK"],
-        ['SmileySans', "得意黑"]
     ].forEach(function ([fontName, fontCnName], index) {
         const fontItemDiv = document.createElement('div');
         fontListDiv.appendChild(fontItemDiv);
@@ -135,7 +134,7 @@ const textFragment = (() => {
     const textEditorContainer = document.createElement("div");
     textEditorToolBar.setAttribute("id", "text-editor-toolbar-container");
     textEditorContainer.setAttribute("id", "text-editor-container");
-    textEditorWrapper.style.cssText = `display:flex;flex-direction:column;height:100%;width:100%;`
+    textEditorWrapper.style.cssText = `display:flex;flex-direction:column;height:100%;width:100%;background:#e0e0e0`
     textEditorContainer.style.cssText = `margin-top:5px;flex:1;max-height:100%;width:100%;overflow:auto;`
     textEditorWrapper.append(textEditorToolBar, textEditorContainer);
     fragment.append(textEditorWrapper);
@@ -143,6 +142,7 @@ const textFragment = (() => {
 })();
 class HTMLNonameDialogHTML extends HTMLNonameFocusUIElement {
     static dialogStack = [];
+    static observedAttributes = ["type", "headline", "message", "placeholder", "height", "width"];
     constructor() {
         super();
         const shadow = this.attachShadow({ mode: "open" });
@@ -234,7 +234,10 @@ shadow.innerHTML=`
     }
     dialogendListener = [];
     dialogcancelListener = [];
-    static observedAttributes = ["type", "headline", "message", "placeholder", "height", "width"];
+    tempConnectedCallbacks = [];
+    addTempConnectedCallback(callabck) {
+        if (typeof callabck === "function") this.tempConnectedCallbacks.push(callabck)
+    }
     connectedCallback() {
         const remove = this.shadowRoot.querySelector(".remove");
         remove.addEventListener("pointerup", () => {
@@ -245,10 +248,10 @@ shadow.innerHTML=`
         const dialog = this.shadowRoot.querySelector(".dialog");
         confirm.addEventListener("pointerup", () => {
             this.sendEvent("dialogend", dialog, void 0, { cancelable: true });
-        })
+        });
         cancel.addEventListener("pointerup", () => {
             this.sendEvent("dialogcancel", dialog, void 0, { cancelable: true });
-        })
+        });
         dialog.addEventListener("dialogend", (e) => {
             setTimeout(() => {
                 if (!e.defaultPrevented) {
@@ -256,7 +259,7 @@ shadow.innerHTML=`
                     this.#finishReslove(true);
                 }
             }, 0)
-        })
+        });
         dialog.addEventListener("dialogcancel", (e) => {
             setTimeout(() => {
                 if (!e.defaultPrevented) {
@@ -264,17 +267,15 @@ shadow.innerHTML=`
                     this.#finishReslove(false);
                 }
             }, 0)
+        });
+        [...this.tempConnectedCallbacks].forEach(callabck => {
+            callabck();
+            this.tempConnectedCallbacks.splice(0, 1);
         })
         if (HTMLNonameDialogHTML.dialogStack.length) {
             HTMLNonameDialogHTML.dialogStack.forEach(dialog => dialog.close());
         }
         HTMLNonameDialogHTML.dialogStack.push(this);
-    }
-    close() {
-        this.setAttribute("hidden", true);
-    }
-    show() {
-        this.removeAttribute("hidden");
     }
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
@@ -377,20 +378,20 @@ shadow.innerHTML=`
                     }; break;
                     //以下引用wangDditor
                     case "text": {
-                        let editor
+                        let editor;
                         const content = this.shadowRoot.querySelector(".content");
                         const slot = this.appendChildViaSlot(textFragment.cloneNode(true), "text", content);
                         const loadEditor = () => {
                             const { createEditor, createToolbar } = window.wangEditor;
                             const editorConfig = {}
-                            editor = createEditor({
+                            const editor = createEditor({
                                 selector: '#text-editor-container',
                                 config: editorConfig,
                                 html: this.getAttribute("message") || void 0,
                                 mode: 'default'
-                            })
+                            });
                             const toolbarConfig = {
-                                excludeKeys: ["blockquote", "insertTable", 'group-image', 'group-video', 'group-justify', 'group-indent', "fontFamily"]
+                                excludeKeys: ["headerSelect", "blockquote", "insertTable", 'group-image', 'group-video', 'group-justify', 'group-indent', "fontFamily"]
                             }
                             const toolbar = createToolbar({
                                 editor,
@@ -399,14 +400,21 @@ shadow.innerHTML=`
                                 mode: 'default'
                             })
                             this.setAttribute("height", 475);
-                            console.log(toolbar.getConfig())
                         }
-                        slot.addEventListener("slotchange", e => {
+                        //因为不确定多久能够检测到id 这里0.1s检测1次
+                        new Promise(reslove => {
+                            const timer = setInterval(() => {
+                                if (document.querySelector('#text-editor-container') && document.querySelector('#text-editor-toolbar-container')) {
+                                    clearInterval(timer);
+                                    reslove();
+                                }
+                            }, 100);
+                        }).then(() => {
                             "wangEditor" in window ? loadEditor() : (() => {
                                 this.loadCss(`../libs/wangeditor/style`, { root: document.head });
-                                import("./libs/wangeditor/index.js").then(loadEditor);
+                                import("./libs/wangeditor/index.min.js").then(loadEditor);
                             })();
-                        });
+                        })
                         this.whenEnd(async (e) => {
                             const sourceHTML = editor.getHtml();
                             const parser = new DOMParser();
@@ -431,7 +439,6 @@ shadow.innerHTML=`
             case "headline": {
                 const p = this.shadowRoot.querySelector("header p");
                 p.textContent = newValue;
-                if (this.headline !== newValue) this.headline = newValue;
             }; break;
             case "message": {
                 if (["alert", "confirm"].includes(this.getAttribute("type"))) {
@@ -444,14 +451,12 @@ shadow.innerHTML=`
                     const editor = this.querySelector("#text-editor-container");
                     if (typeof editor.getHtml === "function" && editor.getHtml() !== newValue) editor.setHtml(newValue);
                 }
-                if (this.message !== newValue) this.message = newValue;
             }; break;
             case "placeholder": {
                 if (this.getAttribute("type") === "prompt") {
                     const input = this.shadowRoot.querySelector("input");
                     input.placeholder = newValue;
                 }
-                if (this.placeholder !== newValue) this.placeholder = newValue;
             }; break;
             case "height": {
                 this.style.setProperty("--dialog-height", parseFloat(newValue) + "px")
@@ -465,6 +470,12 @@ shadow.innerHTML=`
         HTMLNonameDialogHTML.dialogStack.pop();
         const length = HTMLNonameDialogHTML.dialogStack.length;
         if (length) HTMLNonameDialogHTML.dialogStack[length - 1].show();
+    }
+    close() {
+        this.setAttribute("hidden", true);
+    }
+    show() {
+        this.removeAttribute("hidden");
     }
     wait() {
         return new Promise((resolve) => {
@@ -486,30 +497,6 @@ shadow.innerHTML=`
         const dialog = this.shadowRoot.querySelector(".dialog");
         dialog.addEventListener("dialogcancel", listener, options);
         this.dialogcancelListener.push(listener);
-    }
-    /**
-     * @param {string} value
-     */
-    set message(value) {
-        this.setAttribute("message", value);
-    }
-    /**
-     * @param {string} value
-     */
-    set headline(value) {
-        this.setAttribute('headline', value);
-    }
-    /**
-     * @param {string} value
-     */
-    set placeholder(value) {
-        this.setAttribute("placeholder", value);
-    }
-    /**
-     * @param {string} value 
-     */
-    set type(value) {
-        this.setAttribute("type", value);
     }
 }
 customElements.define("noname-dialog", HTMLNonameDialogHTML);

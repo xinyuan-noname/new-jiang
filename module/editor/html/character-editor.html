@@ -1,8 +1,13 @@
-<link rel="stylesheet" href="./${url}/style/character-editor.css">
 <div>
     <div class="left">
         <div data-setting="avatar" data-avatar="">
-            <div class="avatar-view high">
+            <section>
+                <div>武将原画</div>
+                <div class="height-set" data-height-set="high">高</div>
+                <div class="height-set" data-height-set="mid">中</div>
+                <div class="height-set" data-height-set="short">矮</div>
+            </section>
+            <div class="avatar-view">
                 <div class="img-container">
                     <img draggable="false">
                     <section class="cutter">
@@ -21,7 +26,13 @@
                 <span class="cut" title="裁剪">✂</span>
             </div>
         </div>
-        <div data-setting="dieAudios"></div>
+        <div data-setting="dieAudios" data-die-audios="">
+            <header>
+                <div>阵亡语音</div>
+                <div class="add">添加</div>
+            </header>
+            <section data-by="dieAudios"></section>
+        </div>
     </div>
     <div class="right">
         <div data-setting="name pinyin" data-name="" data-pinyin="" data-required="true">
@@ -200,34 +211,66 @@
                 </section>
             </div>
         </div>
-        <div data-setting="isZhu hasHiddenSkill isAiForbidden" data-more data-is-zhu-gong="false" data-is-hidden="false">
+        <div data-setting="isZhu hasHiddenSkill isAiForbidden" data-more data-is-zhu-gong="false"
+            data-is-hidden="false">
             <span>
                 <span>杂项</span>
-                <span class="expandable-expanded" data-for="more"></span>
+                <span class="expandable-collapsed" data-for="more"></span>
                 <span></span>
             </span>
-            <ul data-by="more">
-                <li class="checkbox" data-more-option="isZhuGong">
-                    <p>设为主公</p>
-                    <span></span>
-                </li>
-                <li class="checkbox" data-more-option="hasHiddenSkill">
-                    <p>登场隐匿</p>
-                    <span></span>
-                </li>
-                <li class="checkbox" data-more-option="isUnseen" title="该武将在武将包中不可见">
-                    <p>隐藏武将</p>
-                    <span></span>
-                </li>
-                <li class="checkbox" data-more-option="isAiForbidden">
-                    <p>人机禁用</p>
-                    <span></span>
-                </li>
-                <li class="checkbox" data-more-option="isBoss">
-                    <p>设为BOSS</p>
-                    <span></span>
-                </li>
-            </ul>
+            <section data-by="more" class="hidden">
+                <ul>
+                    <li class="checkbox" data-more-option="isZhuGong">
+                        <p>常备主公</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="hasHiddenSkill">
+                        <p>登场隐匿</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="isAiForbidden">
+                        <p>人机禁用</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="isBoss" title="挑战模式下BOSS">
+                        <p>设为BOSS</p>
+                        <span></span>
+                    </li>
+                </ul>
+                <span>
+                    <span class="expandable-collapsed" data-for="more-more">更多选项</span>
+                </span>
+                <ul data-by="more-more" class="hidden">
+                    <li class="checkbox" data-more-option="isUnseen" title="该武将在武将包中不可见">
+                        <p>隐藏武将</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="isChessBoss" title="战旗模式下的BOSS">
+                        <p>战旗BOSS</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="isJiangeBoss" title="剑阁模式下的BOSS">
+                        <p>剑阁BOSS</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="isJiangeMech" title="剑阁模式下的机械">
+                        <p>剑阁机械</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="isFellowInStoneMode" tilte="炉石模式下的随从">
+                        <p>炉石随从</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="isSpecialInStoneMode" tilte="炉石模式下的特殊随从（可以使用装备和法术）">
+                        <p>炉石特殊随从</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="isHiddenInStoneMode" tilte="炉石模式下的隐藏武将">
+                        <p>炉石隐藏武将</p>
+                        <span></span>
+                    </li>
+                </ul>
+            </section>
         </div>
         <div data-setting="intro" data-intro>
             <span>
@@ -236,9 +279,10 @@
                 <span></span>
             </span>
             <section data-by="intro">
-                <p></p>
+                <p class="use-default" data-default-intro="暂无武将介绍"></p>
                 <footer class="tool-bar">
                     <button class="edit">编辑</button>
+                    <button class="edit-default">基于默认介绍编辑</button>
                 </footer>
             </section>
         </div>

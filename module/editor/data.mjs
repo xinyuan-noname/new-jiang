@@ -165,6 +165,48 @@ class Searcher {
         })();
     }
 }
+class AST {
+    static #ast = {
+        acorn: null,
+        acornWalker: null,
+        astring: null,
+    }
+    acorn = AST.#ast.acorn;
+    acornWalker = AST.#ast.acornWalker;
+    astring = AST.#ast.astring;
+    generate(code) {
+        const { acorn } = this;
+        const node = acorn.parse(code, {
+            ecmaVersion: 2020,
+            sourceType: 'module',
+            locations: true
+        })
+        return node;
+    }
+    /**
+     * @returns {Promise<void>}
+     */
+    load() {
+        let loading;
+        if (!AST.#ast.acorn && !AST.#ast.acornWalker && !AST.#ast.astring) {
+            loading = Promise.all([
+                import("./libs/acorn/acorn.mjs").then(module => {
+                    AST.#ast.acorn = { ...module };
+                }),
+                import("./libs/acorn-walk/walk.mjs").then(module => {
+                    AST.#ast.acornWalker = { ...module };
+                }),
+                import("./libs/astring/astring.min.js").then(module => {
+                    AST.#ast.astring = window.astring;
+                    delete window.astring;
+                })
+            ]);
+        } else {
+            loading = Promise.resolve();
+        }
+        return loading;
+    }
+}
 class EventManager {
     #eventMap = {}
     on(type, callback) {
@@ -177,21 +219,39 @@ class EventManager {
     }
 }
 export class NonameData {
+    /**
+     * @param {Blob|URL} file 
+     * @param {"text"|"arrayBuffer"|"url"} type 
+     * @param {string} encoding 
+     * @returns 
+     */
     readFile(file, type = "text", encoding) {
-        if (!(file instanceof File)) throw new Error(file + "is not a file.");
-        return new Promise((resolve) => {
-            const fileReader = new FileReader();
-            fileReader.addEventListener("loadend", e => {
-                resolve(e.target.result);
+        if ((file instanceof Blob)) {
+            return new Promise((resolve) => {
+                const fileReader = new FileReader();
+                fileReader.addEventListener("loadend", e => {
+                    resolve(e.target.result);
+                })
+                switch (String(type).toLocaleLowerCase()) {
+                    case "text": fileReader.readAsText(file, encoding); break;
+                    case "arrayBuffer": fileReader.readAsArrayBuffer(file); break;
+                    case "URL": case "url": fileReader.readAsDataURL(file); break;
+                }
             })
-            switch (String(type).toLocaleLowerCase()) {
-                case "text": fileReader.readAsText(file, encoding); break;
-                case "arrayBuffer": fileReader.readAsArrayBuffer(file); break;
-                case "URL": case "url": fileReader.readAsDataURL(file); break;
-            }
-        })
+        } else if (URL.canParse(file) || file instanceof URL) {
+            let url = file;
+            fetch(url).then(async response => {
+                if (!response.ok) throw new Error(response.statusText);
+                switch (type) {
+                    case "text": return await response.text();
+                    case "arrayBuffer": return await response.arrayBuffer();
+                    case "url": case "URL": return await this.readFile(await response.blob(), "url");
+                }
+            })
+        }
+        else throw new TypeError(file + "不是可以被读取的文件或文件的URL");
     }
-    submitFile(format) {
+    submitFile(format, multiple = false) {
         const input = document.createElement("input");
         input.setAttribute("type", "file");
         if (Array.isArray(format)) {
@@ -199,12 +259,13 @@ export class NonameData {
         } else if (format) {
             input.accept = format;
         }
+        if (multiple) input.setAttribute("multiple", true);
         let resolveFile;
         const promise = new Promise((resolve) => {
             resolveFile = resolve;
         })
         input.onchange = (e) => {
-            resolveFile(input.files);
+            resolveFile(Array.from(input.files));
         }
         input.click();
         return promise;
@@ -301,9 +362,12 @@ export class NonameData {
             }
         }
     }
+    getCharacterIntro(id) {
+        return get.characterIntro(id);
+    }
     /**
-     * @param {"character"} type 
-     * @param {"sex"|"group"} attr 
+     * @param {"character"|"skill"} type 
+     * @param {"sex"|"group"|"name"} attr 
      * @param {string} text 
      */
     getTranslation(type, attr, text) {
@@ -312,11 +376,14 @@ export class NonameData {
                 case "sex": {
                     if (text === "none") return "无性";
                     if (text === "male-castrated") return "太监";
-                    return lib.translate[text] + "性";
+                    return (lib.translate[text] || "") + "性";
                 }
                 case "group": {
-                    let group = lib.translate[text];
+                    let group = lib.translate[text] || "";
                     return group + "势力";
+                }
+                case "name": {
+                    return lib.translate[text] || "";
                 }
             }
         }
@@ -397,6 +464,20 @@ export class NonameData {
         })()
         return manager;
     }
+    async getAST() {
+        const ast = new AST();
+        await ast.load();
+        return ast;
+    }
+    /**
+     * @param {Blob|URL} fileSource 
+     */
+    async getAbstractSyntaxTreeFromFileSource(fileSource) {
+        const astObject = new AST();
+        const code = await this.readFile(fileSource, "text");
+        const node = astObject.generate(code)
+        return { ast: astObject, node };
+    }
     /**
      * @param {*} img 
      * @param {*} config 
@@ -459,8 +540,9 @@ export class NonameData {
                 frame.src = tempCanvas.toDataURL();
                 await new Promise(r => {
                     frame.onload = () => {
-                        let delay = result.image.duration / 1e6;
+                        let delay = (result.image?.duration || 1e4) / 1e6;
                         if (!isNaN(minDelay) && delay < minDelay) delay = minDelay;
+                        console.log(delay);
                         gif.addFrame(frame, { delay });
                         r()
                     }
@@ -571,44 +653,5 @@ export class NonameEditorData extends NonameData {
     continueSearch(type, require) {
         if (!this.searchManager[type]) return [];
         return this.searchManager[type].search(require);
-    }
-    getData() { }
-}
-
-export class Stack {
-    #items = [];
-    get length() {
-        this.#items.length;
-    }
-    constructor() {
-        this.#items = [];
-    }
-    push(element) {
-        this.#items.push(element);
-    }
-    pop() {
-        if (this.isEmpty()) return void 0;
-        return this.#items.pop();
-    }
-    peek() {
-        if (this.isEmpty()) return void 0;
-        return this.#items[this.#items.length - 1];
-    }
-    isEmpty() {
-        return this.#items.length === 0;
-    }
-    size() {
-        return this.#items.length;
-    }
-    clear() {
-        this.#items.length = 0;
-    }
-    reverse() {
-        this.#items.reverse();
-    }
-    *[Symbol.iterator]() {
-        for (let i = this.#items.length - 1; i > 0; i--) {
-            yield this.#items[i];
-        }
     }
 }

@@ -1,4 +1,3 @@
-import url from "./url.mjs";
 import { preventEnter, toggleMultiClass } from "./encapsulated.mjs";
 import { HTMLNonameFocusUIElement } from "./component-base.mjs";
 import "./component-infoCard.mjs";
@@ -9,11 +8,16 @@ class HTMLNonameCharacterEditorElement extends HTMLNonameFocusUIElement {
         const shadow = this.attachShadow({ mode: "open" });
         //$: shadow , html/character-editor.html//
 shadow.innerHTML=`
-<link rel="stylesheet" href="./${url}/style/character-editor.css">
 <div>
     <div class="left">
         <div data-setting="avatar" data-avatar="">
-            <div class="avatar-view high">
+            <section>
+                <div>武将原画</div>
+                <div class="height-set" data-height-set="high">高</div>
+                <div class="height-set" data-height-set="mid">中</div>
+                <div class="height-set" data-height-set="short">矮</div>
+            </section>
+            <div class="avatar-view">
                 <div class="img-container">
                     <img draggable="false">
                     <section class="cutter">
@@ -32,7 +36,13 @@ shadow.innerHTML=`
                 <span class="cut" title="裁剪">✂</span>
             </div>
         </div>
-        <div data-setting="dieAudios"></div>
+        <div data-setting="dieAudios" data-die-audios="">
+            <header>
+                <div>阵亡语音</div>
+                <div class="add">添加</div>
+            </header>
+            <section data-by="dieAudios"></section>
+        </div>
     </div>
     <div class="right">
         <div data-setting="name pinyin" data-name="" data-pinyin="" data-required="true">
@@ -211,34 +221,66 @@ shadow.innerHTML=`
                 </section>
             </div>
         </div>
-        <div data-setting="isZhu hasHiddenSkill isAiForbidden" data-more data-is-zhu-gong="false" data-is-hidden="false">
+        <div data-setting="isZhu hasHiddenSkill isAiForbidden" data-more data-is-zhu-gong="false"
+            data-is-hidden="false">
             <span>
                 <span>杂项</span>
-                <span class="expandable-expanded" data-for="more"></span>
+                <span class="expandable-collapsed" data-for="more"></span>
                 <span></span>
             </span>
-            <ul data-by="more">
-                <li class="checkbox" data-more-option="isZhuGong">
-                    <p>设为主公</p>
-                    <span></span>
-                </li>
-                <li class="checkbox" data-more-option="hasHiddenSkill">
-                    <p>登场隐匿</p>
-                    <span></span>
-                </li>
-                <li class="checkbox" data-more-option="isUnseen" title="该武将在武将包中不可见">
-                    <p>隐藏武将</p>
-                    <span></span>
-                </li>
-                <li class="checkbox" data-more-option="isAiForbidden">
-                    <p>人机禁用</p>
-                    <span></span>
-                </li>
-                <li class="checkbox" data-more-option="isBoss">
-                    <p>设为BOSS</p>
-                    <span></span>
-                </li>
-            </ul>
+            <section data-by="more" class="hidden">
+                <ul>
+                    <li class="checkbox" data-more-option="isZhuGong">
+                        <p>常备主公</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="hasHiddenSkill">
+                        <p>登场隐匿</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="isAiForbidden">
+                        <p>人机禁用</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="isBoss" title="挑战模式下BOSS">
+                        <p>设为BOSS</p>
+                        <span></span>
+                    </li>
+                </ul>
+                <span>
+                    <span class="expandable-collapsed" data-for="more-more">更多选项</span>
+                </span>
+                <ul data-by="more-more" class="hidden">
+                    <li class="checkbox" data-more-option="isUnseen" title="该武将在武将包中不可见">
+                        <p>隐藏武将</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="isChessBoss" title="战旗模式下的BOSS">
+                        <p>战旗BOSS</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="isJiangeBoss" title="剑阁模式下的BOSS">
+                        <p>剑阁BOSS</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="isJiangeMech" title="剑阁模式下的机械">
+                        <p>剑阁机械</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="isFellowInStoneMode" tilte="炉石模式下的随从">
+                        <p>炉石随从</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="isSpecialInStoneMode" tilte="炉石模式下的特殊随从（可以使用装备和法术）">
+                        <p>炉石特殊随从</p>
+                        <span></span>
+                    </li>
+                    <li class="checkbox" data-more-option="isHiddenInStoneMode" tilte="炉石模式下的隐藏武将">
+                        <p>炉石隐藏武将</p>
+                        <span></span>
+                    </li>
+                </ul>
+            </section>
         </div>
         <div data-setting="intro" data-intro>
             <span>
@@ -247,9 +289,10 @@ shadow.innerHTML=`
                 <span></span>
             </span>
             <section data-by="intro">
-                <p></p>
+                <p class="use-default" data-default-intro="暂无武将介绍"></p>
                 <footer class="tool-bar">
                     <button class="edit">编辑</button>
+                    <button class="edit-default">基于默认介绍编辑</button>
                 </footer>
             </section>
         </div>
@@ -258,7 +301,9 @@ shadow.innerHTML=`
 //#: shadow , html/character-editor.html//
     }
     connectedCallback() {
+        this.loadCss("character-editor", { root: this.shadowRoot });
         this.#listenAvatar();
+        this.#listenDieAudios();
         this.#listenName();
         this.#listenId();
         this.#listenSex();
@@ -272,8 +317,7 @@ shadow.innerHTML=`
         this.#listenExpanable();
     }
     #listenAvatar() {
-        let imgType = "", minDelay = 0.05;
-        const URLStack = this.dataStructureQuery("stack");
+        let imgType = "", minDelay = 0.01;
         const avatarDataArea = this.getDataAreaDom("avatar");
         const avatar = avatarDataArea.querySelector('.avatar-view');
         const imgContainer = avatarDataArea.querySelector(".avatar-view .img-container");
@@ -287,22 +331,28 @@ shadow.innerHTML=`
          * @param {File} file 
          */
         const loadFile = async (file) => {
-            for (const url of URLStack) {
-                URL.revokeObjectURL(url);
-            }
-            URLStack.push(URL.createObjectURL(file));
+            this.clearObjectURLRecords("avatar");
+            this.createAndRecordObjectURL("avatar", file);
+            const url = this.getLastestURLRecord("avatar");
             imgType = file.type;
             img.style.cssText = "";
-            img.src = URLStack.peek();
-            avatar.classList.add("done");
-            this.changeData("avatar", URLStack.peek());
-        }
-        const reloadImage = (url) => {
-            URLStack.push(url);
             img.src = url;
             avatar.classList.add("done");
             this.changeData("avatar", url);
         }
+        const reloadImage = (url) => {
+            this.recordObjectURL("avatar", url);
+            img.src = url;
+            avatar.classList.add("done");
+            this.changeData("avatar", url);
+        }
+        this.createUniqueChoiceManager("height-set", ...avatarDataArea.querySelectorAll(".height-set"))
+            .listenSiblings("pointerup")
+            .setCallback((last, now) => {
+                avatar.classList.remove(last?.dataset?.heightSet);
+                avatar.classList.add(now?.dataset?.heightSet);
+            })
+            .chooseFirst();
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => {
             avatar.addEventListener(event, e => {
                 if (avatar.classList.contains("done")) return;
@@ -429,8 +479,8 @@ shadow.innerHTML=`
                                 minDelay,
                                 useClientData: true
                             })
-                            clipManager.on("dataend", URLStack.length === 1 ? (result) => {
-                                minDelay = result.image.duration / 1e6;
+                            clipManager.on("dataend", this.getURLRecordGroup("avatar").length === 1 ? (results) => {
+                                minDelay = (results[0]?.image?.duration || 1e4) / 1e6;
                                 avatar.classList.remove("cutting");
                             } : () => {
                                 avatar.classList.remove("cutting");
@@ -467,17 +517,39 @@ shadow.innerHTML=`
             img.classList.add(scaleH < scaleW ? "full-height" : "full-width");
         })
     }
+    #listenDieAudios() {
+        const dieAudiosDataArea = this.getDataAreaDom("dieAudios");
+        const dieAudioSection = dieAudiosDataArea.querySelector("section")
+        const addButton = dieAudiosDataArea.querySelector(".add");
+        addButton.addEventListener("pointerdown", async e => {
+            const files = await this.fileQuery("submit", { format: "audio/*", multiple: true });
+            files.forEach(file => {
+                this.createAndRecordObjectURL("dieAudio", file);
+                const audioCard = document.createElement("audio-info-card");
+                audioCard.setAttribute("src", this.getLastestURLRecord("dieAudio"));
+                audioCard.setAttribute("removable", true)
+                dieAudioSection.append(audioCard);
+            })
+        });
+        new MutationObserver((mutationList) => {
+            for (const mutation of mutationList) {
+                if(mutation.target.matches("audio-info-card")){
+                    mutation.target
+                }
+            }
+        }).observe(dieAudioSection, { attributes: true, attributeFilter: ["value"] })
+    }
     #listenName() {
         const nameDataArea = this.getDataAreaDom("name")
         const nameInput = nameDataArea.querySelector('div');
         const pinyinInput = nameDataArea.querySelector('rt');
         preventEnter(nameInput, pinyinInput);
         new MutationObserver(() => {
-            this.changeData("name", nameInput.innerText);
-            pinyinInput.innerText = this.textQuery("pinyin", { text: nameInput.innerText, withTone: true });
+            this.changeData("name", nameInput.textContent);
+            pinyinInput.textContent = this.textQuery("pinyin", { text: nameInput.textContent, withTone: true });
         }).observe(nameInput, { characterData: true, subtree: true, childList: true });
         new MutationObserver(() => {
-            this.changeData("pinyin", pinyinInput.innerText);
+            this.changeData("pinyin", pinyinInput.textContent);
         }).observe(pinyinInput, { characterData: true, subtree: true, childList: true });
     }
     #listenId() {
@@ -488,11 +560,12 @@ shadow.innerHTML=`
         preventEnter(idInput);
         button.addEventListener("pointerup", () => {
             const pinyin = this.textQuery("pinyin", { text: this.getData("name"), withTone: false }).join("");
-            idInput.innerText = pinyin;
+            idInput.textContent = pinyin;
         });
         new MutationObserver(() => {
-            this.changeData("id", idInput.innerText)
-            if (this.checkQuery("characterId", { id: idInput.innerText })) {
+            this.changeData("id", idInput.textContent)
+            this.changeData("defaultIntro", this.playerQuery("intro", { id: idInput.textContent }));
+            if (this.checkQuery("characterId", { id: idInput.textContent })) {
                 if (title.classList.contains("wrong")) title.classList.remove("wrong");
             } else {
                 if (!title.classList.contains("wrong")) title.classList.add("wrong");
@@ -819,7 +892,7 @@ shadow.innerHTML=`
             const nowSkillInfo = this.infoQuery("skill", { skillId: id, characterId: this.getData("id") })
             const skillCard = document.createElement("skill-info-card");
             skillCard.setAttribute("skill-id", id);
-            skillCard.setAttribute("skill-info", JSON.stringify(nowSkillInfo));
+            skillCard.skillInfo = nowSkillInfo;
             skillCard.setAttribute("removable", true)
             ul.append(skillCard);
         } else return;
@@ -842,7 +915,7 @@ shadow.innerHTML=`
             id = arg;
             node = ul.querySelector(`[skill-id=${id}]`);
         } else return;
-        node.remove();
+        node?.remove?.();
         this.changeData("skills", id, { mode: "remove" });
     }
     #listenSkills() {
@@ -893,24 +966,72 @@ shadow.innerHTML=`
                 this.changeData(this.dataset.moreOption, type === "add");
             });
     }
-    #listenIntro() {
+    introStandardize(html) {
+        const parser = new DOMParser();
+        const tempDoc = parser.parseFromString(html, "text/html");
+        tempDoc.normalize();
+        tempDoc.body.querySelectorAll("br").forEach(br => {
+            if (br.previousSibling) {
+                const p = document.createElement();
+                p.innerHTML = br.previousSibling.innerHTML || br.previousSibling.textContent;
+                br.previousSibling.replaceWith(p);
+            }
+            if (br.nextSibling) {
+                const p = document.createElement();
+                p.innerHTML = br.previousSibling.innerHTML || br.nextSibling.textContent;
+                br.nextSibling.replaceWith(p);
+            }
+        })
+        if (!tempDoc.body.matches("p")) {
+            const p = document.createElement("p");
+            p.innerHTML = tempDoc.body.innerHTML;
+            tempDoc.body.replaceChildren(p);
+        }
+        return tempDoc.body.innerHTML;
+    }
+    setIntro(html) {
         const introDataArea = this.getDataAreaDom("intro");
         const introParagraph = introDataArea.querySelector("p");
+        if (html && introParagraph.dataset.defaultIntro !== html) {
+            introParagraph.classList.remove("use-default");
+            introParagraph.innerHTML = html;
+        } else {
+            introParagraph.classList.add("use-default");
+            introParagraph.innerHTML = "";
+            html = "";
+        }
+        this.changeData("intro", html);
+    }
+    #listenIntro() {
+        const introDataArea = this.getDataAreaDom("intro");
         const editButton = introDataArea.querySelector(".edit");
-        let sourceHTML;
+        const defaultEditButton = introDataArea.querySelector(".edit-default")
         editButton.addEventListener("pointerup", async (e) => {
             const dialog = document.createElement("noname-dialog");
+            const noPElementHTML = this.getData("intro");
             dialog.setAttribute("type", "text");
-            if (sourceHTML) dialog.setAttribute("message", sourceHTML);
+            if (noPElementHTML) dialog.setAttribute("message", this.introStandardize(noPElementHTML));
             this.shadowRoot.append(dialog);
             this.appendChildViaSlot(dialog, "dialogText");
             const result = await dialog.wait();
             if (result !== false) {
-                introParagraph.innerHTML = result.noPElementHTML;
-                sourceHTML = result.sourceHTML;
-                this.changeData("intro", result.noPElementHTML);
+                const html = result.noPElementHTML.trim();
+                this.setIntro(html);
             }
         });
+        defaultEditButton.addEventListener("pointerup", async () => {
+            const dialog = document.createElement("noname-dialog");
+            const noPElementHTML = this.getData("default-intro");
+            dialog.setAttribute("type", "text");
+            if (noPElementHTML) dialog.setAttribute("message", this.introStandardize(noPElementHTML));
+            this.shadowRoot.append(dialog);
+            this.appendChildViaSlot(dialog, "dialogText");
+            const result = await dialog.wait();
+            if (result !== false) {
+                const html = result.noPElementHTML.trim();
+                this.setIntro(html);
+            }
+        })
     }
     #listenExpanable() {
         this.shadowRoot.querySelectorAll("[class^=expandable]").forEach(node => {
@@ -933,7 +1054,7 @@ shadow.innerHTML=`
         })
     }
     /**
-     * @typedef {"avatar"|"hp"|"maxHp"|"hujia"|"pinyin"|"name"|"sex"|"group"|"id"|"clans"|"skills"|"isZhuGong"|"intro"} dataType
+     * @typedef {"avatar"|"dieAudios"|"hp"|"maxHp"|"hujia"|"pinyin"|"name"|"sex"|"group"|"id"|"clans"|"skills"|"isZhuGong"|"intro"} dataType
      */
     /**
      * @param {dataType} type 
@@ -949,6 +1070,10 @@ shadow.innerHTML=`
     changeData(type, val, config) {
         if (!type) return;
         switch (type) {
+            case "name": {
+                this.getDataAreaDom("name").dataset["name"] = val;
+                this.style.setProperty("--data-name", `'${val}'`);
+            }; break;
             case "id": {
                 this.getDataAreaDom("id").dataset["id"] = val;
                 this.style.setProperty("--data-id", `'${val}'`);
@@ -956,9 +1081,6 @@ shadow.innerHTML=`
             case "pinyin": {
                 this.getDataAreaDom("pinyin").dataset["pinyin"] = val;
                 this.style.setProperty("--data-pinyin", val == "" ? "" : `'(${val})'`);
-            }; break;
-            case "group": {
-                this.getDataAreaDom("group").dataset["group"] = val;
             }; break;
             case "sex": {
                 this.getDataAreaDom("sex").dataset["sex"] = val;
@@ -1003,8 +1125,8 @@ shadow.innerHTML=`
                 this.style.setProperty("--data-" + type, `url(${val})`);
             }; break;
             default: {
-                this.getDataAreaDom(type).dataset[type] = val;
-                this.style.setProperty("--data-" + type, `'${val}'`);
+                const target = this.getDataAreaDom(type);
+                if (target) target.dataset[type] = val;
             }; break;
         }
     }
@@ -1018,6 +1140,7 @@ shadow.innerHTML=`
         switch (camelizedType) {
             case "hp": case "maxHp": case "hujia": return Number(result);
             case "skills": return result.split(" ");
+            case "intro": return result.trim();
             default: return result;
         }
     }

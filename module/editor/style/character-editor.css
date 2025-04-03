@@ -37,6 +37,11 @@
     overflow: hidden;
 }
 
+audio-info-card,
+skill-info-card {
+    font-size: 16px;
+    margin-top: 2px;
+}
 
 .full-height {
     height: 100%;
@@ -122,7 +127,7 @@
     text-shadow: none;
 }
 
-ul {
+:not([data-intro]) ul {
     padding: 0;
     margin: 0;
 }
@@ -150,6 +155,8 @@ div[contenteditable="true"] {
     flex-direction: column;
     height: 100%;
     flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .left {
@@ -159,8 +166,6 @@ div[contenteditable="true"] {
 
 .right {
     justify-content: flex-start;
-    overflow-y: auto;
-    overflow-x: hidden;
 }
 
 .right div[data-setting] {
@@ -233,6 +238,28 @@ div[contenteditable="true"] {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    margin-bottom: 5px;
+}
+
+[data-avatar]>section {
+    display: flex;
+    font-size: 0.9em;
+    width: 100%;
+}
+
+[data-avatar]>section *:first-child {
+    margin-right: auto;
+}
+
+[data-avatar]>section *:first-child~* {
+    margin-left: 4px;
+    text-shadow: none;
+    cursor: pointer;
+    transition: 0.1s;
+}
+
+[data-avatar]>section *:first-child~*:hover {
+    transform: scale(1.5);
 }
 
 [data-avatar]>.avatar-view {
@@ -274,8 +301,9 @@ div[contenteditable="true"] {
     display: flex;
     align-items: center;
     justify-content: center;
-    content: "请选择文件或拖入文件";
+    content: "1.点击选择原画文件 \A 2.拖入原画文件";
     position: absolute;
+    white-space: pre;
 }
 
 /* 图片编辑栏 */
@@ -436,6 +464,31 @@ div[contenteditable="true"] {
     font-size: 14px;
     text-shadow: none;
     position: relative;
+}
+
+/* 阵亡语音 */
+[data-die-audios] {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    width: 12em;
+}
+
+[data-die-audios] header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9em;
+}
+
+
+[data-die-audios] .add {
+    text-shadow: none;
+    cursor: pointer;
+}
+
+[data-die-audios] section {
+    max-height: 200px;
+    overflow: auto;
 }
 
 /* 武将名 */
@@ -751,9 +804,9 @@ div[contenteditable="true"] {
     font-size: 16px;
 }
 
-[data-skills] skill-info-card {
-    font-size: 15px;
-    margin-top: 2px;
+[data-more] section {
+    display: flex;
+    flex-direction: column;
 }
 
 [data-more] ul {
@@ -761,6 +814,10 @@ div[contenteditable="true"] {
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
+}
+
+[data-more] ul li {
+    margin: 0 10px;
 }
 
 [data-more] ul li p {
@@ -793,7 +850,7 @@ div[contenteditable="true"] {
     background-image: url(../image/icon/ai-forbidden.png);
 }
 
-[data-more] ul li[data-more-option="isBoss"] span {
+[data-more] ul li[data-more-option*="Boss"] span {
     background-image: url(../image/icon/BOSS.png);
 }
 
@@ -801,11 +858,21 @@ div[contenteditable="true"] {
 [data-intro] section>p {
     text-shadow: none;
     font-size: 0.95em;
-    margin: 10px 0;
+    margin: 0;
+    padding: 2px;
+}
+
+[data-intro] section>p.use-default {
+    display: flex;
+    flex-direction: column;
 }
 
 [data-intro] section>p.use-default::before {
-    content: "以下为默认介绍：\n" attr(data-default-intro);
+    content: "以下为默认介绍：";
+}
+
+[data-intro] section>p.use-default::after {
+    content: attr(data-default-intro);
 }
 
 @keyframes spin {

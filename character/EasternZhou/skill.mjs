@@ -115,7 +115,7 @@ SkillCreater("xjb_yiben", {
 })
 
 //曲沃庄伯
-SkillCreater("xjb_",{})
+SkillCreater("xjb_", {})
 
 //急子&寿
 SkillCreater("xjb_tongzhou", {
@@ -618,9 +618,9 @@ SkillCreater("xjb_ranrong", {
 		global: "useCardAfter"
 	},
 	filter(event, player) {
-		if (!event.targets.includes(player)) return false;
+		if (event.targets && !event.targets.includes(player)) return false;
 		if (event.player === player) return false;
-		if (get.type(event.card) !== "trick" || get.color(event.card) !== "red") return false;
+		if (get.type(event.card) !== "trick" || get.color(event.card) === "red") return false;
 		if (player.getHistory("useCard", evt => evt.card.name === "wuxie" && evt.respondTo && evt.respondTo[0] === event.player && evt.respondTo[1] === event.card).length) return false;
 		return true;
 	},
