@@ -321,7 +321,7 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         }
     }
     /**
-     * @template {"getAbstractSyntaxTreeFromFileSource"}
+     * @template {"getAbstractSyntaxTreeFromFileSource"|"generateCharacterCode"} T
      * @param {T} mode 
      * @param {T extends "getAbstractSyntaxTreeFromFileSource"?{fileSource:Blob|URL}
      * } query 
@@ -334,6 +334,9 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
             case "getAbstractSyntaxTreeFromFileSource": {
                 const { fileSource } = query
                 return this.#server.getAbstractSyntaxTreeFromFileSource(fileSource);
+            }
+            case "generateCharacterCode": {
+                return this.#server.genCharacterCode(query)
             }
         }
     }
@@ -407,7 +410,7 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
     getLastestURLRecord(label) {
         return this.#objectURLManager.getLastest(label);
     }
-    getURLRecordGroup(label){
+    getURLRecordGroup(label) {
         return this.#objectURLManager.getURLGroup(label);
     }
     /**
@@ -460,7 +463,7 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
     }
     /**
      * @param {string} name 
-     * @param {HTMLElement} load 
+     * @param {Object<string,any>} load 
      * @param {CustomEventInit} config 
      */
     triggerEvent(name, load, config = {}) {

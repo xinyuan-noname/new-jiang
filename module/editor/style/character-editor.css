@@ -27,16 +27,6 @@
     --data-avatar: url();
 }
 
-:host>div {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-    width: 100%;
-    max-height: calc(100% - 20px);
-    overflow: hidden;
-}
-
 audio-info-card,
 skill-info-card {
     font-size: 16px;
@@ -148,6 +138,53 @@ div[contenteditable="true"] {
     overflow: hidden;
 }
 
+.menu {
+    position: absolute;
+    display: flex;
+    z-index: 1024;
+}
+
+.menu>* {
+    border-radius: 50%;
+    transition: 0.1s;
+    box-shadow: 0 0 5px #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-icon {
+    width: 36px;
+    height: 36px;
+}
+
+.menu:hover .menu-icon {
+    font-size: 48px;
+    width: 72px;
+    height: 72px;
+}
+
+.menu-icon~* {
+    height: 48px;
+    width: 48px;
+    cursor: pointer;
+    text-shadow: none;
+    font-weight: 800;
+}
+
+.menu:not(:hover) .menu-icon~* {
+    display: none;
+}
+
+.content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    width: 100%;
+    max-height: calc(100% - 20px);
+    overflow: hidden;
+}
 
 .left,
 .right {
@@ -155,8 +192,6 @@ div[contenteditable="true"] {
     flex-direction: column;
     height: 100%;
     flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
 }
 
 .left {
@@ -166,15 +201,17 @@ div[contenteditable="true"] {
 
 .right {
     justify-content: flex-start;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
-.right div[data-setting] {
+.right .data-setting {
     display: flex;
     flex-direction: column;
     margin-bottom: 10px;
 }
 
-.right div[data-setting]>span {
+.right .data-setting>span {
     display: flex;
     align-items: center;
 }

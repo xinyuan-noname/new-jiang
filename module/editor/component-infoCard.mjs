@@ -90,7 +90,7 @@ const nonameCardStyle = (() => {
     }
     
     [contenteditable]:empty::before{
-        content:"请输入语音对应的文本";
+        content:"请点击这里，以输入语音对应的文本";
     }
 
     [contenteditable]:empty:focus::before{
@@ -471,7 +471,10 @@ class HTMLNonameAudioInfoCardElement extends HTMLNonameInfoCardElement {
             case "value": {
                 if (oldValue === newValue) break;
                 const text = this.shadowRoot.querySelector("[contenteditable]");
-                if (text.textContent !== newValue) text.textContent = newValue;
+                if (text.textContent !== newValue) {
+                    text.textContent = newValue;
+                    this.triggerEvent("audioTextChange", { oldValue, newValue });
+                }
             }; break;
             default: {
                 super.attributeChangedCallback(name, oldValue, newValue);

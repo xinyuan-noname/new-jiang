@@ -509,7 +509,7 @@ export class MultipleChoiceManager {
         this.nodeList.length = j;
     }
     /**
-     * @param {number|HTMLElement|"all"} query 
+     * @param {number|HTMLElement} query 
      * @returns {any|any[]}
      */
     getInfo(query) {
@@ -519,9 +519,10 @@ export class MultipleChoiceManager {
             return this.collectedInfo.find(infoObject => {
                 if (infoObject?.source === query) return infoObject?.info;
             })
-        } else if (query === "all") {
-            return this.collectedInfo.map(infoObject => infoObject?.info);
         }
+    }
+    getAllInfo(){
+        return this.collectedInfo.map(infoObject => infoObject?.info);
     }
     getLastestInfo() {
         return this.collectedInfo?.[this.collectedInfo.length - 1]?.info;

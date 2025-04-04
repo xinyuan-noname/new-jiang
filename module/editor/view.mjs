@@ -314,7 +314,7 @@ mainPage.innerHTML=`
     listenSideBarCharacter() {
         const { sideBarCharacter } = this;
         const noneCharacterCardButton = sideBarCharacter.querySelector("button");
-        noneCharacterCardButton.addEventListener("pointerdown", () => {
+        noneCharacterCardButton.addEventListener("pointerup", () => {
             this.createCharacterEditor();
         });
     }

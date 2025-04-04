@@ -167,38 +167,163 @@ class Searcher {
 }
 class AST {
     static #ast = {
-        acorn: null,
-        acornWalker: null,
-        astring: null,
+        Babel: null,
     }
-    acorn = AST.#ast.acorn;
-    acornWalker = AST.#ast.acornWalker;
-    astring = AST.#ast.astring;
-    generate(code) {
-        const { acorn } = this;
-        const node = acorn.parse(code, {
-            ecmaVersion: 2020,
-            sourceType: 'module',
-            locations: true
-        })
+    get babel() {
+        return AST.#ast.Babel;
+    }
+    get Babel() {
+        return AST.#ast.Babel;
+    }
+    get parser() {
+        return this.Babel?.packages?.parser;
+    }
+    get generator() {
+        return this.Babel?.packages?.generator;
+    }
+    get traverse() {
+        return this.Babel?.packages?.traverse?.default;
+    }
+    get types() {
+        return this.Babel?.packages?.types;
+    }
+    parseCode(code, configs) {
+        const { parser } = this;
+        const abstractSyntaxTree = parser.parse(code, configs);
+        return abstractSyntaxTree;
+    }
+    traverseAST(ast, config) {
+        const { traverse } = this;
+        traverse(ast, config);
+    }
+    getNodeByType(ast, type) {
+        let target = null;
+        this.traverseAST(ast, {
+            [type]: (path) => {
+                target = path;
+                path.stop();
+            }
+        });
+        return target;
+    }
+    getNodeListByType(ast, type) {
+        const nodeList = [];
+        this.traverseAST(ast, {
+            [type]: (path) => {
+                nodeList.push(path)
+            }
+        });
+        return target;
+    }
+    //create系列函数 从给定的值中创建对应的AST节点
+    createNode(val) {
+        let node;
+        if (Array.isArray(val)) {
+            node = this.createArrayExpression(val);
+        } else if (typeof val === "object" && val !== null) {
+            node = this.createObjectExpression(val);
+        } else {
+            node = this.createLiteral(val);
+        }
         return node;
+    }
+    createLiteral(literal) {
+        let literalPath;
+        const { types } = this;
+        switch (true) {
+            case (literal instanceof RegExp): {
+                literalPath = types.regExpLiteral(literal.source, literal.flags);
+            }; break;
+            case (typeof literal === "bigint"): {
+                literalPath = types.regExpLiteral(literal.toString());
+            }; break;
+            case (typeof literal === "string"): {
+                literalPath = types.StringLiteral(literal);
+            }; break;
+            case (typeof literal === "number"): {
+                literalPath = types.NumberLiteral(literal);
+            }; break;
+            case (literal === null): {
+                literalPath = types.NullLiteral();
+            }; break;
+        }
+        return literalPath;
+    }
+    createArrayExpression(array) {
+        const { types } = this;
+        return types.ArrayExpression(array.map(element => this.createNode(element)).filter(Boolean));
+    }
+    createFunction(func) {
+        const funcAST = this.parser.parse(func.toString());
+        const funcNode = this.getNodeByType(funcAST, "FunctionExpression|ArrowFunctionExpression");
+        return funcNode;
+    }
+    createObjectProperty(key, val) {
+        const { types } = this;
+        let keyPath, valuePath;
+        if (typeof key === "string") {
+            valuePath = this.createNode(val);
+            if (valuePath) {
+                keyPath = this.checkIdentifierValid(key) ? types.identifier(key) : types.StringLiteral(key);
+                return this.types.ObjectProperty(keyPath, valuePath);
+            }
+        }
+    }
+    createObjectMethod(name, func) {
+        const { types } = this;
+        let namePath, funcPath;
+        if (typeof name === "string") {
+            funcPath = this.createFunction(func);
+            if (funcPath) {
+                namePath = this.checkIdentifierValid(name) ? types.identifier(name) : types.StringLiteral(name);
+                return this.types.ObjectMehod("method", namePath, funcPath);
+            }
+        }
+    }
+    createObjectExpression(object) {
+        const { types } = this;
+        const objectExpression = types.ObjectExpression([])
+        for (const k in object) {
+            if (object.hasOwnProperty(k)) {
+                if (typeof object[k] !== "function") {
+                    const property = this.createObjectProperty(k, object[k]);
+                    if (property) objectExpression.properties.push(property);
+                } else {
+                    const method = this.createObjectMethod(k, object[k]);
+                    if (method) objectExpression.properties.push(method);
+                }
+            }
+        }
+        return objectExpression;
+    }
+    //
+    checkIdentifierValid(identifier) {
+        try {
+            this.parseCode(`var ${identifier};`);
+            return true;
+        } catch (err) {
+            return false;
+        }
+    }
+    replaceWithLiteral(path, literal) {
+        let literalPath = this.createLiteral(literal);
+        if (literalPath) path.replaceWith(literalPath);
+    }
+    generateCode(ast, configs) {
+        const { generator } = this;
+        const code = generator.generate(ast, configs);
+        return code;
     }
     /**
      * @returns {Promise<void>}
      */
     load() {
         let loading;
-        if (!AST.#ast.acorn && !AST.#ast.acornWalker && !AST.#ast.astring) {
+        if (!AST.#ast.Babel) {
             loading = Promise.all([
-                import("./libs/acorn/acorn.mjs").then(module => {
-                    AST.#ast.acorn = { ...module };
-                }),
-                import("./libs/acorn-walk/walk.mjs").then(module => {
-                    AST.#ast.acornWalker = { ...module };
-                }),
-                import("./libs/astring/astring.min.js").then(module => {
-                    AST.#ast.astring = window.astring;
-                    delete window.astring;
+                import("./libs/babel/standalone/babel.min.js").then(module => {
+                    AST.#ast.Babel = window.Babel;
+                    // delete window.Babel;
                 })
             ]);
         } else {
@@ -473,15 +598,32 @@ export class NonameData {
      * @param {Blob|URL} fileSource 
      */
     async getAbstractSyntaxTreeFromFileSource(fileSource) {
-        const astObject = new AST();
+        const astObject = await this.getAST();
         const code = await this.readFile(fileSource, "text");
-        const node = astObject.generate(code)
+        const node = astObject.parseCode(code)
         return { ast: astObject, node };
     }
+    newCharacterExpressionStatement = "lib.character['xxx'] = new lib.element.Character();";
+    async genCharacterCode(characterInfo, mode = 'object') {
+        const { id, intro, pinyin, dieAudioText, ...basicCharacterInfo } = characterInfo;
+        const astObject = await this.getAST();
+        const ast = astObject.parseCode(this.newCharacterExpressionStatement);
+        switch (mode) {
+            case "object": {
+                const stringLiteral = astObject.getNodeByType(ast, "StringLiteral");
+                const newExpression = astObject.getNodeByType(ast, "NewExpression");
+                astObject.replaceWithLiteral(stringLiteral, id);
+                newExpression.node.arguments.push(astObject.createNode(basicCharacterInfo));
+            }
+            case "array": {
+
+            }
+        }
+        return astObject.generateCode(ast).code;
+    }
     /**
-     * @param {*} img 
-     * @param {*} config 
-     * @returns 
+     * @param {HTMLImageElement} img 
+     * @param {Object} config 
      */
     clipGif(img, config) {
         if (!(img instanceof HTMLImageElement)) throw new Error(`${img}必须为HTMLImageElement对象！`)
@@ -542,7 +684,6 @@ export class NonameData {
                     frame.onload = () => {
                         let delay = (result.image?.duration || 1e4) / 1e6;
                         if (!isNaN(minDelay) && delay < minDelay) delay = minDelay;
-                        console.log(delay);
                         gif.addFrame(frame, { delay });
                         r()
                     }
@@ -572,7 +713,6 @@ export class NonameData {
     /**
      * @param {HTMLImageElement} img 
      * @param {Object} config 
-     * @returns 
      */
     clipStaticImg(img, config) {
         if (!(img instanceof HTMLImageElement)) throw new Error(`${img}必须为HTMLImageElement对象！`)

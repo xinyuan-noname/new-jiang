@@ -4,6 +4,9 @@
  * node ./module/editor/preprocessing/preprocessing.cjs 1
  * nodemon --ext mjs,html --exec "node ./module/editor/preprocessing/preprocessing.cjs 1"
  */
+/**
+ * html-minifier ./module/editor/html/character-editor.html --collapse-whitespace --remove-comments --minify-js --minify-css -o ./module/editor/html/character-editor.min.html
+ */
 //
 const fs = require("fs");
 const path = require("path");

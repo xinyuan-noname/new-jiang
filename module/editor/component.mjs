@@ -3,14 +3,39 @@ import { HTMLNonameFocusUIElement } from "./component-base.mjs";
 import "./component-infoCard.mjs";
 import "./component-dialog.mjs";
 class HTMLNonameCharacterEditorElement extends HTMLNonameFocusUIElement {
+    characterAttributes = [
+        "avatar",
+        "dieAudios", "dieAudioText",
+        "name", "pinyin",
+        "id",
+        "sex",
+        "group", "doubleGroup",
+        "clans",
+        "hp", "maxHp", "hujia",
+        "skills",
+        "isZhuGong",
+        "hasHiddenSkill",
+        "isAiForbidden",
+        "isBoss",
+        "isChessBoss",
+        "isUnseen",
+        "isJiangeBoss", "isJiangeMech",
+        "isFellowInStoneMode", "isSpecialInStoneMode", "isHiddenInStoneMode",
+        "intro"
+    ];
     constructor() {
         super();
         const shadow = this.attachShadow({ mode: "open" });
         //$: shadow , html/character-editor.html//
 shadow.innerHTML=`
-<div>
+<section class="menu">
+    <div class="menu-icon">🔧</div>
+    <div class="close">关闭界面</div>
+    <div class="gen-code">生成代码</div>
+</section>
+<div class="content">
     <div class="left">
-        <div data-setting="avatar" data-avatar="">
+        <div class="data-setting" data-avatar="">
             <section>
                 <div>武将原画</div>
                 <div class="height-set" data-height-set="high">高</div>
@@ -36,7 +61,7 @@ shadow.innerHTML=`
                 <span class="cut" title="裁剪">✂</span>
             </div>
         </div>
-        <div data-setting="dieAudios" data-die-audios="">
+        <div class="data-setting" data-die-audios="" data-die-audio-text="">
             <header>
                 <div>阵亡语音</div>
                 <div class="add">添加</div>
@@ -45,7 +70,7 @@ shadow.innerHTML=`
         </div>
     </div>
     <div class="right">
-        <div data-setting="name pinyin" data-name="" data-pinyin="" data-required="true">
+        <div class="data-setting" data-name="" data-pinyin="">
             <span>
                 <span>姓名</span>
                 <span class="expandable-expanded" data-for="name"></span>
@@ -58,7 +83,7 @@ shadow.innerHTML=`
                 <rp>)</rp>
             </ruby>
         </div>
-        <div data-setting="id" data-id="">
+        <div class="data-setting" data-id="">
             <span>
                 <span>武将标识符(id)</span>
                 <span class="expandable-expanded" data-for="id"></span>
@@ -69,7 +94,7 @@ shadow.innerHTML=`
                 <button>使用拼音</button>
             </ruby>
         </div>
-        <div data-setting="sex" data-sex="">
+        <div class="data-setting" data-sex="">
             <span>
                 <span>性别</span>
                 <span class="expandable-expanded" data-for="sex"></span>
@@ -83,7 +108,7 @@ shadow.innerHTML=`
                 <li data-sex-option="male-castrated" style="--url:url(/image/card/sex_male_castrated.png)">太监</li>
             </ul>
         </div>
-        <div data-setting="group" data-group="" data-double-group="">
+        <div class="data-setting" data-group="" data-double-group="">
             <span>
                 <span>势力</span>
                 <span class="expandable-expanded" data-for="group"></span>
@@ -125,7 +150,7 @@ shadow.innerHTML=`
                 </ul>
             </section>
         </div>
-        <div data-setting="clans" data-clans="">
+        <div class="data-setting" data-clans="">
             <span>
                 <span>宗族</span>
                 <span class="expandable-collapsed" data-for="clans"></span>
@@ -147,7 +172,7 @@ shadow.innerHTML=`
                 </ul>
             </section>
         </div>
-        <div data-setting="hp maxHp hujia" data-hp="4" data-max-hp="4" data-hujia="0">
+        <div class="data-setting" data-hp="4" data-max-hp="4" data-hujia="0">
             <span>
                 <span>体力&护甲</span>
                 <span class="expandable-expanded" data-for="hp"></span>
@@ -200,7 +225,7 @@ shadow.innerHTML=`
                 </div>
             </div>
         </div>
-        <div data-setting="skills" data-skills="" id="noname-skill-editor-skills-setting">
+        <div class="data-setting" data-skills="" id="noname-skill-editor-skills-setting">
             <span>
                 <span>技能</span>
                 <span class="expandable-expanded" data-for="skills"></span>
@@ -221,8 +246,7 @@ shadow.innerHTML=`
                 </section>
             </div>
         </div>
-        <div data-setting="isZhu hasHiddenSkill isAiForbidden" data-more data-is-zhu-gong="false"
-            data-is-hidden="false">
+        <div class="data-setting" data-more>
             <span>
                 <span>杂项</span>
                 <span class="expandable-collapsed" data-for="more"></span>
@@ -282,7 +306,7 @@ shadow.innerHTML=`
                 </ul>
             </section>
         </div>
-        <div data-setting="intro" data-intro>
+        <div class="data-setting" data-intro>
             <span>
                 <span>武将介绍</span>
                 <span class="expandable-expanded" data-for="intro"></span>
@@ -302,6 +326,8 @@ shadow.innerHTML=`
     }
     connectedCallback() {
         this.loadCss("character-editor", { root: this.shadowRoot });
+        this.#listenMenu();
+        //
         this.#listenAvatar();
         this.#listenDieAudios();
         this.#listenName();
@@ -315,6 +341,18 @@ shadow.innerHTML=`
         this.#listenIntro();
         //
         this.#listenExpanable();
+    }
+    #listenMenu() {
+        const menu = this.shadowRoot.querySelector(".menu");
+        const closeButton = menu.querySelector(".close");
+        const genCodeButton = menu.querySelector(".gen-code");
+        closeButton.addEventListener("pointerup", () => {
+            this.remove();
+        })
+        genCodeButton.addEventListener("pointerup", async () => {
+            const codeString = await this.genCode();
+            console.log(codeString);
+        })
     }
     #listenAvatar() {
         let imgType = "", minDelay = 0.01;
@@ -522,22 +560,18 @@ shadow.innerHTML=`
         const dieAudioSection = dieAudiosDataArea.querySelector("section")
         const addButton = dieAudiosDataArea.querySelector(".add");
         addButton.addEventListener("pointerdown", async e => {
-            const files = await this.fileQuery("submit", { format: "audio/*", multiple: true });
-            files.forEach(file => {
-                this.createAndRecordObjectURL("dieAudio", file);
-                const audioCard = document.createElement("audio-info-card");
-                audioCard.setAttribute("src", this.getLastestURLRecord("dieAudio"));
-                audioCard.setAttribute("removable", true)
-                dieAudioSection.append(audioCard);
-            })
+            if (dieAudioSection.childNodes.length) return;
+            const [file] = await this.fileQuery("submit", { format: "audio/*" });
+            this.createAndRecordObjectURL("dieAudio", file);
+            const audioCard = document.createElement("audio-info-card");
+            audioCard.setAttribute("src", this.getLastestURLRecord("dieAudio"));
+            audioCard.setAttribute("removable", true)
+            dieAudioSection.append(audioCard);
         });
-        new MutationObserver((mutationList) => {
-            for (const mutation of mutationList) {
-                if(mutation.target.matches("audio-info-card")){
-                    mutation.target
-                }
-            }
-        }).observe(dieAudioSection, { attributes: true, attributeFilter: ["value"] })
+        dieAudioSection.addEventListener("audioTextChange", e => {
+            console.log(e);
+            if (e.detail?.newValue) this.changeData("dieAudioText", e.detail.newValue);
+        })
     }
     #listenName() {
         const nameDataArea = this.getDataAreaDom("name")
@@ -590,6 +624,40 @@ shadow.innerHTML=`
         li.style.setProperty("--group-text-shadow", textShadow);
         return li;
     }
+    setGroup(info) {
+        const { groupName, groupTextShadow, groupId } = info;
+        this.style.setProperty(
+            "--data-group",
+            `"${groupName || ""}势力"`
+        );
+        this.style.setProperty(
+            "--data-group-text-shadow",
+            groupTextShadow || ""
+        );
+        this.changeData("group", groupId);
+    }
+    /**
+     * @typedef {{groupId:string,groupName:string,groupTextShadow:string}} groupInfo
+     * @param {groupInfo} mainGroupInfo 
+     * @param {groupInfo[]} infoList 
+     */
+    setDoubleGroup(mainGroupInfo, infoList) {
+        const groupIdList = infoList.map(info => info.groupId).filter(Boolean);
+        const groupNameList = infoList.map(info => info.groupName).filter(Boolean);
+        const groupTextShadowList = infoList.map(info => info.groupTextShadow).filter(Boolean);
+        this.style.setProperty(
+            "--data-group",
+            `"${[mainGroupInfo.groupName, ...groupNameList].join("/")}势力"`
+        );
+        this.style.setProperty(
+            "--data-group-text-shadow",
+            [mainGroupInfo.groupTextShadow, ...groupTextShadowList].join(",")
+        );
+        this.changeData(
+            "doubleGroup",
+            groupIdList.length ? [mainGroupInfo.groupId, ...groupIdList].join(" ") : ""
+        );
+    }
     #listenGroup() {
         const groupDataArea = this.getDataAreaDom("group")
         const groupChosenSection = groupDataArea.querySelector("section");
@@ -620,42 +688,41 @@ shadow.innerHTML=`
         singleManager.listenAllNodes("pointerup", () => !chosenModeManager.getLastestInfo())
             .setCallback((pre, now, funcMap) => {
                 funcMap.forClass("chosen");
-                this.changeData("group", now.dataset.groupOption);
-                const textShadow = now.style.getPropertyValue("--group-text-shadow");
-                this.style.setProperty("--data-group", `"${now.textContent.trim()}势力"`);
-                if (textShadow) {
-                    this.style.setProperty("--data-group-text-shadow", textShadow);
-                }
+                this.setGroup({
+                    groupId: now?.dataset?.groupOption,
+                    groupName: now?.textContent?.trim(),
+                    groupTextShadow: now?.style?.getPropertyValue?.("--group-text-shadow")
+                });
             })
             .choose(groupOptions[0]);
-        doubleManager.listenAllNodes("pointerup", (_event, node) => chosenModeManager.getLastestInfo() === "double" && !node.classList.contains("chosen"))
+        doubleManager
+            .listenAllNodes("pointerup", (_event, node) => chosenModeManager.getLastestInfo() === "double" && !node.classList.contains("chosen"))
             .setCallback((type, target, funMap) => {
                 funMap.forClass("double-group-chosen");
-                const info = doubleManager.getInfo("all");
-                const groupList = info.map(info => info.groupName).filter(Boolean);
-                const groupTextShadowList = info.map(info => info.groupTextShadow.replace(", black 0 0 1px", "")).filter(Boolean);
-                groupList.unshift(singleManager.chosen?.textContent?.trim?.());
-                groupTextShadowList.unshift(singleManager.chosen?.style?.getPropertyValue?.("--group-text-shadow"));
-                this.style.setProperty(
-                    "--data-group",
-                    `"${groupList.join("/")}势力"`
-                );
-                this.style.setProperty(
-                    "--data-group-text-shadow",
-                    groupTextShadowList.join(",")
-                )
+                const infoList = doubleManager.getAllInfo();
+                const groupChosen = singleManager.chosen;
+                const groupInfo = {
+                    groupId: groupChosen?.dataset?.groupOption,
+                    groupName: groupChosen?.textContent?.trim(),
+                    groupTextShadow: groupChosen?.style?.getPropertyValue?.("--group-text-shadow")
+                }
+                this.setDoubleGroup(groupInfo, infoList);
             })
             .setGetInfoMethod(target => {
-                return { groupName: target?.textContent?.trim(), groupTextShadow: target.style.getPropertyValue("--group-text-shadow") };
-            })
+                return {
+                    groupId: target?.dataset?.groupOption,
+                    groupName: target?.textContent?.trim(),
+                    groupTextShadow: target?.style?.getPropertyValue?.("--group-text-shadow")
+                };
+            });
         const groupDiy = groupDataArea.querySelector("[data-diy]");
         groupDiy.addEventListener("pointerup", async () => {
             const dialog = document.createElement("noname-dialog");
             dialog.setAttribute("type", "diygroup");
             this.shadowRoot.append(dialog);
-            const result = await dialog.wait()
-            if (result !== false) {
-                const newGroupOption = this.createGroupOption(false);
+            const result = await dialog.wait();
+            if (!result) {
+                const newGroupOption = this.createGroupOption(result);
                 groupDiy.parentElement.insertBefore(newGroupOption, groupDiy);
                 singleManager.append(newGroupOption);
                 doubleManager.append(newGroupOption);
@@ -694,7 +761,7 @@ shadow.innerHTML=`
             this.shadowRoot.append(dialog);
             dialog.setAttribute("message", "请输入宗族");
             const result = await dialog.wait()
-            if (result !== false) {
+            if (!result) {
                 const newClanOption = this.createClanOption(result);
                 clanDiy.parentElement.insertBefore(newClanOption, clanDiy);
                 manager.append(newClanOption);
@@ -956,14 +1023,34 @@ shadow.innerHTML=`
             this.removeSkill(node)
         })
     }
+    changeMoreSetting(attrName, val) {
+        const moreDataArea = this.getDataAreaDom("more");
+        const attr = "data-" + this.textQuery("formatTransfer", { text: attrName, to: "kebab" })
+        switch (val) {
+            case false: {
+                moreDataArea.removeAttribute(attr);
+            }; break;
+            case true: {
+                moreDataArea.setAttribute(attr, true);
+            }; break;
+            case undefined: case null: {
+                moreDataArea.hasAttribute(attr) ?
+                    moreDataArea.removeAttribute(attr) :
+                    moreDataArea.setAttribute(attr, true);
+            }
+            default: {
+                moreDataArea.setAttribute(attr, val);
+            }
+        }
+    }
     #listenMore() {
-        const moreDataArea = this.getDataAreaDom("isZhuGong");
+        const moreDataArea = this.getDataAreaDom("more");
         const options = moreDataArea.querySelectorAll("ul li.checkbox");
         const manager = this.createMultipleChoiceManager("more", ...options)
             .listenAllNodes("pointerup")
             .setCallback((type, target, funMap) => {
                 funMap.forClass("chosen");
-                this.changeData(this.dataset.moreOption, type === "add");
+                this.changeMoreSetting(target.dataset.moreOption)
             });
     }
     introStandardize(html) {
@@ -1136,37 +1223,26 @@ shadow.innerHTML=`
      */
     getData(type) {
         const camelizedType = this.textQuery("formatTransfer", { to: "camel", text: type });
-        let result = this.getDataAreaDom(type).dataset[camelizedType];
+        let result = this.getDataAreaDom(type)?.dataset?.[camelizedType];
         switch (camelizedType) {
             case "hp": case "maxHp": case "hujia": return Number(result);
-            case "skills": return result.split(" ");
+            case "skills": case "doubleGroup": return result.split(" ").filter(Boolean);
             case "intro": return result.trim();
-            default: return result;
+            default: {
+                if (camelizedType.startsWith("is") || camelizedType.startsWith("has")) return Boolean(result);
+                return result;
+            }
         }
     }
-    preview() {
-        const tempCharacterManager = this.playerQuery("tempCharacter", {
-            id: this.getData("id"),
-            name: this.getData("name"),
-            sex: this.getData("sex"),
-            group: this.getData("group"),
-            hp: this.getData("hp"),
-            maxHp: this.getData("maxHp"),
-            hujia: this.getData("hujia"),
-            skills: this.getData("skills"),
-            clans: this.getData("clans"),
-            avatar: this.getData("avatar")
+    getAllData() {
+        const dataList = {};
+        this.characterAttributes.forEach((attr) => {
+            dataList[attr] = this.getData(attr);
         });
-        const playerElement = tempCharacterManager.use();
-        playerElement.style.position = "absolute";
-        playerElement.style.top = 0;
-        playerElement.style.bottom = 0;
-        playerElement.style.left = 0;
-        playerElement.style.right = 0;
-        playerElement.style.margin = "auto";
-        const nonameDialog = document.createElement("noname-dialog");
-        nonameDialog.append(playerElement);
-        this.shadowRoot.append(nonameDialog);
+        return dataList;
+    }
+    genCode() {
+        return this.codeQuery("generateCharacterCode", this.getAllData())
     }
 }
 customElements.define("character-editor", HTMLNonameCharacterEditorElement);
