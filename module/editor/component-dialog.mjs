@@ -12,47 +12,17 @@ const groupDiyFragment = (() => {
     const form = document.createElement('form');
 
     const groupDiv = document.createElement('div');
-    const groupLabel = document.createElement('label');
-    const groupInput = document.createElement('input');
-    groupLabel.setAttribute('for', "group");
-    groupLabel.textContent = "势力名称";
-    groupInput.id = "group";
-    groupInput.name = "group";
-    groupInput.type = "text";
-    groupInput.maxLength = 2;
-    groupDiv.append(groupLabel, groupInput);
+    groupDiv.innerHTML = `<label for="group">势力名称</label><input id="group" name="group" type="text" max-length="2">`;
 
     const groupIdDiv = document.createElement('div');
-    const groupIdLabel = document.createElement('label');
-    const groupIdInput = document.createElement('input');
-    groupIdLabel.setAttribute('for', "group-id");
-    groupIdLabel.textContent = "势力id";
-    groupIdInput.id = "group-id";
-    groupIdInput.name = "group-id"
-    groupIdInput.type = "text";
-    groupIdDiv.append(groupIdLabel, groupIdInput);
+    groupIdDiv.innerHTML = `<label for="group-id">势力id</label><input id="group-id" name="group-id" type="text">`;
 
     const colorDiv = document.createElement('div');
-    const colorLabel = document.createElement('label');
-    const colorInput = document.createElement('input');
-    colorLabel.setAttribute('for', "color");
-    colorLabel.textContent = "设置阴影颜色";
-    colorInput.id = "color";
-    colorInput.type = "color";
-    colorInput.name = "color";
-    colorDiv.append(colorLabel, colorInput);
+    colorDiv.innerHTML = `<label for="color">设置阴影颜色</label><input id="color" name="color" type="color">`;
 
     const blurDiv = document.createElement('div');
-    const blurLabel = document.createElement('label');
-    const blurInput = document.createElement('input');
-    blurLabel.setAttribute('for', "blur");
-    blurLabel.textContent = "设置阴影模糊程度";
-    blurInput.id = "blur";
-    blurInput.type = "range";
-    blurInput.name = "blur";
-    blurInput.value = 10;
-    blurInput.max = 25;
-    blurDiv.append(blurLabel, blurInput);
+    blurDiv.innerHTML = `<label for="blur">设置阴影模糊程度</label><input id="blur" type="range" name="blur" value="10" max="25">`;
+
     const fontListDiv = document.createElement('div');
     fontListDiv.className = 'font-list';
     [
@@ -88,44 +58,16 @@ const groupDiyFragment = (() => {
 const groupDiyStyle = (() => {
     const style = document.createElement("style");
     style.textContent =
-        `.diyGroup {
-            height: 100%;
-            width: 100%;
-            font-size:24px;
-            display: flex;
-            flex-direction: column;
-            align-item: center;
-            justify-content: center;
-        }
+        `.diyGroup { height: 100%; width: 100%; font-size:24px; display: flex; flex-direction: column; align-item: center; justify-content: center; }
 
-        p{
-            display:flex;
-            align-item: center;
-            justify-content: center;
-            margin: 0;
-            font-size: 16px;
-            color: #fff;
-        }
+        p{ display:flex; align-item: center; justify-content: center; margin: 0; font-size: 16px; color: #fff; }
 
-        canvas{
-            margin: 10px auto;
-        }
+        canvas{  margin: 10px auto; }
 
-        .font-list{
-            margin-top: 10px;
-            flex-wrap: wrap;
-            font-size: 16px;
-        }
+        .font-list{ margin-top: 10px; flex-wrap: wrap; font-size: 16px; }
 
-        .font-list>div{
-            display: flex;
-            align-item: center;
-            flex-direction: column;
-            line-height:16px;
-            margin: 0 5px;
-        }
-        `
-    return style
+        .font-list>div{ display: flex; align-item: center; flex-direction: column; line-height:16px; margin: 0 5px; }`
+    return style;
 })();
 const textFragment = (() => {
     const fragment = new DocumentFragment();
@@ -140,9 +82,52 @@ const textFragment = (() => {
     fragment.append(textEditorWrapper);
     return fragment;
 })();
+const extensionSettringFragment = (() => {
+    const fragment = new DocumentFragment();
+
+    const form = document.createElement("form");
+
+    const extensionChoiceContainer = document.createElement("div");
+    extensionChoiceContainer.innerHTML = `<label for="extension">扩展名称</label><input name="extension" id="extension" list="extension-list" required><datalist id="extension-list"></datalist>`
+
+    const extensionCharacterImage = document.createElement("div");
+    extensionCharacterImage.innerHTML = `<label for="extension-character-image">扩展武将图片文件夹</label><input name="extension-character-image" id="extension-character-image" list="extension-folder-list">`
+
+    const extensionCharacterJs = document.createElement("div");
+    extensionCharacterJs.innerHTML = `<label for="extension-character-js">扩展武将脚本文件</label><input name="extension-character-js" id="extension-character-js" list="extension-file-list">`
+
+    const extensionCardImage = document.createElement("div");
+    extensionCardImage.innerHTML = `<label for="extension-card-image">扩展卡牌图片文件夹</label><input name="extension-card-image" id="extension-card-image" list="extension-folder-list">`
+
+    const extensionCardJs = document.createElement("div");
+    extensionCardJs.innerHTML = `<label for="extension-card-js">扩展卡牌脚本文件</label><input name="extension-card-js" id="extension-card-js" list="extension-file-list">`
+
+    const extensionSkillAudio = document.createElement("div");
+    extensionSkillAudio.innerHTML = `<label for="extension-skill-audio">扩展技能语音文件夹</label><input name="extension-skill-audio" id="extension-skill-audio" list="extension-folder-list">`
+
+    const extensionDieAudio = document.createElement("div");
+    extensionDieAudio.innerHTML = `<label for="extension-die-audio">扩展阵亡语音文件夹</label><input name="extension-die-audio" id="extension-die-audio" list="extension-folder-list">`
+
+    const dirDataList = document.createElement("datalist");
+    dirDataList.id = "extension-folder-list";
+
+    const fileDataList = document.createElement("datalist");
+    fileDataList.id = "extension-file-list";
+    form.append(extensionChoiceContainer, extensionCharacterImage, extensionCharacterJs, extensionCardImage, extensionCardJs, extensionSkillAudio, extensionDieAudio, dirDataList, fileDataList);
+    fragment.append(form);
+    return fragment;
+})();
+const extensionSettingStyle = (() => {
+    const style = document.createElement("style");
+    //第一行样式不生效也没关系,本来也不重要,本来设置了disabled就可以防止输入 :has() chorme 105
+    style.textContent =
+        `.content div:has(#extension:invalid) ~ div{ display: none; }
+        .content input{ width:50% }`
+    return style;
+})();
+const extensionFolderListRecord = {}
 class HTMLNonameDialogHTML extends HTMLNonameFocusUIElement {
     static dialogStack = [];
-    static observedAttributes = ["type", "headline", "message", "placeholder", "height", "width"];
     constructor() {
         super();
         const shadow = this.attachShadow({ mode: "open" });
@@ -162,6 +147,8 @@ shadow.innerHTML=`
 
     p {
         margin: 0;
+        font-weight: 900;
+        font-size: 1.5em;
     }
 
     .curtain {
@@ -183,7 +170,7 @@ shadow.innerHTML=`
         width: var(--dialog-width, 560px);
         border-radius: 13px;
         background: #e0e0e0;
-        box-shadow: 20px 20px 20px #bebebe, -20px -20px 20px #ffffff, 0 0 10px black;
+        box-shadow: 0 0 10px #bebebe, 0 0 10px #ffffff, 0 0 5px black;
         padding: 5px;
         display: flex;
         flex-direction: column;
@@ -217,10 +204,17 @@ shadow.innerHTML=`
         color: rgb(200, 200, 200);
         cursor: pointer;
     }
+
+    .actions.invalid .confirm {
+        display: none;
+    }
+
+    .actions.forced .cancel {
+        display: none;
+    }
 </style>
 <div class="curtain"></div>
 <div class="dialog">
-    <span class="remove">×</span>
     <header>
         <p></p>
     </header>
@@ -231,60 +225,26 @@ shadow.innerHTML=`
     <div class="cancel">取消</div>
 </div>`
 //#: shadow , html/dialog.html//
+        this.#listenLoad();
     }
     dialogendListener = [];
     dialogcancelListener = [];
-    tempConnectedCallbacks = [];
-    addTempConnectedCallback(callabck) {
-        if (typeof callabck === "function") this.tempConnectedCallbacks.push(callabck)
-    }
     connectedCallback() {
-        const remove = this.shadowRoot.querySelector(".remove");
-        remove.addEventListener("pointerup", () => {
-            this.remove();
-        });
-        const confirm = this.shadowRoot.querySelector(".confirm");
-        const cancel = this.shadowRoot.querySelector(".cancel");
-        const dialog = this.shadowRoot.querySelector(".dialog");
-        confirm.addEventListener("pointerup", () => {
-            this.sendEvent("dialogend", dialog, void 0, { cancelable: true });
-        });
-        cancel.addEventListener("pointerup", () => {
-            this.sendEvent("dialogcancel", dialog, void 0, { cancelable: true });
-        });
-        dialog.addEventListener("dialogend", (e) => {
-            setTimeout(() => {
-                if (!e.defaultPrevented) {
-                    this.remove();
-                    this.#finishReslove(true);
-                }
-            }, 0)
-        });
-        dialog.addEventListener("dialogcancel", (e) => {
-            setTimeout(() => {
-                if (!e.defaultPrevented) {
-                    this.remove();
-                    this.#finishReslove(false);
-                }
-            }, 0)
-        });
-        [...this.tempConnectedCallbacks].forEach(callabck => {
-            callabck();
-            this.tempConnectedCallbacks.splice(0, 1);
-        })
         if (HTMLNonameDialogHTML.dialogStack.length) {
             HTMLNonameDialogHTML.dialogStack.forEach(dialog => dialog.close());
         }
         HTMLNonameDialogHTML.dialogStack.push(this);
     }
+    static observedAttributes = ["type", "headline", "message", "placeholder", "height", "width", "forced"];
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
         switch (name) {
             case "type": {
                 const tempStyle = this.shadowRoot.querySelector("style#temp");
-                if (tempStyle) {
-                    tempStyle.remove();
-                }
+                if (tempStyle) tempStyle.remove();
+                if (this.hasAttribute("forced")) this.removeAttribute("forced");
+                if (this.hasAttribute("headline")) this.removeAttribute("headline");
+                if (this.hasAttribute("message")) this.removeAttribute("message");
                 if (this.dialogendListener.length) {
                     const dialog = this.shadowRoot.querySelector(".dialog");
                     this.dialogendListener.forEach(listener => {
@@ -299,25 +259,17 @@ shadow.innerHTML=`
                 }
                 this.querySelectorAll(":scope>*").forEach((node) => {
                     node.remove();
-                })
+                });
                 switch (newValue) {
                     case "alert": {
-                        const content = this.shadowRoot.querySelector(".content");
-                        if (this.hasAttribute("message")) {
-                            content.textContent = this.getAttribute("message");
-                        }
-                        const cancel = this.shadowRoot.querySelector(".cancel");
-                        cancel.setAttribute("hidden", true);
+                        this.setAttribute("forced", true);
                     }; break;
-                    case "confirm": break;
+                    case "confirm": ;break;
                     case "prompt": {
                         const content = this.shadowRoot.querySelector(".content");
                         const form = document.createElement("form");
                         const div = document.createElement('div');
                         const label = document.createElement("label");
-                        if (this.hasAttribute("message")) {
-                            label.textContent = this.getAttribute("message")
-                        }
                         const input = document.createElement("input");
                         if (this.hasAttribute("placeholder")) {
                             label.textContent = this.getAttribute("placeholder")
@@ -332,9 +284,7 @@ shadow.innerHTML=`
                         this.whenCancel(() => this.#finishReslove(false));
                     }; break;
                     case "diygroup": {
-                        const style = groupDiyStyle.cloneNode(true);
-                        style.setAttribute("id", "temp");
-                        this.shadowRoot.prepend(style);
+                        this.appendTempStyle(groupDiyStyle.cloneNode(true))
                         const content = this.shadowRoot.querySelector(".content");
                         content.append(groupDiyFragment.cloneNode(true));
                         const form = content.querySelector("form");
@@ -433,8 +383,91 @@ shadow.innerHTML=`
                             });
                         });
                     }; break;
+                    case "extension-setting": {
+                        this.appendTempStyle(extensionSettingStyle.cloneNode(true))
+                        const content = this.shadowRoot.querySelector(".content");
+                        content.append(extensionSettringFragment.cloneNode(true));
+                        const [extension, ...extensionConcerning] = content.querySelectorAll("input");
+                        const [characterImage, characterJs, cardImage, cardJs, skillAudio, dieAudio] = extensionConcerning;
+                        const extensionList = content.querySelector("datalist#extension-list");
+                        const dirDataList = content.querySelector("datalist#extension-folder-list");
+                        const fileDataList = content.querySelector("datalist#extension-file-list");
+                        const form = content.querySelector("form");
+                        const characterJsRegx = /\bcharacter\.m?js$/;
+                        const cardJsRegx = /\bcard\.m?js$/;
+                        const extensionChange = async (e) => {
+                            console.log(e);
+                            const disabled = !extension.checkValidity();
+                            extensionConcerning.forEach(node => {
+                                node.disabled = disabled;
+                                node.value = "";
+                            });
+                            if (disabled) return;
+                            const map = new Map(new FormData(form));
+                            const extensionName = map.get("extension");
+                            if (!extensionFolderListRecord[extensionName]) {
+                                const [folderList, fileList] = await this.fileQuery("getAllFolderAndFileList", { path: "extension/" + extensionName });
+                                const folderDatalistContent = `<option value="${extensionName}">${extensionName}<option>` + folderList.map(folder => `<option value="${extensionName + "/" + folder}">${extensionName + "/" + folder}<option>`).join("");
+                                const fileDatalistContent = fileList.map(file => `<option value="${extensionName + "/" + file}">${extensionName + "/" + file}<option>`).join("");
+                                extensionFolderListRecord[extensionName] = {
+                                    folderList,
+                                    fileList,
+                                    folderDatalistContent,
+                                    fileDatalistContent
+                                }
+                            }
+                            const { folderDatalistContent, folderList, fileList, fileDatalistContent } = extensionFolderListRecord[extensionName]
+                            dirDataList.innerHTML = folderDatalistContent;
+                            fileDataList.innerHTML = fileDatalistContent;
+                            if (folderList.includes("image/character")) {
+                                characterImage.value = extensionName + "/image/character";
+                            } else if (folderList.includes("image")) {
+                                characterImage.value = extensionName + "/image";
+                            } else {
+                                characterImage.value = extensionName;
+                            }
+                            characterJs.value = extensionName + "/" + (fileList.find(file => characterJsRegx.test(file)) || "extension.js");
+                            if (folderList.includes("image/card")) {
+                                cardImage.value = extensionName + "/image/card";
+                            } else if (folderList.includes("image")) {
+                                cardImage.value = extensionName + "/image";
+                            } else {
+                                cardImage.value = extensionName;
+                            }
+                            cardJs.value = extensionName + "/" + (fileList.find(file => cardJsRegx.test(file)) || "extension.js");
+                            if (folderList.includes("audio/skill")) {
+                                skillAudio.value = extensionName + "/audio/skill";
+                            } else if (folderList.includes("audio")) {
+                                skillAudio.value = extensionName + "/audio";
+                            } else {
+                                skillAudio.value = extensionName;
+                            }
+                            if (folderList.includes("audio/die")) {
+                                dieAudio.value = extensionName + "/audio/die";
+                            } else if (folderList.includes("audio")) {
+                                dieAudio.value = extensionName + "/audio";
+                            } else {
+                                dieAudio.value = extensionName;
+                            }
+                        }
+                        extension.addEventListener("change", extensionChange);
+                        extensionList.innerHTML = this.infoQuery("extensionList").map(name => {
+                            return `<option value="${name}">${name}<option>`
+                        }).join("");
+                        this.setAttribute("headline", "扩展设置");
+                        this.whenEnd((e) => {
+                            e.preventDefault();
+                            const map = new Map(new FormData(form));
+                            this.#finishReslove({
+                                ...Object.fromEntries(map),
+                                extensionName: map.get("extension")
+                            });
+                            this.remove();
+                        });
+                    }; break;
+                    default: break;
                 }
-                if (this.type !== newValue) this.type = newValue;
+                this.updateWithValidity();
             }; break;
             case "headline": {
                 const p = this.shadowRoot.querySelector("header p");
@@ -450,6 +483,11 @@ shadow.innerHTML=`
                 } else if (this.getAttribute("type") === "text") {
                     const editor = this.querySelector("#text-editor-container");
                     if (typeof editor.getHtml === "function" && editor.getHtml() !== newValue) editor.setHtml(newValue);
+                } else if (this.getAttribute("type") === "extension-setting") {
+                    const content = this.shadowRoot.querySelector(".content");
+                    const extensionNameInput = content.querySelector("input#extension");
+                    extensionNameInput.value = newValue;
+                    this.sendEvent("change", extensionNameInput);
                 }
             }; break;
             case "placeholder": {
@@ -464,12 +502,50 @@ shadow.innerHTML=`
             case "width": {
                 this.style.setProperty("--dialog-width", parseFloat(newValue) + "px")
             }; break;
+            case "forced": {
+                const actions = this.shadowRoot.querySelector(".actions");
+                if (newValue) {
+                    actions.classList.add("forced");
+                } else {
+                    actions.classList.remove("forced");
+                }
+            }; break;
         }
     }
     disconnectedCallback() {
         HTMLNonameDialogHTML.dialogStack.pop();
         const length = HTMLNonameDialogHTML.dialogStack.length;
         if (length) HTMLNonameDialogHTML.dialogStack[length - 1].show();
+    }
+    #listenLoad() {
+        const confirm = this.shadowRoot.querySelector(".confirm");
+        const cancel = this.shadowRoot.querySelector(".cancel");
+        const dialog = this.shadowRoot.querySelector(".dialog");
+        confirm.addEventListener("pointerup", () => {
+            this.sendEvent("dialogend", dialog, void 0, { cancelable: true });
+        });
+        cancel.addEventListener("pointerup", () => {
+            this.sendEvent("dialogcancel", dialog, void 0, { cancelable: true });
+        });
+        dialog.addEventListener("dialogend", (e) => {
+            setTimeout(() => {
+                if (!e.defaultPrevented) {
+                    this.remove();
+                    this.#finishReslove(true);
+                }
+            }, 0)
+        });
+        dialog.addEventListener("dialogcancel", (e) => {
+            setTimeout(() => {
+                if (!e.defaultPrevented) {
+                    this.remove();
+                    this.#finishReslove(false);
+                }
+            }, 0)
+        });
+        dialog.addEventListener("change", (e) => {
+            this.updateWithValidity();
+        });
     }
     close() {
         this.setAttribute("hidden", true);
@@ -497,6 +573,18 @@ shadow.innerHTML=`
         const dialog = this.shadowRoot.querySelector(".dialog");
         dialog.addEventListener("dialogcancel", listener, options);
         this.dialogcancelListener.push(listener);
+    }
+    appendTempStyle(style) {
+        if (style instanceof HTMLStyleElement) {
+            style.setAttribute("id", "temp");
+            this.shadowRoot.prepend(style);
+        }
+    }
+    updateWithValidity() {
+        const form = this.shadowRoot.querySelector("form");
+        const actions = this.shadowRoot.querySelector(".actions");
+        if (form && form.checkValidity() === false) actions.classList.add("invalid");
+        else actions.classList.remove("invalid");
     }
 }
 customElements.define("noname-dialog", HTMLNonameDialogHTML);

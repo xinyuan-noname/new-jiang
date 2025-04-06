@@ -9,26 +9,46 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
     #editableElementAnonymousManagerSymbol = Symbol(null);
     #editableElementManagerMap = new Map([[this.#editableElementAnonymousManagerSymbol, []]]);
     #objectURLManager = new ObjectURLManager();
+    #fragmentStorageMap = new Map();
     constructor() {
         super();
         this.#server = new NonameData();
     }
     /**
-     * @template {"read"|"submit"} T
+     * @template {"readFile"|"readFolder"|"getAllFolderList"|"getAllFileList"|"getAllFolderAndFileList"|"submitFile"} T
      * @param {T} mode 
-     * @param { T extends "read"?{format: ("url"|"arrayBuffer"|"text"),encoding: string,file: Blob|URL}:
-     *          T extends "submit"?{format: (string|string[]),multiple?:boolean}:
+     * @param { T extends "readFile"?{format: ("url"|"arrayBuffer"|"text"),encoding: string,file: Blob|URL}:
+     *          T extends "submitFile"?{format: (string|string[]),multiple?:boolean}:
+     *          T extends "readFolder"|"readDir"?{path:string}
+     *          T extends "getAllFileList"|"getAllFileAndFolderList"?{path:string,folderFilter:function,fileFilter:function}
+     *          T extends "getAllFolderList"?{path:string,folderFilter:function}
      *          Object<string,any>
      * } query 
      * @returns {Promise<any>}
      */
     fileQuery(mode, query) {
         switch (mode) {
-            case "read": {
+            case "readFile": {
                 const { format, encoding, file } = query;
                 return this.#server.readFile(file, format, encoding);
             }
-            case "submit": {
+            case "readFolder": case "readDir": {
+                const { path } = query;
+                return this.#server.readFolder(path)
+            }
+            case "getAllFolderList": {
+                const { path, folderFilter } = query;
+                return this.#server.getAllFolderList(path);
+            }
+            case "getAllFileList": {
+                const { path, fileFilter, folderFilter } = query;
+                return this.#server.getAllFolderList(path);
+            }
+            case "getAllFolderAndFileList": {
+                const { path, fileFilter, folderFilter } = query;
+                return this.#server.getAllFolderFileList(path);
+            }
+            case "submitFile": {
                 const { format, multiple } = query;
                 return this.#server.submitFile(format, multiple);
             }
@@ -67,24 +87,9 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         }
     }
     /**
-     * @typedef {{
-    *      hp:number
-    *      maxHp:number
-    *      hujia:number
-    *      name:string
-    *      id:string
-    *      group:string
-    *      sex:string
-    *      skills:string[]
-    *      clans:string[]
-    *      avatar:string|URL
-    * }} tempCharacterQuery
-    */
-    /**
-     * @template {"hpStatus"|"tempCharacter"|"clanSkillId"|"translation"|"intro"} T
+     * @template {"hpStatus"|"clanSkillId"|"translation"|"intro"} T
      * @param {T} mode
      * @param { T extends "hpStatus"?{hp:number,maxHp:number}:
-     *          T extends "tempCharacter"?tempCharacterQuery:
      *          T extends "clanSkillId"?{clan:string}
      *          T extends "translation"?{id:string}
      *          T extends "intro"?{id:string}
@@ -96,9 +101,6 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
             case "hpStatus": {
                 const { hp, maxHp } = query;
                 return this.#server.getHpStatus(hp, maxHp)
-            };
-            case "tempCharacter": {
-                return this.#server.createTempCharacter(query);
             };
             case "clanSkillId": {
                 const { clan } = query;
@@ -140,10 +142,10 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         }
     }
     /**
-     * @template {"skill"} T
+     * @template {"skill"|"extensionList"} T
      * @param {T} mode 
-     * @param {T extends "skill"?{skillId:string,characterId:string}    
-     *         T extends "clanSkill":{clan:string,characterId:string}
+     * @param {T extends "skill"?{skillId:string,characterId:string}   
+     *         T extends "extension"?{filter:function}
      * } query 
      * @returns 
      */
@@ -153,6 +155,10 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
                 const { skillId, characterId } = query;
                 return this.#server.parseSkill(skillId, characterId);
             };
+            case "extensionList": {
+                const { filter } = query;
+                return this.#server.getExtensionList(filter);
+            }
         }
     }
     /**
@@ -324,6 +330,7 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
      * @template {"getAbstractSyntaxTreeFromFileSource"|"generateCharacterCode"} T
      * @param {T} mode 
      * @param {T extends "getAbstractSyntaxTreeFromFileSource"?{fileSource:Blob|URL}
+     *         T extends "generateCharacterCode"?{info:Object,pattern:"object"|"array"}
      * } query 
      */
     codeQuery(mode, query) {
@@ -336,7 +343,8 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
                 return this.#server.getAbstractSyntaxTreeFromFileSource(fileSource);
             }
             case "generateCharacterCode": {
-                return this.#server.genCharacterCode(query)
+                const { info, pattern } = query
+                return this.#server.genCharacterCode(info, pattern);
             }
         }
     }
@@ -412,6 +420,29 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
     }
     getURLRecordGroup(label) {
         return this.#objectURLManager.getURLGroup(label);
+    }
+    /**
+     * @param {string} label 
+     * @param {DocumentFragment|Node|NodeList|Array|string} fragmentSource 
+     * @returns 
+     */
+    storeFragment(label, fragmentSource) {
+        if (typeof label !== "string") return;
+        const fragment = fragmentSource instanceof DocumentFragment ?
+            fragmentSource :
+            this.createFragmentAuto(fragmentSource);
+        this.#fragmentStorageMap.set(label, fragment);
+    }
+    /**
+     * @param {string} label 
+     * @returns {DocumentFragment|null}
+     */
+    getStoredFragment(label) {
+        const fragment = this.#fragmentStorageMap.get(label);
+        return fragment?.cloneNode(true) || null;
+    }
+    destoryStoredFragment(label) {
+        this.#fragmentStorageMap.delete(label);
     }
     /**
      * @param {string} selector 
@@ -522,17 +553,36 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         parentNode.appendChild(slot);
         return slot;
     }
+    createFragmentAuto(fragmentSource) {
+        if (fragmentSource instanceof Node) {
+            const fragment = document.createDocumentFragment();
+            fragment.appendChild(fragmentSource);
+            return fragment
+        } else if (typeof fragmentSource === "string") {
+            return this.createFragmentFromHTML(fragmentSource);
+        } else if (typeof fragmentSource[Symbol.iterator] === "function") {
+            const fragment = document.createDocumentFragment();
+            fragment.append(...[...fragmentSource].filter(source => source instanceof Node));
+            return fragment;
+        } else {
+            return document.createDocumentFragment();
+        }
+    }
     /**
      * @param {string} html 
      * @returns {DocumentFragment}
      */
     createFragmentFromHTML(html) {
         const fragment = document.createDocumentFragment();
-        if (typeof html === "string") {
-            const parser = new DOMParser();
-            fragment.append(parser.parseFromString(html, "text/html").body);
-        };
-        return fragment;
+        try {
+            if (typeof html === "string") {
+                const parser = new DOMParser();
+                console.log(parser.parseFromString(html, "text/html").body.childNodes)
+                fragment.append(...parser.parseFromString(html, "text/html").body.childNodes);
+            };
+        } finally {
+            return fragment;
+        }
     }
     /**
      * @param {Node} node 
@@ -547,5 +597,39 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
     }
     loadCss(path, config = { root: this.shadowRoot || document.head }) {
         return loadCss(path, config);
+    }
+    //以下为hljs部分
+    static #$hljs = {
+        hljs: null,
+        hljs_js: null
+    };
+    static async #$getHLJS() {
+        if (!this.#$hljs.hljs && !this.#$hljs.hljs_js) {
+            const [hljs, js] = await Promise.all([
+                import("./libs/highlight/highlight.min.js").then(module => {
+                    HTMLNonameFocusUIElement.#$hljs.hljs = module.default;
+                    return module.default;
+                }),
+                import("./libs/highlight/javascript.min.js").then(module_1 => {
+                    HTMLNonameFocusUIElement.#$hljs.hljs_js = module_1.default;
+                    return module_1.default;
+                })
+            ]);
+            hljs.registerLanguage("javascript", js);
+        } else {
+            return Promise.resolve();
+        }
+    }
+    get #hljs() {
+        return HTMLNonameFocusUIElement.#$hljs.hljs;
+    }
+    async #getHLJS() {
+        await HTMLNonameFocusUIElement.#$getHLJS();
+        return this.#hljs;
+    }
+    async highlightCode(node) {
+        const hljs = await this.#getHLJS();
+        this.loadCss("../libs/highlight/default.min", { root: this.shadowRoot.contains(node) ? this.shadowRoot : document.head });
+        hljs.highlightElement(node);
     }
 }

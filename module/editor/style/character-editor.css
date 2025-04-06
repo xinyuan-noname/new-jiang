@@ -1,11 +1,9 @@
 :host {
     display: flex;
-    border-radius: 10px;
-    border: 5px solid black;
-    color: black;
     font-size: var(--font-size);
     overflow: hidden;
-    max-height: calc(100% - 10px);
+    max-height: 100%;
+    max-width: 100%;
     position: relative;
     --data-group-text-shadow:
         rgb(78 117 140) 0 0 2px,
@@ -151,6 +149,9 @@ div[contenteditable="true"] {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    top: 10px;
+    left: 10px;
 }
 
 .menu-icon {
@@ -168,21 +169,137 @@ div[contenteditable="true"] {
     height: 48px;
     width: 48px;
     cursor: pointer;
-    text-shadow: none;
+    text-shadow: 0 0 2px #176fd4;
+    text-align: center;
+    color: coral;
     font-weight: 800;
+    margin: 0 3px;
+}
+
+.menu-icon~*:hover {
+    transform: scale(1.2);
 }
 
 .menu:not(:hover) .menu-icon~* {
     display: none;
 }
 
+.main.turn-over+.menu .gen-code {
+    display: none;
+}
+
+.main:not(.turn-over)+.menu .return-setting {
+    display: none;
+}
+
+.extension:hover::after {
+    content: var(--data-extension, "暂未设置");
+    position: absolute;
+    text-align: center;
+    top: 100%;
+}
+
+.main {
+    width: 100%;
+    display: flex;
+    padding: 5px;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    border: 5px solid black;
+    color: black;
+    border-radius: 10px;
+    max-height: calc(100% - 20px);
+    position: relative;
+}
+
+.main.turn-over {
+    transform: rotateY(180deg);
+}
+
+.main.turn-over .content {
+    display: none;
+}
+
+.main.turn-over .content {
+    display: none;
+}
+
+.code,
 .content {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 10px;
     width: 100%;
-    max-height: calc(100% - 20px);
+    max-height: 100%;
+    backface-visibility: hidden;
+}
+
+.code {
+    position: absolute;
+    flex-direction: column;
+    transform: rotateY(180deg);
+    overflow: auto;
+}
+
+.code .code-section {
+    width: 85%;
+    border-radius: 5px 5px 0 0;
+    text-shadow: none;
+    overflow-x: auto;
+    overflow-y: visible;
+}
+
+.code .code-section .container {
+    width: max-content;
+    min-width: 100%;
+}
+
+.code .code-section .title {
+    height: 32px;
+    display: flex;
+    flex-direction: row-reverse;
+    background-color: #3c3c3c;
+    width: 100%;
+    position: relative;
+}
+
+.code .code-section .title .copy {
+    color: #fff;
+    font-family: fangsong;
+    margin: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    flex-direction: row-reverse;
+}
+
+
+.code .code-section .title .copy::after {
+    display: block;
+    position: absolute;
+    width: max-content;
+    top: 100%;
+    color: #000;
+    background-color: #fff;
+    border-radius: 4px;
+    padding: 2px;
+}
+
+.code .code-section .title .copy.copied-ok::after {
+    content: '复制成功！';
+}
+
+.code .code-section .title .copy.copied-error::after {
+    content: '复制失败！';
+}
+
+.code .code-section pre {
+    margin: 0;
+    user-select: text;
+    width: max-content;
+    min-width: 100%;
+}
+
+.content {
     overflow: hidden;
 }
 

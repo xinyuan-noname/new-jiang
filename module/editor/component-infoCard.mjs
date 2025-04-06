@@ -458,7 +458,9 @@ class HTMLNonameAudioInfoCardElement extends HTMLNonameInfoCardElement {
         fragment.append(mainContentDiv);
         showInfo.replaceChildren(fragment);
         new MutationObserver(() => {
-            if (text.textContent !== this.getAttribute("value")) this.setAttribute("value", text.textContent);
+            if (text.textContent !== this.getAttribute("value")){
+                this.setAttribute("value", text.textContent);
+            } 
         }).observe(text, { characterData: true, childList: true, subtree: true, });
     }
     attributeChangedCallback(name, oldValue, newValue) {
@@ -471,9 +473,9 @@ class HTMLNonameAudioInfoCardElement extends HTMLNonameInfoCardElement {
             case "value": {
                 if (oldValue === newValue) break;
                 const text = this.shadowRoot.querySelector("[contenteditable]");
+                this.triggerEvent("audioTextChange", { oldValue, newValue });
                 if (text.textContent !== newValue) {
                     text.textContent = newValue;
-                    this.triggerEvent("audioTextChange", { oldValue, newValue });
                 }
             }; break;
             default: {

@@ -521,7 +521,7 @@ export class MultipleChoiceManager {
             })
         }
     }
-    getAllInfo(){
+    getAllInfo() {
         return this.collectedInfo.map(infoObject => infoObject?.info);
     }
     getLastestInfo() {
@@ -857,10 +857,14 @@ export const preventEnter = (...nodes) => {
 }
 export const loadCss = (name, { root = document.head, baseURL = `./${url}/style` } = {}) => {
     if (baseURL.endsWith("/")) baseURL = baseURL.slice(0, -1);
-    const style = document.createElement("link");
-    style.rel = "stylesheet";
-    style.href = `${baseURL}/${name}.css`;
-    style.addEventListener("error", e => console.error(e.error));
-    root.appendChild(style);
+    let style;
+    const href = `${baseURL}/${name}.css`
+    if (!(style = root.querySelector(`link[href="${href}"]`))) {
+        style = document.createElement("link");
+        style.rel = "stylesheet";
+        style.href = href
+        style.addEventListener("error", e => console.error(e.error));
+        root.appendChild(style);
+    }
     return style;
 }

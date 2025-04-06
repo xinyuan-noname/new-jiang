@@ -12,6 +12,8 @@
 
     p {
         margin: 0;
+        font-weight: 900;
+        font-size: 1.5em;
     }
 
     .curtain {
@@ -33,7 +35,7 @@
         width: var(--dialog-width, 560px);
         border-radius: 13px;
         background: #e0e0e0;
-        box-shadow: 20px 20px 20px #bebebe, -20px -20px 20px #ffffff, 0 0 10px black;
+        box-shadow: 0 0 10px #bebebe, 0 0 10px #ffffff, 0 0 5px black;
         padding: 5px;
         display: flex;
         flex-direction: column;
@@ -67,10 +69,17 @@
         color: rgb(200, 200, 200);
         cursor: pointer;
     }
+
+    .actions.invalid .confirm {
+        display: none;
+    }
+
+    .actions.forced .cancel {
+        display: none;
+    }
 </style>
 <div class="curtain"></div>
 <div class="dialog">
-    <span class="remove">×</span>
     <header>
         <p></p>
     </header>

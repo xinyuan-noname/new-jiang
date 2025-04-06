@@ -187,6 +187,9 @@ class AST {
     get types() {
         return this.Babel?.packages?.types;
     }
+    get template() {
+        return this.Babel?.packages?.template.default;
+    }
     parseCode(code, configs) {
         const { parser } = this;
         const abstractSyntaxTree = parser.parse(code, configs);
@@ -215,27 +218,30 @@ class AST {
         });
         return target;
     }
-    //create系列函数 从给定的值中创建对应的AST节点
-    createNode(val) {
+    packStatementAsProgram(...statements) {
+        return this.types.Program(statements);
+    }
+    //$create系列函数 从给定的值中创建对应的AST节点
+    $createNode(val) {
         let node;
         if (Array.isArray(val)) {
-            node = this.createArrayExpression(val);
+            node = this.$createArrayExpression(val);
         } else if (typeof val === "object" && val !== null) {
-            node = this.createObjectExpression(val);
+            node = this.$createObjectExpression(val);
         } else {
-            node = this.createLiteral(val);
+            node = this.$createLiteral(val);
         }
         return node;
     }
-    createLiteral(literal) {
+    $createLiteral(literal) {
         let literalPath;
         const { types } = this;
         switch (true) {
             case (literal instanceof RegExp): {
-                literalPath = types.regExpLiteral(literal.source, literal.flags);
+                literalPath = types.RegExpLiteral(literal.source, literal.flags);
             }; break;
             case (typeof literal === "bigint"): {
-                literalPath = types.regExpLiteral(literal.toString());
+                literalPath = types.BigIntLiteral(literal.toString());
             }; break;
             case (typeof literal === "string"): {
                 literalPath = types.StringLiteral(literal);
@@ -249,47 +255,47 @@ class AST {
         }
         return literalPath;
     }
-    createArrayExpression(array) {
+    $createArrayExpression(array) {
         const { types } = this;
-        return types.ArrayExpression(array.map(element => this.createNode(element)).filter(Boolean));
+        return types.ArrayExpression(array.map(element => this.$createNode(element)).filter(Boolean));
     }
-    createFunction(func) {
+    $createFunction(func) {
         const funcAST = this.parser.parse(func.toString());
         const funcNode = this.getNodeByType(funcAST, "FunctionExpression|ArrowFunctionExpression");
         return funcNode;
     }
-    createObjectProperty(key, val) {
+    $createObjectProperty(key, val) {
         const { types } = this;
         let keyPath, valuePath;
         if (typeof key === "string") {
-            valuePath = this.createNode(val);
+            valuePath = this.$createNode(val);
             if (valuePath) {
                 keyPath = this.checkIdentifierValid(key) ? types.identifier(key) : types.StringLiteral(key);
                 return this.types.ObjectProperty(keyPath, valuePath);
             }
         }
     }
-    createObjectMethod(name, func) {
+    $createObjectMethod(name, func) {
         const { types } = this;
         let namePath, funcPath;
         if (typeof name === "string") {
-            funcPath = this.createFunction(func);
+            funcPath = this.$createFunction(func);
             if (funcPath) {
                 namePath = this.checkIdentifierValid(name) ? types.identifier(name) : types.StringLiteral(name);
-                return this.types.ObjectMehod("method", namePath, funcPath);
+                return this.types.ObjectMethod("method", namePath, funcPath);
             }
         }
     }
-    createObjectExpression(object) {
+    $createObjectExpression(object) {
         const { types } = this;
         const objectExpression = types.ObjectExpression([])
         for (const k in object) {
             if (object.hasOwnProperty(k)) {
                 if (typeof object[k] !== "function") {
-                    const property = this.createObjectProperty(k, object[k]);
+                    const property = this.$createObjectProperty(k, object[k]);
                     if (property) objectExpression.properties.push(property);
                 } else {
-                    const method = this.createObjectMethod(k, object[k]);
+                    const method = this.$createObjectMethod(k, object[k]);
                     if (method) objectExpression.properties.push(method);
                 }
             }
@@ -306,12 +312,19 @@ class AST {
         }
     }
     replaceWithLiteral(path, literal) {
-        let literalPath = this.createLiteral(literal);
+        let literalPath = this.$createLiteral(literal);
         if (literalPath) path.replaceWith(literalPath);
     }
     generateCode(ast, configs) {
         const { generator } = this;
-        const code = generator.generate(ast, configs);
+        const code = generator.generate(ast, {
+            //在中文环境中 为了确保不转为unicode 这个选项通常是必要的
+            jsescOption: {
+                minimal: true,
+                escapeOnly: false,
+            },
+            ...configs
+        });
         return code;
     }
     /**
@@ -376,6 +389,46 @@ export class NonameData {
         }
         else throw new TypeError(file + "不是可以被读取的文件或文件的URL");
     }
+    async readFolder(path) {
+        return game.promises.getFileList(path);
+    }
+    async getAllFolderFileList(path) {
+        const folderList = [], fileList = [];
+        try {
+            const [folders, files] = await game.promises.getFileList(path);
+            fileList.push(...files);
+            if (folders.length) {
+                folderList.push(...folders);
+                await Promise.all(folders.map(async folder => {
+                    const [subFolderNames, subFileNames] = (await this.getAllFolderFileList(path + "/" + folder))
+                    folderList.push(...subFolderNames.map(subFolder => folder + "/" + subFolder));
+                    fileList.push(...subFileNames.map(subFile => folder + "/" + subFile));
+                }));
+            }
+            return [folderList, fileList];
+        } catch (err) {
+            return [folderList, fileList];
+        }
+    }
+    async getAllFileList(path) {
+        return await this.getAllFolderList(path)[1];
+    }
+    async getAllFolderList(path) {
+        const folderList = [];
+        try {
+            const [folders] = await game.promises.getFileList(path);
+            if (folders.length) {
+                folderList.push(...folders);
+                await Promise.all(folders.map(async folder => {
+                    const subFolder = (await this.getAllFolderList(path + "/" + folder)).map(subFolder => folder + "/" + subFolder);
+                    folderList.push(...subFolder);
+                }));
+            }
+            return folderList;
+        } catch (err) {
+            return folderList;
+        }
+    }
     submitFile(format, multiple = false) {
         const input = document.createElement("input");
         input.setAttribute("type", "file");
@@ -397,7 +450,7 @@ export class NonameData {
     }
     checkId(val, type) {
         switch (type) {
-            case "character": return !(val in lib.character);
+            case "character": return !(val in Object.assign({}, ...Object.values(lib.characterPack)));
             case "skill": return !(val in lib.skill);
             default: return false;
         }
@@ -411,48 +464,8 @@ export class NonameData {
     parseSkill(skillId, characterId) {
         return parseSkill(skillId, characterId)
     }
-    createTempCharacter(characterData) {
-        const tempCharacterManager = {
-            id: null,
-            playerElement: null,
-            load() {
-                const { id, name, sex, avatar, ...characterNeedData } = characterData;
-                this.id = id;
-                lib.translate[id] = name;
-                if (sex === "male-castrated") {
-                    characterNeedData.sex = "male";
-                    if (!Array.isArray(characterNeedData.trashBin)) {
-                        characterNeedData.trashBin = [];
-                    }
-                    characterNeedData.trashBin.push("sex:male_castrated")
-                } else {
-                    characterNeedData.sex = sex;
-                }
-                lib.character[id] = new lib.element.character.constructor(characterNeedData);
-                this.load = null;
-            },
-            /**
-             * @param {HTMLElement} parentNode 
-             * @returns {import("../../../../noname/library/index.js").Player}
-             */
-            use(parentNode) {
-                const playerElement = ui.create.player();
-                if (parentNode instanceof HTMLElement) parentNode.appendChild(playerElement);
-                playerElement.init(this.id);
-                playerElement.setBackgroundImage(characterData.avatar);
-                this.use = null;
-                return playerElement;
-            },
-            unload() {
-                if (this.playerElement instanceof HTMLElement) this.playerElement.remove();
-                delete lib.character[this.character];
-                delete lib.translate[this.id];
-                this.id = null;
-                this.playerElement = null;
-            }
-        };
-        tempCharacterManager.load();
-        return tempCharacterManager;
+    getExtensionList(filter) {
+        return typeof filter === "function" ? lib.config.extensions.filter(filter) : lib.config.extensions;
     }
     /**
      * @param {number} hp 
@@ -603,22 +616,50 @@ export class NonameData {
         const node = astObject.parseCode(code)
         return { ast: astObject, node };
     }
-    newCharacterExpressionStatement = "lib.character['xxx'] = new lib.element.Character();";
-    async genCharacterCode(characterInfo, mode = 'object') {
-        const { id, intro, pinyin, dieAudioText, ...basicCharacterInfo } = characterInfo;
-        const astObject = await this.getAST();
-        const ast = astObject.parseCode(this.newCharacterExpressionStatement);
-        switch (mode) {
+    /**
+     * @param {AST} astObject 
+     * @param {object} info 
+     * @param {"object"|"string"} pattern 
+     * @returns 
+     */
+    createNewCharacterExpressionParamNode(astObject, info, pattern = "object") {
+        switch (pattern) {
             case "object": {
-                const stringLiteral = astObject.getNodeByType(ast, "StringLiteral");
-                const newExpression = astObject.getNodeByType(ast, "NewExpression");
-                astObject.replaceWithLiteral(stringLiteral, id);
-                newExpression.node.arguments.push(astObject.createNode(basicCharacterInfo));
+                return astObject.$createNode(info);
             }
             case "array": {
-
+                const character = new lib.element.Character(info);
+                const { "0": $0, "1": $1, "2": $2, "3": $3, "4": $4, "5": $5 } = character;
+                return astObject.$createNode([$0, $1, $2, $3, $4, $5]);
             }
         }
+    }
+    /**
+     * @param {AST} astObject 
+     * @param {string} en 
+     * @param {string} cn 
+     */
+    createTranslateAssignmentExpression(astObject, en, cn) {
+        const enIdentifier = astObject.checkIdentifierValid(en)
+        if (typeof en === "string") en = enIdentifier ? astObject.types.identifier(en) : astObject.$createNode(en);
+        if (typeof cn === "string") cn = astObject.$createNode(cn);
+        return enIdentifier ?
+            astObject.template("lib.translate.%%en%% = %%cn%%;")({ en, cn }) :
+            astObject.template("lib.translate[%%en%%] = %%cn%%;")({ en, cn })
+    }
+    async genCharacterCode(characterInfo, pattern) {
+        const { extension, id, intro, pinyin, dieAudioText, name, ...basicInfo } = characterInfo;
+        const astObject = await this.getAST();
+        const createCharacter = extension ? astObject.template("lib.characterPack[%%ext%%][%%id%%] = new lib.element.Character(%%basicInfo%%);")({
+            ext: astObject.$createNode(extension),
+            id: astObject.$createNode(id),
+            basicInfo: this.createNewCharacterExpressionParamNode(astObject, basicInfo, pattern)
+        }) : astObject.template("lib.character[%%id%%] = new lib.element.Character(%%basicInfo%%);")({
+            id: astObject.$createNode(id),
+            basicInfo: this.createNewCharacterExpressionParamNode(astObject, basicInfo, pattern)
+        })
+        const setCharacterTranslation = this.createTranslateAssignmentExpression(astObject, id, name);
+        const ast = astObject.packStatementAsProgram(createCharacter, setCharacterTranslation);
         return astObject.generateCode(ast).code;
     }
     /**
@@ -714,7 +755,7 @@ export class NonameData {
      * @param {HTMLImageElement} img 
      * @param {Object} config 
      */
-    clipStaticImg(img, config) {
+    async clipStaticImg(img, config) {
         if (!(img instanceof HTMLImageElement)) throw new Error(`${img}必须为HTMLImageElement对象！`)
         const {
             useClientData = true,
@@ -752,7 +793,7 @@ export class NonameData {
                 )
             }
         })();
-        return new Promise((resolve) => {
+        const data = await new Promise((resolve) => {
             drawFrame(img);
             if (dataForm.toLocaleLowerCase() === "url") {
                 tempCanvas.toDataURL(resolve, type, quality);
@@ -761,10 +802,9 @@ export class NonameData {
             } else {
                 resolve(null);
             }
-        }).then((data) => {
-            if (dataForm === "blobURL") return URL.createObjectURL(data);
-            return data;
-        })
+        });
+        if (dataForm === "blobURL") return URL.createObjectURL(data);
+        return data;
     }
 }
 export class NonameEditorData extends NonameData {
