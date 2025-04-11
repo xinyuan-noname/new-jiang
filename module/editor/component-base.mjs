@@ -1,5 +1,5 @@
 "use script";
-import { NonameData } from "./data.mjs";
+import { NonameData } from "./data-noname.mjs";
 import { EditableElementManager, loadCss, MultipleChoiceManager, ObjectURLManager, UniqueChoiceManager } from "./encapsulated.mjs";
 export class HTMLNonameFocusUIElement extends HTMLElement {
     #server;

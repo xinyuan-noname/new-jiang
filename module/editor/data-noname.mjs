@@ -1,9 +1,6 @@
 import { game, get, lib, ui } from "../../../../noname.js";
 import url from "./url.mjs";
 const chineseRegex = /[\u4e00-\u9fff]+/;
-let DATA_AST_WORKER;
-const getAstWorker = () => new Worker(`./${url}/worker-ast.worker.js`, { type: "module" });
-const ensureAstWorker = () => { if (!DATA_AST_WORKER) DATA_AST_WORKER = getAstWorker() }
 const parseSkill = (skillId, characterId) => {
     if (!(skillId in lib.skill)) return null;
     const skillName = lib.translate[skillId] || "";
@@ -180,33 +177,27 @@ class EventManager {
     }
 }
 class ASTWorkerSession {
-    static #idList = [];
-    #id = null;
+    static #cache = [];
     data = null;
-    #getRandomId() {
-        let id = Date.now().toString(36) + Math.random().toString(36).substring(2);
-        return ASTWorkerSession.#idList.includes(id) ? this.#getRandomId() : id;
+    #getASTWorker() {
+        return new Worker(`./${url}/worker-ast.worker.js`, { type: "module" });
     }
     /**
      * 
      * @param {Worker} worker 
      * @param {any[]} data 
      */
-    constructor(worker, data, timeout = 18e4) {
-        this.#id = this.#getRandomId();
-        this.worker = worker;
-        worker.postMessage({ ...data, workerSessionId: this.#id });
+    constructor(data, timeout = 18e4) {
+        const worker = this.#getASTWorker();
+        worker.postMessage(data);
         this.ready = Promise.race([
             new Promise((reslove, reject) => {
                 const listener = (e) => {
-                    const { workerSessionId, data } = e.data;
-                    if (this.#id === workerSessionId) {
-                        this.data = data;
-                        worker.removeEventListener("message",listener);
-                        reslove();
-                    }
-                    worker.onmessageerror = (reject);
+                    this.data = e.data;
+                    worker.removeEventListener("message", listener);
+                    reslove();
                 }
+                worker.onmessageerror = (reject);
                 worker.addEventListener("message", listener);
             }).then(() => {
                 this.ok = true;
@@ -218,9 +209,9 @@ class ASTWorkerSession {
                 this.timeout = true;
             })
         ]);
+        this.worker = worker;
     }
 }
-
 export class NonameData {
     /**
      * @param {Blob|URL} file 
@@ -481,18 +472,16 @@ export class NonameData {
         return astObject.getFileAllModules(filePath, { rootPath: location.origin });
     }
     async getExtensionAllPackage(extensionName) {
-        const session = new ASTWorkerSession(getAstWorker(), { order: "getExtensionAllPackage", data: [extensionName] });
+        const session = new ASTWorkerSession({ order: "getExtensionAllPackage", data: [extensionName] });
         await session.ready;
         if (session.ok) {
             return session.data;
         }
     }
     async genCharacterCode(characterInfo, pattern) {
-        ensureAstWorker();
-        const session = new ASTWorkerSession(DATA_AST_WORKER, { order: "genCharacterCode", data: [characterInfo, pattern] });
+        const session = new ASTWorkerSession({ order: "genCharacterCode", data: [characterInfo, pattern] });
         await session.ready;
         if (session.ok) {
-            console.log(session.data)
             return session.data;
         }
     }
@@ -542,7 +531,7 @@ export class NonameData {
         })();
         (async () => {
             if (!("gif" in window)) await import("./libs/gif.js/gif.js");
-            const gif = new GIF({
+            const gif = new window.Gif({
                 worker: 20,
                 quality,
                 workerScript: `./${url}/libs/gif.js/gif.worker.js`
@@ -640,20 +629,14 @@ export class NonameData {
         if (dataForm === "blobURL") return URL.createObjectURL(data);
         return data;
     }
-}
-export class NonameEditorData extends NonameData {
-    view;
     /**
      * @type {Object<string,(null|Searcher)>}
      */
-    searchManager = {
+    #searchManager = {
         "character": null,
         "skill": null,
         "skin": null,
     };
-    constructor() {
-        super();
-    }
     async search(type, config = {}) {
         const { require, keyWords, filter } = config;
         return new Promise((reslove) => {
@@ -661,11 +644,11 @@ export class NonameEditorData extends NonameData {
             searcher.onSearcherLoad = () => {
                 reslove(searcher.search(require));
             }
-            this.searchManager[type] = searcher;
+            this.#searchManager[type] = searcher;
         })
     }
     continueSearch(type, require) {
-        if (!this.searchManager[type]) return [];
-        return this.searchManager[type].search(require);
+        if (!this.#searchManager[type]) return [];
+        return this.#searchManager[type].search(require);
     }
 }

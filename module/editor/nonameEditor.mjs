@@ -1,6 +1,7 @@
 "use script";
-import { NonameEditorData } from "./data.mjs";
-import { NonameEditorView } from "./view.mjs";
+
+import { NonameEditorData } from "./nonameEditorData.mjs";
+import { NonameEditorView } from "./nonameEditorView.mjs";
 
 export class NonameEditor {
     view;
@@ -15,8 +16,5 @@ export class NonameEditor {
     }
     init(parentNode) {
         this.view.init(parentNode);
-    }
-    getData() {
-        this.data.getData();
     }
 }

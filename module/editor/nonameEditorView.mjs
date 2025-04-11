@@ -1,6 +1,6 @@
 "use script";
 import "./component.mjs";
-import { UniqueChoiceManager, DragManager, toggleMultiClass, EditableElementManager } from "./encapsulated.mjs";
+import { UniqueChoiceManager, DragManager, toggleMultiClass } from "./encapsulated.mjs";
 /**
  * @typedef {import("./nonameEditor.mjs").NonameEditor NonameEditor}
  */
