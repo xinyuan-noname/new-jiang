@@ -1,3 +1,4 @@
+"use script";
 import { NonameData } from "./data.mjs";
 import { EditableElementManager, loadCss, MultipleChoiceManager, ObjectURLManager, UniqueChoiceManager } from "./encapsulated.mjs";
 export class HTMLNonameFocusUIElement extends HTMLElement {
@@ -17,7 +18,7 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
     /**
      * @template {"readFile"|"readFolder"|"getAllFolderList"|"getAllFileList"|"getAllFolderAndFileList"|"submitFile"} T
      * @param {T} mode 
-     * @param { T extends "readFile"?{format: ("url"|"arrayBuffer"|"text"),encoding: string,file: Blob|URL}:
+     * @param { T extends "readFile"?{format: ("url"|"arrayBuffer"|"text"),file: Blob|URL}:
      *          T extends "submitFile"?{format: (string|string[]),multiple?:boolean}:
      *          T extends "readFolder"|"readDir"?{path:string}
      *          T extends "getAllFileList"|"getAllFileAndFolderList"?{path:string,folderFilter:function,fileFilter:function}
@@ -29,8 +30,8 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
     fileQuery(mode, query) {
         switch (mode) {
             case "readFile": {
-                const { format, encoding, file } = query;
-                return this.#server.readFile(file, format, encoding);
+                const { format, file } = query;
+                return this.#server.readFile(file, format);
             }
             case "readFolder": case "readDir": {
                 const { path } = query;
@@ -57,12 +58,12 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
     /**
      * @template {'pinyin'| 'characterTranslation'|'formatTransfer'|'skillTranslation'} T
      * @param {T} mode 
-     * @param {{
-     *      text: string
-     *      withTone: T extends 'pinyin' ? boolean : undefined
-     *      attr: T extends 'characterTranslation' ? "sex"|"group" : T extends 'skillTranslation' ? "name"|"info":undefined
-     *      to: T extends 'formatTransfer' ? "kebab"|"camel" : undefined
-     * }} query
+     * @param {T extends 'pinyin' ?{text:string,withTone:boolean}
+     *         T extends 'characterTranslation' ?{text:string,attr:"sex"|"group"}
+     *         T extends 'skillTranslation' ?{text:string,attr:"name"|"info"}
+     *         T extends 'formatTransfer' ?{text:string,to:"kebab"|"camel"|"escapedHTML"}
+     * } query
+     * @returns {string|undefined}
      */
     textQuery(mode, query = {}) {
         switch (mode) {
@@ -82,6 +83,7 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
                 const { text, to } = query;
                 if (to === "kebab") return this.#server.camelKebabSwitch(text, "kebab");
                 if (to === "camel") return this.#server.camelKebabSwitch(text, "camel");
+                if (to === "escapedHTML") return this.#server.toEscapedHTML(text);
                 return text;
             }
         }
@@ -327,20 +329,26 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         }
     }
     /**
-     * @template {"getAbstractSyntaxTreeFromFileSource"|"generateCharacterCode"} T
+     * @template {"generateCharacterCode"|"getFileAllModules"|"getExtensionAllPackage"|"getAST"} T
      * @param {T} mode 
-     * @param {T extends "getAbstractSyntaxTreeFromFileSource"?{fileSource:Blob|URL}
-     *         T extends "generateCharacterCode"?{info:Object,pattern:"object"|"array"}
+     * @param {T extends "generateCharacterCode"?{info:Object,pattern:"object"|"array"}
+     *         T extends "getFileAllModule"?{path}
+     *         T extends "getExtensionAllPackage"?{extensionName}
      * } query 
+     * @returns {T extends "getAST"?}
      */
     codeQuery(mode, query) {
         switch (mode) {
             case "getAST": {
                 return this.#server.getAST();
             }
-            case "getAbstractSyntaxTreeFromFileSource": {
-                const { fileSource } = query
-                return this.#server.getAbstractSyntaxTreeFromFileSource(fileSource);
+            case "getFileAllModules": {
+                const { path } = query;
+                return this.#server.getFileAllModules(path);
+            }
+            case "getExtensionAllPackage": {
+                const { extensionName } = query;
+                return this.#server.getExtensionAllPackage(extensionName);
             }
             case "generateCharacterCode": {
                 const { info, pattern } = query
@@ -429,8 +437,7 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
     storeFragment(label, fragmentSource) {
         if (typeof label !== "string") return;
         const fragment = fragmentSource instanceof DocumentFragment ?
-            fragmentSource :
-            this.createFragmentAuto(fragmentSource);
+            fragmentSource : this.createFragmentAuto(fragmentSource);
         this.#fragmentStorageMap.set(label, fragment);
     }
     /**
@@ -559,7 +566,15 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
             fragment.appendChild(fragmentSource);
             return fragment
         } else if (typeof fragmentSource === "string") {
-            return this.createFragmentFromHTML(fragmentSource);
+            const fragment = document.createDocumentFragment();
+            try {
+                if (typeof fragmentSource === "string") {
+                    const parser = new DOMParser();
+                    fragment.append(...parser.parseFromString(fragmentSource, "text/html").body.childNodes);
+                };
+            } finally {
+                return fragment;
+            }
         } else if (typeof fragmentSource[Symbol.iterator] === "function") {
             const fragment = document.createDocumentFragment();
             fragment.append(...[...fragmentSource].filter(source => source instanceof Node));
@@ -567,33 +582,6 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         } else {
             return document.createDocumentFragment();
         }
-    }
-    /**
-     * @param {string} html 
-     * @returns {DocumentFragment}
-     */
-    createFragmentFromHTML(html) {
-        const fragment = document.createDocumentFragment();
-        try {
-            if (typeof html === "string") {
-                const parser = new DOMParser();
-                console.log(parser.parseFromString(html, "text/html").body.childNodes)
-                fragment.append(...parser.parseFromString(html, "text/html").body.childNodes);
-            };
-        } finally {
-            return fragment;
-        }
-    }
-    /**
-     * @param {Node} node 
-     * @returns {DocumentFragment}
-     */
-    createFragmentFromChildren(node) {
-        const fragment = document.createDocumentFragment();
-        if (node instanceof Node) {
-            fragment.append(...node.childNodes);
-        }
-        return fragment;
     }
     loadCss(path, config = { root: this.shadowRoot || document.head }) {
         return loadCss(path, config);

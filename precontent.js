@@ -279,46 +279,25 @@ function provideFunction() {
 	}
 }
 function importFile() {
-	let count = 0;
-	const files = [
-		"lingli",
-		"card",
-		"title",
-		"project",
-		"rpg",
-		"economy",
-		"raise",
-		"event",
-		"skills"
-	];
-	function loadFiles(fileName) {
-		let script = lib.init.js("./extension/新将包/js", fileName, () => {
-			count++;
-		}, (err) => { game.print(err) });
-		script.type = 'module';
-	}
-	new Promise(res => {
-		//引入css文件    
-		lib.init.css("./extension/新将包/css", "main");
-		lib.init.css("./extension/新将包/css", "back");
-		lib.init.css("./extension/新将包/css", "animation");
-		//引入js文件
-		files.forEach(file => {
-			loadFiles(file)
-		})
-		function interval() {
-			if (count >= files.length) {
-				res()
-				clearInterval(interval)
-			}
+	Promise.all(["lingli", "card", "title", "project", "rpg", "economy", "raise", "event", "skills"].map(
+		async fileName => {
+			return new Promise(resolve => {
+				const script = lib.init.js("./extension/新将包/js", fileName);
+				script.type = "module";
+				resolve();
+			})
 		}
-		setInterval(interval, 100)
-	}).then(() => {
+	)).then(() => {
 		const script = lib.init.js("./extension/新将包/js", "final", () => {
 			window.XJB_LOAD_FINAL()
 		})
 		script.type = "module";
-	});
+	})
+	new Promise(() => {
+		lib.init.css("./extension/新将包/css", "main");
+		lib.init.css("./extension/新将包/css", "back");
+		lib.init.css("./extension/新将包/css", "animation");
+	})
 }
 function initialize() {
 	lib.xjb_skillsStore = [];
@@ -606,7 +585,7 @@ const loadCharacterPack = () => {
 	loadCharacterPack_Soul();
 }
 
-const loadModule=()=>{
+const loadModule = () => {
 	game.xjb_nonameEditor = loadModule_NonameEditor();
 }
 export function XJB_PRECONTENT() {

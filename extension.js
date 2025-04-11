@@ -9,7 +9,8 @@ import {
 import { XJB_CONTENT } from "./content.js";
 import { XJB_PRECONTENT } from "./precontent.js";
 game.import("extension", function () {
-    return {
+    const result =
+    {
         name: "新将包",
         content: XJB_CONTENT,
         precontent: XJB_PRECONTENT,
@@ -25,4 +26,5 @@ game.import("extension", function () {
             version: "1.2.2",
         }
     }
+    return result;
 });

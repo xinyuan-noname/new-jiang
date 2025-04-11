@@ -264,7 +264,7 @@ shadow.innerHTML=`
                     case "alert": {
                         this.setAttribute("forced", true);
                     }; break;
-                    case "confirm": ;break;
+                    case "confirm": ; break;
                     case "prompt": {
                         const content = this.shadowRoot.querySelector(".content");
                         const form = document.createElement("form");
@@ -333,20 +333,18 @@ shadow.innerHTML=`
                         const slot = this.appendChildViaSlot(textFragment.cloneNode(true), "text", content);
                         const loadEditor = () => {
                             const { createEditor, createToolbar } = window.wangEditor;
-                            const editorConfig = {}
-                            const editor = createEditor({
+                            editor = createEditor({
                                 selector: '#text-editor-container',
-                                config: editorConfig,
+                                config: {},
                                 html: this.getAttribute("message") || void 0,
                                 mode: 'default'
                             });
-                            const toolbarConfig = {
-                                excludeKeys: ["headerSelect", "blockquote", "insertTable", 'group-image', 'group-video', 'group-justify', 'group-indent', "fontFamily"]
-                            }
-                            const toolbar = createToolbar({
+                            createToolbar({
                                 editor,
                                 selector: '#text-editor-toolbar-container',
-                                config: toolbarConfig,
+                                config: {
+                                    excludeKeys: ["headerSelect", "blockquote", "insertTable", 'group-image', 'group-video', 'group-justify', 'group-indent', "fontFamily"]
+                                },
                                 mode: 'default'
                             })
                             this.setAttribute("height", 475);
@@ -366,21 +364,29 @@ shadow.innerHTML=`
                             })();
                         })
                         this.whenEnd(async (e) => {
-                            const sourceHTML = editor.getHtml();
-                            const parser = new DOMParser();
-                            const tempDoc = parser.parseFromString(sourceHTML, "text/html");
-                            const ps = tempDoc.body.querySelectorAll(":scope>p")
-                            ps.forEach((p, index) => {
-                                const nodes = [], flag = tempDoc.body.lastElementChild === p;
-                                nodes.push(this.createFragmentFromChildren(p));
-                                if (!flag) nodes.push(document.createElement("br"));
-                                p.replaceWith(...nodes);
-                            })
-                            const noPElementHTML = tempDoc.body.innerHTML;
-                            this.#finishReslove({
-                                sourceHTML,
-                                noPElementHTML
-                            });
+                            const sourceHTML = editor?.getHtml();
+                            if (sourceHTML) {
+                                const parser = new DOMParser();
+                                const tempDoc = parser.parseFromString(sourceHTML, "text/html");
+                                const ps = tempDoc.body.querySelectorAll(":scope>p")
+                                ps.forEach((p) => {
+                                    const nodes = [], flag = tempDoc.body.lastElementChild === p;
+                                    nodes.push(...p.childNodes);
+                                    if (!flag) nodes.push(document.createElement("br"));
+                                    p.replaceWith(...nodes);
+                                })
+                                const noPElementHTML = tempDoc.body.innerHTML;
+                                this.#finishReslove({
+                                    sourceHTML,
+                                    noPElementHTML
+                                });
+                            } else {
+                                this.#finishReslove({
+                                    sourceHTML: "<p></p>",
+                                    noPElementHTML: ""
+                                })
+                            }
+
                         });
                     }; break;
                     case "extension-setting": {
@@ -395,8 +401,7 @@ shadow.innerHTML=`
                         const form = content.querySelector("form");
                         const characterJsRegx = /\bcharacter\.m?js$/;
                         const cardJsRegx = /\bcard\.m?js$/;
-                        const extensionChange = async (e) => {
-                            console.log(e);
+                        const extensionChange = async () => {
                             const disabled = !extension.checkValidity();
                             extensionConcerning.forEach(node => {
                                 node.disabled = disabled;

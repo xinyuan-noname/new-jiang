@@ -331,7 +331,7 @@ shadow.innerHTML=`
     <div class="extension">所属扩展</div>
 </section>`
 //#: shadow , html/character-editor.html//
-        this.storeFragment("code", "<section class='code-section'><div class='container'><div class='title'><span class='copy'>复制</span></div><pre><code></code></pre></div></section>");
+        this.storeFragment("code", "<section class='code-section'><div class='title'><span class='copy'>复制</span></div><pre><code></code></pre></section>");
     }
     openConfirmDialog(message, headline) {
         const dialog = document.createElement("noname-dialog");
@@ -387,10 +387,9 @@ shadow.innerHTML=`
         const fragment = this.getStoredFragment("code");
         const copy = fragment.querySelector(".copy");
         const code = fragment.querySelector("code");
-        const pre = fragment.querySelector("pre");
         code.textContent = codeString;
         codeArea.replaceChildren(fragment);
-        this.highlightCode(pre);
+        this.highlightCode(code);
         copy.addEventListener("pointerup", () => {
             navigator.clipboard.writeText(codeString).then(() => {
                 copy.classList.add("copied-ok");
@@ -420,6 +419,9 @@ shadow.innerHTML=`
                 dialog.setAttribute("forced", true);
                 await processing;
             }
+            const extensionName = this.getData("extension");
+            const module = await this.codeQuery("getExtensionAllPackage", { extensionName });
+            console.log(module);
         })
         genCodeButton.addEventListener("pointerup", async () => {
             main.classList.add("turn-over");
@@ -640,12 +642,14 @@ shadow.innerHTML=`
         const addButton = dieAudiosDataArea.querySelector(".add");
         addButton.addEventListener("pointerdown", async e => {
             if (dieAudioSection.childNodes.length) return;
+            this.clearObjectURLRecords("dieAudios")
             const [file] = await this.fileQuery("submitFile", { format: "audio/*" });
-            this.createAndRecordObjectURL("dieAudio", file);
+            this.createAndRecordObjectURL("dieAudios", file);
             const audioCard = document.createElement("audio-info-card");
-            audioCard.setAttribute("src", this.getLastestURLRecord("dieAudio"));
+            audioCard.setAttribute("src", this.getLastestURLRecord("dieAudios"));
             audioCard.setAttribute("removable", true)
             dieAudioSection.append(audioCard);
+            this.changeData("dieAudios", this.getLastestURLRecord("dieAudios"));
         });
         dieAudioSection.addEventListener("audioTextChange", e => {
             if (typeof e.detail?.newValue === "string") this.changeData("dieAudioText", e.detail.newValue);
@@ -1305,6 +1309,7 @@ shadow.innerHTML=`
         switch (camelizedType) {
             case "hp": case "maxHp": case "hujia": return Number(result);
             case "dieAudios": case "clans": case "skills": case "doubleGroup": return result.split(" ").filter(Boolean);
+            case "pinyin": return result.split(",");
             case "intro": return result.trim();
             default: {
                 if (camelizedType.startsWith("is") || camelizedType.startsWith("has")) return Boolean(result);
@@ -1322,15 +1327,31 @@ shadow.innerHTML=`
         if (!dataList.doubleGroup.length) delete dataList.doubleGroup;
         if (!dataList.dieAudios.length) delete dataList.dieAudios;
         if (!dataList.hujia) delete dataList.hujia;
+        if (!dataList.avatar) delete dataList.avatar;
+        if (!dataList.isZhuGong) delete dataList.isZhuGong;
+        if (!dataList.hasHiddenSkill) delete dataList.hasHiddenSkill;
+        if (!dataList.isAiForbidden) delete dataList.isAiForbidden;
+        if (!dataList.isBoss) delete dataList.isBoss;
+        if (!dataList.isChessBoss) delete dataList.isChessBoss;
+        if (!dataList.isUnseen) delete dataList.isUnseen;
+        if (!dataList.isJiangeBoss) delete dataList.isJiangeBoss;
+        if (!dataList.isJiangeMech) delete dataList.isJiangeMech;
+        if (!dataList.isFellowInStoneMode) delete dataList.isFellowInStoneMode;
+        if (!dataList.isSpecialInStoneMode) delete dataList.isSpecialInStoneMode;
+        if (!dataList.isHiddenInStoneMode) delete dataList.isHiddenInStoneMode;
+        if (!dataList.intro) delete dataList.intro;
+        if (!dataList.pinyin || dataList.pinyin.toString() === this.textQuery("pinyin", { text: dataList.name }).toString()) delete dataList.pinyin;
         if (dataList.maxHp === dataList.hp) delete dataList.maxHp;
         if (dataList.sex === "male-castrated") {
             dataList.sex = "male";
             dataList.trashBin.push("sex:male_castrated");
         }
-        if(dataList.avatar){
+        if (dataList.avatar) {
             dataList.trashBin.push(dataList.avatar);
             delete dataList.avatar;
         }
+        //这里将packageName默认设置为扩展名 方便以后调试
+        if (!dataList.packageName) dataList.packageName = dataList.extension;
         return dataList;
     }
     genCode(pattern) {

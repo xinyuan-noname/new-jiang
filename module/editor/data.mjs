@@ -1,6 +1,9 @@
 import { game, get, lib, ui } from "../../../../noname.js";
 import url from "./url.mjs";
 const chineseRegex = /[\u4e00-\u9fff]+/;
+let DATA_AST_WORKER;
+const getAstWorker = () => new Worker(`./${url}/worker-ast.worker.js`, { type: "module" });
+const ensureAstWorker = () => { if (!DATA_AST_WORKER) DATA_AST_WORKER = getAstWorker() }
 const parseSkill = (skillId, characterId) => {
     if (!(skillId in lib.skill)) return null;
     const skillName = lib.translate[skillId] || "";
@@ -165,186 +168,6 @@ class Searcher {
         })();
     }
 }
-class AST {
-    static #ast = {
-        Babel: null,
-    }
-    get babel() {
-        return AST.#ast.Babel;
-    }
-    get Babel() {
-        return AST.#ast.Babel;
-    }
-    get parser() {
-        return this.Babel?.packages?.parser;
-    }
-    get generator() {
-        return this.Babel?.packages?.generator;
-    }
-    get traverse() {
-        return this.Babel?.packages?.traverse?.default;
-    }
-    get types() {
-        return this.Babel?.packages?.types;
-    }
-    get template() {
-        return this.Babel?.packages?.template.default;
-    }
-    parseCode(code, configs) {
-        const { parser } = this;
-        const abstractSyntaxTree = parser.parse(code, configs);
-        return abstractSyntaxTree;
-    }
-    traverseAST(ast, config) {
-        const { traverse } = this;
-        traverse(ast, config);
-    }
-    getNodeByType(ast, type) {
-        let target = null;
-        this.traverseAST(ast, {
-            [type]: (path) => {
-                target = path;
-                path.stop();
-            }
-        });
-        return target;
-    }
-    getNodeListByType(ast, type) {
-        const nodeList = [];
-        this.traverseAST(ast, {
-            [type]: (path) => {
-                nodeList.push(path)
-            }
-        });
-        return target;
-    }
-    packStatementAsProgram(...statements) {
-        return this.types.Program(statements);
-    }
-    //$create系列函数 从给定的值中创建对应的AST节点
-    $createNode(val) {
-        let node;
-        if (Array.isArray(val)) {
-            node = this.$createArrayExpression(val);
-        } else if (typeof val === "object" && val !== null) {
-            node = this.$createObjectExpression(val);
-        } else {
-            node = this.$createLiteral(val);
-        }
-        return node;
-    }
-    $createLiteral(literal) {
-        let literalPath;
-        const { types } = this;
-        switch (true) {
-            case (literal instanceof RegExp): {
-                literalPath = types.RegExpLiteral(literal.source, literal.flags);
-            }; break;
-            case (typeof literal === "bigint"): {
-                literalPath = types.BigIntLiteral(literal.toString());
-            }; break;
-            case (typeof literal === "string"): {
-                literalPath = types.StringLiteral(literal);
-            }; break;
-            case (typeof literal === "number"): {
-                literalPath = types.NumberLiteral(literal);
-            }; break;
-            case (literal === null): {
-                literalPath = types.NullLiteral();
-            }; break;
-        }
-        return literalPath;
-    }
-    $createArrayExpression(array) {
-        const { types } = this;
-        return types.ArrayExpression(array.map(element => this.$createNode(element)).filter(Boolean));
-    }
-    $createFunction(func) {
-        const funcAST = this.parser.parse(func.toString());
-        const funcNode = this.getNodeByType(funcAST, "FunctionExpression|ArrowFunctionExpression");
-        return funcNode;
-    }
-    $createObjectProperty(key, val) {
-        const { types } = this;
-        let keyPath, valuePath;
-        if (typeof key === "string") {
-            valuePath = this.$createNode(val);
-            if (valuePath) {
-                keyPath = this.checkIdentifierValid(key) ? types.identifier(key) : types.StringLiteral(key);
-                return this.types.ObjectProperty(keyPath, valuePath);
-            }
-        }
-    }
-    $createObjectMethod(name, func) {
-        const { types } = this;
-        let namePath, funcPath;
-        if (typeof name === "string") {
-            funcPath = this.$createFunction(func);
-            if (funcPath) {
-                namePath = this.checkIdentifierValid(name) ? types.identifier(name) : types.StringLiteral(name);
-                return this.types.ObjectMethod("method", namePath, funcPath);
-            }
-        }
-    }
-    $createObjectExpression(object) {
-        const { types } = this;
-        const objectExpression = types.ObjectExpression([])
-        for (const k in object) {
-            if (object.hasOwnProperty(k)) {
-                if (typeof object[k] !== "function") {
-                    const property = this.$createObjectProperty(k, object[k]);
-                    if (property) objectExpression.properties.push(property);
-                } else {
-                    const method = this.$createObjectMethod(k, object[k]);
-                    if (method) objectExpression.properties.push(method);
-                }
-            }
-        }
-        return objectExpression;
-    }
-    //
-    checkIdentifierValid(identifier) {
-        try {
-            this.parseCode(`var ${identifier};`);
-            return true;
-        } catch (err) {
-            return false;
-        }
-    }
-    replaceWithLiteral(path, literal) {
-        let literalPath = this.$createLiteral(literal);
-        if (literalPath) path.replaceWith(literalPath);
-    }
-    generateCode(ast, configs) {
-        const { generator } = this;
-        const code = generator.generate(ast, {
-            //在中文环境中 为了确保不转为unicode 这个选项通常是必要的
-            jsescOption: {
-                minimal: true,
-                escapeOnly: false,
-            },
-            ...configs
-        });
-        return code;
-    }
-    /**
-     * @returns {Promise<void>}
-     */
-    load() {
-        let loading;
-        if (!AST.#ast.Babel) {
-            loading = Promise.all([
-                import("./libs/babel/standalone/babel.min.js").then(module => {
-                    AST.#ast.Babel = window.Babel;
-                    // delete window.Babel;
-                })
-            ]);
-        } else {
-            loading = Promise.resolve();
-        }
-        return loading;
-    }
-}
 class EventManager {
     #eventMap = {}
     on(type, callback) {
@@ -356,6 +179,48 @@ class EventManager {
         }
     }
 }
+class ASTWorkerSession {
+    static #idList = [];
+    #id = null;
+    data = null;
+    #getRandomId() {
+        let id = Date.now().toString(36) + Math.random().toString(36).substring(2);
+        return ASTWorkerSession.#idList.includes(id) ? this.#getRandomId() : id;
+    }
+    /**
+     * 
+     * @param {Worker} worker 
+     * @param {any[]} data 
+     */
+    constructor(worker, data, timeout = 18e4) {
+        this.#id = this.#getRandomId();
+        this.worker = worker;
+        worker.postMessage({ ...data, workerSessionId: this.#id });
+        this.ready = Promise.race([
+            new Promise((reslove, reject) => {
+                const listener = (e) => {
+                    const { workerSessionId, data } = e.data;
+                    if (this.#id === workerSessionId) {
+                        this.data = data;
+                        worker.removeEventListener("message",listener);
+                        reslove();
+                    }
+                    worker.onmessageerror = (reject);
+                }
+                worker.addEventListener("message", listener);
+            }).then(() => {
+                this.ok = true;
+            }),
+            new Promise(reslove => {
+                setTimeout(reslove, timeout);
+            }).then(() => {
+                this.ok = false;
+                this.timeout = true;
+            })
+        ]);
+    }
+}
+
 export class NonameData {
     /**
      * @param {Blob|URL} file 
@@ -370,7 +235,7 @@ export class NonameData {
                 fileReader.addEventListener("loadend", e => {
                     resolve(e.target.result);
                 })
-                switch (String(type).toLocaleLowerCase()) {
+                switch (type) {
                     case "text": fileReader.readAsText(file, encoding); break;
                     case "arrayBuffer": fileReader.readAsArrayBuffer(file); break;
                     case "URL": case "url": fileReader.readAsDataURL(file); break;
@@ -538,21 +403,6 @@ export class NonameData {
         return ""
     }
     /**
-     * @param {"wei"|"shu"|"wu"|"qun"|"jin"|"shen"|"western"|"key"|string} group 
-     * @returns 
-     */
-    getTextShadowStyle(nature) {
-        switch (nature) {
-            case "wei": return "rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, black 0 0 1px";
-            case "shu": return "rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, black 0 0 1px";
-            case "wu": return "rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, black 0 0 1px";
-            case "qun": return "rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, black 0 0 1px";
-            case "jin": case "western": return "rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, black 0 0 1px";
-            case "shen": return "rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, black 0 0 1px";
-            case "key": return "rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, black 0 0 1px";
-        }
-    }
-    /**
      * @param {string} text 
      * @param {boolean} withTone 
      * @returns 
@@ -570,6 +420,29 @@ export class NonameData {
         switch (to) {
             case "kebab": return string.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
             case "camel": return string.replace(/-([a-z])/g, (_match, letter) => letter.toUpperCase());
+        }
+    }
+    toEscapedHTML(string) {
+        return string.replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    /**
+     * @param {"wei"|"shu"|"wu"|"qun"|"jin"|"shen"|"western"|"key"|string} group 
+     * @returns 
+     */
+    getTextShadowStyle(nature) {
+        switch (nature) {
+            case "wei": return "rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, rgb(78 117 140) 0 0 2px, black 0 0 1px";
+            case "shu": return "rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, rgb(128 59 2) 0 0 2px, black 0 0 1px";
+            case "wu": return "rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, rgb(57 123 4) 0 0 2px, black 0 0 1px";
+            case "qun": return "rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, rgb(164 164 164) 0 0 2px, black 0 0 1px";
+            case "jin": case "western": return "rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, rgb(100 74 139) 0 0 2px, black 0 0 1px";
+            case "shen": return "rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, rgb(243 171 27) 0 0 2px, black 0 0 1px";
+            case "key": return "rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, rgb(203 177 255) 0 0 2px, black 0 0 1px";
         }
     }
     /**
@@ -602,65 +475,26 @@ export class NonameData {
         })()
         return manager;
     }
-    async getAST() {
-        const ast = new AST();
-        await ast.load();
-        return ast;
-    }
-    /**
-     * @param {Blob|URL} fileSource 
-     */
-    async getAbstractSyntaxTreeFromFileSource(fileSource) {
+    //抽象语法树新系列
+    async getFileAllModules(filePath) {
         const astObject = await this.getAST();
-        const code = await this.readFile(fileSource, "text");
-        const node = astObject.parseCode(code)
-        return { ast: astObject, node };
+        return astObject.getFileAllModules(filePath, { rootPath: location.origin });
     }
-    /**
-     * @param {AST} astObject 
-     * @param {object} info 
-     * @param {"object"|"string"} pattern 
-     * @returns 
-     */
-    createNewCharacterExpressionParamNode(astObject, info, pattern = "object") {
-        switch (pattern) {
-            case "object": {
-                return astObject.$createNode(info);
-            }
-            case "array": {
-                const character = new lib.element.Character(info);
-                const { "0": $0, "1": $1, "2": $2, "3": $3, "4": $4, "5": $5 } = character;
-                return astObject.$createNode([$0, $1, $2, $3, $4, $5]);
-            }
+    async getExtensionAllPackage(extensionName) {
+        const session = new ASTWorkerSession(getAstWorker(), { order: "getExtensionAllPackage", data: [extensionName] });
+        await session.ready;
+        if (session.ok) {
+            return session.data;
         }
     }
-    /**
-     * @param {AST} astObject 
-     * @param {string} en 
-     * @param {string} cn 
-     */
-    createTranslateAssignmentExpression(astObject, en, cn) {
-        const enIdentifier = astObject.checkIdentifierValid(en)
-        if (typeof en === "string") en = enIdentifier ? astObject.types.identifier(en) : astObject.$createNode(en);
-        if (typeof cn === "string") cn = astObject.$createNode(cn);
-        return enIdentifier ?
-            astObject.template("lib.translate.%%en%% = %%cn%%;")({ en, cn }) :
-            astObject.template("lib.translate[%%en%%] = %%cn%%;")({ en, cn })
-    }
     async genCharacterCode(characterInfo, pattern) {
-        const { extension, id, intro, pinyin, dieAudioText, name, ...basicInfo } = characterInfo;
-        const astObject = await this.getAST();
-        const createCharacter = extension ? astObject.template("lib.characterPack[%%ext%%][%%id%%] = new lib.element.Character(%%basicInfo%%);")({
-            ext: astObject.$createNode(extension),
-            id: astObject.$createNode(id),
-            basicInfo: this.createNewCharacterExpressionParamNode(astObject, basicInfo, pattern)
-        }) : astObject.template("lib.character[%%id%%] = new lib.element.Character(%%basicInfo%%);")({
-            id: astObject.$createNode(id),
-            basicInfo: this.createNewCharacterExpressionParamNode(astObject, basicInfo, pattern)
-        })
-        const setCharacterTranslation = this.createTranslateAssignmentExpression(astObject, id, name);
-        const ast = astObject.packStatementAsProgram(createCharacter, setCharacterTranslation);
-        return astObject.generateCode(ast).code;
+        ensureAstWorker();
+        const session = new ASTWorkerSession(DATA_AST_WORKER, { order: "genCharacterCode", data: [characterInfo, pattern] });
+        await session.ready;
+        if (session.ok) {
+            console.log(session.data)
+            return session.data;
+        }
     }
     /**
      * @param {HTMLImageElement} img 
