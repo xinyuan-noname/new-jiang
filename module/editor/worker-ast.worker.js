@@ -247,7 +247,41 @@ const getExtensionAllPackage = async (extensionName) => {
         }
         astObject.traverseAST(extensionAst, {
             ImportDeclaration,
-            CallExpression
+            CallExpression,
+            ExportDefaultDeclaration(path) {
+                const exportTypePath = [].concat(path.getAllPrevSiblings(), path.getAllNextSiblings()).find((sibling) => {
+                    if (!sibling.isExportNamedDeclaration()) return false;
+                    const declaration = sibling.get("declaration");
+                    if (!declaration?.isVariableDeclaration?.()) return false;
+                    const { init, id } = declaration.get("declarations.0").node;
+                    if (id.name !== "type" || init.value !== "extension") return false;
+                    return true;
+                });
+                if (!exportTypePath) return;
+                const content = path.get("declaration");
+                const returnValuePaths = astObject.getReturnValues(content);
+                returnValuePaths.forEach((returnValuePath) => {
+                    let configObjectExpressionPath;
+                    if (returnValuePath.isObjectExpression()) {
+                        configObjectExpressionPath = returnValuePath;
+                    } else if (returnValuePath.isIdentifier()) {
+                        const binding = returnValuePath.scope.getBinding(returnValuePath.node.name);
+                        if (!binding) return;
+                        configObjectExpressionPath = binding.path.get("init");
+                    }
+                    if (!configObjectExpressionPath) return;
+                    let packageID;
+                    const valuePath = astObject.getValueOfObject(configObjectExpressionPath, "name")
+                    if (valuePath?.isStringLiteral()) {
+                        packageID = valuePath.node.value;
+                    }
+                    astCaputured.extension.push({
+                        packageID,
+                        file: currentFilePath,
+                        currentAST
+                    });
+                })
+            }
         });
         //实际上 这个set会随着遍历不断变长 我们可以依次遍历完 全部的module
         for (const filePath of moduleList) {
@@ -256,7 +290,7 @@ const getExtensionAllPackage = async (extensionName) => {
             currentFilePath = filePath; currentDirPath = fileDirPath; currentAST = ast;
             astObject.traverseAST(ast, {
                 ImportDeclaration,
-                CallExpression
+                CallExpression,
             });
         }
         return {
@@ -275,7 +309,7 @@ const getExtensionAllPackage = async (extensionName) => {
         }
     }
 }
-addEventListener("message", async ({data:{ order, data }} ) => {
+addEventListener("message", async ({ data: { order, data } }) => {
     switch (order) {
         case "getExtensionAllPackage": {
             const [extensionName] = data;

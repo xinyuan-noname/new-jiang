@@ -466,7 +466,7 @@ export class NonameData {
         })()
         return manager;
     }
-    //抽象语法树新系列
+    //抽象语法树系列
     async getFileAllModules(filePath) {
         const astObject = await this.getAST();
         return astObject.getFileAllModules(filePath, { rootPath: location.origin });

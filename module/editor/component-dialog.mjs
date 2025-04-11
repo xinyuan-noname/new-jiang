@@ -93,14 +93,8 @@ const extensionSettringFragment = (() => {
     const extensionCharacterImage = document.createElement("div");
     extensionCharacterImage.innerHTML = `<label for="extension-character-image">扩展武将图片文件夹</label><input name="extension-character-image" id="extension-character-image" list="extension-folder-list">`
 
-    const extensionCharacterJs = document.createElement("div");
-    extensionCharacterJs.innerHTML = `<label for="extension-character-js">扩展武将脚本文件</label><input name="extension-character-js" id="extension-character-js" list="extension-file-list">`
-
     const extensionCardImage = document.createElement("div");
     extensionCardImage.innerHTML = `<label for="extension-card-image">扩展卡牌图片文件夹</label><input name="extension-card-image" id="extension-card-image" list="extension-folder-list">`
-
-    const extensionCardJs = document.createElement("div");
-    extensionCardJs.innerHTML = `<label for="extension-card-js">扩展卡牌脚本文件</label><input name="extension-card-js" id="extension-card-js" list="extension-file-list">`
 
     const extensionSkillAudio = document.createElement("div");
     extensionSkillAudio.innerHTML = `<label for="extension-skill-audio">扩展技能语音文件夹</label><input name="extension-skill-audio" id="extension-skill-audio" list="extension-folder-list">`
@@ -113,7 +107,7 @@ const extensionSettringFragment = (() => {
 
     const fileDataList = document.createElement("datalist");
     fileDataList.id = "extension-file-list";
-    form.append(extensionChoiceContainer, extensionCharacterImage, extensionCharacterJs, extensionCardImage, extensionCardJs, extensionSkillAudio, extensionDieAudio, dirDataList, fileDataList);
+    form.append(extensionChoiceContainer, extensionCharacterImage, extensionCardImage, extensionSkillAudio, extensionDieAudio, dirDataList, fileDataList);
     fragment.append(form);
     return fragment;
 })();
@@ -132,7 +126,7 @@ class HTMLNonameDialogHTML extends HTMLNonameFocusUIElement {
         super();
         const shadow = this.attachShadow({ mode: "open" });
         //$: shadow , html/dialog.html//
-shadow.innerHTML=`
+        shadow.innerHTML = `
 <style>
     :host {
         height: 100%;
@@ -224,7 +218,7 @@ shadow.innerHTML=`
     <div class="confirm">确认</div>
     <div class="cancel">取消</div>
 </div>`
-//#: shadow , html/dialog.html//
+        //#: shadow , html/dialog.html//
         this.#listenLoad();
     }
     dialogendListener = [];
@@ -394,13 +388,11 @@ shadow.innerHTML=`
                         const content = this.shadowRoot.querySelector(".content");
                         content.append(extensionSettringFragment.cloneNode(true));
                         const [extension, ...extensionConcerning] = content.querySelectorAll("input");
-                        const [characterImage, characterJs, cardImage, cardJs, skillAudio, dieAudio] = extensionConcerning;
+                        const [characterImage, cardImage, skillAudio, dieAudio] = extensionConcerning;
                         const extensionList = content.querySelector("datalist#extension-list");
                         const dirDataList = content.querySelector("datalist#extension-folder-list");
                         const fileDataList = content.querySelector("datalist#extension-file-list");
                         const form = content.querySelector("form");
-                        const characterJsRegx = /\bcharacter\.m?js$/;
-                        const cardJsRegx = /\bcard\.m?js$/;
                         const extensionChange = async () => {
                             const disabled = !extension.checkValidity();
                             extensionConcerning.forEach(node => {
@@ -421,7 +413,7 @@ shadow.innerHTML=`
                                     fileDatalistContent
                                 }
                             }
-                            const { folderDatalistContent, folderList, fileList, fileDatalistContent } = extensionFolderListRecord[extensionName]
+                            const { folderDatalistContent, folderList, fileDatalistContent } = extensionFolderListRecord[extensionName]
                             dirDataList.innerHTML = folderDatalistContent;
                             fileDataList.innerHTML = fileDatalistContent;
                             if (folderList.includes("image/character")) {
@@ -431,7 +423,6 @@ shadow.innerHTML=`
                             } else {
                                 characterImage.value = extensionName;
                             }
-                            characterJs.value = extensionName + "/" + (fileList.find(file => characterJsRegx.test(file)) || "extension.js");
                             if (folderList.includes("image/card")) {
                                 cardImage.value = extensionName + "/image/card";
                             } else if (folderList.includes("image")) {
@@ -439,7 +430,6 @@ shadow.innerHTML=`
                             } else {
                                 cardImage.value = extensionName;
                             }
-                            cardJs.value = extensionName + "/" + (fileList.find(file => cardJsRegx.test(file)) || "extension.js");
                             if (folderList.includes("audio/skill")) {
                                 skillAudio.value = extensionName + "/audio/skill";
                             } else if (folderList.includes("audio")) {
