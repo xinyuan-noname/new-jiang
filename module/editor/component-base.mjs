@@ -1,6 +1,6 @@
 "use script";
 import { NonameData } from "./data-noname.mjs";
-import { EditableElementManager, loadCss, MultipleChoiceManager, ObjectURLManager, UniqueChoiceManager } from "./encapsulated.mjs";
+import { EditableElementManager, loadCss, MultipleChoiceManager, URLManager, UniqueChoiceManager } from "./encapsulated.mjs";
 export class HTMLNonameFocusUIElement extends HTMLElement {
     #server;
     #uniqueChoiceAnonymousManagerSymbol = Symbol(null);
@@ -9,20 +9,24 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
     #multipleChoiceManagerMap = new Map([[this.#multipleChoiceAnonymousManagerSymbol, []]])
     #editableElementAnonymousManagerSymbol = Symbol(null);
     #editableElementManagerMap = new Map([[this.#editableElementAnonymousManagerSymbol, []]]);
-    #objectURLManager = new ObjectURLManager();
+    #URLManager = new URLManager();
     #fragmentStorageMap = new Map();
     constructor() {
         super();
         this.#server = new NonameData();
     }
     /**
-     * @template {"readFile"|"readFolder"|"getAllFolderList"|"getAllFileList"|"getAllFolderAndFileList"|"submitFile"} T
+     * @template {"readFile"|"readFolder"|
+     *            "getAllFolderList"|"getAllFileList"|"getAllFolderAndFileList"|
+     *            "submitFile"|"download"} T
      * @param {T} mode 
-     * @param { T extends "readFile"?{format: ("url"|"arrayBuffer"|"text"),file: Blob|URL}:
+     * @param { T extends "readFile"?{format: ("url"|"arrayBuffer"|"text"),file: Blob}:
      *          T extends "submitFile"?{format: (string|string[]),multiple?:boolean}:
      *          T extends "readFolder"|"readDir"?{path:string}
      *          T extends "getAllFileList"|"getAllFileAndFolderList"?{path:string,folderFilter:function,fileFilter:function}
      *          T extends "getAllFolderList"?{path:string,folderFilter:function}
+     *          T extends "getAllFolderList"?{path:string,folderFilter:function}
+     *          T extends "download"?{path:string,name:string,url:string}
      *          Object<string,any>
      * } query 
      * @returns {Promise<any>}
@@ -38,30 +42,50 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
                 return this.#server.readFolder(path)
             }
             case "getAllFolderList": {
-                const { path, folderFilter } = query;
+                const { path } = query;
                 return this.#server.getAllFolderList(path);
             }
             case "getAllFileList": {
-                const { path, fileFilter, folderFilter } = query;
+                const { path } = query;
                 return this.#server.getAllFolderList(path);
             }
             case "getAllFolderAndFileList": {
-                const { path, fileFilter, folderFilter } = query;
+                const { path } = query;
                 return this.#server.getAllFolderFileList(path);
             }
             case "submitFile": {
                 const { format, multiple } = query;
                 return this.#server.submitFile(format, multiple);
             }
+            case "download": {
+                const { url, path, name } = query;
+                return this.#server.download(url, path, name);
+            }
         }
     }
     /**
-     * @template {'pinyin'| 'characterTranslation'|'formatTransfer'|'skillTranslation'} T
+     * @template {"changeToExtPath"} T
+     * @param {T} mode 
+     * @param {*} query 
+     */
+    pathQuery(mode, query) {
+        switch (mode) {
+            case "changeToExtPath": {
+                const { path } = query
+                return this.#server.changeToExtPath(path);
+            }
+        }
+    }
+    /**
+     * @template {'pinyin'| 'characterTranslation'|'formatTransfer'|'skillTranslation'|
+     *            'getTranslation'|'setTranslation'|"characterPackageTranslation"} T
      * @param {T} mode 
      * @param {T extends 'pinyin' ?{text:string,withTone:boolean}
-     *         T extends 'characterTranslation' ?{text:string,attr:"sex"|"group"}
-     *         T extends 'skillTranslation' ?{text:string,attr:"name"|"info"}
-     *         T extends 'formatTransfer' ?{text:string,to:"kebab"|"camel"|"escapedHTML"}
+     *         T extends 'characterTranslation' ? {text:string,attr:"sex"|"group"}
+     *         T extends 'skillTranslation' ? {text:string,attr:"name"|"info"}
+     *         T extends 'formatTransfer' ? {text:string,to:"kebab"|"camel"|"escapedHTML"}
+     *         T extends 'getTranslation'? {text:string}
+     *         T extends 'setTranslation'? {en:string,cn:string}
      * } query
      * @returns {string|undefined}
      */
@@ -79,6 +103,18 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
                 const { text, attr } = query;
                 return this.#server.getTranslation("skill", attr, text);
             };
+            case "characterPackageTranslation": {
+                const { text } = query;
+                return this.#server.getTranslation("characterPackage", void 0, text);
+            }
+            case "getTranslation": {
+                const { text } = query;
+                return this.#server.getTranslation(void 0, void 0, text);
+            }
+            case "setTranslation": {
+                const { en, cn } = query;
+                return this.#server.setTranslation(en, cn);
+            }
             case "formatTransfer": {
                 const { text, to } = query;
                 if (to === "kebab") return this.#server.camelKebabSwitch(text, "kebab");
@@ -89,12 +125,13 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         }
     }
     /**
-     * @template {"hpStatus"|"clanSkillId"|"translation"|"intro"} T
+     * @template {"hpStatus"|"clanSkillId"|"translation"|"intro"|"characterSortList"|"setCharacterSort"} T
      * @param {T} mode
      * @param { T extends "hpStatus"?{hp:number,maxHp:number}:
      *          T extends "clanSkillId"?{clan:string}
      *          T extends "translation"?{id:string}
      *          T extends "intro"?{id:string}
+     *          T extends "setCharacterSort"?{packageId:string, id:string, characterList:string[]}
      *          Object<string,any>
      * } query 
     */
@@ -116,6 +153,14 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
                 const { id } = query;
                 return this.#server.getCharacterIntro(id);
             }
+            case "characterSortList": {
+                const { packageId } = query;
+                return this.#server.getCharacterSortList(packageId);
+            }
+            case "setCharacterSort": {
+                const { packageId, id, characterList } = query;
+                return this.#server.setCharacterSort(packageId, id, characterList);
+            }
         }
     }
     cardQuery(mode, query) {
@@ -129,6 +174,7 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
      * @param {T} mode 
      * @param {T extends "characterId"?{id:string}:
      *         T extends "skillTags"?{id:string,tags:string[]}
+     *         T extends "characterSortId"?{}
      * } query 
      */
     checkQuery(mode, query = {}) {
@@ -141,13 +187,18 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
                 const { id, tags } = query;
                 return this.#server.checkSkillTags(id, tags);
             }
+            case "characterSortId": {
+                const { id, packageId } = query;
+                return this.#server.checkId(id, "characterSort", packageId);
+            }
         }
     }
     /**
-     * @template {"skill"|"extensionList"} T
+     * @template {"skill"|"extensionList"|"characterSortList"} T
      * @param {T} mode 
      * @param {T extends "skill"?{skillId:string,characterId:string}   
      *         T extends "extension"?{filter:function}
+     *         T extends "characterSortList"?{packageName:string}
      * } query 
      * @returns 
      */
@@ -160,6 +211,29 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
             case "extensionList": {
                 const { filter } = query;
                 return this.#server.getExtensionList(filter);
+            }
+            case "characterSortList": {
+                const { packageId } = query;
+                return this.#server.getCharacterSortList(packageId);
+            }
+        }
+    }
+    /**
+     * @template {"get"|"write"} T
+     * @param {T} mode 
+     * @param {T extends "get"?{member:string}:
+     *         T extends "write"?{member:string,value:any}
+     * } query 
+     */
+    configQuery(mode, query) {
+        switch (mode) {
+            case "get": {
+                const { member } = query;
+                return this.#server.getConfig(member);
+            }
+            case "write": {
+                const { member, value } = query;
+                return this.#server.writeConfig(member, value);
             }
         }
     }
@@ -329,19 +403,15 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         }
     }
     /**
-     * @template {"generateCharacterCode"|"getFileAllModules"|"getExtensionAllPackage"|"getAST"} T
+     * @template {"generateCharacterCode"|"getFileAllModules"|"getExtensionAllPackage"} T
      * @param {T} mode 
      * @param {T extends "generateCharacterCode"?{info:Object,pattern:"object"|"array"}
      *         T extends "getFileAllModule"?{path}
      *         T extends "getExtensionAllPackage"?{extensionName}
      * } query 
-     * @returns {T extends "getAST"?}
      */
     codeQuery(mode, query) {
         switch (mode) {
-            case "getAST": {
-                return this.#server.getAST();
-            }
             case "getFileAllModules": {
                 const { path } = query;
                 return this.#server.getFileAllModules(path);
@@ -407,27 +477,30 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
      * @param {any} label 
      * @param {Blob|URL} url 
      */
-    recordObjectURL(label, url) {
-        this.#objectURLManager.add(label, url);
+    recordURL(label, url) {
+        this.#URLManager.add(label, url);
     }
     /**
      * @param {any} label 
      * @param {Blob|URL} url 
      */
     createAndRecordObjectURL(label, url) {
-        this.#objectURLManager.addFromBlob(label, url);
+        this.#URLManager.addFromBlob(label, url);
     }
     /**
-     * @param {any} label 
+     * @param {string|void|undefined|null} label 
      */
-    clearObjectURLRecords(label) {
-        this.#objectURLManager.clear(label);
+    clearURLRecords(label) {
+        this.#URLManager.clear(label);
     }
     getLastestURLRecord(label) {
-        return this.#objectURLManager.getLastest(label);
+        return this.#URLManager.getLastest(label);
+    }
+    removeLastestURLRecord(label) {
+        return this.#URLManager.removeLastest(label);
     }
     getURLRecordGroup(label) {
-        return this.#objectURLManager.getURLGroup(label);
+        return this.#URLManager.getURLGroup(label);
     }
     /**
      * @param {string} label 

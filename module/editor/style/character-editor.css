@@ -31,6 +31,43 @@ skill-info-card {
     margin-top: 2px;
 }
 
+.small-font {
+    font-size: 16px;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.flex--between {
+    display: flex;
+    justify-content: space-between;
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+}
+
+.flex-center-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.text-shadow-free {
+    text-shadow: none;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+.link-arrow::after {
+    content: ">";
+}
+
 .full-height {
     height: 100%;
 }
@@ -69,6 +106,24 @@ skill-info-card {
     content: "√";
     color: yellow;
     background-color: blue;
+}
+
+/* 搜索按钮 */
+.search {
+    background-image: url("../image/icon/search.png");
+    background-size: cover;
+    display: flex;
+    background-color: rgba(0, 0, 255, 0.557);
+    border-radius: 60% 40% 100% 0% / 0% 100% 0% 100%;
+    width: 1em;
+    height: 1em;
+    cursor: pointer;
+}
+
+p.note {
+    font-size: 12px;
+    font-family: fangsong;
+    margin-top: 0;
 }
 
 /* 错误提示 */
@@ -192,13 +247,6 @@ div[contenteditable="true"] {
     display: none;
 }
 
-.extension:hover::after {
-    content: var(--data-extension, "暂未设置");
-    position: absolute;
-    text-align: center;
-    top: 100%;
-}
-
 .main {
     width: 100%;
     display: flex;
@@ -266,7 +314,6 @@ div[contenteditable="true"] {
     flex-direction: row-reverse;
 }
 
-
 .code .code-section .title .copy::after {
     display: block;
     position: absolute;
@@ -294,7 +341,7 @@ div[contenteditable="true"] {
     overflow-y: visible;
 }
 
-.code .code-section code{
+.code .code-section code {
     padding: 22px;
     width: max-content;
     min-width: calc(100% - 44px);
@@ -387,10 +434,34 @@ div[contenteditable="true"] {
     content: var(--data-skills);
 }
 
+/* 分包设置 */
+[data-extension] {
+    width: 12em;
+    margin-bottom: 5px;
+    overflow: hidden;
+}
+
+[data-extension] .sort-view{
+    width: max-content;
+}
+
+[data-extension] .extension-name::before {
+    content: var(--data-extension-name, "未设置");
+    text-decoration: underline;
+}
+
+[data-extension] .package-name::before {
+    content: var(--data-package-name, "未设置");
+    text-decoration: underline;
+}
+
+[data-extension] .character-sort::before {
+    content: var(--data-character-sort, "未设置");
+    text-decoration: underline;
+}
+
 /* 皮肤 */
 [data-avatar] {
-    display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     margin-bottom: 5px;
@@ -624,8 +695,6 @@ div[contenteditable="true"] {
 /* 阵亡语音 */
 [data-die-audios] {
     margin-top: 10px;
-    display: flex;
-    flex-direction: column;
     width: 12em;
 }
 
@@ -635,11 +704,6 @@ div[contenteditable="true"] {
     font-size: 0.9em;
 }
 
-
-[data-die-audios] .add {
-    text-shadow: none;
-    cursor: pointer;
-}
 
 [data-die-audios] section {
     max-height: 200px;
@@ -698,11 +762,6 @@ div[contenteditable="true"] {
 }
 
 /* 势力-宗族 */
-:is([data-group], [data-clans])>section {
-    display: flex;
-    flex-direction: column;
-}
-
 :is([data-group], [data-clans]) li[data-diy]::before {
     content: "➕";
     border-radius: 50%;
@@ -762,16 +821,6 @@ div[contenteditable="true"] {
     align-items: center;
     margin-left: auto;
     text-shadow: none;
-}
-
-.hp-more-show>div {
-    display: flex;
-    flex-direction: column;
-    text-shadow: none;
-}
-
-.hp-more-show>div>span {
-    cursor: pointer;
 }
 
 .hp-more-show [data-hp-adjust-mode].chosen {
@@ -921,47 +970,15 @@ div[contenteditable="true"] {
     opacity: 1;
 }
 
-[data-skills]>div {
-    display: flex;
-    flex-direction: column;
-}
-
-[data-skills]>div>ruby {
-    display: flex;
-    align-items: center;
-}
-
+/* 技能 */
 [data-skills] div[contenteditable] {
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-wrap: wrap;
-}
-
-[data-skills] div[contenteditable]+span {
-    background-image: url("../image/icon/search.png");
-    background-size: cover;
-    display: flex;
-    background-color: rgba(0, 0, 255, 0.557);
-    border-radius: 60% 40% 100% 0% / 0% 100% 0% 100%;
-    width: 1em;
-    height: 100%;
-    cursor: pointer;
-}
-
-[data-skills] p {
-    font-size: 12px;
-    font-family: fangsong;
-    margin-top: 0;
 }
 
 [data-skills] section>header {
     font-size: 16px;
-}
-
-[data-more] section {
-    display: flex;
-    flex-direction: column;
 }
 
 [data-more] ul {
@@ -1011,15 +1028,9 @@ div[contenteditable="true"] {
 
 /* 介绍 */
 [data-intro] section>p {
-    text-shadow: none;
     font-size: 0.95em;
     margin: 0;
     padding: 2px;
-}
-
-[data-intro] section>p.use-default {
-    display: flex;
-    flex-direction: column;
 }
 
 [data-intro] section>p.use-default::before {

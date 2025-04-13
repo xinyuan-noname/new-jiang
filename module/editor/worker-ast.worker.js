@@ -167,7 +167,7 @@ const genCharacterCode = (characterInfo, pattern) => {
     return astObject.generateCode(ast).code;
 }
 const getExtensionAllPackage = async (extensionName) => {
-    const astCaputured = {
+    const packageInfo = {
         extension: [],
         character: [],
         card: []
@@ -179,15 +179,20 @@ const getExtensionAllPackage = async (extensionName) => {
         const rootFileDirPath = resolvePath(`extension/${extensionName}/`);
         const extensionAst = await astObject.parseFile(rootFilePath);
         let currentFilePath = rootFilePath;
-        let currentDirPath = rootFileDirPath;
-        let currentAST = extensionAst;
-        const pathCheck = (path) => {
+        let currentDirPath = rootFileDirPath; const pathCheck = (path) => {
             return !moduleList.includes(path) && path.includes(rootFileDirPath);
         }
-        const setImportInfo = (path) => {
-            const importedList = {}
-            importInfoMap.set(path, importedList);
-            return importedList
+        const getImportInfo = (path) => {
+            if (!importInfoMap.has(path)) {
+                const importedList = {
+                    specifiers: {},
+                    files: []
+                }
+                importInfoMap.set(path, importedList);
+                return importedList;
+            } else {
+                return importInfoMap.get(path);
+            }
         }
         const CallExpression = (path) => {
             const callee = path.get('callee')
@@ -210,10 +215,9 @@ const getExtensionAllPackage = async (extensionName) => {
                     if (valuePath?.isStringLiteral()) {
                         packageID = valuePath.node.value;
                     }
-                    astCaputured[type.node.value].push({
+                    packageInfo[type.node.value].push({
                         packageID,
-                        file: currentFilePath,
-                        currentAST
+                        file: currentFilePath
                     });
                 })
             } else if (callee.matchesPattern("lib.init.js") || callee.matchesPattern("lib.init.promises.js")) {
@@ -238,12 +242,13 @@ const getExtensionAllPackage = async (extensionName) => {
         }
         const ImportDeclaration = (path) => {
             const infoList = astObject.getImportInfoList(path);
-            const currentImportInfoList = setImportInfo(currentFilePath);
+            const currentImportInfoList = getImportInfo(currentFilePath);
             const absolutePath = resolvePath(currentDirPath, path.node.source.value);
             if (pathCheck(absolutePath)) moduleList.push(absolutePath);
-            infoList.forEach(info => {
-                currentImportInfoList[info.local] = info;
-            });
+            infoList.length ? infoList.forEach(info => {
+                delete info.specifier;
+                currentImportInfoList.specifiers[info.local] = info;
+            }) : currentImportInfoList.files.push(path.node.source.value);
         }
         astObject.traverseAST(extensionAst, {
             ImportDeclaration,
@@ -275,10 +280,9 @@ const getExtensionAllPackage = async (extensionName) => {
                     if (valuePath?.isStringLiteral()) {
                         packageID = valuePath.node.value;
                     }
-                    astCaputured.extension.push({
+                    packageInfo.extension.push({
                         packageID,
-                        file: currentFilePath,
-                        currentAST
+                        file: currentFilePath
                     });
                 })
             }
@@ -287,7 +291,7 @@ const getExtensionAllPackage = async (extensionName) => {
         for (const filePath of moduleList) {
             const fileDirPath = resolvePath(filePath, "..");
             const ast = await astObject.parseFile(filePath);
-            currentFilePath = filePath; currentDirPath = fileDirPath; currentAST = ast;
+            currentFilePath = filePath; currentDirPath = fileDirPath;
             astObject.traverseAST(ast, {
                 ImportDeclaration,
                 CallExpression,
@@ -296,7 +300,7 @@ const getExtensionAllPackage = async (extensionName) => {
         return {
             ok: true,
             moduleList,
-            astCaputured,
+            packageInfo,
             importInfoMap: Array.from(importInfoMap)
         };
     } catch (err) {
@@ -304,7 +308,7 @@ const getExtensionAllPackage = async (extensionName) => {
         return {
             ok: false,
             moduleList,
-            astCaputured,
+            packageInfo,
             importInfoMap: Array.from(importInfoMap)
         }
     }
@@ -314,7 +318,7 @@ addEventListener("message", async ({ data: { order, data } }) => {
         case "getExtensionAllPackage": {
             const [extensionName] = data;
             const result = await getExtensionAllPackage(extensionName);
-            postMessage(JSON.parse(JSON.stringify(result)));
+            postMessage(result);
         }; break;
         case "genCharacterCode": {
             const [characterInfo, pattern] = data;

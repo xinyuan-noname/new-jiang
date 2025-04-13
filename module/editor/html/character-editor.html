@@ -1,7 +1,18 @@
 <section class="main">
     <div class="content">
         <div class="left">
-            <div class="data-setting" data-avatar="">
+            <div class="data-setting" data-extension="" data-package-name="" data-character-sort="" data-character-sort-name="">
+                <section class="flex--between">
+                    <span>所属分包</span>
+                    <span class="extension-setting pointer text-shadow-free">设置</span>
+                </section>
+                <section class="sort-view flex-center small-font">
+                    <span title="扩展包" class="extension-name link-arrow pointer"></span>
+                    <span title="武将包" class="package-name link-arrow pointer"></span>
+                    <span title="分包" class="character-sort pointer"></span>
+                </section>
+            </div>
+            <div class="data-setting flex-column" data-avatar="">
                 <section>
                     <div>武将原画</div>
                     <div class="height-set" data-height-set="high">高</div>
@@ -27,10 +38,10 @@
                     <span class="cut" title="裁剪">✂</span>
                 </div>
             </div>
-            <div class="data-setting" data-die-audios="" data-die-audio-text="">
+            <div class="data-setting flex-column" data-die-audios="" data-die-audio-text="">
                 <header>
                     <div>阵亡语音</div>
-                    <div class="add">添加</div>
+                    <div class="add text-shadow-free pointer">添加</div>
                 </header>
                 <section data-by="dieAudios"></section>
             </div>
@@ -80,7 +91,7 @@
                     <span class="expandable-expanded" data-for="group"></span>
                     <span></span>
                 </span>
-                <section data-by="group">
+                <section data-by="group" class="flex-column">
                     <span class="checkbox" data-group-double value="double">选择多势力</span>
                     <ul>
                         <li data-group-option="wei"
@@ -122,7 +133,7 @@
                     <span class="expandable-collapsed" data-for="clans"></span>
                     <span></span>
                 </span>
-                <section data-by="clans" class="hidden">
+                <section data-by="clans" class="hidden flex-column">
                     <ul>
                         <li data-clan-option="陈留吴氏" style="--url:url(../image/clan/陈留吴氏.png)">陈留吴氏</li>
                         <li data-clan-option="颍川荀氏" style="--url:url(../image/clan/颍川荀氏.png)">颍川荀氏</li>
@@ -153,9 +164,9 @@
                             <span contenteditable="true">4</span>
                         </div>
                         <div class="hp-more-show hidden">
-                            <div>
-                                <span data-hp-adjust-mode="hp">体力值</span>
-                                <span data-hp-adjust-mode="maxHp">体力上限</span>
+                            <div class="flex-column text-shadow-free">
+                                <span data-hp-adjust-mode="hp" class="pointer">体力值</span>
+                                <span data-hp-adjust-mode="maxHp" class="pointer">体力上限</span>
                             </div>
                         </div>
                         <div class="hp-show">
@@ -197,12 +208,12 @@
                     <span class="expandable-expanded" data-for="skills"></span>
                     <span></span>
                 </span>
-                <div data-by="skills">
-                    <ruby>
+                <div data-by="skills" class="flex-column">
+                    <ruby class="flex-center">
                         <div contenteditable="true" spellcheck="false"></div>
-                        <span></span>
+                        <span class="search"></span>
                     </ruby>
-                    <p>搜索技能，将侧边栏技能拖入该区域，或选择技能卡片中的⬅️以添加技能</p>
+                    <p class="note">搜索技能，将侧边栏技能拖入该区域，或选择技能卡片中的⬅️以添加技能</p>
                     <section>
                         <header>
                             <span>技能列表：</span>
@@ -218,7 +229,7 @@
                     <span class="expandable-collapsed" data-for="more"></span>
                     <span></span>
                 </span>
-                <section data-by="more" class="hidden">
+                <section data-by="more" class="hidden flex-column">
                     <ul>
                         <li class="checkbox" data-more-option="isZhuGong">
                             <p>常备主公</p>
@@ -275,27 +286,54 @@
             <div class="data-setting" data-intro>
                 <span>
                     <span>武将介绍</span>
-                    <span class="expandable-expanded" data-for="intro"></span>
+                    <span class="expandable-collapsed" data-for="intro"></span>
                     <span></span>
                 </span>
-                <section data-by="intro">
-                    <p class="use-default" data-default-intro="暂无武将介绍"></p>
+                <section data-by="intro" class="hidden">
+                    <p class="use-default text-shadow-free flex-column" data-default-intro="暂无武将介绍"></p>
                     <footer class="tool-bar">
                         <button class="edit">编辑</button>
                         <button class="edit-default">基于默认介绍编辑</button>
                     </footer>
                 </section>
             </div>
+            <!-- <div class="data-setting" data-title>
+                <span>
+                    <span>武将称号</span>
+                    <span class="expandable-collapsed" data-for="data-title"></span>
+                    <span></span>
+                </span>
+                <section data-by="data-title" class="hidden">
+                </section>
+            </div>
+            <div class="data-setting" data-perfect-pair>
+                <span>
+                    <span>珠联璧合</span>
+                    <span class="expandable-collapsed" data-for="data-perfect-pair"></span>
+                    <span></span>
+                </span>
+                <section data-by="data-perfect-pair" class="hidden">
+                    <ruby class="flex-center">
+                        <div class="flex-center-center" contenteditable="true" spellcheck="false"></div>
+                        <span class="search"></span>
+                    </ruby>
+                    <p class="note">搜索武将，将侧边栏武将拖入该区域，或选择技能卡片中的⬅️以添加武将</p>
+                    <section>
+                        <ul data-by="character-list"></ul>
+                    </section>
+                </section>
+            </div> -->
         </div>
     </div>
     <div class="code">
     </div>
 </section>
-<section class="menu" data-extension>
+<section class="menu">
     <div class="menu-icon">🔧</div>
     <div class="close">关闭界面</div>
+    <div class="export-all">一键导出</div>
+    <div class="export-asset">导出素材</div>
+    <div class="export-code">导出代码</div>
     <div class="gen-code">生成代码</div>
     <div class="return-setting">返回设置</div>
-    <div class="export-code">导出代码</div>
-    <div class="extension">所属扩展</div>
 </section>

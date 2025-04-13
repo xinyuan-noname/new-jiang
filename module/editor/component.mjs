@@ -4,7 +4,7 @@ import "./component-infoCard.mjs";
 import "./component-dialog.mjs";
 class HTMLNonameCharacterEditorElement extends HTMLNonameFocusUIElement {
     characterAttributes = [
-        "extension",
+        "extension", "packageName",
         "avatar",
         "dieAudios", "dieAudioText",
         "name", "pinyin",
@@ -32,7 +32,18 @@ shadow.innerHTML=`
 <section class="main">
     <div class="content">
         <div class="left">
-            <div class="data-setting" data-avatar="">
+            <div class="data-setting" data-extension="" data-package-name="" data-character-sort="" data-character-sort-name="">
+                <section class="flex--between">
+                    <span>所属分包</span>
+                    <span class="extension-setting pointer text-shadow-free">设置</span>
+                </section>
+                <section class="sort-view flex-center small-font">
+                    <span title="扩展包" class="extension-name link-arrow pointer"></span>
+                    <span title="武将包" class="package-name link-arrow pointer"></span>
+                    <span title="分包" class="character-sort pointer"></span>
+                </section>
+            </div>
+            <div class="data-setting flex-column" data-avatar="">
                 <section>
                     <div>武将原画</div>
                     <div class="height-set" data-height-set="high">高</div>
@@ -58,10 +69,10 @@ shadow.innerHTML=`
                     <span class="cut" title="裁剪">✂</span>
                 </div>
             </div>
-            <div class="data-setting" data-die-audios="" data-die-audio-text="">
+            <div class="data-setting flex-column" data-die-audios="" data-die-audio-text="">
                 <header>
                     <div>阵亡语音</div>
-                    <div class="add">添加</div>
+                    <div class="add text-shadow-free pointer">添加</div>
                 </header>
                 <section data-by="dieAudios"></section>
             </div>
@@ -111,7 +122,7 @@ shadow.innerHTML=`
                     <span class="expandable-expanded" data-for="group"></span>
                     <span></span>
                 </span>
-                <section data-by="group">
+                <section data-by="group" class="flex-column">
                     <span class="checkbox" data-group-double value="double">选择多势力</span>
                     <ul>
                         <li data-group-option="wei"
@@ -153,7 +164,7 @@ shadow.innerHTML=`
                     <span class="expandable-collapsed" data-for="clans"></span>
                     <span></span>
                 </span>
-                <section data-by="clans" class="hidden">
+                <section data-by="clans" class="hidden flex-column">
                     <ul>
                         <li data-clan-option="陈留吴氏" style="--url:url(../image/clan/陈留吴氏.png)">陈留吴氏</li>
                         <li data-clan-option="颍川荀氏" style="--url:url(../image/clan/颍川荀氏.png)">颍川荀氏</li>
@@ -184,9 +195,9 @@ shadow.innerHTML=`
                             <span contenteditable="true">4</span>
                         </div>
                         <div class="hp-more-show hidden">
-                            <div>
-                                <span data-hp-adjust-mode="hp">体力值</span>
-                                <span data-hp-adjust-mode="maxHp">体力上限</span>
+                            <div class="flex-column text-shadow-free">
+                                <span data-hp-adjust-mode="hp" class="pointer">体力值</span>
+                                <span data-hp-adjust-mode="maxHp" class="pointer">体力上限</span>
                             </div>
                         </div>
                         <div class="hp-show">
@@ -228,12 +239,12 @@ shadow.innerHTML=`
                     <span class="expandable-expanded" data-for="skills"></span>
                     <span></span>
                 </span>
-                <div data-by="skills">
-                    <ruby>
+                <div data-by="skills" class="flex-column">
+                    <ruby class="flex-center">
                         <div contenteditable="true" spellcheck="false"></div>
-                        <span></span>
+                        <span class="search"></span>
                     </ruby>
-                    <p>搜索技能，将侧边栏技能拖入该区域，或选择技能卡片中的⬅️以添加技能</p>
+                    <p class="note">搜索技能，将侧边栏技能拖入该区域，或选择技能卡片中的⬅️以添加技能</p>
                     <section>
                         <header>
                             <span>技能列表：</span>
@@ -249,7 +260,7 @@ shadow.innerHTML=`
                     <span class="expandable-collapsed" data-for="more"></span>
                     <span></span>
                 </span>
-                <section data-by="more" class="hidden">
+                <section data-by="more" class="hidden flex-column">
                     <ul>
                         <li class="checkbox" data-more-option="isZhuGong">
                             <p>常备主公</p>
@@ -306,68 +317,65 @@ shadow.innerHTML=`
             <div class="data-setting" data-intro>
                 <span>
                     <span>武将介绍</span>
-                    <span class="expandable-expanded" data-for="intro"></span>
+                    <span class="expandable-collapsed" data-for="intro"></span>
                     <span></span>
                 </span>
-                <section data-by="intro">
-                    <p class="use-default" data-default-intro="暂无武将介绍"></p>
+                <section data-by="intro" class="hidden">
+                    <p class="use-default text-shadow-free flex-column" data-default-intro="暂无武将介绍"></p>
                     <footer class="tool-bar">
                         <button class="edit">编辑</button>
                         <button class="edit-default">基于默认介绍编辑</button>
                     </footer>
                 </section>
             </div>
+            <!-- <div class="data-setting" data-title>
+                <span>
+                    <span>武将称号</span>
+                    <span class="expandable-collapsed" data-for="data-title"></span>
+                    <span></span>
+                </span>
+                <section data-by="data-title" class="hidden">
+                </section>
+            </div>
+            <div class="data-setting" data-perfect-pair>
+                <span>
+                    <span>珠联璧合</span>
+                    <span class="expandable-collapsed" data-for="data-perfect-pair"></span>
+                    <span></span>
+                </span>
+                <section data-by="data-perfect-pair" class="hidden">
+                    <ruby class="flex-center">
+                        <div class="flex-center-center" contenteditable="true" spellcheck="false"></div>
+                        <span class="search"></span>
+                    </ruby>
+                    <p class="note">搜索武将，将侧边栏武将拖入该区域，或选择技能卡片中的⬅️以添加武将</p>
+                    <section>
+                        <ul data-by="character-list"></ul>
+                    </section>
+                </section>
+            </div> -->
         </div>
     </div>
     <div class="code">
     </div>
 </section>
-<section class="menu" data-extension>
+<section class="menu">
     <div class="menu-icon">🔧</div>
     <div class="close">关闭界面</div>
+    <div class="export-all">一键导出</div>
+    <div class="export-asset">导出素材</div>
+    <div class="export-code">导出代码</div>
     <div class="gen-code">生成代码</div>
     <div class="return-setting">返回设置</div>
-    <div class="export-code">导出代码</div>
-    <div class="extension">所属扩展</div>
 </section>`
 //#: shadow , html/character-editor.html//
         this.storeFragment("code", "<section class='code-section'><div class='title'><span class='copy'>复制</span></div><pre><code></code></pre></section>");
-    }
-    openConfirmDialog(message, headline) {
-        const dialog = document.createElement("noname-dialog");
-        dialog.setAttribute("type", "confirm");
-        if (message) dialog.setAttribute("message", message);
-        if (headline) dialog.setAttribute("headline", headline);
-        this.shadowRoot.appendChild(dialog);
-        return {
-            dialog: dialog,
-            processing: dialog.wait()
-        }
-    }
-    openExtensionDialog() {
-        const dialog = document.createElement("noname-dialog");
-        const extensionName = this.getData("extension")
-        dialog.setAttribute("type", "extension-setting");
-        if (extensionName) dialog.setAttribute("message", extensionName);
-        this.shadowRoot.append(dialog);
-        return {
-            dialog,
-            processing: dialog.wait().then(result => {
-                if (result) {
-                    if (result.extensionName) {
-                        this.style.setProperty("--data-extension", `"${result.extensionName}"`);
-                    } else {
-                        this.style.removeProperty("--data-extension");
-                    }
-                    this.changeData("extension", result.extensionName);
-                }
-            })
-        }
     }
     connectedCallback() {
         this.loadCss("character-editor", { root: this.shadowRoot });
         this.#listenMenu();
         //
+        this.#listenExtension();
         this.#listenAvatar();
         this.#listenDieAudios();
         this.#listenName();
@@ -381,6 +389,162 @@ shadow.innerHTML=`
         this.#listenIntro();
         //
         this.#listenExpanable();
+    }
+    disconnectedCallback() {
+        this.clearURLRecords();
+    }
+    //open系列语句 用于弹出对话框交互
+    openAlertDialog(message, headline) {
+        const dialog = document.createElement("noname-dialog");
+        dialog.setAttribute("type", "alert");
+        if (message) dialog.setAttribute("message", message);
+        if (headline) dialog.setAttribute("headline", headline);
+        this.shadowRoot.appendChild(dialog);
+        return {
+            dialog: dialog,
+            processing: dialog.wait()
+        }
+    }
+    openConfirmDialog(message, headline) {
+        const dialog = document.createElement("noname-dialog");
+        dialog.setAttribute("type", "confirm");
+        if (message) dialog.setAttribute("message", message);
+        if (headline) dialog.setAttribute("headline", headline);
+        this.shadowRoot.appendChild(dialog);
+        return {
+            dialog: dialog,
+            processing: dialog.wait()
+        }
+    }
+    openCharacterIdDialog() {
+        const dialog = document.createElement("noname-dialog");
+        dialog.setAttribute("type", "id-character");
+        this.shadowRoot.append(dialog);
+        return {
+            dialog: dialog,
+            processing: dialog.wait()
+        }
+    }
+    openExtensionDialog() {
+        const dialog = document.createElement("noname-dialog");
+        dialog.type = "extension-setting";
+        dialog.config = this.configQuery("get", { member: `x19D6_editor.extensionFileConfig` });
+        this.shadowRoot.append(dialog);
+        return {
+            dialog,
+            processing: dialog.wait().then(async result => {
+                if (result) {
+                    const extensionName = result["extension-name"]
+                    if (extensionName !== this.getData("extension")) {
+                        this.style.setProperty("--data-extension-name", `"${extensionName}"`);
+                        this.changeData("extension", extensionName);
+                        this.style.removeProperty("--data-package-name");
+                        this.changeData("packageName", '');
+                        this.changeData("character-sort", "");
+                        this.changeData("character-sort-name", "");
+                        this.style.removeProperty("--data-character-sort");
+                    }
+                    await this.configQuery("write", { member: `x19D6_editor.extensionFileConfig.${extensionName}`, value: result });
+                }
+                return result;
+            })
+        }
+    }
+    openPackageSelectDialog(extensionName) {
+        const moduleConfig = this.configQuery("get", {
+            member: `x19D6_editor.extensionModuleConfig.${extensionName}.packageInfo`,
+        })
+        const options = {};
+        if (moduleConfig) {
+            moduleConfig.extension.forEach(extension => {
+                options[extension.packageID] = extension.packageID;
+            })
+            moduleConfig.character.forEach(character => {
+                const translation = this.textQuery("characterPackageTranslation", { text: character.packageID });
+                if (options[translation]) delete options[translation];
+                options[character.packageID] = translation;
+            })
+        }
+        const dialog = document.createElement("noname-dialog");
+        dialog.type = "select";
+        dialog.options = options;
+        dialog.headline = "请选择一个武将包"
+        dialog.message = "武将包";
+        this.shadowRoot.append(dialog);
+        return {
+            dialog,
+            processing: dialog.wait().then(result => {
+                if (result) {
+                    if (result !== this.getData(result)) {
+                        this.changeData("packageName", result);
+                        this.style.setProperty("--data-package-name", `"${this.textQuery("characterPackageTranslation", { text: result })}"`);
+                        this.changeData("character-sort", "");
+                        this.changeData("character-sort-name", "");
+                        this.style.removeProperty("--data-character-sort");
+                    }
+                }
+                return result;
+            })
+        }
+    }
+    openCharacterSortDialog(packageId) {
+        let options = {};
+        if (packageId) {
+            options = this.infoQuery("characterSortList", { packageId })
+        }
+        const dialog = document.createElement("noname-dialog");
+        dialog.type = "select-append";
+        dialog.options = options;
+        dialog.labelContent = {
+            select: "所选分包",
+            "id-input": "分包英文名(id)",
+            "name-input": "分包中文名"
+        }
+        dialog.headline = "请选择一个分包";
+        dialog.appendCheck = (id, name) => {
+            if (!id || !name) return false;
+            return this.checkQuery("characterSortId", { packageId, id });
+        }
+        dialog.appendCallback = (id, name) => {
+            this.textQuery("setTranslation", { en: id, cn: name });
+            this.playerQuery("setCharacterSort", { packageId, id });
+        }
+        this.shadowRoot.append(dialog);
+        return {
+            dialog,
+            processing: dialog.wait().then(result => {
+                if (result) {
+                    const translation = this.textQuery("getTranslation", { text: result })
+                    this.changeData("character-sort", result);
+                    this.changeData("character-sort-name", translation);
+                    this.style.setProperty("--data-character-sort", `"${translation}"`);
+                }
+                return result;
+            })
+        }
+    }
+    //
+    downloadExtensionAsset() {
+        const avatar = this.getData("avatar");
+        const dieAudios = this.getData("dieAudios");
+        const id = this.getData("id");
+        const config = this.configQuery("get", {
+            member: `x19D6_editor.extensionFileConfig.${this.getData("extension")}`
+        });
+        const promises = [];
+        if (dieAudios.length) {
+            const path = `/extension/${config["extension-die-audio"]}`
+            promises.push(this.fileQuery("download", { url: dieAudios[0], path, name: id }).then(url => {
+                this.reloadDieAudios(url)
+            }));
+        }
+        if (avatar) {
+            const path = `/extension/${config["extension-character-image"]}`;
+            promises.push(this.fileQuery("download", { url: avatar, path, name: id }).then((url) => {
+                this.reloadAvatar(url, true);
+            }));
+        }
+        return Promise.all(promises);
     }
     updateCodePreviewArea(codeString) {
         const codeArea = this.shadowRoot.querySelector(".code");
@@ -404,24 +568,55 @@ shadow.innerHTML=`
         const main = this.shadowRoot.querySelector(".main");
         const menu = this.shadowRoot.querySelector(".menu");
         const closeButton = menu.querySelector(".close");
+        //
         const genCodeButton = menu.querySelector(".gen-code");
         const returnSettingButton = menu.querySelector(".return-setting");
+        //
+        const exportAssetButton = menu.querySelector(".export-asset");
         const exportCodeButton = menu.querySelector(".export-code");
-        const extensionButton = menu.querySelector(".extension");
         closeButton.addEventListener("pointerup", () => {
             this.remove();
         });
-        exportCodeButton.addEventListener("pointerup", async () => {
-            if (!(await this.openConfirmDialog("将生成的代码及文件导出到相应的扩展包中吗?", "确认").processing)) return;
+        exportAssetButton.addEventListener("pointerup", async () => {
+            if (!this.getData("avatar") && !this.getData("dieAudios").length) {
+                const { processing } = this.openAlertDialog("未找到素材，请设置之！");
+                await processing;
+                return;
+            }
+            if (!this.getData("id")) {
+                const { dialog, processing } = this.openCharacterIdDialog();
+                dialog.setAttribute("headline", "暂未设置武将id，请设置之！")
+                const result = await processing;
+                if (result === false) return;
+                this.loadId(result);
+            }
             if (!this.getData("extension")) {
                 const { dialog, processing } = this.openExtensionDialog();
-                dialog.setAttribute("headline", "暂未设置扩展，请设置之。");
-                dialog.setAttribute("forced", true);
-                await processing;
+                dialog.setAttribute("headline", "暂未设置导出到的扩展，请设置之！");
+                const result = await processing;
+                if (result === false) return;
+            }
+            const { dialog } = this.openAlertDialog("这可能花费一些时间", "正在导出素材");
+            dialog.toggleInvalidWhen(true, this.downloadExtensionAsset(), () => {
+                dialog.setAttribute("headline", "导出成功");
+                dialog.setAttribute("message", "导出成功！");
+            })
+        })
+        exportCodeButton.addEventListener("pointerup", async () => {
+            if (!this.getData("extension")) {
+                const { dialog, processing } = this.openExtensionDialog();
+                dialog.setAttribute("headline", "暂未设置导出到的扩展，请设置之。");
+                const result = await processing;
+                if (result === false) return;
             }
             const extensionName = this.getData("extension");
-            const module = await this.codeQuery("getExtensionAllPackage", { extensionName });
-            console.log(module);
+            if (!this.configQuery("get", { member: `x19D6_editor.extensionModuleConfig.${extensionName}` })) {
+                const module = await this.codeQuery("getExtensionAllPackage", { extensionName });
+                this.configQuery("write", {
+                    member: `x19D6_editor.extensionModuleConfig.${extensionName}`,
+                    value: module
+                });
+            }
         })
         genCodeButton.addEventListener("pointerup", async () => {
             main.classList.add("turn-over");
@@ -431,9 +626,54 @@ shadow.innerHTML=`
         returnSettingButton.addEventListener("pointerup", () => {
             main.classList.remove("turn-over");
         })
-        extensionButton.addEventListener("pointerup", async () => {
-            this.openExtensionDialog();
-        })
+    }
+    #listenExtension() {
+        const extensionDataArea = this.getDataAreaDom("extension");
+        const extensionSetting = extensionDataArea.querySelector(".extension-setting");
+        const extensionNameBtn = extensionDataArea.querySelector(".extension-name");
+        const packageNameBtn = extensionDataArea.querySelector(".package-name");
+        const characterSortBtn = extensionDataArea.querySelector(".character-sort");
+        const setExtensionName = async () => {
+            const { dialog, processing } = this.openExtensionDialog();
+            dialog.setAttribute("headline", "请设置武将所属扩展。");
+            return await processing;
+        }
+        const setPackageName = async () => {
+            if (!this.getData("extension")) {
+                if (await setExtensionName() === false) return false;
+            }
+            const extensionName = this.getData("extension");
+            if (!this.configQuery("get", { member: `x19D6_editor.extensionModuleConfig.${extensionName}` })) {
+                const module = await this.codeQuery("getExtensionAllPackage", { extensionName });
+                this.configQuery("write", {
+                    member: `x19D6_editor.extensionModuleConfig.${extensionName}`,
+                    value: module
+                });
+            }
+            const { processing } = this.openPackageSelectDialog(extensionName);
+            return await processing;
+        }
+        const setCharacterSort = async () => {
+            if (!this.getData("packageName")) {
+                if (await setPackageName() === false) return;
+            }
+            const packageName = this.getData("packageName")
+            this.openCharacterSortDialog(packageName);
+        }
+        extensionNameBtn.addEventListener("pointerup", setExtensionName);
+        packageNameBtn.addEventListener("pointerup", setPackageName);
+        characterSortBtn.addEventListener("pointerup", setCharacterSort);
+        extensionSetting.addEventListener("pointerup", setCharacterSort);
+    }
+    reloadAvatar(url, exported) {
+        const avatarDataArea = this.getDataAreaDom("avatar");
+        const avatar = avatarDataArea.querySelector('.avatar-view');
+        const img = avatarDataArea.querySelector(".avatar-view img");
+        if (exported) this.removeLastestURLRecord("avatar");
+        this.recordURL("avatar", url);
+        img.src = url;
+        avatar.classList.add("done");
+        this.changeData("avatar", url);
     }
     #listenAvatar() {
         let imgType = "", minDelay = 0.01;
@@ -445,22 +685,12 @@ shadow.innerHTML=`
         const cutter = avatarDataArea.querySelector(".cutter")
         const resetButton = avatarDataArea.querySelector(".reset");
         const cutButton = avatarDataArea.querySelector(".cut");
-        /**
-         * 
-         * @param {File} file 
-         */
         const loadFile = async (file) => {
-            this.clearObjectURLRecords("avatar");
+            this.clearURLRecords("avatar");
             this.createAndRecordObjectURL("avatar", file);
             const url = this.getLastestURLRecord("avatar");
             imgType = file.type;
             img.style.cssText = "";
-            img.src = url;
-            avatar.classList.add("done");
-            this.changeData("avatar", url);
-        }
-        const reloadImage = (url) => {
-            this.recordObjectURL("avatar", url);
             img.src = url;
             avatar.classList.add("done");
             this.changeData("avatar", url);
@@ -605,11 +835,11 @@ shadow.innerHTML=`
                                 avatar.classList.remove("cutting");
                             });
                             clipManager.on("finished", (data) => {
-                                reloadImage(data);
+                                this.reloadAvatar(data);
                                 avatar.classList.remove("editing", "loading");
                             })
                         } else {
-                            reloadImage(await this.multiMediaQuery("staticImgClip", {
+                            this.reloadAvatar(await this.multiMediaQuery("staticImgClip", {
                                 img,
                                 x: parseFloat(cutter.style.left) || 0,
                                 y: parseFloat(cutter.style.top) || 0,
@@ -636,13 +866,20 @@ shadow.innerHTML=`
             img.classList.add(scaleH < scaleW ? "full-height" : "full-width");
         })
     }
+    reloadDieAudios(url) {
+        const audioCard = this.shadowRoot.querySelector("audio-info-card");
+        audioCard.setAttribute("src", this.pathQuery("changeToExtPath", { path: url }));
+        this.clearURLRecords("dieAudios");
+        this.recordURL("dieAudios", url);
+        this.changeData("dieAudios", url);
+    }
     #listenDieAudios() {
         const dieAudiosDataArea = this.getDataAreaDom("dieAudios");
         const dieAudioSection = dieAudiosDataArea.querySelector("section")
         const addButton = dieAudiosDataArea.querySelector(".add");
         addButton.addEventListener("pointerdown", async e => {
             if (dieAudioSection.childNodes.length) return;
-            this.clearObjectURLRecords("dieAudios")
+            this.clearURLRecords("dieAudios")
             const [file] = await this.fileQuery("submitFile", { format: "audio/*" });
             this.createAndRecordObjectURL("dieAudios", file);
             const audioCard = document.createElement("audio-info-card");
@@ -653,7 +890,7 @@ shadow.innerHTML=`
         });
         dieAudioSection.addEventListener("audioTextChange", e => {
             if (typeof e.detail?.newValue === "string") this.changeData("dieAudioText", e.detail.newValue);
-        })
+        });
     }
     #listenName() {
         const nameDataArea = this.getDataAreaDom("name")
@@ -667,6 +904,11 @@ shadow.innerHTML=`
         new MutationObserver(() => {
             this.changeData("pinyin", pinyinInput.textContent);
         }).observe(pinyinInput, { characterData: true, subtree: true, childList: true });
+    }
+    loadId(id) {
+        const idDataArea = this.getDataAreaDom("id");
+        const idInput = idDataArea.querySelector("div");
+        idInput.textContent = id;
     }
     #listenId() {
         const idDataArea = this.getDataAreaDom("id");
@@ -1223,7 +1465,7 @@ shadow.innerHTML=`
         })
     }
     /**
-     * @typedef {"extension"|"avatar"|"dieAudios"|"hp"|"maxHp"|"hujia"|"pinyin"|"name"|"sex"|"group"|"id"|"clans"|"skills"|"isZhuGong"|"intro"} dataType
+     * @typedef {"extension"|"packageName"|"avatar"|"dieAudios"|"hp"|"maxHp"|"hujia"|"pinyin"|"name"|"sex"|"group"|"id"|"clans"|"skills"|"isZhuGong"|"intro"} dataType
      */
     /**
      * @param {dataType} type 
@@ -1238,6 +1480,7 @@ shadow.innerHTML=`
      */
     changeData(type, val, config) {
         if (!type) return;
+        type = this.textQuery("formatTransfer", { text: type, to: "camel" });
         switch (type) {
             case "name": {
                 this.getDataAreaDom("name").dataset["name"] = val;
@@ -1347,8 +1590,11 @@ shadow.innerHTML=`
             dataList.trashBin.push("sex:male_castrated");
         }
         if (dataList.avatar) {
-            dataList.trashBin.push(dataList.avatar);
+            dataList.trashBin.push(this.pathQuery("changeToExtPath", { path: dataList.avatar }));
             delete dataList.avatar;
+        }
+        if (dataList.dieAudios) {
+            dataList.dieAudios = dataList.dieAudios.map(path => this.pathQuery("changeToExtPath", { path }));
         }
         //这里将packageName默认设置为扩展名 方便以后调试
         if (!dataList.packageName) dataList.packageName = dataList.extension;
@@ -1357,5 +1603,6 @@ shadow.innerHTML=`
     genCode(pattern) {
         return this.codeQuery("generateCharacterCode", { info: this.getAllData(), pattern });
     }
+
 }
 customElements.define("character-editor", HTMLNonameCharacterEditorElement);

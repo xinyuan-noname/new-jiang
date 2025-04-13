@@ -88,7 +88,7 @@ const extensionSettringFragment = (() => {
     const form = document.createElement("form");
 
     const extensionChoiceContainer = document.createElement("div");
-    extensionChoiceContainer.innerHTML = `<label for="extension">扩展名称</label><input name="extension" id="extension" list="extension-list" required><datalist id="extension-list"></datalist>`
+    extensionChoiceContainer.innerHTML = `<label for="extension-name">扩展名称</label><select name="extension-name" id="extension" required></select>`
 
     const extensionCharacterImage = document.createElement("div");
     extensionCharacterImage.innerHTML = `<label for="extension-character-image">扩展武将图片文件夹</label><input name="extension-character-image" id="extension-character-image" list="extension-folder-list">`
@@ -126,7 +126,7 @@ class HTMLNonameDialogHTML extends HTMLNonameFocusUIElement {
         super();
         const shadow = this.attachShadow({ mode: "open" });
         //$: shadow , html/dialog.html//
-        shadow.innerHTML = `
+shadow.innerHTML=`
 <style>
     :host {
         height: 100%;
@@ -218,7 +218,7 @@ class HTMLNonameDialogHTML extends HTMLNonameFocusUIElement {
     <div class="confirm">确认</div>
     <div class="cancel">取消</div>
 </div>`
-        //#: shadow , html/dialog.html//
+//#: shadow , html/dialog.html//
         this.#listenLoad();
     }
     dialogendListener = [];
@@ -229,7 +229,7 @@ class HTMLNonameDialogHTML extends HTMLNonameFocusUIElement {
         }
         HTMLNonameDialogHTML.dialogStack.push(this);
     }
-    static observedAttributes = ["type", "headline", "message", "placeholder", "height", "width", "forced"];
+    static observedAttributes = ["type", "headline", "message", "placeholder", "height", "width", "forced", "required", "invalid"];
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
         switch (name) {
@@ -260,22 +260,56 @@ class HTMLNonameDialogHTML extends HTMLNonameFocusUIElement {
                     }; break;
                     case "confirm": ; break;
                     case "prompt": {
-                        const content = this.shadowRoot.querySelector(".content");
-                        const form = document.createElement("form");
-                        const div = document.createElement('div');
-                        const label = document.createElement("label");
-                        const input = document.createElement("input");
-                        if (this.hasAttribute("placeholder")) {
-                            label.textContent = this.getAttribute("placeholder")
-                        }
-                        div.append(label, input);
-                        form.append(div);
-                        content.append(form);
-                        this.whenEnd(() => {
+                        const { input } = this.appendInput();
+                        this.#whenEnd(() => {
                             this.#finishReslove(input.value);
                         });
-                        form.addEventListener("submit", e => e.preventDefault());
-                        this.whenCancel(() => this.#finishReslove(false));
+                    }; break;
+                    case "select": {
+                        const { form } = this.appendSelect('', {}, { id: "select", name: "select" });
+                        this.#whenEnd(() => {
+                            const { select } = Object.fromEntries(new FormData(form))
+                            this.#finishReslove(select);
+                        });
+                    }; break;
+                    case "select-append": {
+                        const { form, select } = this.appendSelect('', {}, { id: "select", name: "select" });
+                        const { input: idInput } = this.appendInput("", { id: "id-input" });
+                        const { input: nameInput } = this.appendInput("", { id: "name-input" });
+                        const { button } = this.appendButton("添加新项");
+                        button.addEventListener("pointerup", () => {
+                            const option = document.createElement("option");
+                            const id = idInput.value, name = nameInput.value;
+                            if (!this.#appendCheck || this.#appendCheck?.(id, name)) {
+                                option.value = id;
+                                option.textContent = name;
+                                idInput.value = ""; nameInput.value = "";
+                                option.selected = true;
+                                select.appendChild(option);
+                            }
+                            this.#appendCallback?.(id, name);
+                        })
+                        this.#whenEnd(() => {
+                            const { select } = Object.fromEntries(new FormData(form))
+                            this.#finishReslove(select);
+                        });
+                    }; break;
+                    case "id-character": {
+                        const { input } = this.appendInput("武将id");
+                        input.addEventListener("keyup", e => {
+                            e.stopPropagation();
+                            if (this.checkQuery("characterId", { id: input.value })) {
+                                this.removeAttribute("invalid");
+                            } else {
+                                this.setAttribute("invalid", true);
+                            }
+                        });
+                        input.addEventListener("change", e => e.stopPropagation())
+                        this.whenEnd((e, reslove) => {
+                            e.preventDefault();
+                            this.remove();
+                            reslove(input.value);
+                        });
                     }; break;
                     case "diygroup": {
                         this.appendTempStyle(groupDiyStyle.cloneNode(true))
@@ -306,7 +340,7 @@ class HTMLNonameDialogHTML extends HTMLNonameFocusUIElement {
                             text.textContent = groupText;
                             text.style.cssText = `text-shadow: ${color} 0 0 2px, ${color} 0 0 2px, ${color} 0 0 2px, #000 0 0 1px;`
                         });
-                        this.whenEnd(async (e) => {
+                        this.#whenEnd(async (e) => {
                             e.preventDefault();
                             const map = new Map(new FormData(form));
                             const color = map.get("color")
@@ -357,7 +391,7 @@ class HTMLNonameDialogHTML extends HTMLNonameFocusUIElement {
                                 import("./libs/wangeditor/index.min.js").then(loadEditor);
                             })();
                         })
-                        this.whenEnd(async (e) => {
+                        this.#whenEnd(async (e) => {
                             const sourceHTML = editor?.getHtml();
                             if (sourceHTML) {
                                 const parser = new DOMParser();
@@ -387,25 +421,25 @@ class HTMLNonameDialogHTML extends HTMLNonameFocusUIElement {
                         this.appendTempStyle(extensionSettingStyle.cloneNode(true))
                         const content = this.shadowRoot.querySelector(".content");
                         content.append(extensionSettringFragment.cloneNode(true));
-                        const [extension, ...extensionConcerning] = content.querySelectorAll("input");
+                        const [...extensionConcerning] = content.querySelectorAll("input");
                         const [characterImage, cardImage, skillAudio, dieAudio] = extensionConcerning;
-                        const extensionList = content.querySelector("datalist#extension-list");
+                        const extensionList = content.querySelector("select");
                         const dirDataList = content.querySelector("datalist#extension-folder-list");
                         const fileDataList = content.querySelector("datalist#extension-file-list");
                         const form = content.querySelector("form");
-                        const extensionChange = async () => {
-                            const disabled = !extension.checkValidity();
+                        extensionList.addEventListener("change", async () => {
+                            const disabled = !extensionList.checkValidity();
                             extensionConcerning.forEach(node => {
                                 node.disabled = disabled;
                                 node.value = "";
                             });
                             if (disabled) return;
                             const map = new Map(new FormData(form));
-                            const extensionName = map.get("extension");
+                            const extensionName = map.get("extension-name");
                             if (!extensionFolderListRecord[extensionName]) {
                                 const [folderList, fileList] = await this.fileQuery("getAllFolderAndFileList", { path: "extension/" + extensionName });
-                                const folderDatalistContent = `<option value="${extensionName}">${extensionName}<option>` + folderList.map(folder => `<option value="${extensionName + "/" + folder}">${extensionName + "/" + folder}<option>`).join("");
-                                const fileDatalistContent = fileList.map(file => `<option value="${extensionName + "/" + file}">${extensionName + "/" + file}<option>`).join("");
+                                const folderDatalistContent = `<option value="${extensionName}">${extensionName}<option>` + folderList.map(folder => `<option value="${extensionName + "/" + folder}">${extensionName + "/" + folder}</option>`).join("");
+                                const fileDatalistContent = fileList.map(file => `<option value="${extensionName + "/" + file}">${extensionName + "/" + file}</option>`).join("");
                                 extensionFolderListRecord[extensionName] = {
                                     folderList,
                                     fileList,
@@ -416,46 +450,52 @@ class HTMLNonameDialogHTML extends HTMLNonameFocusUIElement {
                             const { folderDatalistContent, folderList, fileDatalistContent } = extensionFolderListRecord[extensionName]
                             dirDataList.innerHTML = folderDatalistContent;
                             fileDataList.innerHTML = fileDatalistContent;
-                            if (folderList.includes("image/character")) {
-                                characterImage.value = extensionName + "/image/character";
-                            } else if (folderList.includes("image")) {
-                                characterImage.value = extensionName + "/image";
+                            const config = this.#config?.[extensionName];
+                            if (config) {
+                                characterImage.value = config["extension-character-image"];
+                                cardImage.value = config["extension-card-image"];
+                                skillAudio.value = config["extension-skill-audio"];
+                                dieAudio.value = config["extension-die-audio"];
                             } else {
-                                characterImage.value = extensionName;
+                                if (folderList.includes("image/character")) {
+                                    characterImage.value = extensionName + "/image/character";
+                                } else if (folderList.includes("image")) {
+                                    characterImage.value = extensionName + "/image";
+                                } else {
+                                    characterImage.value = extensionName;
+                                }
+                                if (folderList.includes("image/card")) {
+                                    cardImage.value = extensionName + "/image/card";
+                                } else if (folderList.includes("image")) {
+                                    cardImage.value = extensionName + "/image";
+                                } else {
+                                    cardImage.value = extensionName;
+                                }
+                                if (folderList.includes("audio/skill")) {
+                                    skillAudio.value = extensionName + "/audio/skill";
+                                } else if (folderList.includes("audio")) {
+                                    skillAudio.value = extensionName + "/audio";
+                                } else {
+                                    skillAudio.value = extensionName;
+                                }
+                                if (folderList.includes("audio/die")) {
+                                    dieAudio.value = extensionName + "/audio/die";
+                                } else if (folderList.includes("audio")) {
+                                    dieAudio.value = extensionName + "/audio";
+                                } else {
+                                    dieAudio.value = extensionName;
+                                }
                             }
-                            if (folderList.includes("image/card")) {
-                                cardImage.value = extensionName + "/image/card";
-                            } else if (folderList.includes("image")) {
-                                cardImage.value = extensionName + "/image";
-                            } else {
-                                cardImage.value = extensionName;
-                            }
-                            if (folderList.includes("audio/skill")) {
-                                skillAudio.value = extensionName + "/audio/skill";
-                            } else if (folderList.includes("audio")) {
-                                skillAudio.value = extensionName + "/audio";
-                            } else {
-                                skillAudio.value = extensionName;
-                            }
-                            if (folderList.includes("audio/die")) {
-                                dieAudio.value = extensionName + "/audio/die";
-                            } else if (folderList.includes("audio")) {
-                                dieAudio.value = extensionName + "/audio";
-                            } else {
-                                dieAudio.value = extensionName;
-                            }
-                        }
-                        extension.addEventListener("change", extensionChange);
-                        extensionList.innerHTML = this.infoQuery("extensionList").map(name => {
-                            return `<option value="${name}">${name}<option>`
+                        });
+                        extensionList.innerHTML = "<option value=''>请选择扩展</option>" + this.infoQuery("extensionList").map(name => {
+                            return `<option value="${name}">${name}</option>`
                         }).join("");
                         this.setAttribute("headline", "扩展设置");
-                        this.whenEnd((e) => {
+                        this.#whenEnd((e) => {
                             e.preventDefault();
                             const map = new Map(new FormData(form));
                             this.#finishReslove({
-                                ...Object.fromEntries(map),
-                                extensionName: map.get("extension")
+                                ...Object.fromEntries(map)
                             });
                             this.remove();
                         });
@@ -469,20 +509,19 @@ class HTMLNonameDialogHTML extends HTMLNonameFocusUIElement {
                 p.textContent = newValue;
             }; break;
             case "message": {
-                if (["alert", "confirm"].includes(this.getAttribute("type"))) {
-                    const content = this.shadowRoot.querySelector(".content");
-                    content.textContent = newValue;
-                } else if (this.getAttribute("type") === "prompt") {
-                    const label = this.shadowRoot.querySelector("label");
-                    label.textContent = newValue;
-                } else if (this.getAttribute("type") === "text") {
-                    const editor = this.querySelector("#text-editor-container");
-                    if (typeof editor.getHtml === "function" && editor.getHtml() !== newValue) editor.setHtml(newValue);
-                } else if (this.getAttribute("type") === "extension-setting") {
-                    const content = this.shadowRoot.querySelector(".content");
-                    const extensionNameInput = content.querySelector("input#extension");
-                    extensionNameInput.value = newValue;
-                    this.sendEvent("change", extensionNameInput);
+                switch (this.getAttribute("type")) {
+                    case "alert": case "confirm": {
+                        const content = this.shadowRoot.querySelector(".content");
+                        content.textContent = newValue;
+                    }; break;
+                    case "prompt": case "select": {
+                        const label = this.shadowRoot.querySelector("label");
+                        label.textContent = newValue;
+                    }; break;
+                    case "text": {
+                        const editor = this.querySelector("#text-editor-container");
+                        if (typeof editor.getHtml === "function" && editor.getHtml() !== newValue) editor.setHtml(newValue);
+                    }; break;
                 }
             }; break;
             case "placeholder": {
@@ -505,6 +544,24 @@ class HTMLNonameDialogHTML extends HTMLNonameFocusUIElement {
                     actions.classList.remove("forced");
                 }
             }; break;
+            case "required": {
+                switch (this.getAttribute("type")) {
+                    case "prompt": {
+                        const input = this.shadowRoot.querySelector("input");
+                        input.setAttribute("required", newValue);
+                    }; break;
+                    case "select": {
+                        const select = this.shadowRoot.querySelector("select");
+                        select.setAttribute("required", newValue);
+                    }; break;
+                }
+            }; break;
+            case "invalid": {
+                const actions = this.shadowRoot.querySelector(".actions");
+                if (newValue) actions.classList.add("invalid");
+                else if (newValue == false || newValue == null) actions.classList.remove("invalid");
+            }; break;
+            default: break;
         }
     }
     disconnectedCallback() {
@@ -559,15 +616,33 @@ class HTMLNonameDialogHTML extends HTMLNonameFocusUIElement {
             this.tempResolve = null;
         }
     }
-    whenEnd(listener, options) {
+    //按下确认键时的行为
+    #whenEnd(listener, options) {
         const dialog = this.shadowRoot.querySelector(".dialog");
         dialog.addEventListener("dialogend", listener, options);
         this.dialogendListener.push(listener);
     }
-    whenCancel(listener, options) {
+    whenEnd(callback, options) {
+        const dialog = this.shadowRoot.querySelector(".dialog");
+        const listener = (e) => {
+            callback.apply(this, [e, this.#finishReslove.bind(this)])
+        }
+        dialog.addEventListener("dialogend", listener, options);
+        this.dialogendListener.push(listener);
+    }
+    //按下取消键时的行为
+    #whenCancel(listener, options) {
         const dialog = this.shadowRoot.querySelector(".dialog");
         dialog.addEventListener("dialogcancel", listener, options);
         this.dialogcancelListener.push(listener);
+    }
+    whenCancel(callback, options) {
+        const dialog = this.shadowRoot.querySelector(".dialog");
+        const listener = (e) => {
+            callback.apply(this, [e, this.#finishReslove.bind(this)])
+        }
+        dialog.addEventListener("dialogcancel", listener, options);
+        this.dialogendListener.push(listener);
     }
     appendTempStyle(style) {
         if (style instanceof HTMLStyleElement) {
@@ -575,11 +650,177 @@ class HTMLNonameDialogHTML extends HTMLNonameFocusUIElement {
             this.shadowRoot.prepend(style);
         }
     }
+    toggleInvalidWhen(initial, promise, callback) {
+        if (initial === false) this.removeAttribute("invalid")
+        else this.setAttribute("invalid", true);
+        promise.then(() => {
+            if (initial === false) this.setAttribute("invalid", true);
+            else this.removeAttribute("invalid");
+            if (typeof callback === "function") callback();
+        })
+    }
     updateWithValidity() {
         const form = this.shadowRoot.querySelector("form");
-        const actions = this.shadowRoot.querySelector(".actions");
-        if (form && form.checkValidity() === false) actions.classList.add("invalid");
-        else actions.classList.remove("invalid");
+        if (form && form.checkValidity() === false) this.setAttribute("invalid", true)
+        else this.removeAttribute("invalid")
+    }
+    appendInput(subTitle, config) {
+        const content = this.shadowRoot.querySelector(".content");
+        const form = content.querySelector("form") || (() => {
+            const e = document.createElement("form");
+            content.appendChild(e);
+            e.addEventListener("submit", e => e.preventDefault());
+            return e
+        })();
+        const div = document.createElement('div');
+        const label = document.createElement("label");
+        const input = document.createElement("input");
+        if (subTitle) label.textContent = subTitle;
+        if (config) {
+            for (const attr in config) {
+                if (attr === "id") label.setAttribute("for", config[attr]);
+                input.setAttribute(attr, config[attr]);
+            }
+        }
+        div.append(label, input);
+        form.append(div);
+        return { form, container: div, label, input };
+    }
+    appendSelect(subTitle, options, config) {
+        const content = this.shadowRoot.querySelector(".content");
+        const form = content.querySelector("form") || (() => {
+            const e = document.createElement("form");
+            content.appendChild(e);
+            e.addEventListener("submit", e => e.preventDefault());
+            return e
+        })();
+        const div = document.createElement('div');
+        const label = document.createElement("label");
+        const select = document.createElement("select");
+        if (options) for (const value in options) {
+            const content = options[value];
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = content;
+            select.append(option)
+        }
+        if (subTitle) label.textContent = subTitle;
+        if (config) for (const attr in config) {
+            if (attr === "id") label.setAttribute("for", config[attr]);
+            select.setAttribute(attr, config[attr]);
+        }
+        div.append(label, select);
+        form.append(div);
+        return { form, container: div, label, select };
+    }
+    appendButton(text, config) {
+        const content = this.shadowRoot.querySelector(".content");
+        const form = content.querySelector("form") || (() => {
+            const e = document.createElement("form");
+            content.appendChild(e);
+            e.addEventListener("submit", e => e.preventDefault());
+            return e
+        })();
+        const div = document.createElement('div');
+        const button = document.createElement("button");
+        if (text) {
+            button.textContent = text;
+        }
+        if (config) for (const attr in config) {
+            button.setAttribute(attr, config[attr]);
+        }
+        div.append(button);
+        form.append(div);
+        return { form, container: div, button };
+    }
+    /**
+     * @param {string} val
+     */
+    set type(val) {
+        this.setAttribute("type", val)
+    }
+    /**
+     * @param {string} val
+     */
+    set headline(val) {
+        this.setAttribute("headline", val)
+    }
+    /**
+     * @param {string} val
+     */
+    set message(val) {
+        this.setAttribute("message", val)
+    }
+    /**
+     * @param {string} val
+     */
+    set placeholder(val) {
+        this.setAttribute("placeholder", val)
+    }
+    /**
+     * @param {string} val
+     */
+    set height(val) {
+        this.setAttribute("height", val)
+    }
+    /**
+     * @param {string} val
+     */
+    set width(val) {
+        this.setAttribute("width", val)
+    }
+    /**
+     * @param {object} val
+     */
+    set options(val) {
+        switch (this.getAttribute("type")) {
+            case "select": case "select-append": {
+                const select = this.shadowRoot.querySelector("select");
+                const fragment = document.createDocumentFragment();
+                for (let k in val) {
+                    const content = val[k];
+                    const option = document.createElement("option");
+                    option.value = k;
+                    option.textContent = content;
+                    fragment.append(option)
+                }
+                select.replaceChildren(fragment);
+            }; break;
+            default: break;
+        }
+    }
+    #config;
+    /**
+     * @param {object} val
+     */
+    set config(val) {
+        this.#config = val;
+    }
+    /**
+     * @param {{ [x: string]: any; }} val
+     */
+    set labelContent(val) {
+        for (const k in val) {
+            const id = k, content = val[k];
+            const label = this.shadowRoot.querySelector(`[for="${id}"]`);
+            if (label) {
+                label.textContent = content;
+            }
+        }
+    }
+    #appendCheck;
+    /**
+     * @param {function} fn
+     */
+    set appendCheck(fn) {
+        if (typeof fn === "function") this.#appendCheck = fn.bind(this);
+    }
+    #appendCallback;
+    /**
+     * @param {function} fn 
+     */
+    set appendCallback(fn) {
+        if (typeof fn === "function") this.#appendCallback = fn.bind(this);
     }
 }
 customElements.define("noname-dialog", HTMLNonameDialogHTML);

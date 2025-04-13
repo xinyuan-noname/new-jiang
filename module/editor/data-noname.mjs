@@ -1,6 +1,33 @@
 import { game, get, lib, ui } from "../../../../noname.js";
 import url from "./url.mjs";
 const chineseRegex = /[\u4e00-\u9fff]+/;
+const contentTypeToExtension = {
+    'text/html': 'html',
+    'text/css': 'css',
+    'text/javascript': 'js',
+    'application/json': 'json',
+    'application/xml': 'xml',
+    'application/pdf': 'pdf',
+    'application/zip': 'zip',
+    'application/msword': 'doc',
+    'application/vnd.ms-excel': 'xls',
+    'application/vnd.ms-powerpoint': 'ppt',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/gif': 'gif',
+    'image/svg+xml': 'svg',
+    'image/webp': 'webp',
+    'audio/mpeg': 'mp3',
+    'audio/wav': 'wav',
+    'video/mp4': 'mp4',
+    'video/webm': 'webm',
+    'font/woff': 'woff',
+    'font/woff2': 'woff2',
+    'application/octet-stream': 'bin', // 默认二进制文件
+};
 const parseSkill = (skillId, characterId) => {
     if (!(skillId in lib.skill)) return null;
     const skillName = lib.translate[skillId] || "";
@@ -208,42 +235,57 @@ class ASTWorkerSession {
                 this.ok = false;
                 this.timeout = true;
             })
-        ]);
+        ]).then(() => {
+            worker.terminate();
+        });
         this.worker = worker;
     }
 }
+
 export class NonameData {
     /**
-     * @param {Blob|URL} file 
+     * @param {string} contentType 
+     * @returns {string}
+     */
+    getExtFromContentType(contentType) {
+        const cleanType = contentType.split(';')[0].trim().toLowerCase();
+        return contentTypeToExtension[cleanType] || 'bin'; // 默认返回 'bin'
+    }
+    resolvePath(basePath, ...paths) {
+        try {
+            basePath = new URL(basePath).href;
+        } catch (err) {
+            paths.unshift(basePath);
+            basePath = location.origin;
+        }
+        const resultPath = paths.reduce((acc, path) => {
+            return acc.endsWith("/") ? acc + path : acc + "/" + path;
+        }, basePath);
+        return new URL(resultPath).href;
+    }
+    changeToExtPath(path) {
+        return path.replace(/^\/?extension\//, "ext:");
+    }
+    /**
+     * @param {Blob} file 
      * @param {"text"|"arrayBuffer"|"url"} type 
-     * @param {string} encoding 
      * @returns 
      */
-    readFile(file, type = "text", encoding) {
-        if ((file instanceof Blob)) {
-            return new Promise((resolve) => {
-                const fileReader = new FileReader();
-                fileReader.addEventListener("loadend", e => {
-                    resolve(e.target.result);
-                })
-                switch (type) {
-                    case "text": fileReader.readAsText(file, encoding); break;
-                    case "arrayBuffer": fileReader.readAsArrayBuffer(file); break;
-                    case "URL": case "url": fileReader.readAsDataURL(file); break;
-                }
-            })
-        } else if (URL.canParse(file) || file instanceof URL) {
-            let url = file;
-            fetch(url).then(async response => {
-                if (!response.ok) throw new Error(response.statusText);
-                switch (type) {
-                    case "text": return await response.text();
-                    case "arrayBuffer": return await response.arrayBuffer();
-                    case "url": case "URL": return await this.readFile(await response.blob(), "url");
-                }
-            })
+    async readFile(file, type = "text") {
+        if (!(file instanceof Blob)) {
+            throw new TypeError(file + "不是可以被读取的文件");
         }
-        else throw new TypeError(file + "不是可以被读取的文件或文件的URL");
+        return new Promise((resolve) => {
+            const fileReader = new FileReader();
+            fileReader.addEventListener("loadend", e => {
+                resolve(e.target.result);
+            })
+            switch (type) {
+                case "text": fileReader.readAsText(file); break;
+                case "arrayBuffer": fileReader.readAsArrayBuffer(file); break;
+                case "URL": case "url": fileReader.readAsDataURL(file); break;
+            }
+        })
     }
     async readFolder(path) {
         return game.promises.getFileList(path);
@@ -285,7 +327,7 @@ export class NonameData {
             return folderList;
         }
     }
-    submitFile(format, multiple = false) {
+    async submitFile(format, multiple = false) {
         const input = document.createElement("input");
         input.setAttribute("type", "file");
         if (Array.isArray(format)) {
@@ -304,10 +346,23 @@ export class NonameData {
         input.click();
         return promise;
     }
-    checkId(val, type) {
+    async download(url, path, name) {
+        const response = await fetch(url);
+        const contentType = response.headers.get('Content-Type');
+        const buffer = await response.arrayBuffer();
+        const fileName = name + "." + this.getExtFromContentType(contentType)
+        return game.promises.writeFile(buffer, path, fileName).then(() => {
+            return path + "/" + fileName.replace(/\/+/, "/");
+        });
+    }
+    checkId(val, type, ...args) {
         switch (type) {
             case "character": return !(val in Object.assign({}, ...Object.values(lib.characterPack)));
             case "skill": return !(val in lib.skill);
+            case "characterSort": {
+                const [packageId] = args;
+                return !(val in lib.characterSort[packageId]);
+            }
             default: return false;
         }
     }
@@ -320,8 +375,47 @@ export class NonameData {
     parseSkill(skillId, characterId) {
         return parseSkill(skillId, characterId)
     }
+    getConfig(member) {
+        const properties = member.split(".");
+        let currentObject = lib.config;
+        for (const property of properties) {
+            if (currentObject[property]) {
+                currentObject = currentObject[property]
+            } else {
+                return null;
+            }
+        }
+        return currentObject;
+    }
+    writeConfig(member, val) {
+        const properties = member.split(".");
+        const [name] = properties;
+        let currentObject = lib.config;
+        for (let i = 0; i < properties.length; i++) {
+            const property = properties[i];
+            if (properties.length - 1 === i) {
+                currentObject[property] = val;
+            } else {
+                if (!currentObject[property]) currentObject[property] = {};
+                currentObject = currentObject[property];
+            }
+        }
+        return game.promises.saveConfigValue(name);
+    }
     getExtensionList(filter) {
         return typeof filter === "function" ? lib.config.extensions.filter(filter) : lib.config.extensions;
+    }
+    getCharacterSortList(packageId) {
+        const result = { "": "未分类" };
+        for (const characterSortId in lib.characterSort[packageId]) {
+            result[characterSortId] = lib.translate[characterSortId];
+        }
+        return result;
+    }
+    setCharacterSort(packageId, id, characterList = []) {
+        if (!lib.character[packageId]) lib.character[packageId] = {};
+        console.log(lib.characterSort[packageId], packageId, id);
+        lib.characterSort[packageId][id] = characterList;
     }
     /**
      * @param {number} hp 
@@ -365,33 +459,41 @@ export class NonameData {
      * @param {string} text 
      */
     getTranslation(type, attr, text) {
-        if (type === "character") {
-            switch (attr) {
-                case "sex": {
-                    if (text === "none") return "无性";
-                    if (text === "male-castrated") return "太监";
-                    return (lib.translate[text] || "") + "性";
-                }
-                case "group": {
-                    let group = lib.translate[text] || "";
-                    return group + "势力";
-                }
-                case "name": {
-                    return lib.translate[text] || "";
-                }
-            }
-        }
-        else if (type === "skill") {
-            switch (attr) {
-                case "name": {
-                    return lib.translate[text] || text;
-                };
-                case "description": case "info": {
-                    return lib.translate[text + "_info"] || ""
+        switch (type) {
+            case "character": {
+                switch (attr) {
+                    case "sex": {
+                        if (text === "none") return "无性";
+                        if (text === "male-castrated") return "太监";
+                        return (lib.translate[text] || "") + "性";
+                    }
+                    case "group": {
+                        let group = lib.translate[text] || "";
+                        return group + "势力";
+                    }
+                    case "name": {
+                        return lib.translate[text] || "";
+                    }
                 }
             }
+            case "skill": {
+                switch (attr) {
+                    case "name": {
+                        return lib.translate[text] || text;
+                    };
+                    case "description": case "info": {
+                        return lib.translate[text + "_info"] || ""
+                    }
+                }
+            }
+            case "characterPackage": {
+                return lib.translate[text + "_character_config"] || "";
+            }
+            default: return get.translation(text);
         }
-        return ""
+    }
+    setTranslation(en, cn) {
+        lib.translate[en] = cn;
     }
     /**
      * @param {string} text 
@@ -420,7 +522,6 @@ export class NonameData {
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
     }
-
     /**
      * @param {"wei"|"shu"|"wu"|"qun"|"jin"|"shen"|"western"|"key"|string} group 
      * @returns 
@@ -467,10 +568,6 @@ export class NonameData {
         return manager;
     }
     //抽象语法树系列
-    async getFileAllModules(filePath) {
-        const astObject = await this.getAST();
-        return astObject.getFileAllModules(filePath, { rootPath: location.origin });
-    }
     async getExtensionAllPackage(extensionName) {
         const session = new ASTWorkerSession({ order: "getExtensionAllPackage", data: [extensionName] });
         await session.ready;
@@ -530,8 +627,8 @@ export class NonameData {
             }
         })();
         (async () => {
-            if (!("gif" in window)) await import("./libs/gif.js/gif.js");
-            const gif = new window.Gif({
+            if (!("GIF" in window)) await import("./libs/gif.js/gif.js");
+            const gif = window.GIF({
                 worker: 20,
                 quality,
                 workerScript: `./${url}/libs/gif.js/gif.worker.js`

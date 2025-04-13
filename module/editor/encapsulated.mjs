@@ -768,18 +768,19 @@ export class DragManager {
         this.draggableTargets.push(...draggableTargets);
     }
 }
-export class ObjectURLManager {
+export class URLManager {
     /**
-     * @type {Map<any,string[]>}
+     * @type {Map<string,string[]>}
      */
     urlLabelMap = new Map();
     add(label, url) {
-        if (!URL.canParse(url)) throw new Error(url + "不能被解析为url");
         if (!this.urlLabelMap.get(label)) this.urlLabelMap.set(label, []);
         this.urlLabelMap.get(label).push(url);
     }
     addFromBlob(label, blob) {
-        if (!(blob instanceof Blob)) throw new Error(blob + "必须为一个Blob");
+        if (!(blob instanceof Blob)){
+            throw new Error(blob + "必须为一个Blob");
+        } 
         if (!this.urlLabelMap.get(label)) this.urlLabelMap.set(label, []);
         const url = URL.createObjectURL(blob);
         this.urlLabelMap.get(label).push(url);
@@ -802,17 +803,30 @@ export class ObjectURLManager {
         }
     }
     clear(label) {
-        const urlList = this.urlLabelMap.get(label);
-        if (urlList) {
-            urlList.forEach(url => {
-                URL.revokeObjectURL(url);
+        if (label === void 0 || label === null) {
+            this.urlLabelMap.forEach(urls => {
+                urls.forEach(url => URL.revokeObjectURL(url));
             })
-            urlList.length = 0;
+            this.urlLabelMap.clear();
+        } else {
+            const urlList = this.urlLabelMap.get(label);
+            if (urlList) {
+                urlList.forEach(url => {
+                    URL.revokeObjectURL(url);
+                })
+                urlList.length = 0;
+            }
         }
     }
     getLastest(label) {
         const urlList = this.urlLabelMap.get(label)
         return urlList[urlList.length - 1]
+    }
+    removeLastest(label) {
+        const urlList = this.urlLabelMap.get(label);
+        const lastest = urlList[urlList.length - 1];
+        urlList.splice(-1, 1);
+        URL.revokeObjectURL(lastest);
     }
     getURLGroup(label) {
         return this.urlLabelMap.get(label) || [];
