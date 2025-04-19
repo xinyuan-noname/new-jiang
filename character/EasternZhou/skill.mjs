@@ -26,7 +26,7 @@ function SkillCreater(name, skillInfo) {
 //曲沃姬姓宗族技
 SkillCreater("xjb_duozhu", {
 	translate: "夺朱",
-	description: "宗族技，弃牌阶段，若存在曲沃姬姓角色手牌数为全场最多，你可以跳过此阶段并可以令一名非曲沃姬姓角色获得一个只有弃牌阶段的额外回合。",
+	description: "宗族技，弃牌阶段，若存在曲沃姬姓角色手牌数为全场最多，你可以跳过此阶段并可以令一名非曲沃姬姓角色获得一个只有手牌上限-1的弃牌阶段的额外回合。",
 	clanSkill: true,
 	trigger: {
 		player: "phaseDiscardBegin"
@@ -40,7 +40,7 @@ SkillCreater("xjb_duozhu", {
 			.set("filterTarget", (_card, player, target) => {
 				return !target.hasClan("曲沃姬姓");
 			})
-			.set("prompt", "令一名非曲沃姬姓角色获得一个只有弃牌阶段的额外回合。")
+			.set("prompt", "令一名非曲沃姬姓角色获得一个只有手牌上限-1的弃牌阶段的额外回合。")
 			.set("ai", (target) => {
 				const player = _status.event.player;
 				if (player.countCards("h") <= player.getHandcardLimit()) return 0;
@@ -49,6 +49,16 @@ SkillCreater("xjb_duozhu", {
 		if (bool) {
 			const [target] = targets;
 			target.insertPhase().set("phaseList", ["phaseDiscard"]);
+			target.addTempSkill("xjb_duozhu_limit_decrease", { player: "phaseAfter" })
+		}
+	},
+	subSkill: {
+		limit_decrease: {
+			mod: {
+				maxHandcard(player, num) {
+					return num - 1;
+				}
+			}
 		}
 	}
 })

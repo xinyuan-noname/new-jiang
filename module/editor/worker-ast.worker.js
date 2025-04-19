@@ -93,22 +93,22 @@ const createNewCharacterExpressionParamNode = (info, pattern = "object") => {
                     if (character.dualSideCharacter) {
                         trashes.push(`duaslside:${character.dualSideCharacter}`);
                     }
-                    if (character.doubleGroup.length > 0) {
+                    if (character.doubleGroup?.length > 0) {
                         trashes.push(`doublegroup:${character.doubleGroup.join(":")}`);
                     }
-                    if (character.clans.length > 0) {
+                    if (character.clans?.length > 0) {
                         character.clans.forEach(item => trashes.push(`clan:${item}`));
                     }
-                    if (character.initFilters.length > 0) {
+                    if (character.initFilters?.length > 0) {
                         trashes.push(`InitFilters:${character.initFilters.join(":")}`);
                     }
                     if (character.img) {
                         trashes.push(`img:${character.img}`);
                     }
-                    if (character.dieAudios.length > 0) {
+                    if (character.dieAudios?.length > 0) {
                         character.dieAudios.forEach(item => trashes.push(`die:${item}`));
                     }
-                    if (character.tempname.length > 0) {
+                    if (character.tempname?.length > 0) {
                         trashes.push(`tempname:${character.tempname.join(":")}`);
                     }
                     return trashes.concat(character.trashBin);
@@ -117,31 +117,32 @@ const createNewCharacterExpressionParamNode = (info, pattern = "object") => {
                     return this.extraModeData;
                 }
             };
+            if (typeof character.maxHp !== "number") character.maxHp = character.hp;
             const { "0": $0, "1": $1, "2": $2, "3": $3, "4": $4, "5": $5 } = character;
             return astObject.$createNode([$0, $1, $2, $3, $4, $5]);
         }
     }
 }
-const createTranslateAssignmentExpression = (astObject, en, cn) => {
+const createTranslateAssignmentExpression = (en, cn) => {
     return astObject.template("%%left%% = %%cn%%;")({
         left: astObject.$createMemberExpression("lib", "translate", en),
         cn: astObject.$createNode(cn)
     });
 }
 const genCharacterCode = (characterInfo, pattern) => {
-    const { extension, packageName, id, intro, pinyin, dieAudioText, name, ...basicInfo } = characterInfo;
+    const { extension, packageId, id, intro, pinyin, dieAudioText, name, ...basicInfo } = characterInfo;
     const statements = [];
-    if (packageName) {
+    if (packageId) {
         const createCharacter = astObject.template("%%left%% = new lib.element.Character(%%basicInfo%%);")({
-            left: astObject.$createMemberExpression("lib", "characterPack", packageName, id),
+            left: astObject.$createMemberExpression("lib", "characterPack", packageId, id),
             basicInfo: createNewCharacterExpressionParamNode(basicInfo, pattern)
         });
         const pushCharacter = astObject.createIfStatement(
-            astObject.$createCallMethodExpression(["lib", "config", "characters", "includes"], [packageName]),
+            astObject.$createCallMethodExpression(["lib", "config", "characters", "includes"], [packageId]),
             [astObject.createLeftRightExpressionStatement(
                 astObject.$createMemberExpression("lib", "character", id),
                 "=",
-                astObject.$createMemberExpression("lib", "characterPack", packageName, id)
+                astObject.$createMemberExpression("lib", "characterPack", packageId, id)
             )]
         );
         statements.push(createCharacter, pushCharacter);
@@ -152,7 +153,7 @@ const genCharacterCode = (characterInfo, pattern) => {
         });
         statements.push(createCharacter)
     }
-    statements.push(createTranslateAssignmentExpression(astObject, id, name));
+    statements.push(createTranslateAssignmentExpression(id, name));
     if (intro) statements.push(astObject.createLeftRightExpressionStatement(
         astObject.$createMemberExpression("lib", "characterIntro", id),
         "=",
@@ -163,6 +164,33 @@ const genCharacterCode = (characterInfo, pattern) => {
         "=",
         astObject.$createNode(pinyin)
     ))
+    const ast = astObject.packStatementAsProgram(...statements);
+    return astObject.generateCode(ast).code;
+}
+const genCharacterSortCode = (characterSortInfo, packageExistence) => {
+    const { id, characterSort, characterSortName, packageId } = characterSortInfo;
+    const statements = [];
+    if (packageExistence === false) {
+        statements.push(astObject.createLeftRightExpressionStatement(
+            astObject.$createMemberExpression("lib", "characterSort", packageId),
+            "=",
+            astObject.$createNode({})
+        ))
+    }
+    if (characterSortName) {
+        statements.push(astObject.createLeftRightExpressionStatement(
+            astObject.$createMemberExpression("lib", "characterSort", packageId, characterSort),
+            "=",
+            astObject.$createNode([])
+        ));
+        createTranslateAssignmentExpression(characterSort, characterSortName);
+    }
+    statements.push(
+        astObject.$createCallMethodExpressionStatement(
+            ["lib", "characterSort", packageId, characterSort, "push"],
+            [id]
+        )
+    );
     const ast = astObject.packStatementAsProgram(...statements);
     return astObject.generateCode(ast).code;
 }
@@ -210,13 +238,13 @@ const getExtensionAllPackage = async (extensionName) => {
                         configObjectExpressionPath = binding.path.get("init");
                     }
                     if (!configObjectExpressionPath) return;
-                    let packageID;
+                    let packageId;
                     const valuePath = astObject.getValueOfObject(configObjectExpressionPath, "name")
                     if (valuePath?.isStringLiteral()) {
-                        packageID = valuePath.node.value;
+                        packageId = valuePath.node.value;
                     }
                     packageInfo[type.node.value].push({
-                        packageID,
+                        packageId,
                         file: currentFilePath
                     });
                 })
@@ -275,13 +303,13 @@ const getExtensionAllPackage = async (extensionName) => {
                         configObjectExpressionPath = binding.path.get("init");
                     }
                     if (!configObjectExpressionPath) return;
-                    let packageID;
+                    let packageId;
                     const valuePath = astObject.getValueOfObject(configObjectExpressionPath, "name")
-                    if (valuePath?.isStringLiteral()) {
-                        packageID = valuePath.node.value;
+                    if (valuePath?.isStringLiteral?.()) {
+                        packageId = valuePath.node.value;
                     }
                     packageInfo.extension.push({
-                        packageID,
+                        packageId,
                         file: currentFilePath
                     });
                 })
@@ -313,16 +341,158 @@ const getExtensionAllPackage = async (extensionName) => {
         }
     }
 }
+const modifyCharacterClassInfo = (characterSetting, characterId, basicInfo, importType) => {
+    let pattern = "object";
+    const targetProperty = astObject.getValueOfObject(characterSetting, characterId);
+    if (importType === "extension") {
+        pattern = "array"
+    } else {
+        if (characterSetting.get("properties")?.[0]?.get?.("value")?.isArrayExpression?.()) {
+            pattern = "array";
+        }
+    }
+    if (targetProperty) {
+        console.log(targetProperty.get("value"))
+        debugger;
+        targetProperty.replaceWith(createNewCharacterExpressionParamNode(basicInfo, pattern));
+    } else {
+        characterSetting.pushContainer(
+            "properties",
+            astObject.types.ObjectProperty(
+                astObject.$createIdentifierLiteralAuto(characterId),
+                createNewCharacterExpressionParamNode(basicInfo, pattern)
+            )
+        )
+    }
+}
+const getTargetPackageConfigPath = (ast, packageId, importType) => {
+    let targetPackage;
+    astObject.traverseAST(ast, {
+        CallExpression: (path) => {
+            const callee = path.get('callee')
+            if (callee.matchesPattern('game.import')) {
+                const type = path.get("arguments.0");
+                if (type.node.value !== importType) return;
+                const content = path.get("arguments.1");
+                let configObjectExpressionPath = null;
+                astObject.getReturnValues(content).forEach(returnValuePath => {
+                    if (returnValuePath.isObjectExpression()) {
+                        configObjectExpressionPath = returnValuePath;
+                    } else if (returnValuePath.isIdentifier()) {
+                        const binding = returnValuePath.scope.getBinding(returnValuePath.node.name);
+                        if (!binding) return;
+                        configObjectExpressionPath = binding.path.get("init");
+                    }
+                    const valuePath = astObject.getValueOfObject(configObjectExpressionPath, "name")
+                    if (valuePath?.isStringLiteral?.() && packageId === valuePath?.node?.value) return true;
+                    configObjectExpressionPath = null;
+                });
+                if (!configObjectExpressionPath) return;
+                targetPackage = configObjectExpressionPath;
+                path.stop();
+            }
+        },
+        ExportDefaultDeclaration: (path) => {
+            const exportTypePath = [].concat(path.getAllPrevSiblings(), path.getAllNextSiblings()).find((sibling) => {
+                if (!sibling.isExportNamedDeclaration()) return false;
+                const declaration = sibling.get("declaration");
+                if (!declaration?.isVariableDeclaration?.()) return false;
+                const { init, id } = declaration.get("declarations.0").node;
+                if (id.name !== "type" || init.value !== "extension") return false;
+                return true;
+            });
+            if (!exportTypePath) return;
+            const content = path.get("declaration");
+            const returnValuePaths = astObject.getReturnValues(content);
+            returnValuePaths.forEach((returnValuePath) => {
+                let configObjectExpressionPath;
+                if (returnValuePath.isObjectExpression()) {
+                    configObjectExpressionPath = returnValuePath;
+                } else if (returnValuePath.isIdentifier()) {
+                    const binding = returnValuePath.scope.getBinding(returnValuePath.node.name);
+                    if (!binding) return;
+                    configObjectExpressionPath = binding.path.get("init");
+                }
+                if (!configObjectExpressionPath) return;
+                const valuePath = astObject.getValueOfObject(configObjectExpressionPath, "name")
+                if (valuePath?.node?.value === packageId) {
+                    targetPackage = configObjectExpressionPath;
+                    path.stop();
+                }
+            })
+        }
+    })
+    return targetPackage;
+}
+const modifyCharacterPackageCode = async (dataList, extensionModuleConfig) => {
+    let importType;
+    const { importInfoMap, packageInfo } = extensionModuleConfig;
+    const {
+        id: characterId,
+        characterSort, characterSortName, packageId, extension,
+        intro, pinyin, dieAudioText, name: characterName, ...basicInfo
+    } = dataList;
+    const modifedFileContentMap = {};
+    //找到对应武将包路径
+    const { file: filePath } = packageInfo.character.find(content => {
+        if (content.packageId === packageId) {
+            importType = "character";
+            return true;
+        }
+    }) || packageInfo.extension.find((content) => {
+        if (content.packageId === packageId) {
+            importType = "extension";
+            return true;
+        }
+    }) || {};
+    if (filePath) {
+        const modifedFileContentMapSet = (path, val) => {
+            modifedFileContentMap[decodeURI(path.replace(origin, ""))] = val;
+        }
+        let currentFilePath = filePath;
+        let currentDirPath = resolvePath(filePath, "..");
+        const ast = await astObject.parseFile(filePath);
+        const configObjectExpressionPath = getTargetPackageConfigPath(ast, packageId, importType);
+        const characterConfigObject = importType === "character" ? configObjectExpressionPath : (() => {
+            const temp = astObject.$ensureProperty(configObjectExpressionPath, "package", {});
+            return astObject.$ensureProperty(temp, "character", {});
+        })();
+        const characterSetting = astObject.$ensureProperty(characterConfigObject, "character", {});
+        if (characterSetting.isObjectExpression()) {
+            modifyCharacterClassInfo(characterSetting, characterId, basicInfo, importType);
+            modifedFileContentMapSet(filePath, { ast });
+        }
+        if (characterName) {
+            const characterTranslate = astObject.$ensureProperty(characterConfigObject, "translate", {});
+            if (characterTranslate.isObjectExpression()) {
+                astObject.$replaceValueOfObject(characterTranslate, characterId, characterName);
+            }
+        }
+        if (characterSort) {
+
+        }
+        for (let k in modifedFileContentMap) {
+            modifedFileContentMap[k].content = await astObject.generateFormattedCode(modifedFileContentMap[k].ast);
+            delete modifedFileContentMap[k].ast;
+        }
+    }
+    return modifedFileContentMap;
+}
 addEventListener("message", async ({ data: { order, data } }) => {
     switch (order) {
         case "getExtensionAllPackage": {
-            const [extensionName] = data;
-            const result = await getExtensionAllPackage(extensionName);
+            const result = await getExtensionAllPackage(...data);
             postMessage(result);
         }; break;
         case "genCharacterCode": {
-            const [characterInfo, pattern] = data;
-            postMessage(genCharacterCode(characterInfo, pattern));
+            postMessage(genCharacterCode(...data));
+        }; break;
+        case "genCharacterSortCode": {
+            postMessage(genCharacterSortCode(...data));
+        }; break;
+        case "modifyCharacterPackageCode": {
+            const result = await modifyCharacterPackageCode(...data)
+            postMessage(result)
         }; break;
         default: {
             postMessage(null);

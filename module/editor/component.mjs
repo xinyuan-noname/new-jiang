@@ -4,7 +4,7 @@ import "./component-infoCard.mjs";
 import "./component-dialog.mjs";
 class HTMLNonameCharacterEditorElement extends HTMLNonameFocusUIElement {
     characterAttributes = [
-        "extension", "packageName",
+        "extension", "packageId", "characterSort", "characterSortName",
         "avatar",
         "dieAudios", "dieAudioText",
         "name", "pinyin",
@@ -32,14 +32,14 @@ shadow.innerHTML=`
 <section class="main">
     <div class="content">
         <div class="left">
-            <div class="data-setting" data-extension="" data-package-name="" data-character-sort="" data-character-sort-name="">
+            <div class="data-setting" data-extension="" data-package-id="" data-character-sort="" data-character-sort-name="">
                 <section class="flex--between">
                     <span>所属分包</span>
                     <span class="extension-setting pointer text-shadow-free">设置</span>
                 </section>
                 <section class="sort-view flex-center small-font">
                     <span title="扩展包" class="extension-name link-arrow pointer"></span>
-                    <span title="武将包" class="package-name link-arrow pointer"></span>
+                    <span title="武将包" class="package-id link-arrow pointer"></span>
                     <span title="分包" class="character-sort pointer"></span>
                 </section>
             </div>
@@ -363,8 +363,6 @@ shadow.innerHTML=`
     <div class="menu-icon">🔧</div>
     <div class="close">关闭界面</div>
     <div class="export-all">一键导出</div>
-    <div class="export-asset">导出素材</div>
-    <div class="export-code">导出代码</div>
     <div class="gen-code">生成代码</div>
     <div class="return-setting">返回设置</div>
 </section>`
@@ -438,10 +436,10 @@ shadow.innerHTML=`
                     if (extensionName !== this.getData("extension")) {
                         this.style.setProperty("--data-extension-name", `"${extensionName}"`);
                         this.changeData("extension", extensionName);
-                        this.style.removeProperty("--data-package-name");
-                        this.changeData("packageName", '');
-                        this.changeData("character-sort", "");
-                        this.changeData("character-sort-name", "");
+                        this.style.removeProperty("--data-package-id");
+                        this.changeData("packageId", '');
+                        this.changeData("characterSort", "");
+                        this.changeData("characterSortName", "");
                         this.style.removeProperty("--data-character-sort");
                     }
                     await this.configQuery("write", { member: `x19D6_editor.extensionFileConfig.${extensionName}`, value: result });
@@ -457,12 +455,12 @@ shadow.innerHTML=`
         const options = {};
         if (moduleConfig) {
             moduleConfig.extension.forEach(extension => {
-                options[extension.packageID] = extension.packageID;
+                options[extension.packageId] = extension.packageId;
             })
             moduleConfig.character.forEach(character => {
-                const translation = this.textQuery("characterPackageTranslation", { text: character.packageID });
+                const translation = this.textQuery("characterPackageTranslation", { text: character.packageId });
                 if (options[translation]) delete options[translation];
-                options[character.packageID] = translation;
+                options[character.packageId] = translation;
             })
         }
         const dialog = document.createElement("noname-dialog");
@@ -476,10 +474,10 @@ shadow.innerHTML=`
             processing: dialog.wait().then(result => {
                 if (result) {
                     if (result !== this.getData(result)) {
-                        this.changeData("packageName", result);
-                        this.style.setProperty("--data-package-name", `"${this.textQuery("characterPackageTranslation", { text: result })}"`);
-                        this.changeData("character-sort", "");
-                        this.changeData("character-sort-name", "");
+                        this.changeData("packageId", result);
+                        this.style.setProperty("--data-package-id", `"${this.textQuery("characterPackageTranslation", { text: result })}"`);
+                        this.changeData("characterSort", "");
+                        this.changeData("characterSortName", "");
                         this.style.removeProperty("--data-character-sort");
                     }
                 }
@@ -490,7 +488,10 @@ shadow.innerHTML=`
     openCharacterSortDialog(packageId) {
         let options = {};
         if (packageId) {
-            options = this.infoQuery("characterSortList", { packageId })
+            options = this.infoQuery("characterSortList", { packageId });
+            this.forEachTempStore("characterSort", store => {
+                if (packageId === store.source && store.en) options[store.en] = store.cn;
+            })
         }
         const dialog = document.createElement("noname-dialog");
         dialog.type = "select-append";
@@ -503,20 +504,35 @@ shadow.innerHTML=`
         dialog.headline = "请选择一个分包";
         dialog.appendCheck = (id, name) => {
             if (!id || !name) return false;
+            let storeHaven;
+            this.forEachTempStore("characterSort", store => {
+                if (store.en === id) {
+                    storeHaven = true;
+                    return false;
+                }
+            })
+            if (storeHaven) return false;
             return this.checkQuery("characterSortId", { packageId, id });
         }
         dialog.appendCallback = (id, name) => {
-            this.textQuery("setTranslation", { en: id, cn: name });
-            this.playerQuery("setCharacterSort", { packageId, id });
+            this.appendTempStore("characterSort", {
+                en: id,
+                cn: name,
+                source: packageId
+            })
         }
         this.shadowRoot.append(dialog);
         return {
             dialog,
             processing: dialog.wait().then(result => {
                 if (result) {
-                    const translation = this.textQuery("getTranslation", { text: result })
-                    this.changeData("character-sort", result);
-                    this.changeData("character-sort-name", translation);
+                    let translation;
+                    this.forEachTempStore("characterSort", store => {
+                        if (packageId === store.source && store.en === result) translation = store.cn;
+                    })
+                    if (!translation) translation = this.textQuery("getTranslation", { text: result })
+                    this.changeData("characterSort", result);
+                    this.changeData("characterSortName", translation);
                     this.style.setProperty("--data-character-sort", `"${translation}"`);
                 }
                 return result;
@@ -524,7 +540,7 @@ shadow.innerHTML=`
         }
     }
     //
-    downloadExtensionAsset() {
+    async downloadExtensionAsset() {
         const avatar = this.getData("avatar");
         const dieAudios = this.getData("dieAudios");
         const id = this.getData("id");
@@ -546,23 +562,40 @@ shadow.innerHTML=`
         }
         return Promise.all(promises);
     }
-    updateCodePreviewArea(codeString) {
+    async modifyFiles(modificationInfo) {
+        for (const path in modificationInfo) {
+            const { content } = modificationInfo[path];
+            await this.fileQuery("writeTextFile", { path, content });
+        }
+    }
+    async writeModuleConfig(extensionName) {
+        const module = await this.codeQuery("getExtensionAllPackage", [extensionName]);
+        this.configQuery("write", {
+            member: `x19D6_editor.extensionModuleConfig.${extensionName}`,
+            value: module
+        });
+    }
+    updateCodePreviewArea(codeList) {
         const codeArea = this.shadowRoot.querySelector(".code");
-        const fragment = this.getStoredFragment("code");
-        const copy = fragment.querySelector(".copy");
-        const code = fragment.querySelector("code");
-        code.textContent = codeString;
-        codeArea.replaceChildren(fragment);
-        this.highlightCode(code);
-        copy.addEventListener("pointerup", () => {
-            navigator.clipboard.writeText(codeString).then(() => {
-                copy.classList.add("copied-ok");
-                setTimeout(() => { copy.classList.remove("copied-ok") }, 1000)
-            }).catch(() => {
-                copy.classList.add("copied-error");
-                setTimeout(() => { copy.classList.remove("copied-error") }, 1000)
-            });
-        })
+        codeArea.replaceChildren();
+        for (const codeInfo of codeList) {
+            const { codeString, title } = codeInfo;
+            const fragment = this.getStoredFragment("code");
+            const copy = fragment.querySelector(".copy");
+            const code = fragment.querySelector("code");
+            codeArea.append(fragment);
+            code.textContent = codeString;
+            this.highlightCode(code);
+            copy.addEventListener("pointerup", () => {
+                navigator.clipboard.writeText(codeString).then(() => {
+                    copy.classList.add("copied-ok");
+                    setTimeout(() => { copy.classList.remove("copied-ok") }, 1000)
+                }).catch(() => {
+                    copy.classList.add("copied-error");
+                    setTimeout(() => { copy.classList.remove("copied-error") }, 1000)
+                });
+            })
+        }
     }
     #listenMenu() {
         const main = this.shadowRoot.querySelector(".main");
@@ -572,37 +605,18 @@ shadow.innerHTML=`
         const genCodeButton = menu.querySelector(".gen-code");
         const returnSettingButton = menu.querySelector(".return-setting");
         //
-        const exportAssetButton = menu.querySelector(".export-asset");
-        const exportCodeButton = menu.querySelector(".export-code");
+        const exportAllButton = menu.querySelector(".export-all");
         closeButton.addEventListener("pointerup", () => {
             this.remove();
         });
-        exportAssetButton.addEventListener("pointerup", async () => {
-            if (!this.getData("avatar") && !this.getData("dieAudios").length) {
-                const { processing } = this.openAlertDialog("未找到素材，请设置之！");
-                await processing;
-                return;
-            }
+        exportAllButton.addEventListener("pointerup", async () => {
             if (!this.getData("id")) {
                 const { dialog, processing } = this.openCharacterIdDialog();
                 dialog.setAttribute("headline", "暂未设置武将id，请设置之！")
                 const result = await processing;
                 if (result === false) return;
-                this.loadId(result);
+                await this.loadId(result);
             }
-            if (!this.getData("extension")) {
-                const { dialog, processing } = this.openExtensionDialog();
-                dialog.setAttribute("headline", "暂未设置导出到的扩展，请设置之！");
-                const result = await processing;
-                if (result === false) return;
-            }
-            const { dialog } = this.openAlertDialog("这可能花费一些时间", "正在导出素材");
-            dialog.toggleInvalidWhen(true, this.downloadExtensionAsset(), () => {
-                dialog.setAttribute("headline", "导出成功");
-                dialog.setAttribute("message", "导出成功！");
-            })
-        })
-        exportCodeButton.addEventListener("pointerup", async () => {
             if (!this.getData("extension")) {
                 const { dialog, processing } = this.openExtensionDialog();
                 dialog.setAttribute("headline", "暂未设置导出到的扩展，请设置之。");
@@ -610,18 +624,31 @@ shadow.innerHTML=`
                 if (result === false) return;
             }
             const extensionName = this.getData("extension");
-            if (!this.configQuery("get", { member: `x19D6_editor.extensionModuleConfig.${extensionName}` })) {
-                const module = await this.codeQuery("getExtensionAllPackage", { extensionName });
-                this.configQuery("write", {
-                    member: `x19D6_editor.extensionModuleConfig.${extensionName}`,
-                    value: module
-                });
+            if (!this.getData("packageId")) {
+                if (!this.configQuery("get", { member: `x19D6_editor.extensionModuleConfig.${extensionName}` })) {
+                    await this.writeModuleConfig(extensionName);
+                }
+                const { processing } = this.openPackageSelectDialog(extensionName);
+                const result = await processing;
+                if (result === false) return;
             }
+            await this.downloadExtensionAsset();
+            const modificationInfo = await this.codeQuery("modifyCharacterPackageCode", [
+                this.getAllData(),
+                this.configQuery("get", { member: `x19D6_editor.extensionModuleConfig.${extensionName}` })
+            ]);
+            this.modifyFiles(modificationInfo);
         })
         genCodeButton.addEventListener("pointerup", async () => {
+            if (!this.getData("id")) {
+                const { dialog, processing } = this.openCharacterIdDialog();
+                dialog.setAttribute("headline", "暂未设置武将id，请设置之！")
+                const result = await processing;
+                if (result === false) return;
+                await this.loadId(result);
+            }
             main.classList.add("turn-over");
-            const codeString = await this.genCode();
-            this.updateCodePreviewArea(codeString);
+            this.updateCodePreviewArea(await this.genCode());
         });
         returnSettingButton.addEventListener("pointerup", () => {
             main.classList.remove("turn-over");
@@ -631,7 +658,7 @@ shadow.innerHTML=`
         const extensionDataArea = this.getDataAreaDom("extension");
         const extensionSetting = extensionDataArea.querySelector(".extension-setting");
         const extensionNameBtn = extensionDataArea.querySelector(".extension-name");
-        const packageNameBtn = extensionDataArea.querySelector(".package-name");
+        const packageIdBtn = extensionDataArea.querySelector(".package-id");
         const characterSortBtn = extensionDataArea.querySelector(".character-sort");
         const setExtensionName = async () => {
             const { dialog, processing } = this.openExtensionDialog();
@@ -644,24 +671,20 @@ shadow.innerHTML=`
             }
             const extensionName = this.getData("extension");
             if (!this.configQuery("get", { member: `x19D6_editor.extensionModuleConfig.${extensionName}` })) {
-                const module = await this.codeQuery("getExtensionAllPackage", { extensionName });
-                this.configQuery("write", {
-                    member: `x19D6_editor.extensionModuleConfig.${extensionName}`,
-                    value: module
-                });
+                await this.writeModuleConfig(extensionName);
             }
             const { processing } = this.openPackageSelectDialog(extensionName);
             return await processing;
         }
         const setCharacterSort = async () => {
-            if (!this.getData("packageName")) {
+            if (!this.getData("packageId")) {
                 if (await setPackageName() === false) return;
             }
-            const packageName = this.getData("packageName")
-            this.openCharacterSortDialog(packageName);
+            const packageId = this.getData("packageId")
+            this.openCharacterSortDialog(packageId);
         }
         extensionNameBtn.addEventListener("pointerup", setExtensionName);
-        packageNameBtn.addEventListener("pointerup", setPackageName);
+        packageIdBtn.addEventListener("pointerup", setPackageName);
         characterSortBtn.addEventListener("pointerup", setCharacterSort);
         extensionSetting.addEventListener("pointerup", setCharacterSort);
     }
@@ -908,7 +931,10 @@ shadow.innerHTML=`
     loadId(id) {
         const idDataArea = this.getDataAreaDom("id");
         const idInput = idDataArea.querySelector("div");
-        idInput.textContent = id;
+        return new Promise(reslove => {
+            idInput.textContent = id;
+            reslove();
+        })
     }
     #listenId() {
         const idDataArea = this.getDataAreaDom("id");
@@ -1465,7 +1491,7 @@ shadow.innerHTML=`
         })
     }
     /**
-     * @typedef {"extension"|"packageName"|"avatar"|"dieAudios"|"hp"|"maxHp"|"hujia"|"pinyin"|"name"|"sex"|"group"|"id"|"clans"|"skills"|"isZhuGong"|"intro"} dataType
+     * @typedef {"extension"|"packageId"|"avatar"|"dieAudios"|"hp"|"maxHp"|"hujia"|"pinyin"|"name"|"sex"|"group"|"id"|"clans"|"skills"|"isZhuGong"|"intro"} dataType
      */
     /**
      * @param {dataType} type 
@@ -1596,13 +1622,50 @@ shadow.innerHTML=`
         if (dataList.dieAudios) {
             dataList.dieAudios = dataList.dieAudios.map(path => this.pathQuery("changeToExtPath", { path }));
         }
-        //这里将packageName默认设置为扩展名 方便以后调试
-        if (!dataList.packageName) dataList.packageName = dataList.extension;
+        //这里将packageId默认设置为扩展名 方便以后调试
+        if (!dataList.packageId) {
+            dataList.packageId = dataList.extension;
+            delete dataList.characterSort;
+            delete dataList.characterSortName;
+        } else {
+            if (!dataList.characterSort) {
+                delete dataList.characterSort;
+                delete dataList.characterSortName;
+            } else if (!this.checkQuery("characterSortId", { id: dataList.characterSort, packageId: dataList.packageId })) { //这里检查是否已有分类
+                delete dataList.characterSortName;
+            }
+        }
         return dataList;
     }
-    genCode(pattern) {
-        return this.codeQuery("generateCharacterCode", { info: this.getAllData(), pattern });
+    getGroupedData() {
+        const allData = this.getAllData();
+        const { characterSort, characterSortName, ...characterInfo } = allData;
+        const characterSortInfo = {
+            id: characterInfo.id,
+            characterSort,
+            characterSortName,
+            packageId: characterInfo.packageId
+        }
+        return {
+            characterInfo,
+            characterSortInfo
+        }
     }
-
+    async genCode() {
+        const { characterInfo, characterSortInfo } = this.getGroupedData();
+        const codeList = [];
+        codeList.push({
+            title: "character",
+            codeString: await this.codeQuery("genCharacterCode", [characterInfo, "object"]),
+            otherPatternCodeString: await this.codeQuery("genCharacterCode", [characterInfo, "array"])
+        });
+        if (characterSortInfo.characterSort) {
+            codeList.push({
+                title: "characterSort",
+                codeString: await this.codeQuery("genCharacterSortCode", [characterSortInfo, this.checkQuery("memberExistence", { member: `lib.characterSort.${characterInfo.packageId}` })])
+            })
+        }
+        return codeList;
+    }
 }
 customElements.define("character-editor", HTMLNonameCharacterEditorElement);

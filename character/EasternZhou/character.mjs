@@ -7,7 +7,7 @@ const character = {
     "xjb_qvwohuanshu": {
         sex: "male",
         group: "xjb_chunqiu_jin",
-        hp: 4,
+        hp: 3,
         skills: ["xjb_duozhu", "xjb_zhaoxian", "xjb_yiben"],
         trashBin: [],
         clans: ["曲沃姬姓"],

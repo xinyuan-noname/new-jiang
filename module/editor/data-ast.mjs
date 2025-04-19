@@ -1,4 +1,5 @@
 import "./libs/babel/standalone/babel.min.js";
+import "./libs/prettier/standalone.js";
 export class AST {
     static #ast = {
         Babel,
@@ -27,6 +28,9 @@ export class AST {
     parseCode(code, configs = {}) {
         return this.parser.parse(code, {
             sourceType: 'module',
+            retainLines: true,
+            comments: true,
+            tokens: true,
             ...configs
         });
     }
@@ -108,8 +112,32 @@ export class AST {
         });
         return results;
     }
+    getAppointedExport(filePath, ...names) {
+        const result = {};
+        const ast = this.parseFile(filePath);
+        const config = {};
+        if (names.includes("default")) {
+            config.ExportDefaultDeclaration = (path) => {
+                result.default = path;
+            }
+        }
+        if (names.filter(name => name === "defualt").length >= 1) {
+            config.ExportNamedDeclaration = (path) => {
+                console.log(path);
+            }
+        }
+        this.traverseAST(ast, config);
+    }
+    //
     packStatementAsProgram(...statements) {
         return this.types.Program(statements);
+    }
+    //$ensure系列函数 尝试寻找属性 找不到 则根据指定的值创建一个返回
+    $ensureProperty(objectExpressionPath, propertyName, initialValue) {
+        const target = this.getValueOfObject(objectExpressionPath, propertyName);
+        if (target) return target;
+        const container = this.$pushProperty(objectExpressionPath, propertyName, initialValue);
+        return container[container.length - 1];
     }
     //$is系列函数 通过给定的值来判断当前path是否满足条件
     $isLiteral(path, literal) {
@@ -140,6 +168,29 @@ export class AST {
             default:
                 return false;
         }
+    }
+    //$replace(With)系列函数 从给定的值直接替换对应的AST节点
+    $replaceWithNode(path, val) {
+        path.replaceWith(this.$createNode(val));
+    }
+    $replaceWithLiteral(path, literal) {
+        let literalPath = this.$createLiteral(literal);
+        if (literalPath) path.replaceWith(literalPath);
+    }
+    $replaceValueOfObject(path, key, val) {
+        const valuePath = this.getValueOfObject(path, key);
+        if (valuePath) {
+            valuePath.replaceWith(this.$createNode(val));
+        } else {
+            this.$pushProperty(path, key, val)
+        }
+    }
+    //$push系列函数 从给定的值直接插入对应AST节点
+    $pushProperty(path, key, value) {
+        return path.pushContainer("properties", this.$createObjectProperty(key, value))
+    }
+    $pushElement(path, element) {
+        return path.pushContainer("")
     }
     //$create系列函数 从给定的值中创建对应的AST节点
     $createNode(val) {
@@ -178,6 +229,7 @@ export class AST {
         }
         return literalPath;
     }
+
     $createArrayExpression(array) {
         const { types } = this;
         return types.ArrayExpression(array.map(element => this.$createNode(element)).filter(Boolean));
@@ -185,13 +237,16 @@ export class AST {
     $createFunction(func) {
         return this.parser.parseExpression(func.toString());
     }
-    $createObjectProperty(key, val) {
+    $createIdentifierLiteralAuto(identifier) {
         const { types } = this;
+        return this.checkIdentifierValid(identifier) ? types.identifier(identifier) : types.StringLiteral(identifier);
+    }
+    $createObjectProperty(key, val) {
         let keyPath, valuePath;
         if (typeof key === "string") {
             valuePath = this.$createNode(val);
             if (valuePath) {
-                keyPath = this.checkIdentifierValid(key) ? types.identifier(key) : types.StringLiteral(key);
+                keyPath = this.$createIdentifierLiteralAuto(key)
                 return this.types.ObjectProperty(keyPath, valuePath);
             }
         }
@@ -251,6 +306,11 @@ export class AST {
             args.map(arg => this.$createNode(arg))
         )
     }
+    $createCallMethodExpressionStatement(propertiesOrOptionalOperations, args) {
+        return this.types.ExpressionStatement(
+            this.$createCallMethodExpression(propertiesOrOptionalOperations, args)
+        )
+    }
     $createExpression(expression) {
         return this.parser.parseExpression(String(expression));
     }
@@ -282,10 +342,6 @@ export class AST {
             return false;
         }
     }
-    replaceWithLiteral(path, literal) {
-        let literalPath = this.$createLiteral(literal);
-        if (literalPath) path.replaceWith(literalPath);
-    }
     generateCode(ast, configs) {
         const { generator } = this;
         const code = generator.generate(ast, {
@@ -297,5 +353,20 @@ export class AST {
             ...configs
         });
         return code;
+    }
+    async generateFormattedCode(ast, config = {}, formatConfig = {}) {
+        const { generator } = this;
+        const { code } = generator.generate(ast, {
+            jsescOption: {
+                minimal: true,
+                escapeOnly: false,
+            },
+            ...config
+        });
+        const formatedCode = await prettier.format(code, {
+            tabWidth: 4,
+            ...formatConfig
+        });
+        return formatedCode;
     }
 }

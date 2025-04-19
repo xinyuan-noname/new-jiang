@@ -1,4 +1,4 @@
-import { game, get, lib, ui } from "../../../../noname.js";
+import { _status, ai, game, get, lib, ui } from "../../../../noname.js";
 import url from "./url.mjs";
 const chineseRegex = /[\u4e00-\u9fff]+/;
 const contentTypeToExtension = {
@@ -249,7 +249,7 @@ export class NonameData {
      */
     getExtFromContentType(contentType) {
         const cleanType = contentType.split(';')[0].trim().toLowerCase();
-        return contentTypeToExtension[cleanType] || 'bin'; // 默认返回 'bin'
+        return contentTypeToExtension[cleanType] || 'bin'; 
     }
     resolvePath(basePath, ...paths) {
         try {
@@ -355,16 +355,35 @@ export class NonameData {
             return path + "/" + fileName.replace(/\/+/, "/");
         });
     }
+    async writeTextFile(path, content) {
+        const [dirPath, filePath] = path.split(/\/(?=[^/]*$)/);
+        return game.promises.writeFile(content, dirPath, filePath);
+    }
     checkId(val, type, ...args) {
         switch (type) {
             case "character": return !(val in Object.assign({}, ...Object.values(lib.characterPack)));
             case "skill": return !(val in lib.skill);
             case "characterSort": {
                 const [packageId] = args;
+                //我不确定 这里空引用返回true是否是一个好的选择 
+                if (!lib.characterSort[packageId]) return true;
                 return !(val in lib.characterSort[packageId]);
             }
             default: return false;
         }
+    }
+    checkMemberExistence(member) {
+        const [root, ...properties] = member.split(".");
+        let currentObject = root === "lib" ? lib : root === "game" ? game : root === "ui" ? ui :
+            root === "get" ? get : root === "_status" ? _status : root === "ai" ? ai : window;
+        for (const property of properties) {
+            if (currentObject[property]) {
+                currentObject = currentObject[property];
+            } else {
+                return false;
+            }
+        }
+        return currentObject !== void 0;
     }
     checkSkillTags(id, tags) {
         if (!(id in lib.skill)) return false;
@@ -414,7 +433,6 @@ export class NonameData {
     }
     setCharacterSort(packageId, id, characterList = []) {
         if (!lib.character[packageId]) lib.character[packageId] = {};
-        console.log(lib.characterSort[packageId], packageId, id);
         lib.characterSort[packageId][id] = characterList;
     }
     /**
@@ -567,16 +585,14 @@ export class NonameData {
         })()
         return manager;
     }
-    //抽象语法树系列
-    async getExtensionAllPackage(extensionName) {
-        const session = new ASTWorkerSession({ order: "getExtensionAllPackage", data: [extensionName] });
-        await session.ready;
-        if (session.ok) {
-            return session.data;
-        }
-    }
-    async genCharacterCode(characterInfo, pattern) {
-        const session = new ASTWorkerSession({ order: "genCharacterCode", data: [characterInfo, pattern] });
+    /**
+     * @template {"getExtensionAllPackage"|"genCharacterCode"|"genCharacterSortCode"} T
+     * @param {T} order 
+     * @param {*} data 
+     * @returns 
+     */
+    async astRequest(order, data) {
+        const session = new ASTWorkerSession({ order, data });
         await session.ready;
         if (session.ok) {
             return session.data;

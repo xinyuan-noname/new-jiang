@@ -446,17 +446,17 @@ div[contenteditable="true"] {
 }
 
 [data-extension] .extension-name::before {
-    content: var(--data-extension-name, "未设置");
+    content: var(--data-extension-name, "未设置扩展");
     text-decoration: underline;
 }
 
-[data-extension] .package-name::before {
-    content: var(--data-package-name, "未设置");
+[data-extension] .package-id::before {
+    content: var(--data-package-id, "未设置将包");
     text-decoration: underline;
 }
 
 [data-extension] .character-sort::before {
-    content: var(--data-character-sort, "未设置");
+    content: var(--data-character-sort, "未设置分包");
     text-decoration: underline;
 }
 

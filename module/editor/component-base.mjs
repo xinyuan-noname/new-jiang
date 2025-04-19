@@ -11,6 +11,7 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
     #editableElementManagerMap = new Map([[this.#editableElementAnonymousManagerSymbol, []]]);
     #URLManager = new URLManager();
     #fragmentStorageMap = new Map();
+    #tempStore = new Map();
     constructor() {
         super();
         this.#server = new NonameData();
@@ -18,7 +19,7 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
     /**
      * @template {"readFile"|"readFolder"|
      *            "getAllFolderList"|"getAllFileList"|"getAllFolderAndFileList"|
-     *            "submitFile"|"download"} T
+     *            "submitFile"|"download"|"writeTextFile"} T
      * @param {T} mode 
      * @param { T extends "readFile"?{format: ("url"|"arrayBuffer"|"text"),file: Blob}:
      *          T extends "submitFile"?{format: (string|string[]),multiple?:boolean}:
@@ -27,6 +28,7 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
      *          T extends "getAllFolderList"?{path:string,folderFilter:function}
      *          T extends "getAllFolderList"?{path:string,folderFilter:function}
      *          T extends "download"?{path:string,name:string,url:string}
+     *          T extends "writeTextFile"?{path:string,content:string}
      *          Object<string,any>
      * } query 
      * @returns {Promise<any>}
@@ -60,6 +62,10 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
             case "download": {
                 const { url, path, name } = query;
                 return this.#server.download(url, path, name);
+            }
+            case "writeTextFile": {
+                const { path, content } = query;
+                return this.#server.writeTextFile(path, content);
             }
         }
     }
@@ -170,11 +176,12 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         }
     }
     /**
-     * @template {"characterId"|"skillTags"} T
+     * @template {"characterId"|"skillTags"|"characterSortId"|"memberExistence"} T
      * @param {T} mode 
      * @param {T extends "characterId"?{id:string}:
      *         T extends "skillTags"?{id:string,tags:string[]}
-     *         T extends "characterSortId"?{}
+     *         T extends "characterSortId"?{id:string,packageId:string}
+     *         T extends "memberExistence"?{member:string}
      * } query 
      */
     checkQuery(mode, query = {}) {
@@ -190,6 +197,10 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
             case "characterSortId": {
                 const { id, packageId } = query;
                 return this.#server.checkId(id, "characterSort", packageId);
+            }
+            case "memberExistence": {
+                const { member } = query;
+                return this.#server.checkMemberExistence(member)
             }
         }
     }
@@ -403,28 +414,13 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
         }
     }
     /**
-     * @template {"generateCharacterCode"|"getFileAllModules"|"getExtensionAllPackage"} T
-     * @param {T} mode 
-     * @param {T extends "generateCharacterCode"?{info:Object,pattern:"object"|"array"}
-     *         T extends "getFileAllModule"?{path}
-     *         T extends "getExtensionAllPackage"?{extensionName}
-     * } query 
+     * @template {"getExtensionAllPackage"|"genCharacterCode"|"genCharacterSortCode"|"modifyCharacterPackageCode"} T
+     * @param {T} order 
+     * @param {*} data 
+     * @returns 
      */
-    codeQuery(mode, query) {
-        switch (mode) {
-            case "getFileAllModules": {
-                const { path } = query;
-                return this.#server.getFileAllModules(path);
-            }
-            case "getExtensionAllPackage": {
-                const { extensionName } = query;
-                return this.#server.getExtensionAllPackage(extensionName);
-            }
-            case "generateCharacterCode": {
-                const { info, pattern } = query
-                return this.#server.genCharacterCode(info, pattern);
-            }
-        }
+    codeQuery(order, data) {
+        return this.#server.astRequest(order, data);
     }
     createUniqueChoiceManager(label, ...nodes) {
         const manager = new UniqueChoiceManager(...nodes);
@@ -501,6 +497,27 @@ export class HTMLNonameFocusUIElement extends HTMLElement {
     }
     getURLRecordGroup(label) {
         return this.#URLManager.getURLGroup(label);
+    }
+    getTempStore(label) {
+        return this.#tempStore.get(label) || null;
+    }
+    appendTempStore(label, val) {
+        if (!this.#tempStore.get(label)) {
+            this.#tempStore.set(label, [])
+        }
+        this.#tempStore.get(label).push(val);
+    }
+    forEachTempStore(label, callback) {
+        const tempSotre = this.#tempStore.get(label);
+        if (typeof callback === "function" && Array.isArray(tempSotre)) {
+            for (let i = 0; i < tempSotre.length; i++) {
+                const flag = callback(tempSotre[i], i);
+                if (flag === false) return;
+            }
+        }
+    }
+    deleteTempStore(label) {
+        this.#tempStore.delete(label);
     }
     /**
      * @param {string} label 
